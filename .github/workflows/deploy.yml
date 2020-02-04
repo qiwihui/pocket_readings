@@ -1,0 +1,36 @@
+name: Hexo Build and Deploy
+
+on: [push]
+
+jobs:
+    build:
+      name: Build
+      runs-on: ubuntu-latest
+      steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '10.x'
+      - name: Install dependencies
+        run: |
+          npm install hexo-cli -g
+          npm install
+      - name: Get all posts
+        run: |
+          npm install qiwihui/offline-issues#ghtoken -g
+          mkdir -p source/_posts/
+          offline-issues qiwihui/pocket_reading -d source/_posts/ -u qiwihui -p ${{ secrets.GITHUB_TOKEN }} -t blog -c markdown
+      - name: Get theme and hack
+        run: |
+          mkdir -p themes/next
+          curl -s https://api.github.com/repos/theme-next/hexo-theme-next/releases/latest | grep tarball_url | cut -d '"' -f 4 | wget -i - -O- | tar -zx -C themes/next --strip-components=1
+      - uses: yrpang/github-actions-hexo@master
+        with:
+          deploykey: ${{secrets.DEPLOY_KEY}}
+          username: qiwihui
+          email: qwh005007@gmail.com
+      - name: Cache node modules
+        uses: actions/cache@v1
+        with:
+          path: node_modules
+          key: ${{runner.OS}}-${{hashFiles('**/package-lock.json')}}
