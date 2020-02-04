@@ -1,6 +1,11 @@
 name: Hexo Build and Deploy
 
-on: [push]
+on:
+  push:
+    branches:
+      - master
+  issues:
+    types: [opened, edited, deleted, closed, reopened, labeled, unlabeled]
 
 jobs:
     build:
@@ -19,7 +24,7 @@ jobs:
         run: |
           npm install qiwihui/offline-issues#ghtoken -g
           mkdir -p source/_posts/
-          offline-issues qiwihui/pocket_reading -d source/_posts/ -u qiwihui -p ${{ secrets.GITHUB_TOKEN }} -t blog -c markdown
+          offline-issues qiwihui/pocket_readings -d source/_posts/ -u qiwihui -p ${{ secrets.GITHUB_TOKEN }} -t blog -c markdown
       - name: Get theme and hack
         run: |
           mkdir -p themes/next
