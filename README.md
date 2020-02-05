@@ -1,3 +1,5 @@
+![Hexo Build and Deploy](https://github.com/qiwihui/pocket_readings/workflows/Hexo%20Build%20and%20Deploy/badge.svg?branch=master)
+
 # pocket_readings
 
 You need [zenhub](https://github.com/marketplace/zenhub), a free github app, to view the state at `Reports` tab.
