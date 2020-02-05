@@ -31,7 +31,7 @@ jobs:
           curl -s https://api.github.com/repos/theme-next/hexo-theme-next/releases/latest | grep tarball_url | cut -d '"' -f 4 | wget -i - -O- | tar -zx -C themes/next --strip-components=1
       - name: Fix markdown
         run: |
-          for f in './source/_posts/*.md'; do sed -i '10,\$s/:\ /:\&ensp;/p' $f; done
+          for f in './source/_posts/*.md'; do sed -i '10,$s/:\ /:\&ensp;/' $f; done
           for f in './source/_posts/*.md'; do sed -i '/^$/N;/^\n$/D' $f; done
       - uses: yrpang/github-actions-hexo@master
         with:
