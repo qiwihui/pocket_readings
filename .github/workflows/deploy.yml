@@ -25,6 +25,7 @@ jobs:
           npm install qiwihui/offline-issues#ghtoken -g
           mkdir -p source/_posts/
           offline-issues qiwihui/pocket_readings -d source/_posts/ -u qiwihui -p ${{ secrets.GITHUB_TOKEN }} -t blog -c markdown
+          echo "pr.qiwihui.com" > source/CNAME
       - name: Get theme and hack
         run: |
           mkdir -p themes/next
