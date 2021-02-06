@@ -7,7 +7,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: duty-machine/duty-machine-action@master
+      - uses: qiwihui/duty-machine-action@master
         env:
           TOKEN: ${{ github.token }}
           REPOSITORY: ${{ github.repository }}
