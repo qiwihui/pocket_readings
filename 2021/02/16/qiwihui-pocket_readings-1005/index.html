@@ -1,0 +1,2090 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="《深度剖析CPython解释器》9. 解密Python中字典和集合的底层实现，深度分析哈希表 - 古明地盆 - 博客园">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《深度剖析CPython解释器》9. 解密Python中字典和集合的底层实现，深度分析哈希表 - 古明地盆 - 博客园">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1005/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="《深度剖析CPython解释器》9. 解密Python中字典和集合的底层实现，深度分析哈希表 - 古明地盆 - 博客园">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200814164717645-250695028.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200814164728024-1124533030.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200814164734209-960036321.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200814180611353-1782148743.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200814164757642-1115745631.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200814164807998-1827451738.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200814164818019-995843865.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200814164825466-1426145061.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200814164833564-723416397.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200814164841296-1736851838.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200814164847932-1766657391.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200814164855563-1413795961.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200814164910070-2009596752.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200814164928460-76799035.png">
+<meta property="article:published_time" content="2021-02-16T14:12:21.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.438Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200814164717645-250695028.png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1005/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>《深度剖析CPython解释器》9. 解密Python中字典和集合的底层实现，深度分析哈希表 - 古明地盆 - 博客园 | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1005/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          《深度剖析CPython解释器》9. 解密Python中字典和集合的底层实现，深度分析哈希表 - 古明地盆 - 博客园
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-02-16 14:12:21" itemprop="dateCreated datePublished" datetime="2021-02-16T14:12:21+00:00">2021-02-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">《深度剖析CPython解释器》9. 解密Python中字典和集合的底层实现，深度分析哈希表 - 古明地盆 - 博客园</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#26964;&#23376; Python&#30340;&#23383;&#20856;&#26159;&#19968;&#31181;&#26144;&#23556;&#22411;&#23481;&#22120;&#23545;&#35937;&#65292;&#20445;&#23384;&#20102;&#38190;(key)&#21040;&#20540;(value)&#30340;&#26144;&#23556;&#20851;&#31995;&#12290;&#36890;&#36807;&#23383;&#20856;&#65292;&#25105;&#20204;&#21487;&#20197;&#24555;&#36895;&#30340;&#23454;&#29616;&#20540;&#30340;&#26597;&#25214;&#65292;json&#36825;&#31181;&#25968;&#25454;&#32467;&#26500;&#20063;&#26159;&#20511;&#37492;&#20102;Python&#20013;&#30340;&#23383;&#20856;&#12290;&#32780;&#19988;&#23383;&#20856;&#22312;Python&#20013;&#26159;&#32463;&#36807;&#39640;&#24230;&#20248;&#21270;&#30340;&#65292;&#22240;&#20026;Python&#24213;&#23618;&#20063;&#22312;&#22823;&#37327;<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/3jTpT36" target="_blank" rel="noopener">https://ift.tt/3jTpT36</a> original site<br><br><br><br>February 16, 2021 at 10:09PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1005#issuecomment-792616620" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>3/8/2021</strong></p>
+</blockquote>
+<h2 id="《深度剖析CPython解释器》9-解密Python中字典和集合的底层实现，深度分析哈希表-古明地盆-博客园"><a href="#《深度剖析CPython解释器》9-解密Python中字典和集合的底层实现，深度分析哈希表-古明地盆-博客园" class="headerlink" title="《深度剖析CPython解释器》9. 解密Python中字典和集合的底层实现，深度分析哈希表 - 古明地盆 - 博客园"></a>《深度剖析CPython解释器》9. 解密Python中字典和集合的底层实现，深度分析哈希表 - 古明地盆 - 博客园</h2><h1 id="《深度剖析CPython解释器》9-解密Python中字典和集合的底层实现，深度分析哈希表"><a href="#《深度剖析CPython解释器》9-解密Python中字典和集合的底层实现，深度分析哈希表" class="headerlink" title="《深度剖析CPython解释器》9. 解密Python中字典和集合的底层实现，深度分析哈希表"></a><a href="https://www.cnblogs.com/traditional/p/13503114.html" target="_blank" rel="noopener">《深度剖析CPython解释器》9. 解密Python中字典和集合的底层实现，深度分析哈希表</a></h1><h2 id="楔子"><a href="#楔子" class="headerlink" title="楔子"></a>楔子</h2><p><strong>Python的字典是一种映射型容器对象，保存了键(key)到值(value)的映射关系。通过字典，我们可以快速的实现值的查找，json这种数据结构也是借鉴了Python中的字典。而且字典在Python中是经过高度优化的，因为Python底层也在大量的使用字典这种数据结构。</strong></p>
+<p><strong>那么这次我们就来全面分析一下Python中的字典。</strong></p>
+<h2 id="基本使用"><a href="#基本使用" class="headerlink" title="基本使用"></a>基本使用</h2><p><strong>我们先来回顾一下字典的基本使用，然后再来分析它的一些特性以及底层实现。</strong></p>
+<p><strong>创建一个字典：</strong></p>
+<pre><code># 创建一个字典
+d = {&quot;a&quot;: 1, &quot;b&quot;: 2}
+print(d)  # {&apos;a&apos;: 1, &apos;b&apos;: 2}
+
+# 或者我们还可以通过dict, 传入关键字参数即可
+d = dict(a=1, b=2, c=3, d=4)
+print(d)  # {&apos;a&apos;: 1, &apos;b&apos;: 2, &apos;c&apos;: 3, &apos;d&apos;: 4}
+
+# 当然dict里面还可以接收位置参数, 但是最多接收一个
+d1 = dict({&quot;a&quot;: 1, &quot;b&quot;: 2}, c=3, d=4)
+d2 = dict([(&quot;a&quot;, 1), (&quot;b&quot;, 2)], c=3, d=4)
+print(d1)  # {&apos;a&apos;: 1, &apos;b&apos;: 2, &apos;c&apos;: 3, &apos;d&apos;: 4}
+print(d2)  # {&apos;a&apos;: 1, &apos;b&apos;: 2, &apos;c&apos;: 3, &apos;d&apos;: 4}
+
+
+# 还可以根据已有字典创建新的字典
+d = {**{&quot;a&quot;: 1, &quot;b&quot;: 2}, &quot;c&quot;: 3, **{&quot;d&quot;: 4}}
+print(d)  # {&apos;a&apos;: 1, &apos;b&apos;: 2, &apos;c&apos;: 3, &apos;d&apos;: 4}
+
+# 当然通过dict也是可以的, 但是注意: 通过**这种方式本质上是把字典变成多个关键字参数
+# 所以里面的key一定要符合Python的变量规范
+d = dict(**{&quot;a&quot;: 1, &quot;b&quot;: 2}, c=3, **{&quot;d&quot;: 4})
+print(d)  # {&apos;a&apos;: 1, &apos;b&apos;: 2, &apos;c&apos;: 3, &apos;d&apos;: 4}
+
+try:
+    # 这种是不合法的, 因为**{1: 1}等价于1=1
+    d = dict(**{1: 1})
+except Exception as e:
+    print(e)  # keywords must be strings
+# 但是这种是合法的
+d = {**{1: 1, 2: 2}, **{(1, 2, 3): &quot;嘿嘿&quot;}}
+print(d)  # {1: 1, 2: 2, (1, 2, 3): &apos;嘿嘿&apos;}</code></pre><p><strong>字典支持的操作：</strong></p>
+<pre><code># 创建一个空字典
+d = {}
+
+# 可以设置键值对
+d[&quot;name&quot;] = &quot;古明地觉&quot;
+d[&quot;where&quot;] = &quot;东方地灵殿&quot;
+print(d)  # {&apos;name&apos;: &apos;古明地觉&apos;, &apos;where&apos;: &apos;东方地灵殿&apos;}
+
+# 获取值
+print(d[&quot;name&quot;])  # 古明地觉
+
+# 更新值, 字典里面的key是不重复的, 所以不会出现一个字典中有多个key的情况出现
+d[&quot;name&quot;] = &quot;古明地恋&quot;
+print(d)  # {&apos;name&apos;: &apos;古明地恋&apos;, &apos;where&apos;: &apos;东方地灵殿&apos;}
+
+# 删除一个值, 可以使用del或者pop
+del d[&quot;name&quot;]
+d.pop(&quot;where&quot;)
+print(d)  # {}</code></pre><p><strong>当然字典支持的操作远不止上面那些，但是这些Python层面上的东西想必所有人都了如指掌了，因为字典支持的操作，仅仅相当于是一些API的调用罢了，对着文档查一遍、操作一波就完事了。我们重点是要分析字典这种数据结构在底层的实现方式，以及它背后的一些原理，这才是我们需要关注的。</strong></p>
+<p><strong>首先字典的底层是借助哈希表实现的，什么是哈希表我们后面会详细说，总之字典的添加元素、删除元素、查找元素等操作的平均时间复杂度是O(1)。当然了，在哈希不均匀的情况下，最坏时间复杂度是O(n)，但是这种情况很少发生。</strong></p>
+<p><strong>我们来测试一下字典的执行效率，看看它和列表之间的区别。一个有1千万个键值对的字典。然后对两者使用in来查询某个元素是否存在,</strong></p>
+<p><strong>我们测试的方式是，使用if … in …来查询一个元素是否存在，看看它们的耗时如何。</strong></p>
+<pre><code>import time
+import numpy as np
+
+
+def test(count: int, value: int):
+    &quot;&quot;&quot;
+    :param count: 循环次数
+    :param value: 查询的元素
+    :return:
+    &quot;&quot;&quot;
+    # 有一千万个随机数的列表
+    lst = list(np.random.randint(0, 2 ** 30, size=1000))
+    # 根据这个列表构造出含有一千万个键值对的字典
+    d = dict.fromkeys(lst)
+
+    # 查询元素value是否在列表中, 循环count次, 并统计时间
+    t1 = time.perf_counter()
+    for _ in range(count):
+        value in lst
+    t2 = time.perf_counter()
+    print(&quot;列表查询耗时:&quot;, round(t2 - t1, 2))
+
+    # 查询元素value是否在字典中, 循环count次, 并统计时间
+    t1 = time.perf_counter()
+    for _ in range(count):
+        value in d
+    t2 = time.perf_counter()
+    print(&quot;字典查询耗时:&quot;, round(t2 - t1, 2))
+
+
+# 分别查询一千次、一万次、十万次、二十万次
+test(10 ** 3, 22333)
+&quot;&quot;&quot;
+列表查询耗时: 0.13
+字典查询耗时: 0.0
+&quot;&quot;&quot;
+test(10 ** 4, 22333)
+&quot;&quot;&quot;
+列表查询耗时: 1.22
+字典查询耗时: 0.0
+&quot;&quot;&quot;
+test(10 ** 5, 22333)
+&quot;&quot;&quot;
+列表查询耗时: 12.68
+字典查询耗时: 0.01
+&quot;&quot;&quot;
+test(10 ** 5 * 2, 22333)
+&quot;&quot;&quot;
+列表查询耗时: 25.72
+字典查询耗时: 0.01
+&quot;&quot;&quot;</code></pre><p><strong>我们看到字典的查询速度非常快，从测试中我们看到，随着循环次数越来越多，列表所花费的总时间越来越长。但是字典由于查询所花费的时间极少，查询速度非常快，所以即便循环50万次，花费的总时间也不过才0.01秒左右。</strong></p>
+<p><strong>此外字典还有一个特点，就是它的”快”不会受到数据量的影响，你从含有一万个键值对的字典中查找，和你从含有一千万个键值对的字典中查找，两者花费的时间几乎是没有区别的。</strong></p>
+<p><strong>那么字典到底是使用了什么黑科技，才能达到这么快的效果呢？想要知道答案的话，那就从字典在底层的内部结构中寻找吧。</strong></p>
+<h2 id="初识哈希表"><a href="#初识哈希表" class="headerlink" title="初识哈希表"></a>初识哈希表</h2><p><strong>由于映射型容器的使用场景非常广泛，几乎所有现代语言都支持映射型容器，而且特别关注”键”的搜索效率。例如：C++标准模板库中的 <em>map</em> 就是一种关联式容器，内部基于红黑树实现。红黑树是一种平衡二叉树，能够提供良好的操作效率，插入、删除、搜索等关键操作的时间复杂度均为\(O(log_{2}n)\)，Linux的epoll也是使用了红黑树。</strong></p>
+<p><strong>而对于Python来讲，映射型容器指的就是字典，我们说字典在Python内部是被高度优化的。因为不光我们在用，Python虚拟机在运行时也重度依赖字典，比如：自定义类、以及其实例对象都有自己的属性字典，还有名字空间本质上也是一个字典，因此Python对字典的要求会更加苛刻。所以Python在实现字典时采用的数据结构肯定是要优于红黑树的<code>(至少在添加、删除、查询元素等方面)</code>，也就是说它的时间复杂度是优于红黑树的。时间复杂度优于\(O(log_{2}n)\)的数据结构有哪些呢？没错，你应该已经猜到了，就是散列表、又称哈希表。</strong></p>
+<p><strong>所以在介绍字典之前，我们需要介绍一下哈希表。当然这里只是先大致介绍一下，能够一个宏观的认识，为了在理解字典时能够方便一些。至于更详细的内容，我们会在本文的后面介绍。</strong></p>
+<p><strong>我们在介绍元组的时候，说元组可以作为字典的key，但是列表不可以，就是因为列表是不可哈希的。哈希表的原理是将key通过哈希函数进行运算转换为一个数值，用这个数值来充当索引，因此这就有一个前提，就是你的值不可以变。而列表是个可变对象，因此它不可以作为字典的key。</strong></p>
+<p><strong>直接这么说的话，可能会感到很迷，我们画一张图。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200814164717645-250695028.png" alt=""></p>
+<p><strong>我们发现除了key、value之外，还有一个index。其实哈希表本质上也是使用了索引的思想，我们知道虽然列表在遍历的时候是个时间复杂度为O(n)的操作，但是通过索引定位元素则是一个时间复杂度为O(1)的操作，不管你列表有多长，通过索引总是能瞬间定位到指定元素。所以哈希表实际上也是使用了数组<code>(列表)</code>的思想，会把这个key通过哈希函数映射成一个数值，作为索引。至于它是怎么映射的，我们后面再谈，现在我们就假设是按照我们接下来说的方法映射的。</strong></p>
+<p><strong>比如我们这里有一个能容纳10个元素的字典<code>(这里假设容量为10其实是不准确的,容量应该是2的n次方,但是这里只是介绍哈希表,所以不管了)</code>，我们先设置d[“satori”]=82，那么会对”satori”这个字符串进行一个哈希运算，然后再和9、也就是和当前的总容量减一<code>(最大索引)</code>进行按位与，这样的是不是能够得到一个小于等于9的数呢？假设是5，那么就存在索引为5地方。然后又进行d[“koishi”]=83，那么按照同样的规则运算得到8，那么就存在索引为8的位置，同理第三次设置d[“mashiro”]=80，对mashiro进行哈希、取模，得到2，那么存储在索引为2的地方。</strong></p>
+<p><strong>同理当我们根据键来获取值的时候，比如：d[“satori”]，那么同样会对字符串”satori”进行哈希、取模，得到索引发现是5，直接把索引为5的value给取出来。</strong></p>
+<p><strong>当然这种方式肯定存在缺陷，比如：</strong></p>
+<ul>
+<li><code>不同的值进行哈希、取模运算之后得到的结果一定是不同的吗？</code></li>
+<li><code>在运算之后得到索引的时候，发现这个位置已经有人占了怎么办？</code></li>
+<li><code>取值的时候，索引为5，可如果索引为5对应的key和我们指定获取的key不一致怎么办？</code></li>
+</ul>
+<blockquote>
+<p><strong>所以哈希值是有冲突的，如果一旦冲突，那么Python底层会改变策略重新映射，直到映射出来的索引没有人用。比如我们设置一个新的key、value，d[“tomoyo”]=88，可是我们对”tomoyo”这个key进行映射之后得到的结果也是5，而索引为5的地方已经被key为”satori”的键给占了，那么Python就会改变规则来对”tomoyo”重新进行运算，找到一个空位置进行添加。但如果我们再次设置d[“satori”]=100，那么对satori进行映射得到的结果也是5，而key是一致的，那么就会把对应的值进行修改。</strong></p>
+<p><strong>同理，当我们获取值的时候，d[“tomoyo”]，对key进行映射，得到索引。但是发现key不是”tomoyo”而是”satori”，于是改变规则<code>(这个规则跟设置key冲突时，采用的规则是一样的)</code>，重新映射，得到索引，然后发现key是一致的，于是将值取出来。</strong></p>
+<p><strong>但如果我们指定了一个不存在的key，那么哈希映射，找到对应索引，发现没有key，证明我们指定的key是不存在的。但如果有的话，发现key和我们指定的key不相等，说明哈希运算得到索引只是碰巧一样，但由于key不一样，因此会改变规则重新运算，得到新的索引。然而发现没有对应的key，于是报错：指定的key不存在。</strong></p>
+</blockquote>
+<p><strong>所以从这里就已经能说明问题了，就是把key转换成类似列表的索引。可能有人问，这些值貌似不是连续的啊，对的，肯定不是连续的。并不是说你先存，你的索引就小、就在前面，这是由key进行哈希运算之后的结果决定的。而且容量有10个，目前我们只存了4个元素，那么哈希表、或者说字典会不会扩容呢？当然，既然是可变对象，当然会扩容。并且它还不是像列表那样，容量不够才扩容，而当元素个数达到容量的三分之二的时候就会扩容。</strong></p>
+<p><strong>我们可以认为字典底层还是使用了索引的思想，字典不可能会像列表那样，元素之间是连续的，一个一个挨在一起的。既然是哈希运算，得到的值肯定是随机的。容量为10，尽管有6个是空着的，但是没关系，我们只要保证设置的元素整体上是有序的即可。就好比有10张桌椅，小红坐在第3张，小明坐在第8张，尽管有空着的，但是没关系，就让它空着。只要我到第3张桌椅能够找到小红、第8张可以找到小明即可。这些桌椅的位置就可以看成是索引，只要我通过索引能够找到对应的元素即可。但是容量为10，为什么不能全部占满之后再扩容呢？试想一下，既然是随机的，那么肯定会出现哈希值碰撞，并且当元素个数到达三分之二之后，这种碰撞的概率非常大。因此当容量到达三分之二的时候，就会申请一份更大的空间，以便来容纳新的元素。</strong></p>
+<p><strong>所以我们发现哈希表实际上就是一种空间换时间的方法，如果容量为100，那么就相当于有100个位置，每个元素都进行哈希映射，找到自己的位置。各自的位置都是不固定的，也许会空出来很多元素，但是无所谓，只要保证这些元素在100个位置上是相对有序、通过哈希运算得到索引之后，可以在相应的位置找到它即可。</strong></p>
+<p><strong>所以相信应该所有人都能明白为什么哈希表的时间复杂度是O(1)了，就是因为使用了索引的思想，每一个索引都是连续的，只不过一部分索引没有相应的key、value罢了。但这无所谓，因为索引和key、value是一一对应的，通过索引我们能瞬间定位到指定的key，再来检测key是否存在以及和我们指定的key是否一致。如果不存在，那么不好意思，证明这个地方根本没有key、value，说明我们指定了一个不存在的key。而且由于元素个数达到容量的三分之二的时候，碰撞的概率非常大，因此几乎不可能出现容量正好都排满的情况，否则那要改变规则、重复映射多少次啊。</strong></p>
+<p><strong>一句话总结：哈希表就是一种空间换时间的方法</strong></p>
+<p><strong>设置键值对如下图所示：</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200814164728024-1124533030.png" alt=""></p>
+<p><strong>根据键获取值，如下图所示：</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200814164734209-960036321.png" alt=""></p>
+<h2 id="字典的底层结构–PyDictObject"><a href="#字典的底层结构–PyDictObject" class="headerlink" title="字典的底层结构–PyDictObject"></a>字典的底层结构–PyDictObject</h2><p><strong>下面我们来看看字典在底层对应的结构体PyDictObject，位于Include/dictobject.h中，它的实现还是很复杂的。</strong></p>
+<pre><code>typedef struct {
+    //注意这里是PyObject_HEAD,不是PyObject_VAR_HEAD
+    //PyObject_HEAD只有引用计数和类型，没有ob_size
+    //但字典显然是一个变长对象，因此肯定有别的成员来维护字典的长度, 当然字典也有容量
+    PyObject_HEAD
+
+    //字典里面键值对的个数
+    Py_ssize_t ma_used;
+
+    //字典版本：全局唯一，每一次value的变动，都会导致其改变
+    uint64_t ma_version_tag;
+
+    //ma_keys从定义上来看，它是一个指针, 指向了一个PyDictKeysObject对象
+    //事实上在底层哈希表分为两种，分别是：combined table(结合表)和split table(分离表)
+    //如果是结合表，那么键值对存在ma_keys里面，此时下面的ma_values为NULL
+    PyDictKeysObject *ma_keys;
+
+    //如果是分离表，那么&quot;键&quot;存在ma_keys里，&quot;value&quot;存在ma_values里
+    PyObject **ma_values;
+} PyDictObject;
+
+//我们下面介绍的是常用的结合表</code></pre><p><strong>所以名字起得很形象，结合表的话，键和值就存在一起；分离表的话，键和值就存在不同的地方。至于为什么这么做，后面会解释。</strong></p>
+<p><strong>整个结构体实际上是看不出来啥的，主要的原因就在那个PyDictKeysObject，我们需要再来看看它长什么样子。</strong></p>
+<pre><code>//我们看到这是给struct _dictkeysobject起了一个别名，所以真正要看的是_dictkeysobject
+//它位于Objects/dict-common.h中
+typedef struct _dictkeysobject PyDictKeysObject;
+
+struct _dictkeysobject {
+    //引用计数，跟映射视图的实现有关，类似于对象的引用计数
+    Py_ssize_t dk_refcnt;
+
+    //哈希表大小，比如是2的n次方，这样可将模运算优化成按位与运算
+    //所以我们在上面介绍哈希表的时候，假设字典能容纳10个元素，这个假设是不准确的，不过无所谓啦
+    Py_ssize_t dk_size;
+
+    /* Function to lookup in the hash table (dk_indices):
+
+       - lookdict(): general-purpose, and may return DKIX_ERROR if (and
+         only if) a comparison raises an exception.
+
+       - lookdict_unicode(): specialized to Unicode string keys, comparison of
+         which can never raise an exception; that function can never return
+         DKIX_ERROR.
+
+       - lookdict_unicode_nodummy(): similar to lookdict_unicode() but further
+         specialized for Unicode string keys that cannot be the &lt;dummy&gt; value.
+
+       - lookdict_split(): Version of lookdict() for split tables. */
+    //哈希查找函数的指针，从注释上我们看到有好几种，会根据字典的当前状态选用最优的版本
+    dict_lookup_func dk_lookup;
+
+    //哈希表中可用的entry数量，这个entry你可以理解为键值对，一个entry就是一个键值对
+    //哈希表是有容量的，所以这个dk_usable就表示当前的容量还能容纳多个entry
+    Py_ssize_t dk_usable;
+
+    //哈希表中已经使用的entry数量
+    Py_ssize_t dk_nentries;
+
+    /* Actual hash table of dk_size entries. It holds indices in dk_entries,
+       or DKIX_EMPTY(-1) or DKIX_DUMMY(-2).
+
+       Indices must be: 0 &lt;= indice &lt; USABLE_FRACTION(dk_size).
+
+       The size in bytes of an indice depends on dk_size:
+
+       - 1 byte if dk_size &lt;= 0xff (char*)
+       - 2 bytes if dk_size &lt;= 0xffff (int16_t*)
+       - 4 bytes if dk_size &lt;= 0xffffffff (int32_t*)
+       - 8 bytes otherwise (int64_t*)
+
+       Dynamically sized, SIZEOF_VOID_P is minimum. */
+    //哈希表 起始地址 ，哈希表后紧接着 键值对数组 dk_entries 。
+    char dk_indices[];  /* char is required to avoid strict aliasing. */
+
+    /* &quot;PyDictKeyEntry dk_entries[dk_usable];&quot; array follows:
+       see the DK_ENTRIES() macro */
+};</code></pre><p><strong>而我们说一个键值对在底层对应一个entry，而这个entry指的就是PyDictKeyEntry对象，我们看看这个结构体长什么样子。</strong></p>
+<pre><code>typedef struct {
+    /* Cached hash code of me_key. */
+    Py_hash_t me_hash;
+    PyObject *me_key;
+    PyObject *me_value; /* This field is only meaningful for combined tables */
+} PyDictKeyEntry;</code></pre><p><strong>显然ma_key和ma_value就是键和值，我们之前说Python中变量、以及容器内部的元素都是泛型指针PyObject *，其中也包括字典，这里也得到了证明。但是我们看到entry除了有键和值之外，还有一个me_hash，它表示键对应的哈希值，这样可以避免重复计算。</strong></p>
+<p><strong>至此，字典的整个底层结构就非常清晰了。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200814180611353-1782148743.png" alt=""></p>
+<p><strong>字典的真正实现藏在PyDictKeysObject中，它的内部包含两个关键数组：一个是**</strong>哈希索引数组dk_indices<strong><strong>，另一个是</strong></strong>键值对数组dk_entries<strong>**。字典所维护的键值对<code>(entry)</code>按照先来后到的顺序保存在键值对数组中，而哈希索引数组则保存”键值对”在”键值对数组”中的索引。另外，哈希索引数组中的一个位置我们称之为一个”槽”，比如图中的哈希索引数组便有8个槽，它字典的数量是相等的。</strong></p>
+<p><strong>比如我们往空字典<code>(但是容量已经有了, 初始是8个, 不过可用的数量为5个)</code>中插入键值对<code>&quot;夏色祭&quot;: &quot;お娘&quot;</code>的时候，Python会执行以下步骤：</strong></p>
+<ul>
+<li><code>1. 将键值对保存在dk_entries中，由于初始字典是空的，所以会保存在dk_entries数组中索引为0的位置</code></li>
+<li><code>2. 通过哈希函数将键&quot;夏色祭&quot;映射成一个数值，作为索引，假设是5</code></li>
+<li><code>3. 将插入的键值对在数组中的索引0，保存在哈希索引数组中索引为5的槽中</code></li>
+</ul>
+<p><strong>然后当我们在查找键”夏色祭”对应的值的时候，便可瞬间定位。过程如下：</strong></p>
+<ul>
+<li><code>1. 通过哈希函数将键&quot;夏色祭&quot;映射成数值，也就是索引。因为在设置的时候索引是5，所以在获取的时候映射出来的索引肯定也是5</code></li>
+<li><code>2. 找到哈希索引数组中索引为5的槽，得到其保存的0，这里的0对应键值对数组的索引</code></li>
+<li><code>3. 找到键值对数组中索引为0的位置，取出PyDictKeyEntry中的me_value，也就是值(当然肯定要先比较key、也就是me_key是否一致, 不一致则重新映射。当然如果该位置为NULL, 那么直接报出KeyError)</code></li>
+</ul>
+<p><strong>由于**</strong>哈希值计算<strong><strong>以及</strong></strong>数组定位<strong>**均是O(1)的时间复杂度，所以字典的查询速度才会这么快。当然我们上面没有涉及到哈希冲突，关于哈希冲突我们会在后面详细说，但是就字典在存储和获取的时候就是上面那个流程。</strong></p>
+<blockquote>
+<p><strong>当然我们在上面的”初识哈希表”这一部分，为了避免牵扯太多，所以说的相对简化了。比如：”mashiro”: 80，我们说”mashiro”映射出来的索引是2，那么键值对就直接存在索引为2的地方。这实际上是简化了，因为这相当于把”哈希索引数组”和”键值对数组”合在一块了。而在早期的Python中，它也确实是这么做的。</strong></p>
+<p><strong>但是从上面字典的结构图中我们看到，实际上是先将”键值对”按照先来后到的顺序存在一个数组<code>(键值对数组)</code>中，然后再把其索引存放在另一个数组<code>(哈希索引数组)</code>中索引为2<code>(&quot;mashiro&quot;映射出来的索引是2)</code>的地方。所以在查找的时候，映射出来的索引2其实是哈希索引数组对应的索引。然后对应的槽也存储了一个索引，这个索引是键值对数组对应的索引，假设是4，所以会再根据索引4从键值对数组中获取指定的PyDictKeyEntry对象，再根据该对象获取指定的value。</strong></p>
+<p><strong>所以可以看出两者整体思想是基本类似的，理解起来没有什么区别，甚至第一种方式实现起来还会更简单一些。但为什么采用后者这种实现方式，以及这两者之间的区别，我们在后面还会专门分析，之所以采用后者主要是基于内存的考量。</strong></p>
+</blockquote>
+<h3 id="容量策略"><a href="#容量策略" class="headerlink" title="容量策略"></a>容量策略</h3><p><strong>根据字典的行为我们断定，字典肯定和列表一样有着”预分配机制”。因为可以扩容，那么为了避免频繁申请内存，所以在扩容的是时候会将容量申请的比键值对个数要多一些。那么字典的容量策略是怎么样的呢？</strong></p>
+<p><strong>在Object/dictobject.c源文件中我们可以看到一个宏定义：</strong></p>
+<pre><code>#define PyDict_MINSIZE 8</code></pre><p><strong>从这个宏定义中我们可以得知，一个字典的最小容量是8，或者说内部哈希表的长度最小是8。</strong></p>
+<p><strong>哈希表越密集，哈希冲突则越频繁，性能也就越差。因此，哈希表必须是一种 稀疏 的表结构，越稀疏则性能越好。但由于 “内存开销” 的制约，哈希表不可能无限地稀疏，所以需要在时间和空间上进行权衡。实践经验表明，一个1/2到2/3满的哈希表，性能较为理想——以相对合理的 “内存” 换取相对高效的 “执行性能”。</strong></p>
+<p><strong>为保证哈希表的稀疏程度，进而控制哈希冲突频率， Python 通过 宏USABLE_FRACTION 将哈希表内元素控制在2/3以内。宏USABLE_FRACTION 根据哈希表规模n，计算哈希表可存储元素的个数，也就是 键值对数组 的长度。以长度为 8 的哈希表为例，最多可以保持 5 个键值对，超出则需要扩容。</strong></p>
+<p><strong>而USABLE_FRACTION 是一个非常重要的宏定义，位于源文件 <em>Objects/dictobject.c</em> 中：</strong></p>
+<pre><code>#define USABLE_FRACTION(n) (((n) &lt;&lt; 1)/3)</code></pre><p><strong>哈希表规模一定是2的n次方，也就是说 <em>Python</em> 采用”翻倍扩容”的策略。例如，长度为 <em>8</em> 的哈希表扩容后，长度变为 <em>16</em> 。</strong></p>
+<p><strong>最后，我们来考察一个空字典所占用的内存空间。<em>Python</em> 为空字典分配了一个长度为 <em>8</em> 的哈希表，因而也要占用相当多的内存，主要有以下几个部分组成：</strong></p>
+<ul>
+<li><code>PyDictObject中有6个成员，一个8字节，加起来共48字节</code></li>
+<li><code>PyDictKeysObject中有7个成员，除了两个数组之外，剩余的每个成员也是一个8字节，所以加起来40字节</code></li>
+<li><code>而剩余的两个数组，一个是char类型的数组dk_indices，里面1个元素占1字节；还有一个PyDictKeyEntry类型的数组dk_entries，里面一个元素占24字节，因为PyDictKeyEntry里面有三个成员，一个8字节。但是注意：字典容量为8，说明哈希索引数组长度为8，但是键值对数组dk_entries长度是5，至于原因我们上面分析的很透彻了。因此这两个数组加起来总共是 8 + 24 * 5 = 128字节</code></li>
+</ul>
+<p><strong>所以一个空字典占用的内存是：48 + 40 + 128 = 216字节，我们来测试一下：</strong></p>
+<pre><code>&gt;&gt;&gt; d = dict()
+&gt;&gt;&gt; d.__sizeof__()
+216
+&gt;&gt;&gt;</code></pre><p><strong>但是注意：我们说空字典容量为8，但前提它不是通过Python/C API创建的，如果是d = {}这种方式，那么初始容量就是0，显然此时只有48字节，因为ma_keys此时是NULL。</strong></p>
+<pre><code>&gt;&gt;&gt; d = {}
+&gt;&gt;&gt; d.__sizeof__()
+48
+&gt;&gt;&gt;</code></pre><p><strong>另外，我们看到在计算内存的时候使用的不是sys.getsizeof，而是对象的__sizeof__方法，这两者有什么区别呢？答案是使用sys.getsizeof计算出来内存大小会比调用对象的__sizeof__方法计算出来的内存大小多出16个字节。</strong></p>
+<pre><code>&gt;&gt;&gt; import sys
+&gt;&gt;&gt;
+&gt;&gt;&gt; sys.getsizeof(dict()), dict().__sizeof__()
+(232, 216)
+&gt;&gt;&gt;
+&gt;&gt;&gt; sys.getsizeof({}), {}.__sizeof__()
+(64, 48)
+&gt;&gt;&gt;</code></pre><p><strong>之所以会出现这种情况，是因为sys.getsizeof将垃圾回收器的开销也考虑进去了。</strong></p>
+<blockquote>
+<p><strong>我们说Python底层是通过引用计数来判断对象是否被回收，但是引用计数有一个致命缺陷就是它无法解决循环引用的问题，所以Python内部的gc就是专门用来解决循环引用的。如果创建了一个可能会发生循环引用的对象，那么Python会将该对象挂在链表上，当然链表总共有三条，分别是零代链表、一代链表、二代链表。</strong></p>
+<p><strong>先将对象挂在零代链表上，Python的gc一旦发动，那么会采用三色标记模型来对零代链表上的对象进行标记–清除，将那些发生了循环引用的对象的引用计数减一。</strong></p>
+<p><strong>而这样的链表为什么有三条呢？试想一下，gc发动的成本也是很高的，如果在gc的洗礼下还能活下来的对象，说明其暂时是较稳的，没有必要每次都对其进行检测。所以会将零代链表中比较稳定的对象移动到一代链表中，同理二代链表也是同理。当清理零代链表达到10次的时候，会清理一次一代链表，清理一代链表达到10次的时候会清理一次二代链表。这样的技术在Python中也被成为分代技术。</strong></p>
+</blockquote>
+<p><strong>而移动到链表中的对象，会有两个指针，显然通过这两个指针可以找到它的前一个对象和后一个对象，所以sys.getsizeof计算结果多出的16字节，就是这两个指针所占的大小。</strong></p>
+<p><strong>但是整型、浮点型、字符串等等，它们使用sys.getsizeof和调用__sizeof__计算出来的结果是一样的。</strong></p>
+<pre><code>&gt;&gt;&gt; sys.getsizeof(123), (123).__sizeof__()
+(28, 28)
+&gt;&gt;&gt;
+&gt;&gt;&gt; sys.getsizeof(&quot;matsuri&quot;), &quot;matsuri&quot;.__sizeof__()
+(56, 56)</code></pre><p><strong>至于为什么一样，想必你已经猜到了，因为整型、字符串这种对象是不可能发生循环引用的，只有容器对象才会有可能发生循环引用。我们说Python中的gc是专门针对可能发生循环引用的对象的，对于不会发生循环引用的对象来说，不会参与gc，一个引用计数足够了，所以它们使用两种方式计算出的结果是一样的。</strong></p>
+<blockquote>
+<p><strong>关于垃圾回收，是一门很复杂的学问，我们这里简单提一下。在该系列的后续，我们会详细的探讨Python中的垃圾回收。</strong></p>
+</blockquote>
+<h3 id="内存优化"><a href="#内存优化" class="headerlink" title="内存优化"></a>内存优化</h3><p><strong>我们说在Python早期，哈希表并没有分成两个数组实现，而是由一个键值对数组实现，这个数组也承担哈希索引的角色：</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200814164757642-1115745631.png" alt=""></p>
+<p><strong>我们看到这种结构不正是我们在介绍哈希表的时候说的吗？一个键值对数组既用来存储，又用来充当索引，无需分成两个步骤，而且这种方式也似乎更简单、更直观。而我们说Python在早期确实是通过这种方式实现的哈希表，只是这种实现方式有一个弊端，就是太耗费内存了。</strong></p>
+<p><strong>我们说哈希表必须保持一定程度的稀疏，最多只有2/3满，这意味着至少要浪费1/3的空间。</strong></p>
+<p><strong>所以Python为了尽量节省内存，将键值对数组压缩到原来的2/3，只用来存储，而对key进行映射得到的索引由另一个数组<code>(哈希索引数组)</code>来存储。因为键值对数组里面一个元素要占用24字节，而哈希索引数组在容量不超过256的时候，里面一个元素只占一个字节；容量不超过65536的时候，里面一个元素只占两个字节，其它以此类推。由于哈希索引数组里面的元素大小比键值对数组里面的元素大小要小很多，所以将哈希表分成两个数组<code>(避免键值对数组的浪费)</code>来实现会更加的节省内存。我们可以举个栗子计算一下，假设我们容量是2 ** 16 = 65536的哈希表。</strong></p>
+<p><strong>如果是通过第一种方式，只用一个数组来存储的话：</strong></p>
+<pre><code>&gt;&gt;&gt; 2 ** 16 * 24
+1572864  # 总共需要这么多字节来存储
+&gt;&gt;&gt;
+&gt;&gt;&gt; 2 ** 16 * 24 // 3
+524288  # 除以3, 会浪费这么多字节
+&gt;&gt;&gt;</code></pre><p><strong>如果是通过第二种方式，使用两个数组来存储的话：</strong></p>
+<pre><code>&gt;&gt;&gt; 2 ** 16 * 24 * 2 / 3 + 2 ** 16 * 2
+1179648  # 容量虽然是2 ** 16次方, 但是键值对数组是容量的2 / 3, 然后加上哈希索引数组的大小
+&gt;&gt;&gt;</code></pre><p><strong>所以一个数组存储比两个数组存储要多用393216字节的内存，因此Python选择使用两个数组来进行存储。</strong></p>
+<h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p><strong>我们通过考察字典的搜索效率，并深入源码研究其内部哈希表的实现，得到以下结论：</strong></p>
+<ul>
+<li><code>字典是一种高效的映射式容器，每秒完成高达 *200* 多万次搜索操作；</code></li>
+<li><code>字典内部由哈希表实现，哈希表的稀疏特性意味着昂贵的内存开销；</code></li>
+<li><code>为优化内存使用，Python将哈希表分为 哈希索引数组 和 键值对数组，也就是通过两个数组来实现；</code></li>
+<li><code>哈希表在 1/2 到 2/3 满时，性能较为理想，较好地平衡了 内存开销 与 搜索效率；</code></li>
+</ul>
+<h2 id="深入哈希表"><a href="#深入哈希表" class="headerlink" title="深入哈希表"></a>深入哈希表</h2><p><strong>通过字典的底层实现，我们找到字典快速、高效的秘密–哈希表。对于映射式容器，一般是通过平衡搜索树或哈希表实现。而Python的字典选用了哈希表，主要是考虑到在搜索方面哈希表的效率更高。因为我们说Python底层重度依赖字典，所以对字典在搜索、设置元素方面的性能，要求的更加苛刻。</strong></p>
+<p><strong>但是由于哈希表的稀疏特性，导致其会有巨大的内存牺牲，而为了优化，Python别出心裁的将哈希表分成两部分来实现，分别是：哈希索引数组和键值对数组。</strong></p>
+<p><strong>但是显然这当中还有很多细节我们没有说，比如：哈希函数到底是怎么将一个键映射成索引的？哈希冲突了怎么办？哈希攻击又是什么？以及删除操作<code>(没有表面想的那么简单)</code>如何实现？而下面我们就来攻破这些难题，深入理解哈希表。</strong></p>
+<h3 id="哈希值"><a href="#哈希值" class="headerlink" title="哈希值"></a>哈希值</h3><p><strong>Python内置函数hash会返回对象的哈希值，哈希表依赖于哈希值。</strong></p>
+<p><strong>而根据哈希表的性质，我们知道键对象必须满足以下两个条件，否则哈希表便无法正常工作。</strong></p>
+<ul>
+<li><code>1. 哈希表在对象的整个生命周期内不可以改变</code></li>
+<li><code>2. 可比较，如果两个对象相等(使用==操作符结果为True)，那么它们的哈希值一定相同</code></li>
+</ul>
+<p><strong>满足这两个条件的对象便是”可哈希(hashable)”对象，只有可哈希对象才可以作为哈希表的键<code>(key)</code>。因此像字典、集合等底层由哈希表实现的对象，其元素必须是可哈希对象。</strong></p>
+<p><strong>Python中内置的不可变对象都是可哈希对象，比如：整数、浮点数、字符串、元组<code>(元组里面也要是不可变对象)</code>等等，而像可变对象，比如列表、字典等等便不可作为哈希表的键。</strong></p>
+<pre><code>&gt;&gt;&gt; {1: 1, &quot;xxx&quot;: [1, 2, 3], 3.14: 333}  # 键是可哈希的就行，值是否可哈希则没有要求
+{1: 1, &apos;xxx&apos;: [1, 2, 3], 3.14: 333}
+&gt;&gt;&gt;
+&gt;&gt;&gt; {[]: 123}  # 列表是可变对象，因为无法哈希
+Traceback (most recent call last):
+  File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;
+TypeError: unhashable type: &apos;list&apos;
+&gt;&gt;&gt;
+&gt;&gt;&gt; {(1, 2, 3): 123}  # 元组也是可哈希的
+{(1, 2, 3): 123}
+&gt;&gt;&gt; {(1, 2, 3, []): 123}  # 但如果元组里面包含了不可哈希的对象，那么整体也会变成不可哈希对象
+Traceback (most recent call last):
+  File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;
+TypeError: unhashable type: &apos;list&apos;
+&gt;&gt;&gt;</code></pre><p><strong>而我们自定义的类的实例对象也是可哈希的，且哈希值是通过对象的地址计算得到的。</strong></p>
+<pre><code>class A:
+    pass
+
+
+a1 = A()
+a2 = A()
+print(hash(a1), hash(a2))  # 141215868971 141215869022</code></pre><p><strong>而且Python也支持我们重写哈希函数，比如：</strong></p>
+<pre><code>class A:
+
+    def __hash__(self):
+        return 123
+
+
+a1 = A()
+a2 = A()
+print(hash(a1), hash(a2))  # 123 123
+
+print({a1: 1, a2: 2})
+# {&lt;__main__.A object at 0x000002A2842282B0&gt;: 1, &lt;__main__.A object at 0x000002A2842285E0&gt;: 2}</code></pre><p><strong>并且我们看到虽然哈希值一样，但是在作为字典的键的时候，如果发生了冲突，会改变规则。注意：我们自定义的类的实例对象默认都是可哈希的，但如果类里面重写了__eq__方法，且没有重写__hash__方法的话，那么这个类的实例对象就不可哈希了。</strong></p>
+<pre><code>class A:
+
+    def __eq__(self, other):
+        return True
+
+
+a1 = A()
+a2 = A()
+try:
+    print(hash(a1), hash(a2))
+except Exception as e:
+    print(e)  # unhashable type: &apos;A&apos;</code></pre><blockquote>
+<p><strong>为什么会有这种现象呢？首先我们说在没有重写__hash__方法的时候，哈希值默认是根据对象的地址计算得到的。而且对象如果相等<code>(使用==操作符会得到True)</code>，那么哈希值一定是一样的。但是我们重写了__eq__，相当于控制了==操作符的比较结果，两个对象是否相等就是由我们来控制了，可哈希值却还是根据地址计算得到的。两个对象地址不同，哈希值不同，但是对象却可以相等、又可以不相等，这就导致了矛盾。因此在重写了__eq__、但是没有重写__hash__的情况下，其实例对象便不可哈希了。</strong></p>
+<p><strong>但如果重写了__hash__，那么哈希值计算方式就不再通过地址计算了，因此此时是可以哈希的。</strong></p>
+</blockquote>
+<pre><code>class A:
+
+    def __eq__(self, other):
+        return True
+
+    def __hash__(self):
+        return 123
+
+
+a1 = A()
+a2 = A()
+print({a1: 1, a2: 2})  # {&lt;__main__.A object at 0x000001CEC8D682B0&gt;: 2}
+
+&quot;&quot;&quot;
+此时我们看到字典里面只有一个元素了，因为我们说重写了__hash__方法之后，计算得到哈希值都是一样的
+但是在没有重写__eq__的情况下，默认都是不相等的。如果哈希值一样，但是对象不相等，所以会重新映射。
+
+而我们重写了__eq__，返回的结果是True，所以Python认为对象是相等的，由于key的不重复性，保留了后面的键值对
+&quot;&quot;&quot;</code></pre><p><strong>同样的，我们再来看一个Python中字典的例子</strong></p>
+<pre><code>d = {1: 123}
+
+d[1.0] = 234
+print(d)  # {1: 234}
+
+d[True] = 345
+print(d)  # {1: 345}</code></pre><p><strong>天哪，这是咋回事？因为整数在计算哈希的时候，得到结果就是其本身；而浮点数显然不是，但如果浮点数的小数点后面只有一个0，那么它和整数是等价的。因此两者的哈希值一样，而3和3.0在Python中也是相等的，因此它们视为同一个key，所以相当于是替换。同理True也是一样，我们说它bool继承自int，所以它等价于1，比如：9 + True = 10，因为True的哈希值和1也是一样的，而且也是相等的，索引d[True] = 345也是更新。</strong></p>
+<blockquote>
+<p><strong>但是问题来了，值更新了我们可以理解，字典里面只有一个元素也可以理解，但是为什么key一直是1呢？理论上最终结果应该是True才对啊。</strong></p>
+<p><strong>其实这算是Python偷了个懒吧<code>(开个玩笑)</code>，因为key的哈希值是一样的，并且也相等，所以Python不会对key进行替换。从字典在设置元素的时候我们也知道，如果对key映射成索引之后发现哈希索引数组的此位置没有人用，那么就按照先来后到的顺序将”键值对”存在键值对数组中，再将其索引存在哈希索引数组的指定的槽中；如果有人用了，但是对应的key不想等，则重新映射找一个新位置；如果有人用了、并且相等，则说明是同一个key，那么把value换掉即可。所以在替换元素的整个过程中，根本没有涉及到对键的修改，因此上面那个例子的最终结果，value会变、但键依旧是1，而不是True。</strong></p>
+</blockquote>
+<p><strong>理想的哈希函数必须保证哈希值尽量均匀地分布于整个哈希空间中，越是相近的值，其哈希值差别应该越大。</strong></p>
+<blockquote>
+<p><strong>所以一个好的哈希函数对实现哈希表起到至关重要的作用。</strong></p>
+</blockquote>
+<h3 id="哈希冲突"><a href="#哈希冲突" class="headerlink" title="哈希冲突"></a>哈希冲突</h3><p><strong>一方面，不同的对象，哈希值有可能相同，另一方面，与哈希值空间相比，哈希表的槽位是非常有限的。因此，存在多个键被映射到哈希索引的同一槽位的可能性，这便是**</strong>索引冲突<strong>**。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200814164807998-1827451738.png" alt=""></p>
+<p><strong>解决哈希冲突的常用方法有两种：</strong></p>
+<ul>
+<li><code>分离链接法(separate chaining)</code></li>
+<li><code>开放寻址法(open addressing)</code></li>
+</ul>
+<p><strong>Python采用的便是开放寻址法。</strong></p>
+<h4 id="分离链接法"><a href="#分离链接法" class="headerlink" title="分离链接法"></a>分离链接法</h4><p><strong>“分离链接法”为每个哈希槽维护一个链表，所有哈希到同一槽位的键保存到对应的链表中：</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200814164818019-995843865.png" alt=""></p>
+<p><strong>如上图所示，哈希索引数组的每一个槽都连接着一个链表，初始状态为空，哈希表某个槽位对应的”键”则保存在对应的链表中。例如：key1和key3都哈希到下标为3的槽位，依次保存在对应的链表中；key2被哈希到下标为1的槽位。</strong></p>
+<h4 id="开放寻址法"><a href="#开放寻址法" class="headerlink" title="开放寻址法"></a>开放寻址法</h4><p><strong>Python依旧是将key映射成索引存在哈希索引数组的槽中，如果发现槽被占了，那么就尝试另一个。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200814164825466-1426145061.png" alt=""></p>
+<p><strong>key3被哈希到槽位为3的时候，发现这个坑被key1给占了，所以只能重新找个坑了。但是为什么找到5呢？显然在解决哈希冲突的时候是有策略的，一般而言，如果是第i次尝试，那么会在首槽的基础上加上一个偏移量\(d_{i}\)。比如哈希之后索引是n，那么首槽就是n，然而n这个槽被占了，于是重新映射，重新映射之后的索引就是n + \(d_{i}\)，所以可以看出探测方式因函数\(d_{i}\)而异。</strong></p>
+<p><strong>而常见的探测函数有两种：</strong></p>
+<ul>
+<li><code>线性探测(linear probing)</code></li>
+<li><code>平方探测(quadratic probing)</code></li>
+</ul>
+<p><strong>线性探测很好理解，\(d_{i}\)是一个线性函数，例如：\(d_{i}\) = 2 * i</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200814164833564-723416397.png" alt=""></p>
+<p><strong>哈希之后对应的槽是1，但是被占了，这个时候会在首槽的基础上加一个偏移量\(d_{i}\)。第1次尝试，偏移量是2；第2次尝试，偏移量是4；第3次尝试，偏移量是6。然后再加上首槽的1，所以尝试之后的位置分别是3、5、7。</strong></p>
+<p><strong>平方探测也很好理解，\(d_{i}\)是一个平方函数，例如：\(d_{i}\) = \(i^{2}\)。同理如果是平方探测，首槽还是1，那么冲突之后重试的槽就是1 + 1、1 + 4、 1+ 9。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200814164841296-1736851838.png" alt=""></p>
+<blockquote>
+<p><strong>线性探测和平方探测很简单，平方探测似乎更胜一筹。因为如果哈希表存在局部热点，探测很难快速跳过热点区域，而平方探测则可以解决这一点。但是这两种方法其实都不够好–因为固定的探测序列加大了冲突的概率。</strong></p>
+</blockquote>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200814164847932-1766657391.png" alt=""></p>
+<p><strong>key1和key2都哈希到槽1，而由于探测序列是相同的，因此冲突概率很高。所以Python对此进行了优化，探测函数参考对象哈希值，生成不同的探测序列，进一步降低哈希冲突的可能性：</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200814164855563-1413795961.png" alt=""></p>
+<h4 id="探测函数"><a href="#探测函数" class="headerlink" title="探测函数"></a>探测函数</h4><p><strong>Python为哈希表搜索提供了多种探测函数，lookdict、lookdict_unicode、lookdict_index，一般通用的是lookdict。lookdict_unicode是专门针对key为字符串的entry，lookdict_index针对key为整数的entry，可以把lookdict_unicode、lookdict_index看成lookdict的特殊实现，只不过key是整数和字符串的场景非常常见，因此为其单独实现了一个函数。</strong></p>
+<blockquote>
+<p><strong>注意: 我们对字典无论是设置值还是获取值，都需要进行搜索。</strong></p>
+</blockquote>
+<p><strong>我们这里重点看一下lookdict的函数实现，它位于 <em>Objects/dictobject.c</em> 源文件内。关键代码如下：</strong></p>
+<pre><code>static Py_ssize_t _Py_HOT_FUNCTION
+lookdict(PyDictObject *mp, PyObject *key,
+         Py_hash_t hash, PyObject **value_addr)
+{
+    size_t i, mask, perturb;
+    //keys数组的首地址
+    PyDictKeysObject *dk;
+    //entries数组的首地址
+    PyDictKeyEntry *ep0;
+
+top:
+    dk = mp-&gt;ma_keys;
+    ep0 = DK_ENTRIES(dk);
+    mask = DK_MASK(dk);
+    perturb = hash;
+    //哈希，定位探测链冲突的第一个entry的索引
+    i = (size_t)hash &amp; mask;
+
+    for (;;) {
+        // dk-&gt;indecs[i]
+        Py_ssize_t ix = dk_get_index(dk, i);
+        //如果ix == DKIX_EMPTY，说明没有存储值
+        //理论上是报错的，但是在底层是将值的指针设置为NULL
+        if (ix == DKIX_EMPTY) {
+            *value_addr = NULL;
+            return ix;
+        }
+        if (ix &gt;= 0) {
+            //拿到指定的entry的指针
+            PyDictKeyEntry *ep = &amp;ep0[ix];
+            assert(ep-&gt;me_key != NULL);
+            //如果两个key一样，那么直接将值的地址设置为ep-&gt;me_value
+            /*
+            但是注意：我们说Python中的变量是一个指针
+            所以这里的一样，表示的两个指针是一样的, 或者地址是一样的, 所以在Python中指向的是同一个对象
+            也就是说这一步等价于Python中的: if a is b
+            */
+            if (ep-&gt;me_key == key) {
+                *value_addr = ep-&gt;me_value;
+                return ix;
+            }
+            //如果两个对象不一样，那么就比较它们的哈希值是否相同
+            //比如33和33是一个对象,都是小整数对象池里面整数，但是3333和3333却不是，但是它们的值是一样的
+            //因此先判断id是否一致，如果不一致再比较哈希值是否一样
+            if (ep-&gt;me_hash == hash) {
+                //哈希值一样的话, 那么获取me_key
+                PyObject *startkey = ep-&gt;me_key;
+                Py_INCREF(startkey);  //inc ref
+                //比较key是否一致
+                int cmp = PyObject_RichCompareBool(startkey, key, Py_EQ);
+                Py_DECREF(startkey);  //dec ref
+                if (cmp &lt; 0) {
+                    *value_addr = NULL;
+                    return DKIX_ERROR;
+                }
+                if (dk == mp-&gt;ma_keys &amp;&amp; ep-&gt;me_key == startkey) {
+                    if (cmp &gt; 0) {
+                        *value_addr = ep-&gt;me_value;
+                        return ix;
+                    }
+                }
+                else {
+                    /* The dict was mutated, restart */
+                    goto top;
+                }
+            }
+        }
+        //如果条件均不满足，调整姿势，进行下一次探索
+        //由于参考了对象哈希值，探测序列因哈希值而异
+        perturb &gt;&gt;= PERTURB_SHIFT;
+        i = (i*5 + perturb + 1) &amp; mask;
+    }
+    Py_UNREACHABLE();
+}</code></pre><h3 id="哈希攻击"><a href="#哈希攻击" class="headerlink" title="哈希攻击"></a>哈希攻击</h3><p><strong><em>Python</em> 在 <em>3.3</em> 以前， 哈希算法只根据对象本身计算哈希值。因此，只要 <em>Python</em> 解释器相同，对象哈希值也肯定相同。</strong></p>
+<p><strong>如果一些别有用心的人构造出大量哈希值相同的 <em>key</em> ，并提交给服务器，会发生什么事情呢？例如，向一台 <em>Python 2 Web</em> 服务器 <em>post</em> 一个 <em>json</em> 数据，数据包含大量的 <em>key</em> ，所有 <em>key</em> 的哈希值相同。这意味着哈希表将频繁发生哈希冲突，性能由 O(1)急剧下降为 O(N)，这便是哈希攻击。</strong></p>
+<p><strong>问题虽然很严重，但是好在应对方法比较简单–直接往对象身上撒把盐(salt)即可。具体做法如下：</strong></p>
+<ul>
+<li><code>1. Python解释器进程启动后，产生一个随机数作为盐</code></li>
+<li><code>2. 哈希函数同时参考对象本身以及随机数计算哈希值</code></li>
+</ul>
+<p><strong>这样一来，攻击者无法获悉解释器内部的随机数，也就无法构造出哈希值相同的对象了！<em>Python</em> 自 <em>3.3</em> 以后，哈希函数均采用加盐模式，杜绝了哈希攻击的可能性。<em>Python</em> 哈希算法在 <em>Python/pyhash.c</em> 源文件中实现，有兴趣的可以自己去了解一下。</strong></p>
+<p><strong>以我当前使用的Python3.8为例，在执行<code>hash(&quot;夏色祭&quot;)</code>的时候，每次执行得到的结果都是不一样的。</strong></p>
+<h3 id="元素删除"><a href="#元素删除" class="headerlink" title="元素删除"></a>元素删除</h3><p><strong>通过前面的学习，我们现在已经知道哈希表就是通过相应的函数将需要搜索的键映射为一个索引，最终通过索引去访问连续的内存区域。而对于哈希表这种数据结构，最终目的就是加速键的搜索过程。用于映射的函数就是哈希函数，映射之后的值就是哈希值，再由哈希值得到索引<code>(不过为了方便,我们有时会将哈希函数映射的结果直接称为索引)</code>。因此在哈希表的实现中，哈希函数的优劣将直接决定哈希表搜索效率的高低。</strong></p>
+<p><strong>并且我们知道，当键值对数量越多，在映射成索引之后就越容易出现冲突。而我们之前说如果冲突了，就改变规则重新映射。事实上，Python也确实是这么做的，这种方法叫做开放寻址法。当发生冲突时，Python会通过一个二次探测函数f，计算下一个候选位置addr，如果可用就插入进去。如果不可用，会继续使用探测函数，直到找到一个可用的位置。通过多次使用探测函数f，从一个位置可以到达多个位置，我们认为这些位置就形成了一个”冲突探测链(探测序列)”。比如当我们插入一个key=”satori”的键值对，在a位置发现不行，又走b位置，发现也被人占了，于是到达c位置，发现没有key，于是就占了c这个位置。那么a -&gt; b -&gt; c便形成了一条冲突探测链，同理我们查找的时候也会按照这个顺序进行查找。</strong></p>
+<blockquote>
+<p><strong>显然上面这些东西，现在理解起来已经没什么难度了，但是问题来了。</strong></p>
+<p><strong>如果我此时把上面b位置的entry给删掉的话，会引发什么后果？首先我们知道，b位置上的key和我们指定的”satori”这个key的哈希值是一样的，不然它们也不会映射到同一个槽。当我们直接获取d[“satori”]，肯定会先走a位置，发现有人但key又不是”satori”，于是重新映射；然后走到b，发现还不对，再走到c位置，发现key是”satori”，于是就把值取出来了。显然这符合我们的预期，但是，我要说但是了。</strong></p>
+<p><strong>如果我们把b位置上的entry删掉呢？那么老规矩，映射成索引，先走到a位置发现坑被占；于是又走到b位置，结果发现居然没有内容，那么直接就报出了一个KeyError。所以继续寻找的前提是，这个地方要存储了entry，并且存在的<code>entry -&gt; me_key</code>和指定的key不相同，但如果没有的话，就说明根本没有这个key，直接KeyError。然而”satori”这个key确实是存在的，因此发生这种情况我们就说<code>探测链断裂</code>。本来应该走到c的，但是由于b没有元素，因此探测函数在b处就停止了。</strong></p>
+</blockquote>
+<p><strong>因此我们发现，当一个元素只要位于任何一条探测链当中，在删除元素时都不能真正意义上的删除，而是一种”伪删除”操作。</strong></p>
+<pre><code>//一个键值对就是一个entry, 在底层就是一个 PyDictKeyEntry 对象
+typedef struct {
+    Py_hash_t me_hash;
+    PyObject *me_key;
+    PyObject *me_value;
+} PyDictKeyEntry;</code></pre><p><strong>在Python中，当一个PyDictObject对象发生变化时，其中的entry会在三种不同的状态之间进行切换：unused态、active态、dummy态。</strong></p>
+<ul>
+<li><code>当一个entry的me_key和me_value都是NULL的时候，entry处于unused态。unused态表明该entry中并没有存储key、value，并且在此之前也没有存储过它们，每一个entry在初始化的时候都会处于这个状态。不过me_value的话，即使不是unused态也可能为NULL，更准确的说不管何时它都可能会NULL，这取决于到底是combined table、还是split table。我们说如果是分离表的话，value是不存在这里的，只有key存在这里，因此me_value永远是NULL。而如果是结合表，那么key和value都存在这里面。所以对于me_key，只可能在unused的时候才可能会NULL。</code></li>
+<li><code>当entry存储了key时，那么此时entry便从unused态变成了active态。</code></li>
+<li><code>当entry中的key(value)被删除后，状态便从active态变成dummy态。注意：这里是dummy，删除了并不代表就能够回到unused态，来存储其他key了。我们也说了，unused态是指当前没有、并且之前也没有存储过。key被删除后，会变成dummy，否则就会发生我们之前说的探测链断裂。至于这个dummy到底是啥，我们后面说。总是entry进入dummy态，就是我们刚才提到的伪删除技术。当Python沿着某条探测链搜索时，如果发现一个entry处于dummy态，就会明白虽然当前的entry是无效的，但是后面的entry可能是有效的，所以不会直接就停止搜索、报错，而是会继续搜索，这样就保证了探测链的连续性。至于报错，是在找到了unused状态的entry时才会报错，因为这里确实一直都没有存储过key，但是索引确实是这个位置，这说明当前指定的key就真的不存在哈希表中，此时才会报错。</code></li>
+</ul>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200814164910070-2009596752.png" alt=""></p>
+<blockquote>
+<p><strong>unused态只能转换为active态；active态只能转换为dummy态；dummy态只能转化为active态。</strong></p>
+</blockquote>
+<p><strong>哈希槽位状态常量在 <em>Objects/dict-common.h</em> 头文件中定义：</strong></p>
+<pre><code>#define DKIX_EMPTY (-1)
+#define DKIX_DUMMY (-2)  /* Used internally */
+#define DKIX_ERROR (-3)</code></pre><p><strong>但是问题来了，如果一个entry被删除了，那么它就变成了dummy态。而我们说dummy态是可以转为active态的，要如何转化呢？如果新来了一个entry，这个entry在存储的时候发生冲突，那么会沿着冲突探测链查找，在查找的时候要是遇到了处于dummy态entry，那么原来处于dummy态的entry就会变成active态。</strong></p>
+<p><strong>换句话说，对于处理dummy态的entry，Python压根不会主动理会，只是说这个元素被标记为删除了，但是内存还会继续占用。如果新来的entry，没有发生冲突，一上来就有位置可以存储，那么是不会理会dummy态entry的。只有当发生冲突的时候，正好撞上了dummy态的entry，才会将dummy态的entry给替换掉。此时entry就变成了active态，然后内部维护的就是新的键值对。</strong></p>
+<p><strong>如果哈希表满了，那么就申请新的存储单元，然后将所有的active态的entry都搬过去，而处于dummy态的entry则直接丢弃。之所以可以丢弃，是因为dummy状态的entry存在是为了保证探测链不断裂，但是现在所有的active都拷贝到新的内存当中了，它们会形成一条新的探测链，因此也就不需要这些dummy态的entry了。至于到底是扩容、缩容、还是容量不变，取决于当前哈希表的entry个数。但是无论怎么样，当新的哈希表创建之后，便又有新的存储单元可用了。</strong></p>
+<h2 id="PyDictObject的创建与维护"><a href="#PyDictObject的创建与维护" class="headerlink" title="PyDictObject的创建与维护"></a>PyDictObject的创建与维护</h2><h3 id="PyDictObject的创建"><a href="#PyDictObject的创建" class="headerlink" title="PyDictObject的创建"></a>PyDictObject的创建</h3><p><strong>Python内部通过PyDict_New来创建一个新的dict对象。</strong></p>
+<pre><code>PyObject *
+PyDict_New(void)
+{    
+    //new_keys_object表示创建PyDictKeysObject*对象
+    //里面传一个数值，表示entry的容量
+    //#define PyDict_MINSIZE 8，从宏定义我们能看出来为8
+    //表示默认初始化能容纳8个entry的PyDictKeysObject
+    //为什么是8，这是通过大量的经验得来的。
+    PyDictKeysObject *keys = new_keys_object(PyDict_MINSIZE);
+    if (keys == NULL)
+        return NULL;
+    //这一步则是根据PyDictKeysObject *创建一个新字典
+    return new_dict(keys, NULL);
+}
+
+
+static PyDictKeysObject *new_keys_object(Py_ssize_t size)
+{
+    PyDictKeysObject *dk;
+    Py_ssize_t es, usable;
+
+    //检测，size是否&gt;=PyDict_MINSIZE
+    assert(size &gt;= PyDict_MINSIZE);
+    assert(IS_POWER_OF_2(size));
+
+    usable = USABLE_FRACTION(size);
+    //es：哈希表中的每个索引占多少字节
+    if (size &lt;= 0xff) {
+        es = 1;
+    }
+    else if (size &lt;= 0xffff) {
+        es = 2;
+    }
+#if SIZEOF_VOID_P &gt; 4
+    else if (size &lt;= 0xffffffff) {
+        es = 4;
+    }
+#endif
+    else {
+        es = sizeof(Py_ssize_t);
+    }
+
+    //注意到，字典里面也有缓冲池，当然这里指定是字典的key
+    //如果有的话，直接从里面取
+    if (size == PyDict_MINSIZE &amp;&amp; numfreekeys &gt; 0) {
+        dk = keys_free_list[--numfreekeys];
+    }
+    else {
+        //否则malloc重新申请
+        dk = PyObject_MALLOC(sizeof(PyDictKeysObject)
+                             + es * size
+                             + sizeof(PyDictKeyEntry) * usable);
+        if (dk == NULL) {
+            PyErr_NoMemory();
+            return NULL;
+        }
+    }
+    //设置引用计数、可用的entry个数等信息
+    DK_DEBUG_INCREF dk-&gt;dk_refcnt = 1;
+    dk-&gt;dk_size = size;
+    dk-&gt;dk_usable = usable;
+    //dk_lookup很关键，里面包括了哈希函数和冲突时的二次探测函数的实现
+    dk-&gt;dk_lookup = lookdict_unicode_nodummy;
+    dk-&gt;dk_nentries = 0;
+    //哈希表的初始化
+    memset(&amp;dk-&gt;dk_indices[0], 0xff, es * size);
+    memset(DK_ENTRIES(dk), 0, sizeof(PyDictKeyEntry) * usable);
+    return dk;
+}
+
+
+static PyObject *
+new_dict(PyDictKeysObject *keys, PyObject **values)
+{
+    PyDictObject *mp;
+    assert(keys != NULL);
+    //这是一个字典的缓冲池
+    if (numfree) {
+        mp = free_list[--numfree];
+        assert (mp != NULL);
+        assert (Py_TYPE(mp) == &amp;PyDict_Type);
+        _Py_NewReference((PyObject *)mp);
+    }
+    //系统堆中申请内存
+    else {
+        mp = PyObject_GC_New(PyDictObject, &amp;PyDict_Type);
+        if (mp == NULL) {
+            DK_DECREF(keys);
+            free_values(values);
+            return NULL;
+        }
+    }
+    //设置key、value等等
+    mp-&gt;ma_keys = keys;
+    mp-&gt;ma_values = values;
+    mp-&gt;ma_used = 0;
+    mp-&gt;ma_version_tag = DICT_NEXT_VERSION();
+    assert(_PyDict_CheckConsistency(mp));
+    return (PyObject *)mp;
+}</code></pre><h3 id="插入元素"><a href="#插入元素" class="headerlink" title="插入元素"></a>插入元素</h3><p><strong>我们对PyDictObject对象的操作都是建立在搜索的基础之上的，插入和删除也不例外。</strong></p>
+<pre><code>static int
+insertdict(PyDictObject *mp, PyObject *key, Py_hash_t hash, PyObject *value)
+{
+    PyObject *old_value;
+    PyDictKeyEntry *ep;
+
+    //增加对key和value的引用计数
+    Py_INCREF(key);
+    Py_INCREF(value);
+    //类型检查
+    if (mp-&gt;ma_values != NULL &amp;&amp; !PyUnicode_CheckExact(key)) {
+        if (insertion_resize(mp) &lt; 0)
+            goto Fail;
+    }
+
+    Py_ssize_t ix = mp-&gt;ma_keys-&gt;dk_lookup(mp, key, hash, &amp;old_value);
+    if (ix == DKIX_ERROR)
+        goto Fail;
+
+    assert(PyUnicode_CheckExact(key) || mp-&gt;ma_keys-&gt;dk_lookup == lookdict);
+    MAINTAIN_TRACKING(mp, key, value);
+
+    /* 检查共享key，可能扩容哈希表
+     */
+    if (_PyDict_HasSplitTable(mp) &amp;&amp;
+        ((ix &gt;= 0 &amp;&amp; old_value == NULL &amp;&amp; mp-&gt;ma_used != ix) ||
+         (ix == DKIX_EMPTY &amp;&amp; mp-&gt;ma_used != mp-&gt;ma_keys-&gt;dk_nentries))) {
+        if (insertion_resize(mp) &lt; 0)
+            goto Fail;
+        ix = DKIX_EMPTY;
+    }
+    //搜索成功
+    if (ix == DKIX_EMPTY) {
+        /* 插入一个新的slot，这个slot可以直接看成是entry */
+        assert(old_value == NULL);
+        if (mp-&gt;ma_keys-&gt;dk_usable &lt;= 0) {
+            /* 需要resize */
+            if (insertion_resize(mp) &lt; 0)
+                goto Fail;
+        }
+        //寻找值的插入位置，就是我们之前说的将key这个值通过哈希函数映射为索引
+        Py_ssize_t hashpos = find_empty_slot(mp-&gt;ma_keys, hash);
+        //拿到PyDictKeyEntry *指针
+        ep = &amp;DK_ENTRIES(mp-&gt;ma_keys)[mp-&gt;ma_keys-&gt;dk_nentries];
+        //设置
+        dk_set_index(mp-&gt;ma_keys, hashpos, mp-&gt;ma_keys-&gt;dk_nentries);
+        ep-&gt;me_key = key; //设置key
+        ep-&gt;me_hash = hash;//设置哈希
+        //如果ma_values数组不为空
+        if (mp-&gt;ma_values) {
+            assert (mp-&gt;ma_values[mp-&gt;ma_keys-&gt;dk_nentries] == NULL);
+            //设置进去，还记得这是什么表吗？对，这是一张split table
+            mp-&gt;ma_values[mp-&gt;ma_keys-&gt;dk_nentries] = value;
+        }
+        else {
+            //ma_values数据为空的话，那么value就设置在PyDictKeyEntry对象的me_value里面
+            ep-&gt;me_value = value;
+        }
+
+        mp-&gt;ma_used++;//使用个数+1
+        mp-&gt;ma_version_tag = DICT_NEXT_VERSION();//版本数+1
+        mp-&gt;ma_keys-&gt;dk_usable--;//可用数-1
+        mp-&gt;ma_keys-&gt;dk_nentries++;//里面entry数量+1
+        assert(mp-&gt;ma_keys-&gt;dk_usable &gt;= 0);
+        assert(_PyDict_CheckConsistency(mp));
+        return 0;
+    }
+
+    //判断key是否存在，存在即替换
+    if (_PyDict_HasSplitTable(mp)) {
+        mp-&gt;ma_values[ix] = value;
+        if (old_value == NULL) {
+            /* pending state */
+            assert(ix == mp-&gt;ma_used);
+            mp-&gt;ma_used++;
+        }
+    }
+    else {
+        assert(old_value != NULL);
+        DK_ENTRIES(mp-&gt;ma_keys)[ix].me_value = value;
+    }
+
+    mp-&gt;ma_version_tag = DICT_NEXT_VERSION();
+    Py_XDECREF(old_value); /* which **CAN** re-enter (see issue #22653) */
+    assert(_PyDict_CheckConsistency(mp));
+    Py_DECREF(key);
+    return 0;
+
+Fail:
+    Py_DECREF(value);
+    Py_DECREF(key);
+    return -1;
+}</code></pre><p><strong>以上是插入元素，但我们看到无论是插入元素、还是设置元素，insertdict都是可以胜任。但是请注意一下参数，有一个hash参数，这个hash是从什么地方获取的呢？答案是，在调用这个insertdict之前其实会首先调用<code>PyDict_SetItem</code></strong></p>
+<pre><code>int
+PyDict_SetItem(PyObject *op, PyObject *key, PyObject *value)
+{
+    PyDictObject *mp;
+    Py_hash_t hash;
+    if (!PyDict_Check(op)) {
+        PyErr_BadInternalCall();
+        return -1;
+    }
+    assert(key);
+    assert(value);
+    mp = (PyDictObject *)op;
+    //计算hash值
+    if (!PyUnicode_CheckExact(key) ||
+        (hash = ((PyASCIIObject *) key)-&gt;hash) == -1)
+    {    
+        //
+        hash = PyObject_Hash(key);
+        if (hash == -1)
+            return -1;
+    }
+
+    /* 调用insertdict，必要时调整元素 */
+    return insertdict(mp, key, hash, value);
+}</code></pre><p><strong>我们说如果entry个数达到容量的三分之二，那么会调整容量，如何调整呢？</strong></p>
+<pre><code>//增长率
+#define GROWTH_RATE(d) ((d)-&gt;ma_used*3)
+
+
+static int
+insertion_resize(PyDictObject *mp)
+{    
+    //本质上调用了dictresize，传入PyDictObject * 和增长率
+    return dictresize(mp, GROWTH_RATE(mp));
+}
+
+
+
+static int
+dictresize(PyDictObject *mp, Py_ssize_t minsize)
+{    
+    //新的容量，entry的个数
+    Py_ssize_t newsize, numentries;
+    //老的keys
+    PyDictKeysObject *oldkeys;
+    //老的values
+    PyObject **oldvalues;
+    //老的entries，新的entries
+    PyDictKeyEntry *oldentries, *newentries;
+
+    /* 确定table的大小*/
+    for (newsize = PyDict_MINSIZE;
+         newsize &lt; minsize &amp;&amp; newsize &gt; 0;
+         newsize &lt;&lt;= 1)
+        ;
+    if (newsize &lt;= 0) {
+        PyErr_NoMemory();
+        return -1;
+    }
+
+    //获取原来的所有keys
+    oldkeys = mp-&gt;ma_keys;
+
+    /* 创建能够容纳newsize个entry的内存空间 */
+    mp-&gt;ma_keys = new_keys_object(newsize);
+    if (mp-&gt;ma_keys == NULL) {
+        //把以前的key拷贝过去。
+        mp-&gt;ma_keys = oldkeys;
+        return -1;
+    }
+    //必须满足 可用 &gt;= 已用
+    assert(mp-&gt;ma_keys-&gt;dk_usable &gt;= mp-&gt;ma_used);
+    if (oldkeys-&gt;dk_lookup == lookdict)
+        mp-&gt;ma_keys-&gt;dk_lookup = lookdict;
+
+    //获取已用entries
+    numentries = mp-&gt;ma_used;
+    //获取旧信息
+    oldentries = DK_ENTRIES(oldkeys);
+    newentries = DK_ENTRIES(mp-&gt;ma_keys);
+    oldvalues = mp-&gt;ma_values;
+    //如果oldvalues不为NULL，这应该是一个combined table
+    //split table的特点是key是能是unicode、
+    //那么需要把split table转换成combined table
+    if (oldvalues != NULL) {
+        for (Py_ssize_t i = 0; i &lt; numentries; i++) {
+
+            assert(oldvalues[i] != NULL);
+            //将ma_values数组里面的元素统统都设置到PyDictKeyEntry对象里面去
+            PyDictKeyEntry *ep = &amp;oldentries[i];
+            PyObject *key = ep-&gt;me_key;
+            Py_INCREF(key);
+            newentries[i].me_key = key;
+            newentries[i].me_hash = ep-&gt;me_hash;
+            newentries[i].me_value = oldvalues[i];
+        }
+
+        //减少原来对oldkeys的引用计数
+        DK_DECREF(oldkeys);
+        //将ma_values设置为NULL，因为所有的value都存在了PyDictKeyEntry对象的me_value里面
+        mp-&gt;ma_values = NULL;
+        if (oldvalues != empty_values) {
+            free_values(oldvalues);
+        }
+    }
+    else {  // 否则的话说明这本身就是一个combined table
+        if (oldkeys-&gt;dk_nentries == numentries) {
+            //将就得entries拷贝到新的entries里面去
+            memcpy(newentries, oldentries, numentries * sizeof(PyDictKeyEntry));
+        }
+        else {
+            //处理旧的entries
+            //active态的entry搬到新table中
+            //dummy态的entry，调整key的引用计数，丢弃该entry
+            PyDictKeyEntry *ep = oldentries;
+            for (Py_ssize_t i = 0; i &lt; numentries; i++) {
+                while (ep-&gt;me_value == NULL)
+                    ep++;
+                newentries[i] = *ep++;
+            }
+        }
+
+        //字典缓冲池的操作，后面介绍
+        assert(oldkeys-&gt;dk_lookup != lookdict_split);
+        assert(oldkeys-&gt;dk_refcnt == 1);
+        if (oldkeys-&gt;dk_size == PyDict_MINSIZE &amp;&amp;
+            numfreekeys &lt; PyDict_MAXFREELIST) {
+            DK_DEBUG_DECREF keys_free_list[numfreekeys++] = oldkeys;
+        }
+        else {
+            DK_DEBUG_DECREF PyObject_FREE(oldkeys);
+        }
+    }
+
+    //建立哈希表索引
+    build_indices(mp-&gt;ma_keys, newentries, numentries);
+    mp-&gt;ma_keys-&gt;dk_usable -= numentries;
+    mp-&gt;ma_keys-&gt;dk_nentries = numentries;
+    return 0;
+}</code></pre><p><strong>我们再来看一下改变dict内存空间的一些动作：</strong></p>
+<ul>
+<li><code>首先要确定table的大小，很显然这个大小一定要大于minsize，这个minsize通过我们已经看到了，是通过宏定义的，是已用entry的3倍</code></li>
+<li><code>根据新的table，重新申请内存</code></li>
+<li><code>将原来的处于active状态的entry拷贝到新的内存当中，而对于处于dummy状态的entry则直接丢弃。可以丢弃的原因我们上面也说过了。主要是因为哈希表扩容了，会申请的一个新的数组，直接将原来的active态的entry组成一条新的探测链即可，因此也就不需要这些dummy态的entry了</code></li>
+</ul>
+<h3 id="删除元素"><a href="#删除元素" class="headerlink" title="删除元素"></a>删除元素</h3><p><strong>插入元素(设置元素)如果明白了，删除元素我觉得都可以不需要说了。</strong></p>
+<pre><code>int
+PyDict_DelItem(PyObject *op, PyObject *key)
+{    
+    //这显然和dictresize一样，是先获取hash值
+    Py_hash_t hash;
+    assert(key);
+    if (!PyUnicode_CheckExact(key) ||
+        (hash = ((PyASCIIObject *) key)-&gt;hash) == -1) {
+        hash = PyObject_Hash(key);
+        if (hash == -1)
+            return -1;
+    }
+
+    //真正来删除是下面这个函数
+    return _PyDict_DelItem_KnownHash(op, key, hash);
+}
+
+
+int
+_PyDict_DelItem_KnownHash(PyObject *op, PyObject *key, Py_hash_t hash)
+{
+    Py_ssize_t ix;
+    PyDictObject *mp;
+    PyObject *old_value;
+
+    //类型检测
+    if (!PyDict_Check(op)) {
+        PyErr_BadInternalCall();
+        return -1;
+    }
+    assert(key);
+    assert(hash != -1);
+    mp = (PyDictObject *)op;
+    //获取对应entry的index
+    ix = (mp-&gt;ma_keys-&gt;dk_lookup)(mp, key, hash, &amp;old_value);
+    if (ix == DKIX_ERROR)
+        return -1;
+    if (ix == DKIX_EMPTY || old_value == NULL) {
+        _PyErr_SetKeyError(key);
+        return -1;
+    }
+
+    // split table不支持删除操作，如果是split table，需要转换成combined table
+    if (_PyDict_HasSplitTable(mp)) {
+        if (dictresize(mp, DK_SIZE(mp-&gt;ma_keys))) {
+            return -1;
+        }
+        ix = (mp-&gt;ma_keys-&gt;dk_lookup)(mp, key, hash, &amp;old_value);
+        assert(ix &gt;= 0);
+    }
+
+    //传入hash和ix，又调用了delitem_common
+    return delitem_common(mp, hash, ix, old_value);
+}
+
+
+static int
+delitem_common(PyDictObject *mp, Py_hash_t hash, Py_ssize_t ix,
+               PyObject *old_value)
+{
+    PyObject *old_key;
+    PyDictKeyEntry *ep;
+
+    //找到对应的hash索引
+    Py_ssize_t hashpos = lookdict_index(mp-&gt;ma_keys, hash, ix);
+    assert(hashpos &gt;= 0);
+
+    //已经entries个数-1
+    mp-&gt;ma_used--;
+    //版本-1
+    mp-&gt;ma_version_tag = DICT_NEXT_VERSION();
+    //拿到entry的指针
+    ep = &amp;DK_ENTRIES(mp-&gt;ma_keys)[ix];
+    //将其设置为dummy状态
+    dk_set_index(mp-&gt;ma_keys, hashpos, DKIX_DUMMY);
+    ENSURE_ALLOWS_DELETIONS(mp);
+    old_key = ep-&gt;me_key;
+    //将其key、value都设置为NULL
+    ep-&gt;me_key = NULL;
+    ep-&gt;me_value = NULL;
+    //减少引用计数
+    Py_DECREF(old_key);
+    Py_DECREF(old_value);
+
+    assert(_PyDict_CheckConsistency(mp));
+    return 0;
+}</code></pre><p><strong>流程非常清晰，也很简单。先使用PyDict_DelItem计算hash值，再使用_PyDict_DelItem_KnownHash计算出索引，最后使用delitem_common获取相应的entry，删除维护的元素，并将entry从active态设置为dummy态，同时还会调整ma_used(已用entry)的数量</strong></p>
+<h2 id="PyDictObject缓存池"><a href="#PyDictObject缓存池" class="headerlink" title="PyDictObject缓存池"></a>PyDictObject缓存池</h2><p><strong>从介绍PyLongObject的小整数对象池的时候，我们就说过，不同的对象都有自己的缓存池，比如列表，当然字典也不例外。</strong></p>
+<pre><code>#ifndef PyDict_MAXFREELIST
+#define PyDict_MAXFREELIST 80
+#endif
+static PyDictObject *free_list[PyDict_MAXFREELIST];
+static int numfree = 0;</code></pre><p><strong>PyDictObject的缓存池机制其实和PyListObject的缓存池是类似的，开始时，这个缓存池什么也没有，直到第一个PyDictObject对象被销毁时，这个PyDictObject缓冲池里面才开始接纳被缓冲的PyDictObject对象。</strong></p>
+<pre><code>static void
+dict_dealloc(PyDictObject *mp)
+{    
+    //获取ma_values指针
+    PyObject **values = mp-&gt;ma_values;
+    //获取所有的ma_keys指针
+    PyDictKeysObject *keys = mp-&gt;ma_keys;
+    //两个整型
+    Py_ssize_t i, n;
+
+    //追踪、调试
+    PyObject_GC_UnTrack(mp);
+    Py_TRASHCAN_SAFE_BEGIN(mp)
+
+    //调整引用计数    
+    if (values != NULL) {
+        if (values != empty_values) {
+            for (i = 0, n = mp-&gt;ma_keys-&gt;dk_nentries; i &lt; n; i++) {
+                Py_XDECREF(values[i]);
+            }
+            free_values(values);
+        }
+        DK_DECREF(keys);
+    }
+    else if (keys != NULL) {
+        assert(keys-&gt;dk_refcnt == 1);
+        DK_DECREF(keys);
+    }
+    //将被销毁的对象放到缓冲池当中
+    if (numfree &lt; PyDict_MAXFREELIST &amp;&amp; Py_TYPE(mp) == &amp;PyDict_Type)
+        free_list[numfree++] = mp;
+    else
+        Py_TYPE(mp)-&gt;tp_free((PyObject *)mp);
+    Py_TRASHCAN_SAFE_END(mp)
+}</code></pre><p><strong>和PyListObject对象的缓冲池机制一样，缓冲池中只保留了PyDictObject对象。如果维护的是从系统堆中申请的内存空间，那么Python将释放这份内存空间，归还给系统堆。如果不是，那么仅仅只需要调整维护的对象的引用计数即可。</strong></p>
+<p><strong>其实在创建一个PyDictObject对象时，如果缓冲池中有可用的对象，也会直接从缓冲池中取，而不需要再重新创建。</strong></p>
+<pre><code>static PyObject *
+new_dict(PyDictKeysObject *keys, PyObject **values)
+{
+    PyDictObject *mp;
+    assert(keys != NULL);
+    if (numfree) {
+        mp = free_list[--numfree];
+        assert (mp != NULL);
+        assert (Py_TYPE(mp) == &amp;PyDict_Type);
+        _Py_NewReference((PyObject *)mp);
+    }
+    ...
+    ...
+    ...</code></pre><p><strong>关于字典的剖析我们就说到这里，其实内容还是很多的，尤其是哈希表背后的一些原理，值得好好体会一下。</strong></p>
+<h2 id="PySetObject"><a href="#PySetObject" class="headerlink" title="PySetObject"></a>PySetObject</h2><p><strong>由于集合和字典在底层使用的都是哈希表，所以我们放在一起说吧。</strong></p>
+<p><strong>既然集合也使用了哈希表，那么它的查询性能也是很高的。由于哈希表我们已经说了很多了，所以我们下面就直接来看集合的底层结构吧。</strong></p>
+<pre><code>//python中的集合的每一个元素，是通过setentry这个结构体来存储的
+typedef struct {
+    PyObject *key; // 元素的指针
+    Py_hash_t hash; // 元素的哈希值
+} setentry;
+
+
+typedef struct {
+    PyObject_HEAD
+
+    //我们发现在set中，每一个元素依然叫做entry
+    Py_ssize_t fill;            /* active态以及dummy态的entry总数量*/
+    Py_ssize_t used;            /* active态的entry数量 */
+
+    /* 该table包含mask+1个slot，mask+1是2的幂次方
+    我们存储的是mask，而不是size，因为更常需要mask
+    这个mask是用来和哈希值进行运算的
+     */
+    Py_ssize_t mask;
+
+    /* 对于小表，该table指向固定大小的small table，对于bigger table则指向额外的malloc内存
+    该table的指针永远不会为NULL。
+    所以它是指向setentry数组的一个指针
+     */
+    setentry *table;
+    Py_hash_t hash;             /* 该PySetObject的哈希值，只适用于frozenset */
+    Py_ssize_t finger;          
+    /*
+    用于pop元素的，search finger就是我们从包含某个元素的节点开始，找到我们希望的元素
+    */
+
+    //smalltable就是显然就是一个保存了setentry类型的数组
+    //PySet_MINSIZE是一个宏定义，默认是8。如果元素比较少的话，存在smalltable里面
+    //当smalltable存不下的时候(仮)，就会使用malloc申请。存不下，指的是超过8个的时候吗？
+    //由于哈希表的特性，需要预留一定的空间，因此还没存到8个的时候，就会扩容了
+    setentry smalltable[PySet_MINSIZE];
+    PyObject *weakreflist;      /* 弱引用列表 */
+} PySetObject;</code></pre><p><img src="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200814164928460-76799035.png" alt=""></p>
+<h3 id="PySetObject对象的创建"><a href="#PySetObject对象的创建" class="headerlink" title="PySetObject对象的创建"></a>PySetObject对象的创建</h3><p><strong>创建一个PySetObject对象可以使用PySet_New方法：</strong></p>
+<pre><code>PyObject *
+PySet_New(PyObject *iterable)
+{    
+    //底层调用了make_new_set
+    return make_new_set(&amp;PySet_Type, iterable);
+}
+
+
+static PyObject *
+make_new_set(PyTypeObject *type, PyObject *iterable)
+{    
+    //申明一个PySetObject *指针
+    PySetObject *so;
+
+    //申请该元素所需要的内存
+    so = (PySetObject *)type-&gt;tp_alloc(type, 0);
+    //申请失败，返回NULL
+    if (so == NULL)
+        return NULL;
+
+    //初始化都为0
+    so-&gt;fill = 0;
+    so-&gt;used = 0;
+    //PySet_MINSIZE默认为8，mask初始化为7
+    so-&gt;mask = PySet_MINSIZE - 1;
+    //将table指向保存数据的smalltable的头指针
+    so-&gt;table = so-&gt;smalltable;
+    //初始化hash值为-1
+    so-&gt;hash = -1;
+    //finger为0
+    so-&gt;finger = 0;
+    //弱引用列表为NULL
+    so-&gt;weakreflist = NULL;
+
+    //如果迭代器不为NULL，那么把元素依次更新的so这个PySetObject中
+    if (iterable != NULL) {
+        if (set_update_internal(so, iterable)) {
+            Py_DECREF(so);
+            return NULL;
+        }
+    }
+
+    //返回初始化完成的set
+    return (PyObject *)so;
+}</code></pre><p><strong>从以上步骤可以看出，初始化一个PySetObject对象主要初始化其内部的数据结构。</strong></p>
+<h3 id="插入元素-1"><a href="#插入元素-1" class="headerlink" title="插入元素"></a>插入元素</h3><p><strong>插入元素，会调用PySet_Add：</strong></p>
+<pre><code>int
+PySet_Add(PyObject *anyset, PyObject *key)
+{    //参数是两个指针
+
+    //类型检测
+    if (!PySet_Check(anyset) &amp;&amp;
+        (!PyFrozenSet_Check(anyset) || Py_REFCNT(anyset) != 1)) {
+        PyErr_BadInternalCall();
+        return -1;
+    }
+    //本质上调用了set_add_key
+    return set_add_key((PySetObject *)anyset, key);
+}
+
+
+static int
+set_add_key(PySetObject *so, PyObject *key)
+{    
+    //声明一个变量，显然是存储哈希值的
+    Py_hash_t hash;
+
+    //类型检测
+    if (!PyUnicode_CheckExact(key) ||
+        (hash = ((PyASCIIObject *) key)-&gt;hash) == -1) {
+        //计算哈希值
+        hash = PyObject_Hash(key);
+        //如果传入的元素不能被hash，那么直接返回-1
+        //在python层面显然会报错
+        if (hash == -1)
+            return -1;
+    }
+    //底层又调用了set_add_entry，并把hash也作为参数传了进去
+    return set_add_entry(so, key, hash);
+}
+
+
+static int
+set_add_entry(PySetObject *so, PyObject *key, Py_hash_t hash)
+{
+    setentry *table;  //指向setentry数组的指针，当然数组里面也是指针
+    setentry *freeslot;//存放不可hash的entry
+    setentry *entry;//entry指针
+    size_t perturb;
+    size_t mask;//和hash运算
+    size_t i; //一个整型变量，后面的索引值
+    size_t j;//遍历用的
+    int cmp;//比较的结果
+
+    /* Pre-increment is necessary to prevent arbitrary code in the rich
+       comparison from deallocating the key just before the insertion. */
+    Py_INCREF(key);  //增加key的引用计数
+
+  restart:
+
+    mask = so-&gt;mask;  //获取mask
+    i = (size_t)hash &amp; mask;//mask和hash进行与运算，得到一个索引
+
+    entry = &amp;so-&gt;table[i];//获取对应的entry指针
+    if (entry-&gt;key == NULL)
+        //如果entry-&gt;key == NULL，表示当前位置没有被使用
+        //直接跳到found_unused标签
+        goto found_unused;
+
+    //否则说明有人用了
+    freeslot = NULL;
+    perturb = hash; // 将perturb设置为hash
+
+    while (1) {
+        /*
+        找到entry-&gt;hash，之前说了，entry结构体由两部分组成
+        一个*key，也就是指向真正元素的指针，另一个是hash值
+        */
+        //如果和我们当前的hash值一样的话
+        if (entry-&gt;hash == hash) {
+            //拿到当前的key
+            PyObject *startkey = entry-&gt;key;
+            /* startkey cannot be a dummy because the dummy hash field is -1 */
+            //entry里面的key不可以为dummy态，因为这相当于删除(伪删除)了，hash为-1
+            assert(startkey != dummy);
+            //如果已经存在的key和我们添加的key是一样，说明重复了
+            //而集合内的元素不允许重复
+            if (startkey == key)
+                //直接跳转到found_active标签
+                goto found_active;
+            //如果是unicode，那么先转化，然后再比较两个key是否一样
+            if (PyUnicode_CheckExact(startkey)
+                &amp;&amp; PyUnicode_CheckExact(key)
+                &amp;&amp; _PyUnicode_EQ(startkey, key))
+                //如果一样，跳转到found_active标签
+                goto found_active;
+            //那么获取头部指针
+            table = so-&gt;table;
+            //增加startkey的引用计数
+            Py_INCREF(startkey);
+            //不一样的话，通过富比较，去比较两个哈希值是否一致
+            cmp = PyObject_RichCompareBool(startkey, key, Py_EQ);
+            //介绍startkey的引用计数
+            Py_DECREF(startkey);
+            //如果cmp大于0，比较成功
+            if (cmp &gt; 0)          
+                //说明索引被人占了
+                goto found_active;
+            if (cmp &lt; 0)
+                //小于0说明比较失败
+                goto comparison_error;
+            /* 如果table或者entry改变了，我们必须从头开始 */
+            if (table != so-&gt;table || entry-&gt;key != startkey)
+                //跳转到restart标签
+                goto restart;
+            //拿到当前的mask
+            mask = so-&gt;mask;                 /* help avoid a register spill */
+        }
+        //如果不能hash
+        else if (entry-&gt;hash == -1)
+            //则设置为freeslot
+            freeslot = entry;
+
+        //如果当前索引值加上9小于当前的mask
+        //#define LINEAR_PROBES 9
+        if (i + LINEAR_PROBES &lt;= mask) {
+            //循环9次
+            for (j = 0 ; j &lt; LINEAR_PROBES ; j++) {
+                //每次得到下一个entry
+                entry++;
+                //如果hash=0，并且对应的key为NULL
+                if (entry-&gt;hash == 0 &amp;&amp; entry-&gt;key == NULL)
+                    //跳转到found_unused_or_dummy标签
+                    goto found_unused_or_dummy;
+                if (entry-&gt;hash == hash) {
+                    //如果hash值相同，获取对应的key
+                    PyObject *startkey = entry-&gt;key;
+                    //key必须不为dummy态
+                    assert(startkey != dummy);
+                    //如果两个key相同，跳转到found_active标签
+                    if (startkey == key)
+                        goto found_active;
+                    //如果为unicode，还是转化后比较
+                    if (PyUnicode_CheckExact(startkey)
+                        &amp;&amp; PyUnicode_CheckExact(key)
+                        &amp;&amp; _PyUnicode_EQ(startkey, key))
+                        goto found_active;
+                    //下面的跟if (i + LINEAR_PROBES &lt;= mask) {上面的是一样的
+                    table = so-&gt;table;
+                    Py_INCREF(startkey);
+                    cmp = PyObject_RichCompareBool(startkey, key, Py_EQ);
+                    Py_DECREF(startkey);
+                    if (cmp &gt; 0)
+                        goto found_active;
+                    if (cmp &lt; 0)
+                        goto comparison_error;
+                    if (table != so-&gt;table || entry-&gt;key != startkey)
+                        goto restart;
+                    mask = so-&gt;mask;
+                }
+                else if (entry-&gt;hash == -1)
+                    freeslot = entry;
+            }
+        }
+
+        // 如果没有找到，说明哈希值冲突，改变规则，重新计算索引值
+        perturb &gt;&gt;= PERTURB_SHIFT;
+        //按照(i * 5 + 1 + perturb) &amp; mask重新计算
+        i = (i * 5 + 1 + perturb) &amp; mask;
+
+        //获取新索引对应的entry
+        entry = &amp;so-&gt;table[i];
+        //如果对应的key为NULL，说明重新计算索引之后找到了可以存储的地方
+        if (entry-&gt;key == NULL)
+            //跳转到found_unused_or_dummy
+            goto found_unused_or_dummy;
+        //否则说明比较倒霉，改变规则重新映射索引依旧冲突
+        //那么继续循环，比较key是否一致等等
+    }
+
+  //未使用或者dummy，dummy我们是不可以使用的
+  found_unused_or_dummy:
+    //如果这个freeslot为NULL，说明是可用的
+    if (freeslot == NULL)
+        //跳转
+        goto found_unused;
+    //否则，说明为dummy态，那么我们依旧可以使用，正好废物利用
+    //将used数量加一
+    so-&gt;used++;
+    //设置key和hash值
+    freeslot-&gt;key = key;
+    freeslot-&gt;hash = hash;
+    return 0;
+
+  //发现未使用的
+  found_unused:
+    //将fill和used个数+1
+    so-&gt;fill++;
+    so-&gt;used++;
+    //设置key和hash值
+    entry-&gt;key = key;
+    entry-&gt;hash = hash;
+    //检查active态+dummy的entry个数是否小于mask的3/5
+    if ((size_t)so-&gt;fill*5 &lt; mask*3)
+        //是的话，表示无需扩容
+        return 0;
+    //否则要进行扩容
+    //扩容的规则就是如果active态的entry各式各样如果大于50000，那么两倍扩容，否则四倍扩容
+    return set_table_resize(so, so-&gt;used&gt;50000 ? so-&gt;used*2 : so-&gt;used*4);
+
+  //如果是found_active，表示key重复了
+  //直接减少一个引用计数即可
+  found_active:
+    Py_DECREF(key);
+    return 0;
+
+  //比较失败，同样减少引用计数，返回-1
+  comparison_error:
+    Py_DECREF(key);
+    return -1;
+}</code></pre><p><strong>总结一下流程就是：</strong></p>
+<ul>
+<li><code>传入hash值，计算出索引值，通过索引值找到对应的entry</code></li>
+<li><code>如果entry-&gt;key=NULL，那么将hash和key存到对应的entry</code></li>
+<li><code>如果有key，但是值相同，则不插入，直接减少引入计数。因为不是字典，不存在更新一说</code></li>
+<li><code>如果有key，但是值不相同。那么从该索引往后的9个entry(i + 9 &lt;= mask)，如果存在key为NULL的entry，那么设置进去。</code></li>
+<li><code>如果以上条件都不满足，那么改变策略重新计算索引值，直到找到一个满足key为NULL的entry</code></li>
+<li><code>判断容量问题，如果active态+dummy态的entry个数不小于3/5 * mask，那么扩容，扩容的规则是active态的entry个数是否大于50000，是的话就二倍扩容，否则4倍扩容。</code></li>
+</ul>
+<h3 id="PySetObject扩容"><a href="#PySetObject扩容" class="headerlink" title="PySetObject扩容"></a>PySetObject扩容</h3><p><strong>我们之前说PySetObject会改变容量，那么它是如何改变的呢？</strong></p>
+<pre><code>static int
+set_table_resize(PySetObject *so, Py_ssize_t minused)
+{    //显然参数是：PySetObject *指针以及容量大小
+
+    //三个setentry *指针
+    setentry *oldtable, *newtable, *entry;
+    //oldmask
+    Py_ssize_t oldmask = so-&gt;mask;
+    //newmask
+    size_t newmask;
+
+    //是否为其申请过内存
+    int is_oldtable_malloced;
+    //将PySet_MINSIZE个entry直接copy过来
+    //因为你既然要扩容的话，那么肯定是这里面存不下了
+    setentry small_copy[PySet_MINSIZE];
+
+    //minused必须大于等于0
+    assert(minused &gt;= 0);
+
+    /* Find the smallest table size &gt; minused. */
+    /* XXX speed-up with intrinsics */
+    //newsize扩大二倍，直到大于minused
+    //所以我们刚才说的大于50000，二倍扩容，否则四倍扩容
+    //实际上是最终的newsize是比二倍或者四倍扩容的结果要大的
+    size_t newsize = PySet_MINSIZE;
+    while (newsize &lt;= (size_t)minused) {
+        //newsize最大顶多也就是PY_SSIZE_T_MAX + 1，但是基本不可能存储这么多元素
+        newsize &lt;&lt;= 1; // The largest possible value is PY_SSIZE_T_MAX + 1.
+    }
+
+    /* Get space for a new table. */
+    //为新的table申请空间
+    oldtable = so-&gt;table;
+    assert(oldtable != NULL);
+    is_oldtable_malloced = oldtable != so-&gt;smalltable;
+
+    //如果newsize和PySet_MINSIZE(这里的8)相等
+    if (newsize == PySet_MINSIZE) {
+        /* A large table is shrinking, or we can&apos;t get any smaller. */
+        //拿到smalltable，就是默认初始化8个entry数组的那哥们
+        newtable = so-&gt;smalltable;
+        //如果oldtable和newtable一样
+        if (newtable == oldtable) {
+            //并且没有dummy态的entry
+            if (so-&gt;fill == so-&gt;used) {
+                /* No dummies, so no point doing anything. */
+                //那么无需做任何事情
+                return 0;
+            }
+            /* We&apos;re not going to resize it, but rebuild the
+               table anyway to purge old dummy entries.
+               Subtle:  This is *necessary* if fill==size,
+               as set_lookkey needs at least one virgin slot to
+               terminate failing searches.  If fill &lt; size, it&apos;s
+               merely desirable, as dummies slow searches. */
+            //否则的话，dummy的个数一定大于0
+            assert(so-&gt;fill &gt; so-&gt;used);
+            //扔掉dummy态，只把oldtable中active态的拷贝过来
+            memcpy(small_copy, oldtable, sizeof(small_copy));
+            //将small_copy重新设置为oldtable
+            oldtable = small_copy;
+        }
+    }
+    else {
+        //否则的话，肯定大于8，申请newsize个setentry所需要的空间
+        newtable = PyMem_NEW(setentry, newsize);
+        //如果newtable为NULL，那么申请内存失败，返回-1
+        if (newtable == NULL) {
+            PyErr_NoMemory();
+            return -1;
+        }
+    }
+
+    /* Make the set empty, using the new table. */
+    //newtable肯定不等于oldtable
+    assert(newtable != oldtable);
+    //创建一个能融安newsize个entry的空set
+    memset(newtable, 0, sizeof(setentry) * newsize);
+    //将mask设置为newsize-1
+    //将table设置为newtable
+    so-&gt;mask = newsize - 1;
+    so-&gt;table = newtable;
+
+    /* Copy the data over; this is refcount-neutral for active entries;
+       dummy entries aren&apos;t copied over, of course */
+    //获取newmask
+    newmask = (size_t)so-&gt;mask;
+    //将原来旧table的setentry数组里面所有setentry的key和hash值全部设置到新的table里面
+    if (so-&gt;fill == so-&gt;used) {
+        for (entry = oldtable; entry &lt;= oldtable + oldmask; entry++) {
+            if (entry-&gt;key != NULL) {
+                set_insert_clean(newtable, newmask, entry-&gt;key, entry-&gt;hash);
+            }
+        }
+    } else {
+        so-&gt;fill = so-&gt;used;
+        for (entry = oldtable; entry &lt;= oldtable + oldmask; entry++) {
+            if (entry-&gt;key != NULL &amp;&amp; entry-&gt;key != dummy) {
+                set_insert_clean(newtable, newmask, entry-&gt;key, entry-&gt;hash);
+            }
+        }
+    }
+
+    //如果已经为其申请了内存，那么要将其归还给系统堆
+    if (is_oldtable_malloced)
+        PyMem_DEL(oldtable);
+    return 0;
+}
+
+//设置元素是通过set_insert_clean设置的
+static void
+set_insert_clean(setentry *table, size_t mask, PyObject *key, Py_hash_t hash)
+{
+    setentry *entry;
+    size_t perturb = hash;
+    size_t i = (size_t)hash &amp; mask; //计算索引
+    size_t j;
+
+    while (1) {
+        entry = &amp;table[i];  //获取当前entry
+        if (entry-&gt;key == NULL)
+            goto found_null; //如果为空则跳转found_null设置key与hash
+        if (i + LINEAR_PROBES &lt;= mask) {
+            //如果没有还是老规矩，遍历之后的9个entry
+            for (j = 0; j &lt; LINEAR_PROBES; j++) {
+                entry++;
+                //找到空的entry，那么跳转到found_null设置key与hash
+                if (entry-&gt;key == NULL)
+                    goto found_null;
+            }
+        }
+        // 没有找到，那么改变规则，重新计算索引
+        perturb &gt;&gt;= PERTURB_SHIFT;
+        i = (i * 5 + 1 + perturb) &amp; mask;
+    }
+  found_null:
+    //设置key与hash
+    entry-&gt;key = key;
+    entry-&gt;hash = hash;
+}</code></pre><h3 id="删除元素-1"><a href="#删除元素-1" class="headerlink" title="删除元素"></a>删除元素</h3><pre><code>static PyObject *
+set_remove(PySetObject *so, PyObject *key)
+{    
+    PyObject *tmpkey;
+    int rv;
+
+    //将该值设置为dummy态
+    rv = set_discard_key(so, key);
+
+    if (rv &lt; 0) {
+        //类型检测
+        if (!PySet_Check(key) || !PyErr_ExceptionMatches(PyExc_TypeError))
+            return NULL;
+        PyErr_Clear();
+        //对该值重新初始化为frozenset
+        tmpkey = make_new_set(&amp;PyFrozenSet_Type, key);
+        if (tmpkey == NULL)
+            return NULL;
+        //将该key设置为空
+        rv = set_discard_key(so, tmpkey);
+        Py_DECREF(tmpkey);
+        if (rv &lt; 0)
+            return NULL;
+    }
+
+    //如果没有找到则报错
+    if (rv == DISCARD_NOTFOUND) {
+        _PyErr_SetKeyError(key);
+        return NULL;
+    }
+    Py_RETURN_NONE;
+}
+
+//里面调用了set_discard_key方法
+static int
+set_discard_key(PySetObject *so, PyObject *key)
+{
+    Py_hash_t hash;
+
+    //老套路，先计算hash值
+    if (!PyUnicode_CheckExact(key) ||
+        (hash = ((PyASCIIObject *) key)-&gt;hash) == -1) {
+        hash = PyObject_Hash(key);
+        if (hash == -1)
+            return -1;
+    }
+    //将hash值也船进入
+    return set_discard_entry(so, key, hash);
+}
+
+
+static int
+set_discard_entry(PySetObject *so, PyObject *key, Py_hash_t hash)
+{
+    setentry *entry;
+    PyObject *old_key;
+
+    ////通过传入的key和hash找到该entry
+    //并且hash对应的key要和传入的key是一样的
+    entry = set_lookkey(so, key, hash);  
+    //如果entry为NULL，直接返回-1
+    if (entry == NULL)
+        return -1;
+    //如果entry不为NULL，但是对应的key为NULL
+    //返回DISCARD_NOTFOUND
+    if (entry-&gt;key == NULL)
+        return DISCARD_NOTFOUND;
+    //获取要删除的key
+    old_key = entry-&gt;key;
+    //并将entry的key设置为dummy
+    entry-&gt;key = dummy;
+    //hash值设置为-1
+    entry-&gt;hash = -1;
+    //减少使用数量
+    so-&gt;used--;
+    //减少引用计数
+    Py_DECREF(old_key);
+    //返回DISCARD_FOUND
+    return DISCARD_FOUND;
+}</code></pre><p><strong>可以看到集合添加、删除元素和字典是有些相似的，毕竟底层都是使用了hash表嘛。</strong></p>
+<h3 id="集合的运算-交集"><a href="#集合的运算-交集" class="headerlink" title="集合的运算(交集)"></a>集合的运算(交集)</h3><p><strong>在python中使用集合的时候，可以取两个集合的交集、并集、差集、对称差集等等，这里介绍一下交集，其余的可以自行看源码研究<code>(Objects/setobject.c)</code>。</strong></p>
+<pre><code>static PyObject *
+set_intersection(PySetObject *so, PyObject *other)
+{        
+    //result，显然是用来存储两者交集运算的结果的
+    PySetObject *result;
+    //不看下面代码的话，很难知道这几个PyObject * 是用来干啥的
+    //我们下面代码再看看这是干啥的
+    PyObject *key, *it, *tmp;
+    //这个肯定是hash值
+    Py_hash_t hash;
+    int rv;
+
+    //如果两个对象一样
+    if ((PyObject *)so == other)
+        //直接返回其中一个的拷贝即可
+        return set_copy(so);
+
+    //这行代码表示创建一个空的PySetObject *
+    result = (PySetObject *)make_new_set_basetype(Py_TYPE(so), NULL);
+    //如果result == NULL，说明创建失败
+    if (result == NULL)
+        return NULL;
+
+    //检测other是不是PySetObject *
+    if (PyAnySet_Check(other)) {
+        //初始索引为0
+        Py_ssize_t pos = 0;
+        //setentry *
+        setentry *entry;
+
+        //如果other元素的个数大于so
+        if (PySet_GET_SIZE(other) &gt; PySet_GET_SIZE(so)) {
+            //就把so和other进行交换
+            tmp = (PyObject *)so;
+            so = (PySetObject *)other;
+            other = tmp;
+        }
+
+        //从少的那一方的开头开始便利
+        while (set_next((PySetObject *)other, &amp;pos, &amp;entry)) {
+            //拿到key和hash
+            key = entry-&gt;key;
+            hash = entry-&gt;hash;
+            //传入other的key和hash，在so中去找
+            rv = set_contains_entry(so, key, hash);
+            if (rv &lt; 0) {
+                //如果对应的rv不存在，那么显然就没有
+                Py_DECREF(result);
+                return NULL;
+            }
+            if (rv) {
+                //存在的话设置进result里面
+                if (set_add_entry(result, key, hash)) {
+                    Py_DECREF(result);
+                    return NULL;
+                }
+            }
+        }
+        //直接返回
+        return (PyObject *)result;
+    }
+
+    //如果不是PyObject *
+    //那么获取其对应的迭代器，相当于python中的__iter__
+    it = PyObject_GetIter(other);
+    //如果是NULL，降低其引用计数
+    if (it == NULL) {
+        Py_DECREF(result);
+        //返回NULL
+        return NULL;
+    }
+
+    //下面的没必要分析了，在python中，只能set和set(或者frozenset)之间才可以取交集
+    while ((key = PyIter_Next(it)) != NULL) {
+        hash = PyObject_Hash(key);
+        if (hash == -1)
+            goto error;
+        rv = set_contains_entry(so, key, hash);
+        if (rv &lt; 0)
+            goto error;
+        if (rv) {
+            if (set_add_entry(result, key, hash))
+                goto error;
+        }
+        Py_DECREF(key);
+    }
+    Py_DECREF(it);
+    if (PyErr_Occurred()) {
+        Py_DECREF(result);
+        return NULL;
+    }
+    return (PyObject *)result;
+  error:
+    Py_DECREF(it);
+    Py_DECREF(result);
+    Py_DECREF(key);
+    return NULL;
+}</code></pre><h3 id="集合小结"><a href="#集合小结" class="headerlink" title="集合小结"></a>集合小结</h3><p><strong>可以看到，剖析集合的时候话很少。主要是有了剖析字典的经验，因此再剖析集合的时候就很简单了。并且在Python中还有一个frozenset，就是不可变的集合。但是不像列表和元组，元组还是有很多特殊的，并不单单只是不可变的列表，从具有自己独自的结构体就能看出来。而frozenset对象和set对象都是一个结构体，只有一个PySetObject，没有PyFrozenSetObject。我们在看PySetObject的时候，发现里面有一个hash成员，如果是frozenset的话，那么hash值是不为-1的，因为它不可以添加、删除元素，是不可变对象。由于比较相似，因此frozenset就不再说了，可以自己源码中研究，位置还是<code>Object/setobject.c</code>。</strong></p>
+<h2 id="まとめ"><a href="#まとめ" class="headerlink" title="まとめ"></a>まとめ</h2><p><strong>所以这一次我们就分析的字典的底层结构，解释了为什么字典的搜索这么快，并分析哈希表的实现，以及在发生冲突时的处理办法。另外，由于集合也是使用了哈希表，所以我们就放在一块说了。</strong></p>
+<p><strong>还是吐槽一下Typora这个Markdown编辑器，虽然用的很舒服、并且还免费，但是字数一多就会非常卡，使用体验就瞬间不好了，所以能优化一下就好了。不过吐槽归吐槽，既然都让免费使用了，那么还是要怀着一颗感恩的心的。</strong></p>
+<p>posted @  2020-08-14 16:50  <a href="https://www.cnblogs.com/traditional/" target="_blank" rel="noopener">古明地盆</a>  阅读(427)  评论(0)  <a href="https://i.cnblogs.com/EditPosts.aspx?postid=13503114" target="_blank" rel="noopener">编辑</a>  <a href="https://www.cnblogs.com/traditional/p/13503114.html" target="_blank" rel="noopener">收藏</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-1003/" rel="prev" title="《深度剖析CPython解释器》7. 解密Python中字符串的底层实现，以及相关操作 - 古明地盆 - 博客园">
+      <i class="fa fa-chevron-left"></i> 《深度剖析CPython解释器》7. 解密Python中字符串的底层实现，以及相关操作 - 古明地盆 - 博客园
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-1004/" rel="next" title="《深度剖析CPython解释器》8. 解密Python中列表的底层实现，通过源码分析列表支持的相关操作 - 古明地盆 - 博客园">
+      《深度剖析CPython解释器》8. 解密Python中列表的底层实现，通过源码分析列表支持的相关操作 - 古明地盆 - 博客园 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#《深度剖析CPython解释器》9-解密Python中字典和集合的底层实现，深度分析哈希表-古明地盆-博客园"><span class="nav-number"></span> <span class="nav-text">《深度剖析CPython解释器》9. 解密Python中字典和集合的底层实现，深度分析哈希表 - 古明地盆 - 博客园</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#《深度剖析CPython解释器》9-解密Python中字典和集合的底层实现，深度分析哈希表"><span class="nav-number"></span> <span class="nav-text">《深度剖析CPython解释器》9. 解密Python中字典和集合的底层实现，深度分析哈希表</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#楔子"><span class="nav-number"></span> <span class="nav-text">楔子</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#基本使用"><span class="nav-number"></span> <span class="nav-text">基本使用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#初识哈希表"><span class="nav-number"></span> <span class="nav-text">初识哈希表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#字典的底层结构–PyDictObject"><span class="nav-number"></span> <span class="nav-text">字典的底层结构–PyDictObject</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#容量策略"><span class="nav-number">1.</span> <span class="nav-text">容量策略</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#内存优化"><span class="nav-number">2.</span> <span class="nav-text">内存优化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#小结"><span class="nav-number">3.</span> <span class="nav-text">小结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#深入哈希表"><span class="nav-number"></span> <span class="nav-text">深入哈希表</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#哈希值"><span class="nav-number">1.</span> <span class="nav-text">哈希值</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#哈希冲突"><span class="nav-number">2.</span> <span class="nav-text">哈希冲突</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#分离链接法"><span class="nav-number">2.1.</span> <span class="nav-text">分离链接法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#开放寻址法"><span class="nav-number">2.2.</span> <span class="nav-text">开放寻址法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#探测函数"><span class="nav-number">2.3.</span> <span class="nav-text">探测函数</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#哈希攻击"><span class="nav-number">3.</span> <span class="nav-text">哈希攻击</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#元素删除"><span class="nav-number">4.</span> <span class="nav-text">元素删除</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PyDictObject的创建与维护"><span class="nav-number"></span> <span class="nav-text">PyDictObject的创建与维护</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#PyDictObject的创建"><span class="nav-number">1.</span> <span class="nav-text">PyDictObject的创建</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#插入元素"><span class="nav-number">2.</span> <span class="nav-text">插入元素</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#删除元素"><span class="nav-number">3.</span> <span class="nav-text">删除元素</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PyDictObject缓存池"><span class="nav-number"></span> <span class="nav-text">PyDictObject缓存池</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PySetObject"><span class="nav-number"></span> <span class="nav-text">PySetObject</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#PySetObject对象的创建"><span class="nav-number">1.</span> <span class="nav-text">PySetObject对象的创建</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#插入元素-1"><span class="nav-number">2.</span> <span class="nav-text">插入元素</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PySetObject扩容"><span class="nav-number">3.</span> <span class="nav-text">PySetObject扩容</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#删除元素-1"><span class="nav-number">4.</span> <span class="nav-text">删除元素</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#集合的运算-交集"><span class="nav-number">5.</span> <span class="nav-text">集合的运算(交集)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#集合小结"><span class="nav-number">6.</span> <span class="nav-text">集合小结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#まとめ"><span class="nav-number"></span> <span class="nav-text">まとめ</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

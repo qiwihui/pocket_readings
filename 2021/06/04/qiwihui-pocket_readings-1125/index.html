@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Best Practices Around Production Ready Web Apps with Docker Compose">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Best Practices Around Production Ready Web Apps with Docker Compose">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/06/04/qiwihui-pocket_readings-1125/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="Best Practices Around Production Ready Web Apps with Docker Compose">
+<meta property="og:image" content="https://nickjanetakis.com/assets/blog/cards/best-practices-around-production-ready-web-apps-with-docker-compose-267138266dda41b54a5aade157cded2ad560dafd34f7933ad5a34451b76fff47.jpg">
+<meta property="article:published_time" content="2021-06-04T05:23:34.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.406Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://nickjanetakis.com/assets/blog/cards/best-practices-around-production-ready-web-apps-with-docker-compose-267138266dda41b54a5aade157cded2ad560dafd34f7933ad5a34451b76fff47.jpg">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/06/04/qiwihui-pocket_readings-1125/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>Best Practices Around Production Ready Web Apps with Docker Compose | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/06/04/qiwihui-pocket_readings-1125/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Best Practices Around Production Ready Web Apps with Docker Compose
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-06-04 05:23:34" itemprop="dateCreated datePublished" datetime="2021-06-04T05:23:34+00:00">2021-06-04</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">Best Practices Around Production Ready Web Apps with Docker Compose</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Here’s a few patterns I’ve picked up based on using Docker since 2014. I’ve extracted these from doing a bunch of freelance work.<br><br><br><br>Tags: docker, engineering<br><br><br><br>via Pocket <a href="https://ift.tt/3yWJGWi" target="_blank" rel="noopener">https://ift.tt/3yWJGWi</a> original site<br><br><br><br>June 04, 2021 at 01:22PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1125#issuecomment-854368004" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>6/4/2021</strong></p>
+</blockquote>
+<h2 id="Best-Practices-Around-Production-Ready-Web-Apps-with-Docker-Compose-by-nickjanetakis"><a href="#Best-Practices-Around-Production-Ready-Web-Apps-with-Docker-Compose-by-nickjanetakis" class="headerlink" title="Best Practices Around Production Ready Web Apps with Docker Compose by @nickjanetakis"></a>Best Practices Around Production Ready Web Apps with Docker Compose by @nickjanetakis</h2><p>Updated on June 1st, 2021 in <a href="https://nickjanetakis.com/blog/tag/docker-tips-tricks-and-tutorials" target="_blank" rel="noopener">#docker,</a> <a href="https://nickjanetakis.com/blog/tag/elixir-tips-tricks-and-tutorials" target="_blank" rel="noopener">#elixir,</a> <a href="https://nickjanetakis.com/blog/tag/flask-tips-tricks-and-tutorials" target="_blank" rel="noopener">#flask,</a> <a href="https://nickjanetakis.com/blog/tag/javascript-tips-tricks-and-tutorials" target="_blank" rel="noopener">#javascript,</a> <a href="https://nickjanetakis.com/blog/tag/rails-tips-tricks-and-tutorials" target="_blank" rel="noopener">#rails</a></p>
+<h1 id="Best-Practices-Around-Production-Ready-Web-Apps-with-Docker-Compose"><a href="#Best-Practices-Around-Production-Ready-Web-Apps-with-Docker-Compose" class="headerlink" title="Best Practices Around Production Ready Web Apps with Docker Compose"></a>Best Practices Around Production Ready Web Apps with Docker Compose</h1><p><img src="https://nickjanetakis.com/assets/blog/cards/best-practices-around-production-ready-web-apps-with-docker-compose-267138266dda41b54a5aade157cded2ad560dafd34f7933ad5a34451b76fff47.jpg" alt="blog/cards/best-practices-around-production-ready-web-apps-with-docker-compose.jpg"></p>
+<h2 id="Here’s-a-few-patterns-I’ve-picked-up-based-on-using-Docker-since-2014-I’ve-extracted-these-from-doing-a-bunch-of-freelance-work"><a href="#Here’s-a-few-patterns-I’ve-picked-up-based-on-using-Docker-since-2014-I’ve-extracted-these-from-doing-a-bunch-of-freelance-work" class="headerlink" title="Here’s a few patterns I’ve picked up based on using Docker since 2014. I’ve extracted these from doing a bunch of freelance work."></a>Here’s a few patterns I’ve picked up based on using Docker since 2014. I’ve extracted these from doing a bunch of freelance work.</h2><p><strong>Quick Jump:</strong> <a href="https://nickjanetakis.com/#example-web-apps-using-docker-docker-compose" target="_blank" rel="noopener">Example Web Apps Using Docker / Docker Compose</a> | <a href="https://nickjanetakis.com/#docker-compose" target="_blank" rel="noopener">Docker Compose</a> | <a href="https://nickjanetakis.com/#your-web-app" target="_blank" rel="noopener">Your Web App</a> | <a href="https://nickjanetakis.com/#dockerfile" target="_blank" rel="noopener">Dockerfile</a> | <a href="https://nickjanetakis.com/#git-and-docker-ignore-files" target="_blank" rel="noopener">Git and Docker Ignore Files</a> | <a href="https://nickjanetakis.com/#closing-thoughts" target="_blank" rel="noopener">Closing Thoughts</a></p>
+<p>On May 27th, 2021 I gave a live demo for <a href="https://docker.events.cube365.net/dockercon-live/2021/content/Videos/4PzxBXpsYqDquSFzY" target="_blank" rel="noopener">DockerCon 21</a>. It was a 29 minute talk where I covered a bunch of Docker Compose and Dockerfile patterns that I’ve been using and tweaking for years while developing and deploying web applications.</p>
+<p>It’s pretty much 1 big live demo where we look at these patterns applied to a multi-service Flask application but I also reference a few other example apps written in different languages using different web frameworks (more on this soon).</p>
+<p><strong>If you prefer video instead of reading, <a href="https://www.youtube.com/watch?v=T--X3v2pwtU" target="_blank" rel="noopener">here’s the video on YouTube with timestamps</a></strong>. This is the director’s cut which has 4 extra minutes of content that had to be cut out from DockerCon due to a lack of time.</p>
+<p>This post is a written form of the video. The talk goes into more detail on some topics, but I’ve occasionally expanded on certain topics here in written form because even the director’s cut version was pressed for time at the time I recorded it.</p>
+<p><em>As a disclaimer, these are all personal opinions. I’m not trying to say everything I’m doing is perfect but I will say that all of these things have worked very nicely so far in both development and production for both my personal and client’s projects.</em></p>
+<h3 id="Example-Web-Apps-Using-Docker-Docker-Compose"><a href="#Example-Web-Apps-Using-Docker-Docker-Compose" class="headerlink" title="Example Web Apps Using Docker / Docker Compose"></a>Example Web Apps Using Docker / Docker Compose</h3><p>A majority of the patterns are applied exactly the same with any language and web framework and I just want to quickly mention that I’m in the process of putting together example apps for a bunch of languages and frameworks.</p>
+<p>All of them pull together a few common services like running a web app, background worker (if applicable), PostgreSQL, Redis and Webpack.</p>
+<h5 id="A-few-ready-to-go-example-web-apps-using-Docker"><a href="#A-few-ready-to-go-example-web-apps-using-Docker" class="headerlink" title="A few ready to go example web apps using Docker:"></a>A few ready to go example web apps using Docker:</h5><ul>
+<li><a href="https://github.com/nickjj/docker-flask-example" target="_blank" rel="noopener">https://github.com/nickjj/docker-flask-example</a></li>
+<li><a href="https://github.com/nickjj/docker-django-example" target="_blank" rel="noopener">https://github.com/nickjj/docker-django-example</a></li>
+<li><a href="https://github.com/nickjj/docker-rails-example" target="_blank" rel="noopener">https://github.com/nickjj/docker-rails-example</a></li>
+<li><a href="https://github.com/nickjj/docker-phoenix-example" target="_blank" rel="noopener">https://github.com/nickjj/docker-phoenix-example</a></li>
+<li><a href="https://github.com/nickjj/docker-node-example" target="_blank" rel="noopener">https://github.com/nickjj/docker-node-example</a></li>
+<li><a href="https://github.com/oleksandra-holovina/docker-play-example" target="_blank" rel="noopener">https://github.com/oleksandra-holovina/docker-play-example</a></li>
+</ul>
+<p>As for the Play example, I want to give a huge shout out to <a href="https://www.linkedin.com/in/oleksandra-holovina-287740b0" target="_blank" rel="noopener">Lexie</a>.</p>
+<p>She’s a software engineer who primarily works with Scala and by sheer luck we ended up getting in contact about something unrelated to Docker. Long story short, after a few pair programming sessions it was ready to go. There’s no way that Play example app could have existed without her help and expertise.</p>
+<h3 id="Docker-Compose"><a href="#Docker-Compose" class="headerlink" title="Docker Compose"></a>Docker Compose</h3><p>Let’s start off with a few patterns, tips and best practices around using Docker Compose in both development and production.</p>
+<h4 id="Dropping-the-version-property-at-the-top-of-the-file"><a href="#Dropping-the-version-property-at-the-top-of-the-file" class="headerlink" title="Dropping the version property at the top of the file"></a>Dropping the <code>version</code> property at the top of the file</h4><p>The <a href="https://github.com/compose-spec/compose-spec/blob/master/spec.md#version-top-level-element" target="_blank" rel="noopener">Docker Compose spec</a> mentions that the <code>version</code> property is deprecated and it’s only being defined in the spec for backwards compatibility. It’s informative only.</p>
+<p>Prior to this it was common to define <code>version: &quot;3.8&quot;</code> or whatever API version you wanted to target because it controlled which properties were available. With Docker Compose v1.27+ you can drop it all together, yay for deleting code!</p>
+<p>It seems like we’ve gone full circle back to the days when Docker Compose used to be called <a href="https://github.com/aanand/fig" target="_blank" rel="noopener">Fig</a> and version 1 had no <code>version</code> definition.</p>
+<h4 id="Avoiding-2-Compose-Files-for-Dev-and-Prod-with-an-Override-File"><a href="#Avoiding-2-Compose-Files-for-Dev-and-Prod-with-an-Override-File" class="headerlink" title="Avoiding 2 Compose Files for Dev and Prod with an Override File"></a>Avoiding 2 Compose Files for Dev and Prod with an Override File</h4><p>On the topic of development / production parity I like using the same <code>docker-compose.yml</code> in all environments. But this gets interesting when you want to run certain containers in development but not in production.</p>
+<p>For example you might want to run a Webpack watcher in development but only serve your bundled assets in production. Or perhaps you want to use a managed PostgreSQL database in production but run PostgreSQL locally in a container for development.</p>
+<p>You can solve these types of problems with a <code>docker-compose.override.yml</code> file.</p>
+<p>The basic idea is you could create that file and add something like this to it:</p>
+<pre><code>services:
+  webpack:
+    build:
+      context: &quot;.&quot;
+      target: &quot;webpack&quot;
+      args:
+        - &quot;NODE_ENV=${NODE_ENV:-production}&quot;
+    command: &quot;yarn run watch&quot;
+    env_file:
+      - &quot;.env&quot;
+    volumes:
+      - &quot;.:/app&quot;</code></pre><p>It’s a standard Docker Compose file, and by default when you run a <code>docker-compose up</code> then Docker Compose will merge both your <code>docker-compose.yml</code> file and <code>docker-compose.override.yml</code> into 1 unit that gets run. This happens automatically.</p>
+<p>Then you could add this override file to your <code>.gitignore</code> file so when you push your code to production (let’s say a VPS that you’ve set up) it won’t be there and voila, you’ve just created a pattern that lets you run something in dev but not in prod without having to duplicate a bunch of services and create a <code>docker-compose-dev.yml</code> + <code>docker-compose-prod.yml</code> file.</p>
+<p>For developer convenience you can also add a <code>docker-compose.override.yml.example</code> to your repo that isn’t ignored from version control and now all you have to do is <code>cp docker-compose.override.yml.example docker-compose.override.yml</code> to use the real override file when cloning down the project. This is handy in both dev and CI.</p>
+<h4 id="Reducing-Service-Duplication-with-Aliases-and-Anchors"><a href="#Reducing-Service-Duplication-with-Aliases-and-Anchors" class="headerlink" title="Reducing Service Duplication with Aliases and Anchors"></a>Reducing Service Duplication with Aliases and Anchors</h4><p>This can be done using YAML’s aliases and anchors feature along with extension fields from Docker Compose. I’ve written about this in detail in <a href="https://nickjanetakis.com/blog/docker-tip-82-using-yaml-anchors-and-x-properties-in-docker-compose" target="_blank" rel="noopener">Docker Tip #82</a>.</p>
+<p>But here’s the basic idea, you can define this in your <code>docker-compose.yml</code> file:</p>
+<pre><code>x-app: &amp;default-app
+  build:
+    context: &quot;.&quot;
+    target: &quot;app&quot;
+    args:
+      - &quot;FLASK_ENV=${FLASK_ENV:-production}&quot;
+      - &quot;NODE_ENV=${NODE_ENV:-production}&quot;
+  depends_on:
+    - &quot;postgres&quot;
+    - &quot;redis&quot;
+  env_file:
+    - &quot;.env&quot;
+  restart: &quot;${DOCKER_RESTART_POLICY:-unless-stopped}&quot;
+  stop_grace_period: &quot;3s&quot;
+  tty: true
+  volumes:
+    - &quot;${DOCKER_WEB_VOLUME:-./public:/app/public}&quot;</code></pre><p>And then in your Docker Compose services, you can use it like this:</p>
+<pre><code>web:
+  &lt;&lt;: *default-app
+  ports:
+    - &quot;${DOCKER_WEB_PORT_FORWARD:-127.0.0.1:8000}:8000&quot;
+
+worker:
+  &lt;&lt;: *default-app
+  command: celery -A &quot;hello.app.celery_app&quot; worker -l &quot;${CELERY_LOG_LEVEL:-info}&quot;</code></pre><p>That’s going to apply all of the first code snippet of properties to both the <code>web</code> and <code>worker</code> services. This avoids having to duplicate those ~15 lines of properties.</p>
+<p>You can also override an aliased property in a specific service which lets you customize it. In the above example you could set <code>stop_grace_period: &quot;10s&quot;</code> for just the <code>worker</code> service if you wanted to. It’ll take precedence over what’s in the alias.</p>
+<p>This pattern is especially handy in cases like this where 2 services might use the same Dockerfile and code base but have other minor differences.</p>
+<p><em>As an aside, I’m going to be showing relevant lines of code for each topic so what you see in each section isn’t everything included. You can check out the <a href="https://github.com/nickjj?tab=repositories&q=docker-%5C*-example" target="_blank" rel="noopener">GitHub repos</a> for the full code examples.</em></p>
+<h4 id="Defining-your-HEALTHCHECK-in-Docker-Compose-not-your-Dockerfile"><a href="#Defining-your-HEALTHCHECK-in-Docker-Compose-not-your-Dockerfile" class="headerlink" title="Defining your HEALTHCHECK in Docker Compose not your Dockerfile"></a>Defining your HEALTHCHECK in Docker Compose not your Dockerfile</h4><p>Overall I try not to make assumptions about where I might deploy my apps to. It could be on a single VPS using Docker Compose, a Kubernetes cluster or maybe even Heroku.</p>
+<p>In all 3 cases I’ll be using Docker but how they run is drastically different.</p>
+<p>That means I prefer defining my health check in the <code>docker-compose.yml</code> file instead of a <code>Dockerfile</code>. Technically Kubernetes will disable a <code>HEALTHCHECK</code> if it finds one in your Dockerfile because it has its own readiness checks but the takeaway here is if we can avoid potential issues then we should. We shouldn’t depend on other tools disabling things.</p>
+<p>Here’s what a health check looks like when defining it in a <code>docker-compose.yml</code> file:</p>
+<pre><code>web:
+  &lt;&lt;: *default-app
+  healthcheck:
+    test: &quot;${DOCKER_WEB_HEALTHCHECK_TEST:-curl localhost:8000/up}&quot;
+    interval: &quot;60s&quot;
+    timeout: &quot;3s&quot;
+    start_period: &quot;5s&quot;
+    retries: 3</code></pre><p>What’s neat about this pattern is it allows us to adjust our health check in development vs production since the health check gets set at runtime.</p>
+<p>This is done using environment variables which we’ll talk more about soon but the takeaway for now is in development we can define a health check which does <code>/bin/true</code> instead of the default <code>curl localhost:8000/up</code> health check.</p>
+<p>That means in dev we won’t get barraged by log output related to the health check firing every minute. Instead <code>/bin/true</code> will run which is pretty much a no-op. It’s a very fast running command that returns exit code 0 which will make the health check pass.</p>
+<h4 id="Making-the-most-of-environment-variables"><a href="#Making-the-most-of-environment-variables" class="headerlink" title="Making the most of environment variables"></a>Making the most of environment variables</h4><p>Before we get into this, one common pattern here is we’ll have an <code>.env</code> file in our code repo that’s ignored from version control. This file will have a combination of secrets along with anything that might change between development and production.</p>
+<p>We’ll also include an <code>.env.example</code> file that is commit to version control which has non-secret environment variables so that in development and CI it’s very easy to get up and running by copying this file to <code>.env</code> with <code>cp .env.example .env</code>.</p>
+<p>Here’s a snippet from an example env file:</p>
+<pre><code># Which environment is running? These should be &quot;development&quot; or &quot;production&quot;.
+#export FLASK_ENV=production
+#export NODE_ENV=production
+export FLASK_ENV=development
+export NODE_ENV=development</code></pre><p>For documentation I like commenting out what the default value is. This way when it’s being overwritten we know exactly what’s it’s being changed to.</p>
+<p>Speaking of defaults, I try to stick to using what I want the values to be in production. This reduces human mistakes because it means in production you only need to set a few environment variables (secrets, a handful of others, etc.).</p>
+<p>In development it doesn’t matter how many we override because that can all be set up and configured in the example file beforehand.</p>
+<p>All in all when you combine environment variables with Docker Compose and build args with your Dockerfile you can use the same code in all environments while only changing a few env variables.</p>
+<p>Going back to our theme of dev / prod parity we can really take advantage of environment variables in our <code>docker-compose.yml</code> file.</p>
+<p>You can define environment variables in this file by setting something like <code>${FLASK_ENV}</code>. By default Docker Compose will look for an <code>.env</code> file in the same location as your <code>docker-compose.yml</code> file to find and use that env var’s value.</p>
+<p>It’s also a good idea to set a default value in case it’s not defined which you can do with <code>${FLASK_ENV:-production}</code>. It uses the same syntax as shell scripting, except it’s more limited than shell scripting since you can’t nest variables as another variable’s default value.</p>
+<p>Here’s a few common and useful ways to take advantage of environment variables.</p>
+<h5 id="Controlling-which-health-check-to-use"><a href="#Controlling-which-health-check-to-use" class="headerlink" title="Controlling which health check to use:"></a>Controlling which health check to use:</h5><pre><code>web:
+  healthcheck:
+    test: &quot;${DOCKER_WEB_HEALTHCHECK_TEST:-curl localhost:8000/up}&quot;
+    interval: &quot;60s&quot;
+    timeout: &quot;3s&quot;
+    start_period: &quot;5s&quot;
+    retries: 3</code></pre><p>We covered this one before.</p>
+<p>By default it runs the curl command but in our <code>.env</code> file we can set <code>export DOCKER_WEB_HEALTHCHECK_TEST=/bin/true</code> in development.</p>
+<p>If you’re wondering why I use <code>export ...</code> in all of my <code>.env</code> files it’s so that I can <code>source .env</code> in other scripts which comes in handy when creating project specific shell scripts. I’ve created a <a href="https://nickjanetakis.com/blog/replacing-make-with-a-shell-script-for-running-your-projects-tasks" target="_blank" rel="noopener">separate video on that topic</a>. Docker Compose 1.26+ is compatible with <code>export</code>.</p>
+<h5 id="Publishing-ports-more-securely-in-production"><a href="#Publishing-ports-more-securely-in-production" class="headerlink" title="Publishing ports more securely in production:"></a>Publishing ports more securely in production:</h5><pre><code>web:
+  ports:
+    - &quot;${DOCKER_WEB_PORT_FORWARD:-127.0.0.1:8000}:8000&quot;</code></pre><p>In the past I’ve written about how I like <a href="https://nickjanetakis.com/blog/why-i-prefer-running-nginx-on-my-docker-host-instead-of-in-a-container" target="_blank" rel="noopener">running nginx outside of Docker directly on the Docker host</a> and using this pattern ensures that the web’s port won’t be accessible to anyone on the public internet.</p>
+<p>By default it’s restricted to only allow connections from localhost, which is where nginx would be running on a single server deploy. That prevents folks on the internet from accessing <code>example.com:8000</code> without needing to set up a cloud firewall to block what’s been set by Docker in your iptables rules.</p>
+<p>Even if you do set up a cloud firewall with restricted ports I would still do this. It’s another layer of security and security is all about layers.</p>
+<p>And in dev you can set <code>export DOCKER_WEB_PORT_FORWARD=8000</code> in the <code>.env</code> file to allow connections from anywhere. That’s handy if you’re running Docker in a self managed VM instead of using Docker Desktop or in cases where you want to access your site on multiple devices (laptop, iPad, etc.) on your local network.</p>
+<h5 id="Taking-advantage-of-Docker’s-restart-policies"><a href="#Taking-advantage-of-Docker’s-restart-policies" class="headerlink" title="Taking advantage of Docker’s restart policies:"></a>Taking advantage of Docker’s restart policies:</h5><pre><code>web:
+  restart: &quot;${DOCKER_RESTART_POLICY:-unless-stopped}&quot;</code></pre><p>Using <code>unless-stopped</code> in production will make sure that your containers will come up after rebooting your box or if they crash in such a way that they can be recovered by restarting the process / container.</p>
+<p>But in development it would be a bit crazy if you rebooted your dev box and every project you ever created in your entire life came up so we can set <code>export DOCKER_RESTART_POLICY=no</code> to prevent them from starting automatically.</p>
+<h5 id="Switching-up-your-bind-mounts-depending-on-your-environment"><a href="#Switching-up-your-bind-mounts-depending-on-your-environment" class="headerlink" title="Switching up your bind mounts depending on your environment:"></a>Switching up your bind mounts depending on your environment:</h5><pre><code>web:
+  volumes:
+    - &quot;${DOCKER_WEB_VOLUME:-./public:/app/public}&quot;</code></pre><p>If you plan to access your static files (css, js, images, etc.) from nginx that’s not running in a container then a bind mount is a reasonable choice.</p>
+<p>This way we only volume mount in our <code>public/</code> directory which is where those files would be located. That location might be different depending on which web framework you use and in most of the <a href="https://github.com/nickjj?tab=repositories&q=docker-*-example" target="_blank" rel="noopener">example apps</a> I try to use <code>public/</code> when I can.</p>
+<p>This mount itself could be read-only or a read-write mount based on whether or not you plan to support uploading files directly to disk in your app.</p>
+<p>But in development you can set <code>export DOCKER_WEB_VOLUME=.:/app</code> so you can benefit from having code updates without having to rebuild your image(s).</p>
+<h5 id="Limiting-CPU-and-memory-resources-of-your-containers"><a href="#Limiting-CPU-and-memory-resources-of-your-containers" class="headerlink" title="Limiting CPU and memory resources of your containers:"></a>Limiting CPU and memory resources of your containers:</h5><pre><code>web:
+  deploy:
+    resources:
+      limits:
+        cpus: &quot;${DOCKER_WEB_CPUS:-0}&quot;
+        memory: &quot;${DOCKER_WEB_MEMORY:-0}&quot;</code></pre><p>If you set <code>0</code> then your services will use as many resources as they need which is effectively the same as not defining these properties. On single server deploys you could probably get by without setting these but with some tech stacks it could be important to set, such as if you use Elixir. That’s because the BEAM (Erlang VM) will gobble up as many resources as it can which could interfere with other services you have running, such as your DB and more.</p>
+<p>Although even for single server deploys with any tech stack it’s useful to know what resources your services require because it can help you pick the correct hardware specs of your server to help eliminate overpaying or under-provisioning your server.</p>
+<p>Also, you’ll be in much better shape to deploy your app into Kubernetes or other container orchestration platforms. That’s because if Kubernetes knows your app uses 75mb of memory it knows it can fit 10 copies of it on a server with 1 GB of memory available.</p>
+<p>Without knowing this information, you may end up wasting resources on your cluster.</p>
+<h3 id="Your-Web-App"><a href="#Your-Web-App" class="headerlink" title="Your Web App"></a>Your Web App</h3><p>We’ve covered a lot of ground around Docker Compose but now let’s switch gears and talk about configuring your application.</p>
+<h4 id="Your-web-server’s-config-file"><a href="#Your-web-server’s-config-file" class="headerlink" title="Your web server’s config file"></a>Your web server’s config file</h4><p>With Flask and other Python based web frameworks you might use gunicorn or uwsgi for your app server. With Rails you might use Puma. Regardless of your tech stack there’s a few things you’ll likely want to configure for your app server.</p>
+<p>I’ll be showing examples from a <code>gunicorn.py</code> file from the Flask example app but you can apply all or most of these anywhere.</p>
+<h5 id="Your-bind-host-and-port"><a href="#Your-bind-host-and-port" class="headerlink" title="Your bind host and port"></a>Your bind host and port</h5><pre><code>bind = f&quot;0.0.0.0:{os.getenv(&apos;PORT&apos;, &apos;8000&apos;)}&quot;</code></pre><p>We’ll bind to <code>0.0.0.0</code> so that you’ll be able to connect to your container from outside of the container. Lots of app servers default to <code>localhost</code> which is a gotcha when working with Docker because it’ll block you from being able to connect from your browser on your dev box. That’s why this value is hard coded, it’s not going to change.</p>
+<p>When it comes to the port, I like making this configurable and even more importantly I chose to use <code>PORT</code> as the name because it’s what Heroku uses. Whenever possible I try to make decisions that make my apps able to be hosted on a wide range of services. In this case it’s an easy win.</p>
+<h5 id="Workers-and-threads"><a href="#Workers-and-threads" class="headerlink" title="Workers and threads:"></a>Workers and threads:</h5><pre><code>workers = int(os.getenv(&quot;WEB_CONCURRENCY&quot;, multiprocessing.cpu_count() * 2))
+threads = int(os.getenv(&quot;PYTHON_MAX_THREADS&quot;, 1))</code></pre><p>With Python, Ruby and some other languages your worker and thread count control how many requests per second your app server can serve. The more you have, the more concurrency you can handle at the cost of using more memory and CPU resources.</p>
+<p>Similar to the <code>PORT</code>, the naming convention for both env vars are based on Heroku’s names.</p>
+<p>In the case of the workers, it defaults to twice as many vCPUs you have on the host. This is nice because it means if you upgrade servers later on you don’t need to worry about updating any configuration, not even an env variable.</p>
+<p>But it’s still configurable with an env variable if you want to override that value.</p>
+<p>In development I set both of these values to 1 in the <code>.env.example</code> because it’s easier to debug an app that doesn’t fork under the hood. You’ll see both are set to 1 in the example apps that have app servers which support these options.</p>
+<h5 id="Code-reloading-or-no"><a href="#Code-reloading-or-no" class="headerlink" title="Code reloading or no?"></a>Code reloading or no?</h5><pre><code>from distutils.util import strtobool
+
+reload = bool(strtobool(os.getenv(&quot;WEB_RELOAD&quot;, &quot;false&quot;)))</code></pre><p>Certain web frameworks and app servers handle code reloading differently. With gunicorn you’ll need to explicitly configure gunicorn to do code reloading or not.</p>
+<p>This is prime pickings for an environment variable. Here we can default to <code>false</code> for production but then for our dev environment in our <code>.env</code> file we can set it to <code>true</code>.</p>
+<h5 id="Log-to-standard-out-stdout"><a href="#Log-to-standard-out-stdout" class="headerlink" title="Log to standard out (stdout):"></a>Log to standard out (stdout):</h5><pre><code>accesslog = &quot;-&quot;</code></pre><p>It’s a good idea to <a href="https://nickjanetakis.com/blog/why-your-web-server-should-log-to-stdout-especially-with-docker" target="_blank" rel="noopener">log to stdout</a> instead of a file on disk when working with Docker because if you log to disk it’ll disappear as soon as you stop and remove your container.</p>
+<p>Instead, if you log to stdout you can configure Docker to persist your logs however you see fit. You could log to journald and then explore your logs with <code>journalctl</code> (great for single server deploys) or have your logs get sent to CloudWatch on AWS or any 3rd party service.</p>
+<p>The takeaway here is all of your apps can log to stdout and then you can handle logging at the Docker daemon level in 1 spot.</p>
+<h4 id="Configuring-your-database"><a href="#Configuring-your-database" class="headerlink" title="Configuring your database"></a>Configuring your database</h4><pre><code>pg_user = os.getenv(&quot;POSTGRES_USER&quot;, &quot;hello&quot;)
+pg_pass = os.getenv(&quot;POSTGRES_PASSWORD&quot;, &quot;password&quot;)
+pg_host = os.getenv(&quot;POSTGRES_HOST&quot;, &quot;postgres&quot;)
+pg_port = os.getenv(&quot;POSTGRES_PORT&quot;, &quot;5432&quot;)
+pg_db = os.getenv(&quot;POSTGRES_DB&quot;, pg_user)
+
+db = f&quot;postgresql://{pg_user}:{pg_pass}@ {pg_host}:{pg_port}/{pg_db}&quot;
+SQLALCHEMY_DATABASE_URI = os.getenv(&quot;DATABASE_URL&quot;, db)</code></pre><p>The above is specific to configuring SQLAlchemy but this same concept applies when using Rails, Django, Phoenix or any other web framework too.</p>
+<p>The idea is to support using <code>POSTGRES_*</code> env variables that match up with what the official PostgreSQL Docker image expects us to set, however the last line is interesting because it lets us pass in a <code>DATABASE_URL</code> which will get used instead of the individual env vars.</p>
+<p>Now, I’m sure you know that the PostgreSQL Docker image expects us to set at least <code>POSTGRES_USER</code> and <code>POSTGRES_PASSWORD</code> in order to work but the above pattern lets us use a managed database outside of Docker in production and a locally running PostgreSQL container in development.</p>
+<p>We can combine this with the override file pattern as well and now we get the best of both worlds. Local development with a local copy of PostgreSQL running in Docker and a managed database of your choosing in production. I went with <code>DATABASE_URL</code> as the name because it’s a convention that a lot of hosting providers use.</p>
+<p>Now configuring your database is as easy as changing an env variable in your <code>.env</code> file.</p>
+<p>In a similar fashion you could also define:<br><code>REDIS_URL = os.getenv(&quot;REDIS_URL&quot;, &quot;redis://redis:6379/0&quot;)</code></p>
+<h4 id="Setting-up-a-health-check-URL-endpoint"><a href="#Setting-up-a-health-check-URL-endpoint" class="headerlink" title="Setting up a health check URL endpoint"></a>Setting up a health check URL endpoint</h4><pre><code>@ page.get(&quot;/up&quot;)
+def up():
+    redis.ping()
+    db.engine.execute(&quot;SELECT 1&quot;)
+    return &quot;&quot;</code></pre><p>A healthy application is a happy application, but seriously having a health check endpoint for your application is a wonderful idea.</p>
+<p>It allows for you to hook up automated tools to visit this endpoint on a set interval and notify you if something abnormal happens, such as not getting an HTTP status code 200 or even notify you if it takes a really long time to get a response.</p>
+<p>The above health check returns a 200 if it’s successful but it also makes sure the app can connect to PostgreSQL and Redis. The PostgreSQL check is nice because it’s proof your DB is up, your app can login with the correct user / password and you have at least read access to the DB. Likewise with Redis, that’s a basic connection test.</p>
+<p>End to end that entire endpoint will likely respond in less than 1ms with most web frameworks so it won’t be a burden on your server.</p>
+<p>I really like having a dedicated health check endpoint because you can do the most minimal work possible to get the results you want. For example, you could hit the home page of your app but if your home page performs 8 database queries and renders 50kb of HTML, that’s kind of wasteful if your health check is going to access that page every minute.</p>
+<p>With the dedicated health check in place now you can use it with Docker Compose, Kubernetes or an external monitoring service like <a href="https://uptimerobot.com/" target="_blank" rel="noopener">Uptime Robot</a>.</p>
+<p>I went with <code>/up</code> as the URL because it’s short and descriptive. In the past I’ve used <code>/healthy</code> but switched to <code>/up</code> after hearing DHH (the creator of Rails) mention that name once. He’s really good at coming up with great names!</p>
+<h3 id="Dockerfile"><a href="#Dockerfile" class="headerlink" title="Dockerfile"></a>Dockerfile</h3><p>Now let’s switch gears and talk a little bit about your <code>Dockerfile</code>. All of concepts we’ll talk about will apply to just about any web framework. It’s really interesting at how similar most of the <a href="https://github.com/nickjj?tab=repositories&q=docker-*-example" target="_blank" rel="noopener">example apps</a> are in terms of Dockerfile configuration.</p>
+<h4 id="Using-Multi-stage-builds-to-optimize-image-size"><a href="#Using-Multi-stage-builds-to-optimize-image-size" class="headerlink" title="Using Multi-stage builds to optimize image size"></a>Using Multi-stage builds to optimize image size</h4><pre><code>FROM node:14.15.5-buster-slim AS webpack
+
+#
+
+FROM python:3.9.2-slim-buster AS app</code></pre><p>The <code>Dockerfile</code> has (2) <code>FROM</code> instructions in it. That’s because there’s 2 different stages. Each stage has a name, which is <code>webpack</code> and <code>app</code>.</p>
+<pre><code>COPY --chown=python:python --from=webpack /app/public /public</code></pre><p>In the Node build stage we build our bundled assets into an <code>/app/public</code> directory, but the above line is being used in the Python build stage which copies those files to <code>/public</code>.</p>
+<p>This lets us take the final assets and make them a part of the Python image without having to install Node, Webpack and 500mb+ worth of packages. We only end up with a few CSS, JS and image files. Then we can volume mount out those files so nginx can read them.</p>
+<p>This is really nice and comes full circle with the override file pattern. Now in production we don’t need to run Webpack because our fully built assets are built into the Python image.</p>
+<p>This is only 1 example of how you can make use of multi-stage builds.</p>
+<p>Both the <a href="https://github.com/oleksandra-holovina/docker-play-example" target="_blank" rel="noopener">Play</a> and <a href="https://github.com/nickjj/docker-phoenix-example" target="_blank" rel="noopener">Phoenix</a> example apps demonstrate how you can make optimized production images because both tech stacks let you create jars and releases which only have the bare minimum necessary to run your app.</p>
+<p>In the end it means we’ll have smaller images to pull and run in production.</p>
+<h4 id="Running-your-container-as-a-non-root-user"><a href="#Running-your-container-as-a-non-root-user" class="headerlink" title="Running your container as a non-root user"></a>Running your container as a non-root user</h4><p>From a security perspective, it’s a good idea to not run your containers as the root user but there’s also other perks like if you happen to use volumes in development with native Linux (or WSL 2 on Windows) you can have your files owned by your dev box’s user without having to do anything too special in your Dockerfile.</p>
+<p><em>I’m only going to include relevant lines to what we’re talking about btw, check out the example apps for a complete Dockerfile reference.</em></p>
+<pre><code># These lines are important but I&apos;ve commented them out to focus going over the other 3 lines.
+# FROM node:14.15.5-buster-slim AS webpack
+# WORKDIR /app/assets
+# RUN mkdir -p /node_modules &amp;&amp; chown node:node -R /node_modules /app
+
+USER node
+
+COPY --chown=node:node assets/package.json assets/*yarn* ./
+
+RUN yarn install</code></pre><p>The above is a snippet from the Webpack build stage of the Flask example app.</p>
+<p>By default the official Node image creates a <code>node</code> user for you but it’s not switched to it by default. Using <code>USER node</code> will switch to it and now every instruction after that will be executed as the <code>node</code> user assuming the instruction supports the idea of a user.</p>
+<p>There’s a gotcha here around using <code>COPY</code> too. Even if you set the user, you need to explicitly <code>--chown</code> the files being copied to that user. If you didn’t do that step they’ll still be owned as <code>root:root</code>.</p>
+<h5 id="What-about-volume-mounted-files-in-development"><a href="#What-about-volume-mounted-files-in-development" class="headerlink" title="What about volume mounted files in development?"></a>What about volume mounted files in development?</h5><p>Good question! You might think that volume mounted files will be owned by the <code>node:node</code> user and group on your dev box which likely won’t exist, so you’ll end up with errors.</p>
+<p>But fortunately it doesn’t work exactly like that.</p>
+<p>The <code>node</code> user in the Docker image has a <code>uid:gid</code> (user id and group id) of <code>1000:1000</code>. If you’re running native Linux or are using WSL 2 on Windows, chances are your user account also has <code>1000:1000</code> as its <code>uid:gid</code> because that is a standard Unix convention since it’s the first user account created on the system. You can check by running <code>id</code> from your terminal.</p>
+<p>Basically what this means is even though the files are owned by <code>node:node</code> in the image, when they’re bind mounted back to your dev box they will be owned by your dev box’s user because the <code>1000:1000</code> matches on both sides of the mount.</p>
+<p>If you’re using macOS with Docker Desktop it’ll work too. Technically your <code>uid:gid</code> probably isn’t <code>1000:1000</code> on macOS but Docker Desktop will make sure the permissions work correctly. This also works if you happen to use WSL 1 along with Docker Desktop.</p>
+<p>In production on self managed servers it also works because you’re in full control over your deploy server (likely native Linux). On fully managed servers or container orchestration platforms typically you wouldn’t be using bind mounts so it’s a non-issue.</p>
+<p>The only place this typically doesn’t work is on CI servers because you can’t control the <code>uid:gid</code> of the CI user. But in practice this doesn’t end up being an issue because you can disable the mounts in CI. All of the <a href="https://github.com/nickjj?tab=repositories&q=docker-*-example" target="_blank" rel="noopener">example apps</a> come configured with GitHub Actions and solve this problem.</p>
+<p>If for whatever reason your set up is unique and <code>1000:1000</code> won’t work for you you can get around this by making <code>UID</code> and <code>GID</code> build arguments and pass their values into the <code>useradd</code> command (discussed below). We’ll talk more about build args soon.</p>
+<h5 id="What-about-other-Docker-images-besides-Node"><a href="#What-about-other-Docker-images-besides-Node" class="headerlink" title="What about other Docker images besides Node?"></a>What about other Docker images besides Node?</h5><p>Some official images create a user for you, others do not. For example, in the Dockerfile for the Flask example the Python image does not create a user for you.</p>
+<p>So I’ve created a user with <code>useradd --create-home python</code>.</p>
+<p>I chose <code>python</code> because one pattern I detected is that most official images that create a user for you will name the user based on the image name. If the Python image ever decides to create a user in the future, it means all we would have to do is remove our <code>useradd</code>.</p>
+<h4 id="Customizing-where-package-dependencies-get-installed"><a href="#Customizing-where-package-dependencies-get-installed" class="headerlink" title="Customizing where package dependencies get installed"></a>Customizing where package dependencies get installed</h4><pre><code>RUN mkdir -p /node_modules &amp;&amp; chown node:node -R /node_modules /app</code></pre><p>In the above case, in my <code>.yarnrc</code> file I’ve customized where Node packages will get installed to by adding <code>--modules-folder /node_modules</code> to that file.</p>
+<p>I like this pattern a lot because it means if you <code>yarn install</code> something you won’t end up with a <code>node_modules/</code> directory in your app’s <code>WORKDIR</code>, instead dependencies will be installed to <code>/node_modules</code> in the root of the Docker image which isn’t volume mounted. That means you won’t end up with a billion Node dependencies volume mounted out in development.</p>
+<p>You also don’t need to worry about volume mounts potentially clobbering your installed dependencies in an image (I’ve seen this happen a number of times doing client work).</p>
+<p>The <code>chown node:node</code> is important there because without it our custom <code>/node_modules</code> directory won’t be writeable as the <code>node</code> user. We also do the same for the <code>/app</code> directory because otherwise we’ll get permission errors when we start copying files between multi-stage builds.</p>
+<p>This pattern isn’t limited to <code>yarn</code> too. You can do it with <code>mix</code> in Elixir and <code>composer</code> in PHP. For Python you can install dependencies into your user’s home directory and Ruby installs them on your system path so the same problem gets solved in a different but similar way.</p>
+<h4 id="Taking-advantage-of-layer-caching"><a href="#Taking-advantage-of-layer-caching" class="headerlink" title="Taking advantage of layer caching"></a>Taking advantage of layer caching</h4><pre><code>COPY --chown=node:node assets/package.json assets/*yarn* ./
+
+RUN yarn install
+
+COPY --chown=node:node assets .</code></pre><p>This is Docker 101 stuff but the basic idea is to copy in our package management file (<code>package.json</code> file in this case), install our dependencies and then copy in the rest of our files. We’re triple dipping our first <code>COPY</code> by copying in the <code>yarn.lock</code> and <code>.yarnc</code> files too, since they all go in the same spot and are related to installing our packages.</p>
+<p>This lets Docker cache our dependencies into its own layer so that if we ever change our source code later but not our dependencies we don’t need to re-run <code>yarn install</code> and wait forever while they’re all installed again.</p>
+<p>This pattern works with a bunch of different languages and all of the <a href="https://github.com/nickjj?tab=repositories&q=docker-*-example" target="_blank" rel="noopener">example apps</a> do this.</p>
+<h4 id="Leveraging-tools-like-PostCSS"><a href="#Leveraging-tools-like-PostCSS" class="headerlink" title="Leveraging tools like PostCSS"></a>Leveraging tools like PostCSS</h4><pre><code>COPY --chown=node:node hello /app/hello</code></pre><p>This is in the Webpack stage of all of my example apps and it’s very specific to using PostCSS. If you happen to use TailwindCSS this is really important to set. The <code>hello</code> directory in this case is the Flask app’s name.</p>
+<p>We need to copy the main web app’s source code into this stage so that PurgeCSS can find our HTML / JS templates so it knows what to purge and keep in the final CSS bundle.</p>
+<p>This doesn’t bloat anything in the end because only the final assets get copied over in another build stage. Yay for multi-stage builds!</p>
+<h4 id="Using-build-arguments"><a href="#Using-build-arguments" class="headerlink" title="Using build arguments"></a>Using build arguments</h4><pre><code>ARG NODE_ENV=&quot;production&quot;
+ENV NODE_ENV=&quot;${NODE_ENV}&quot; \
+    USER=&quot;node&quot;
+
+RUN if [ &quot;${NODE_ENV}&quot; != &quot;development&quot; ]; then \
+  yarn run build; else mkdir -p /app/public; fi</code></pre><p>Build arguments let you do neat things like being able to run something specific during build time but only if a certain build argument value is set. They can also let you set environment variables in your image without hard coding their value.</p>
+<p>In the above case <code>NODE_ENV</code> is being set as a build argument, then an env variable is being set with the value of that build arg, and finally production assets are being built in the image only when the <code>NODE_ENV</code> is not development.</p>
+<p>This allows us to generate Webpack bundles in production mode but in development mode a more light weight task will run which is to <code>mkdir</code> that public directory.</p>
+<p>This isn’t the only thing you can use build args for but it’s something I do in most projects. The same pattern is being used in all of the example apps.</p>
+<pre><code>x-app: &amp;default-app
+  build:
+    context: &quot;.&quot;
+    target: &quot;app&quot;
+    args:
+      - &quot;FLASK_ENV=${FLASK_ENV:-production}&quot;
+      - &quot;NODE_ENV=${NODE_ENV:-production}&quot;</code></pre><p>The build arguments themselves are defined in the <code>docker-compose.yml</code> file under the <code>build</code> property and we’re using variable substitution to read in the values from the <code>.env</code> file.</p>
+<p>This means we have a single source of truth (<code>.env</code> file) for these values and we never have to change the <code>Dockerfile</code> or <code>docker-compose.yml</code> file to change their value.</p>
+<pre><code># Which environment is running? These should be &quot;development&quot; or &quot;production&quot;.
+#export FLASK_ENV=production
+#export NODE_ENV=production
+export FLASK_ENV=development
+export NODE_ENV=development</code></pre><p>You just update your <code>.env</code> file and rebuild the image.</p>
+<p>But with great power comes great responsibility. I try to keep my Dockerfiles set up to build the same image in all environments to keep things predictable but I think for this specific use case of only generating production assets it’s a good spot to use this pattern.</p>
+<p>However with that said, going back to file permissions if you did need to customize the <code>UID</code> and <code>GID</code>, using build arguments is a reasonable thing to do. This way you can use different values in whatever environment needs them, and you can have them both default to <code>1000</code>.</p>
+<h4 id="Setting-environment-variables"><a href="#Setting-environment-variables" class="headerlink" title="Setting environment variables"></a>Setting environment variables</h4><pre><code>ARG FLASK_ENV=&quot;production&quot;
+ENV FLASK_ENV=&quot;${FLASK_ENV}&quot; \
+    FLASK_APP=&quot;hello.app&quot; \
+    FLASK_SKIP_DOTENV=&quot;true&quot; \
+    PYTHONUNBUFFERED=&quot;true&quot; \
+    PYTHONPATH=&quot;.&quot; \
+    PATH=&quot;${PATH}:/home/python/.local/bin&quot; \
+    USER=&quot;python&quot;</code></pre><p>If you have env variables that you know won’t change you might as well include them in your Dockerfile to eliminate the possibility of forgetting to set them in your <code>.env</code> file.</p>
+<p>Typically you’ll always be setting at least the <code>FLASK_ENV</code> or whatever env var your web framework uses to differentiate dev vs prod mode so you’re not really taking a layer hit here since we can add multiple env vars in 1 layer.</p>
+<h5 id="Python-specific-things-to-be-aware-of"><a href="#Python-specific-things-to-be-aware-of" class="headerlink" title="Python specific things to be aware of:"></a>Python specific things to be aware of:</h5><p>Setting <code>PYTHONUNBUFFERED=true</code> is useful so that your logs will not get buffered or sent out of order. If you ever found yourself not being able to see your server’s logs in Docker Compose it’s because you likely need to set this or the equivalent var in your language of choice.</p>
+<p>I’ve only ever needed to set it for Python. Ruby, Elixir, Node, Scala and PHP work fine without it. That’s all I tried but it might be necessary with other languages.</p>
+<p>Setting <code>PYTHONPATH=&quot;.&quot;</code> is useful too. Certain packages may expect this to be set, and using <code>.</code> will set it to the <code>WORKDIR</code> which is almost always what you’d want to make your app work.</p>
+<h5 id="Updating-your-PATH"><a href="#Updating-your-PATH" class="headerlink" title="Updating your PATH:"></a>Updating your PATH:</h5><p>Setting the <code>PATH</code> is a reasonable idea too because if you start running your containers as a non-root user and install your packages in your user’s home directory or a custom location you won’t be able to access binaries directly.</p>
+<p>For example without setting that, we wouldn’t be able to run <code>gunicorn</code> without supplying the full path to where it exists which would be <code>/home/python/.local/bin/gunicorn</code> in our case.</p>
+<p>Packages end up in the home directory of the <code>python</code> user because in the Dockerfile when I <code>pip3</code> install the packages it’s being done with the <code>--user</code> flag. Check out the <a href="https://github.com/nickjj/docker-flask-example" target="_blank" rel="noopener">Flask</a> or <a href="https://github.com/nickjj/docker-django-example" target="_blank" rel="noopener">Django</a> example app to see how that’s done.</p>
+<h4 id="Unix-conventions"><a href="#Unix-conventions" class="headerlink" title="Unix conventions:"></a>Unix conventions:</h4><pre><code>RUN useradd --create-home python
+
+ENV USER=&quot;python&quot;</code></pre><p>Certain Unix tools may expect a home directory to exist as well as having the <code>USER</code> environment variable set.</p>
+<p>They are freebies for us so we might as well set them. The alternative is to wake up one day battling some crazy edge case because a tool you decided to install tries to install something to your user’s home directory which doesn’t exist. No thanks!</p>
+<h4 id="Setting-EXPOSE-for-informational-purposes"><a href="#Setting-EXPOSE-for-informational-purposes" class="headerlink" title="Setting EXPOSE for informational purposes:"></a>Setting EXPOSE for informational purposes:</h4><pre><code>EXPOSE 8000</code></pre><p>This is in the web app stage for each example app. Technically you don’t need to set this but it’s considered a best practice because it lets you know which port your process is running on inside of the container.</p>
+<p>You can see this port when you run <code>docker container ls</code>:</p>
+<pre><code>CONTAINER ID   IMAGE                  PORTS                                    
+5f7e00e36b8e   helloflask_web         0.0.0.0:8000-&gt;8000/tcp, :::8000-&gt;8000/tcp</code></pre><p>Since we’re publishing a port we can see both the published and exposed port, but if we didn’t publish the port in our <code>docker-compose.yml</code> file the <code>PORTS</code> column would be totally empty if we didn’t set <code>EXPOSE 8000</code> in our <code>Dockerfile</code>.</p>
+<p>I’ve written a more detailed post on expose vs publish in <a href="https://nickjanetakis.com/blog/docker-tip-59-difference-between-exposing-and-publishing-ports" target="_blank" rel="noopener">Docker Tip #59</a>.</p>
+<h4 id="Array-Exec-vs-String-Shell-CMD-syntax"><a href="#Array-Exec-vs-String-Shell-CMD-syntax" class="headerlink" title="Array (Exec) vs String (Shell) CMD syntax:"></a>Array (Exec) vs String (Shell) CMD syntax:</h4><pre><code># Good (preferred).
+CMD [&quot;gunicorn&quot;, &quot;-c&quot;, &quot;python:config.gunicorn&quot;, &quot;hello.app:create_app()&quot;]
+
+# Bad.
+CMD gunicorn -c &quot;python:config.gunicorn&quot; &quot;hello.app:create_app()&quot;</code></pre><p>Both options will run gunicorn but there’s a pretty big difference between the 2 variants.</p>
+<p>The first one is the array (exec) syntax and it will directly run gunicorn as PID 1 inside of your container. The second one is the string (shell) syntax and it will run your shell as PID 1 (such as <code>/bin/sh -c &quot;...&quot;</code>) in your container.</p>
+<h5 id="Running-ps-in-your-container-to-check-its-PID"><a href="#Running-ps-in-your-container-to-check-its-PID" class="headerlink" title="Running ps in your container to check its PID:"></a>Running <code>ps</code> in your container to check its PID:</h5><pre><code># The output of `ps` when you use the array (exec) variant:
+PID   USER     COMMAND
+  1   python   /usr/local/bin/python gunicorn -c python:config.gunicorn hello.app:create_app()
+
+# The output of `ps` when you use the string (shell) variant:
+PID   USER     COMMAND
+  1   python   /bin/sh -c gunicorn -c &quot;python:config.gunicorn&quot; &quot;hello.app:create_app()&quot;</code></pre><p><em>I’ve truncated the <code>gunicorn</code> paths so it fits on 1 line. Normally you would see the full path being listed out, such as <code>/home/python/.local/bin/gunicorn</code> instead of <code>gunicorn</code>.</em></p>
+<p>But notice what’s running as <code>PID 1</code>.</p>
+<p>The array version is preferred and even recommended by Docker. It’s better because the shell variant will not pass Unix signals such as <code>SIGTERM</code>, etc. back to your process (<code>gunicorn</code>) correctly. The preferred array variant also avoids having to run a shell process.</p>
+<p>Of course that comes with the downside of not being able to use shell scripting in your <code>CMD</code> such as wanting to use <code>&amp;&amp;</code> but that’s not a big deal in the end. If you’re doing complicated shell scripting in your <code>CMD</code> you should likely reach for using an <code>ENTRYPOINT</code> script instead.</p>
+<p>It’s also worth pointing out that when you set the <code>command</code> property in <code>docker-compose.yml</code> it will automatically convert the string syntax into the array syntax.</p>
+<h4 id="ENTRYPOINT-script"><a href="#ENTRYPOINT-script" class="headerlink" title="ENTRYPOINT script"></a>ENTRYPOINT script</h4><pre><code>COPY --chown=python:python bin/ ./bin
+
+ENTRYPOINT [&quot;/app/bin/docker-entrypoint-web&quot;]</code></pre><p>Before we can execute our <code>ENTRYPOINT</code> script we need to copy it in. This is taken from the Flask example app but this pattern is used in every example app.</p>
+<p>You can technically <code>COPY</code> this script anywhere but I like to keep it in a <code>bin/</code> directory.</p>
+<pre><code>#!/bin/bash
+
+set -e
+
+# This will clean up old md5 digested files since they are volume persisted.
+# If you want to persist older versions of any of these files to avoid breaking
+# external links outside of your domain then feel free remove this line.
+rm -rf public/css public/js public/fonts public/images
+
+# Always keep this here as it ensures the built and digested assets get copied
+# into the correct location. This avoids them getting clobbered by any volumes.
+cp -a /public /app
+
+exec &quot;$@ &quot;</code></pre><p>This is the ENTRYPOINT script itself.</p>
+<p>This takes care of copying the bundled assets from <code>/public</code> to <code>/app/public</code>, but unlike building an image this runs every time the container starts.</p>
+<h5 id="The-basic-idea-of-how-all-of-this-comes-together"><a href="#The-basic-idea-of-how-all-of-this-comes-together" class="headerlink" title="The basic idea of how all of this comes together:"></a>The basic idea of how all of this comes together:</h5><ul>
+<li>We build and bundle our assets in the Webpack stage (done at build time)</li>
+<li>They get copied to <code>/public</code> in the Python build stage (done at build time)</li>
+<li>When the container starts it copies <code>/public</code> to a volume mounted directory (done here)</li>
+</ul>
+<p>That volume mounted directory is <code>/app/public</code> and it’s what ends up being set as the nginx root. This song and dance lets us persist our assets to disk and even if we decided to save user uploaded files to disk we wouldn’t lose them when the container stops.</p>
+<p>The first part of the script cleans up old md5 tagged assets. This idea of pre-compiling or digesting assets is common in <a href="https://github.com/nickjj/flask-static-digest" target="_blank" rel="noopener">Flask</a>, Django, Rails, Phoenix, Laravel and other frameworks. The first command will delete the old assets, but of course if you wanted to keep them around you could comment out that line.</p>
+<h5 id="Taking-a-peek-at-the-docker-compose-yml-file-again"><a href="#Taking-a-peek-at-the-docker-compose-yml-file-again" class="headerlink" title="Taking a peek at the docker-compose.yml file again:"></a>Taking a peek at the docker-compose.yml file again:</h5><pre><code>worker:
+  &lt;&lt;: *default-app
+  command: celery -A &quot;hello.app.celery_app&quot; worker -l &quot;${CELERY_LOG_LEVEL:-info}&quot;
+  entrypoint: []</code></pre><p>Since the <code>worker</code> service isn’t running a web server it doesn’t make sense to do this copy operation twice so we set an empty entrypoint.</p>
+<p>Without setting that I was getting a race condition error in the <code>cp</code> command because it was trying to copy files from 2 different sources very quickly because both the <code>web</code> and <code>worker</code> services are sharing that volume.</p>
+<h5 id="What-else-can-you-use-ENTRYPOINT-scripts-for"><a href="#What-else-can-you-use-ENTRYPOINT-scripts-for" class="headerlink" title="What else can you use ENTRYPOINT scripts for?"></a>What else can you use ENTRYPOINT scripts for?</h5><p>This isn’t the only thing you can use ENTRYPOINT scripts for. Basically if you want something to run every time your container starts then using an ENTRYPOINT script is the way to go, but you should think carefully about using one.</p>
+<p>For example, if it’s a deterministic task you may want to consider putting it into a <code>RUN</code> instruction in your <code>Dockerfile</code> so it happens at build time (such as installing dependencies). This will help with creating portable and repeatable Docker images too.</p>
+<p>The above ENTRYPOINT script runs in a few hundred milliseconds and it’s only necessary because volume mounts aren’t something you do at build time.</p>
+<h3 id="Git-and-Docker-Ignore-Files"><a href="#Git-and-Docker-Ignore-Files" class="headerlink" title="Git and Docker Ignore Files"></a>Git and Docker Ignore Files</h3><pre><code># .gitignore
+.webpack_cache/
+public/*
+!public/.keep
+
+.env*
+!.env.example
+docker-compose.override.yml
+
+# There&apos;s more files associated to Python / Node / etc, ommitting for brevity.</code></pre><p>When it comes to committing code to version control, if you’re using Webpack or another build tool then chances are you’ll want to ignore your <code>public/</code> directory or whatever your destination directory is.</p>
+<p>However, if you follow the example apps we’ll want to make sure the <code>public/</code> directory always exists so that’s why there’s a <code>.keep</code> file. This is necessary to ensure that the directory ends up being owned by the correct user. If we didn’t do this then Docker would end up creating the directory and it would be owned by <code>root:root</code> and we’d get permission errors.</p>
+<p>Also, as we went over before we’ll ignore our real override file so we can control which containers get run in production.</p>
+<p>As for the <code>.env</code> file, we’ll ignore all of them except for our example file. The reason I ignore all of them is because depending on how you do configuration management you might <code>scp</code> a <code>.env.prod</code> file over to your production server (as <code>.env</code> on the server). That means you’ll end up having multiple <code>.env.X</code> files in your repo, all of which should be ignored.</p>
+<pre><code># .dockerignore
+.git/
+.pytest_cache/
+.webpack_cache/
+__pycache__/
+assets/node_modules/
+public/
+
+.coverage
+.dockerignore
+.env*
+!.env.example
+celerybeat-schedule
+docker-compose.override.yml</code></pre><p>It’s a good idea to keep your images small and tidy and a <code>.dockerignore</code> file helps us to do that. For example, we don’t need to copy in our entire <code>.git/</code> directory so let’s ignore that.</p>
+<p>This file will vary depending on what tech stack you use and all of the <a href="https://github.com/nickjj?tab=repositories&q=docker-*-example" target="_blank" rel="noopener">example apps</a> have both files ready to go.</p>
+<p>But one general takeaway is to remove unnecessary files and don’t forget to ignore all of your <code>.env</code> files because you wouldn’t want to copy sensitive files into your image because now if you pushed your image to a Docker registry now that registry has access to your sensitive information since it’s in your image.</p>
+<p>Instead it will be expected you transfer your <code>.env</code> file over to your server and let Docker Compose make it available with the <code>env_file</code> property. How you get this <code>.env</code> file onto your server is up to you, that could be <code>scp</code> or <a href="https://nickjanetakis.com/blog/docker-and-ansible-solve-2-different-problems-and-they-can-be-used-together" target="_blank" rel="noopener">maybe using something like Ansible</a>.</p>
+<h3 id="Closing-Thoughts"><a href="#Closing-Thoughts" class="headerlink" title="Closing Thoughts"></a>Closing Thoughts</h3><p>I think in general best practices are a moving target and they will change over time. I fully expect discovering new things over time and tweaking my set up as Docker introduces new features and I improve my skills.</p>
+<p>By the way, I have a new course coming out focused on deploying web apps with Terraform, Ansible and Docker Compose. You can <a href="https://nickjanetakis.com/courses/deploy-to-production" target="_blank" rel="noopener">learn more about it here</a>.</p>
+<p>So that’s about it. If you made it to the end thanks a lot for reading it!</p>
+<p><strong>What are some of your Docker best practices and tips? Let us know below.</strong></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/06/03/qiwihui-pocket_readings-1124/" rel="prev" title="一文带你重新审视CAP理论与分布式系统设计 - 分布式 - dbaplus社群：围绕Data、Blockchain、AiOps的企业级专业社群。技术大咖、原创干货，每天精品原创文章推送，每周线上技术分享，每月线下技术沙龙。">
+      <i class="fa fa-chevron-left"></i> 一文带你重新审视CAP理论与分布式系统设计 - 分布式 - dbaplus社群：围绕Data、Blockchain、AiOps的企业级专业社群。技术大咖、原创干货，每天精品原创文章推送，每周线上技术分享，每月线下技术沙龙。
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/06/07/qiwihui-pocket_readings-1126/" rel="next" title="Hacker's guide to deep-learning side-channel attacks: code walkthrough">
+      Hacker's guide to deep-learning side-channel attacks: code walkthrough <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Best-Practices-Around-Production-Ready-Web-Apps-with-Docker-Compose-by-nickjanetakis"><span class="nav-number"></span> <span class="nav-text">Best Practices Around Production Ready Web Apps with Docker Compose by @nickjanetakis</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Best-Practices-Around-Production-Ready-Web-Apps-with-Docker-Compose"><span class="nav-number"></span> <span class="nav-text">Best Practices Around Production Ready Web Apps with Docker Compose</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Here’s-a-few-patterns-I’ve-picked-up-based-on-using-Docker-since-2014-I’ve-extracted-these-from-doing-a-bunch-of-freelance-work"><span class="nav-number"></span> <span class="nav-text">Here’s a few patterns I’ve picked up based on using Docker since 2014. I’ve extracted these from doing a bunch of freelance work.</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Example-Web-Apps-Using-Docker-Docker-Compose"><span class="nav-number">1.</span> <span class="nav-text">Example Web Apps Using Docker &#x2F; Docker Compose</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#A-few-ready-to-go-example-web-apps-using-Docker"><span class="nav-number">1.0.1.</span> <span class="nav-text">A few ready to go example web apps using Docker:</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Docker-Compose"><span class="nav-number">2.</span> <span class="nav-text">Docker Compose</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Dropping-the-version-property-at-the-top-of-the-file"><span class="nav-number">2.1.</span> <span class="nav-text">Dropping the version property at the top of the file</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Avoiding-2-Compose-Files-for-Dev-and-Prod-with-an-Override-File"><span class="nav-number">2.2.</span> <span class="nav-text">Avoiding 2 Compose Files for Dev and Prod with an Override File</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Reducing-Service-Duplication-with-Aliases-and-Anchors"><span class="nav-number">2.3.</span> <span class="nav-text">Reducing Service Duplication with Aliases and Anchors</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Defining-your-HEALTHCHECK-in-Docker-Compose-not-your-Dockerfile"><span class="nav-number">2.4.</span> <span class="nav-text">Defining your HEALTHCHECK in Docker Compose not your Dockerfile</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Making-the-most-of-environment-variables"><span class="nav-number">2.5.</span> <span class="nav-text">Making the most of environment variables</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Controlling-which-health-check-to-use"><span class="nav-number">2.5.1.</span> <span class="nav-text">Controlling which health check to use:</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Publishing-ports-more-securely-in-production"><span class="nav-number">2.5.2.</span> <span class="nav-text">Publishing ports more securely in production:</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Taking-advantage-of-Docker’s-restart-policies"><span class="nav-number">2.5.3.</span> <span class="nav-text">Taking advantage of Docker’s restart policies:</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Switching-up-your-bind-mounts-depending-on-your-environment"><span class="nav-number">2.5.4.</span> <span class="nav-text">Switching up your bind mounts depending on your environment:</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Limiting-CPU-and-memory-resources-of-your-containers"><span class="nav-number">2.5.5.</span> <span class="nav-text">Limiting CPU and memory resources of your containers:</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Your-Web-App"><span class="nav-number">3.</span> <span class="nav-text">Your Web App</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Your-web-server’s-config-file"><span class="nav-number">3.1.</span> <span class="nav-text">Your web server’s config file</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Your-bind-host-and-port"><span class="nav-number">3.1.1.</span> <span class="nav-text">Your bind host and port</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Workers-and-threads"><span class="nav-number">3.1.2.</span> <span class="nav-text">Workers and threads:</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Code-reloading-or-no"><span class="nav-number">3.1.3.</span> <span class="nav-text">Code reloading or no?</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Log-to-standard-out-stdout"><span class="nav-number">3.1.4.</span> <span class="nav-text">Log to standard out (stdout):</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Configuring-your-database"><span class="nav-number">3.2.</span> <span class="nav-text">Configuring your database</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Setting-up-a-health-check-URL-endpoint"><span class="nav-number">3.3.</span> <span class="nav-text">Setting up a health check URL endpoint</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Dockerfile"><span class="nav-number">4.</span> <span class="nav-text">Dockerfile</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Using-Multi-stage-builds-to-optimize-image-size"><span class="nav-number">4.1.</span> <span class="nav-text">Using Multi-stage builds to optimize image size</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Running-your-container-as-a-non-root-user"><span class="nav-number">4.2.</span> <span class="nav-text">Running your container as a non-root user</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#What-about-volume-mounted-files-in-development"><span class="nav-number">4.2.1.</span> <span class="nav-text">What about volume mounted files in development?</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#What-about-other-Docker-images-besides-Node"><span class="nav-number">4.2.2.</span> <span class="nav-text">What about other Docker images besides Node?</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Customizing-where-package-dependencies-get-installed"><span class="nav-number">4.3.</span> <span class="nav-text">Customizing where package dependencies get installed</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Taking-advantage-of-layer-caching"><span class="nav-number">4.4.</span> <span class="nav-text">Taking advantage of layer caching</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Leveraging-tools-like-PostCSS"><span class="nav-number">4.5.</span> <span class="nav-text">Leveraging tools like PostCSS</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Using-build-arguments"><span class="nav-number">4.6.</span> <span class="nav-text">Using build arguments</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Setting-environment-variables"><span class="nav-number">4.7.</span> <span class="nav-text">Setting environment variables</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Python-specific-things-to-be-aware-of"><span class="nav-number">4.7.1.</span> <span class="nav-text">Python specific things to be aware of:</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Updating-your-PATH"><span class="nav-number">4.7.2.</span> <span class="nav-text">Updating your PATH:</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Unix-conventions"><span class="nav-number">4.8.</span> <span class="nav-text">Unix conventions:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Setting-EXPOSE-for-informational-purposes"><span class="nav-number">4.9.</span> <span class="nav-text">Setting EXPOSE for informational purposes:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Array-Exec-vs-String-Shell-CMD-syntax"><span class="nav-number">4.10.</span> <span class="nav-text">Array (Exec) vs String (Shell) CMD syntax:</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Running-ps-in-your-container-to-check-its-PID"><span class="nav-number">4.10.1.</span> <span class="nav-text">Running ps in your container to check its PID:</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ENTRYPOINT-script"><span class="nav-number">4.11.</span> <span class="nav-text">ENTRYPOINT script</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#The-basic-idea-of-how-all-of-this-comes-together"><span class="nav-number">4.11.1.</span> <span class="nav-text">The basic idea of how all of this comes together:</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Taking-a-peek-at-the-docker-compose-yml-file-again"><span class="nav-number">4.11.2.</span> <span class="nav-text">Taking a peek at the docker-compose.yml file again:</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#What-else-can-you-use-ENTRYPOINT-scripts-for"><span class="nav-number">4.11.3.</span> <span class="nav-text">What else can you use ENTRYPOINT scripts for?</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Git-and-Docker-Ignore-Files"><span class="nav-number">5.</span> <span class="nav-text">Git and Docker Ignore Files</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Closing-Thoughts"><span class="nav-number">6.</span> <span class="nav-text">Closing Thoughts</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

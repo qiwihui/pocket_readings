@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="P99 是如何计算的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="P99 是如何计算的">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/06/19/qiwihui-pocket_readings-1136/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="P99 是如何计算的">
+<meta property="article:published_time" content="2021-06-19T04:21:15.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.418Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/06/19/qiwihui-pocket_readings-1136/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>P99 是如何计算的 | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/06/19/qiwihui-pocket_readings-1136/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          P99 是如何计算的
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-06-19 04:21:15" itemprop="dateCreated datePublished" datetime="2021-06-19T04:21:15+00:00">2021-06-19</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">P99 是如何计算的</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Latency &#65288;&#24310;&#36831;&#65289;&#26159;&#25105;&#20204;&#22312;&#30417;&#25511;&#32447;&#19978;&#30340;&#32452;&#20214;&#36816;&#34892;&#24773;&#20917;&#30340;&#19968;&#20010;&#38750;&#24120;&#37325;&#35201;&#30340;&#25351;&#26631;&#65292;&#23427;&#21487;&#20197;&#21578;&#35785;&#25105;&#20204;&#35831;&#27714;&#22312;&#22810;&#23569;&#26102;&#38388;&#20869;&#23436;&#25104;&#12290;&#30417;&#25511; Latency &#26159;&#19968;&#20010;&#24456;&#24494;&#22937;&#30340;&#20107;&#24773;&#65292;&#27604;&#22914;&#65292;&#20551;&#22914;&#19968;&#20998;&#38047;&#26377; 1&#20159;&#27425;&#35831;&#27714;&#65292;&#20320;&#23601;&#26377;&#20102; 1&#20159;&#20010;&#25968;&#23383;&#12290;&#22914;&#20309;&#20174;&#36825;&#20123;&#25968;&#23383;&#20013;&#21453;&#26144;<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/3gNXsT9" target="_blank" rel="noopener">https://ift.tt/3gNXsT9</a> original site<br><br><br><br>June 19, 2021 at 11:26AM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1136#issuecomment-864353146" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>6/19/2021</strong></p>
+</blockquote>
+<h2 id="P99-是如何计算的-by-laixintao"><a href="#P99-是如何计算的-by-laixintao" class="headerlink" title="P99 是如何计算的 by laixintao"></a>P99 是如何计算的 by laixintao</h2><p>Latency （延迟）是我们在监控线上的组件运行情况的一个非常重要的指标，它可以告诉我们请求在多少时间内完成。监控 Latency 是一个很微妙的事情，比如，假如一分钟有 1亿次请求，你就有了 1亿个数字。如何从这些数字中反映出用户的真实体验呢？</p>
+<p>之前的公司用平均值来反应所有有关延迟的数据，这样的好处是计算量小，实施简单。只需要记录所有请求的一个时间总和，以及请求次数，两个数字，就可以计算出平均耗时。但问题是，<a href="https://www.elastic.co/cn/blog/averages-can-dangerous-use-percentile" target="_blank" rel="noopener">平均耗时非常容易掩盖真实的问题</a>。比如现在有 1% 的请求非常慢，但是其余的请求很快，那么这 1% 的请求耗时会被其他的 99% 给拉平，将真正的问题掩盖。</p>
+<p>所以更加科学的一种监控方式是观察 P99/P95/P90 等，叫做 Quantile。简单的理解，P99 就是第 99% 个请求所用的耗时。假如 P99 现在是 10ms, 那么我们可以说 “99% 的请求都在 10ms 内完成”。虽然在一些请求量较小的情况下，<a href="http://accelazh.github.io/storage/Tail-Latency-Study" target="_blank" rel="noopener">P99 可能受长尾请求的影响</a>。但是由于 SRE 一般不会给在量小的业务上花费太多精力，所以这个问题并不是很大。</p>
+<p>但是计算就成了一个问题。P99 是计算时间的分布，所以我们是否要保存下来 1亿个请求的时间，才能知道第 99% 的请求所用的时间呢？</p>
+<p>这样耗费的资源太大了。考虑到监控所需要的数据对准确性的要求并不高。比如说 P99 实际上是 15.7ms 但是计算得到数据是 15.5ms，甚至是 14ms，我认为都是可以接受的。我们关注更多的是它的变化。“P99 耗时从 10.7ms 上涨到了 14ms” 和 “P99耗时从 11ms 上涨到了 15.5ms” 这个信息对于我们来说区别并不是很大。（当然了，如果是用于衡量服务是否达到了服务等级协议 SLO 的话，还是很大的。这样需要合理地规划 Bucket 来提高准确性）。</p>
+<p>所以基于这个，Prometheus 采用了一种非常巧妙的数据结构来计算 Quantile: Histogram.</p>
+<p>Histogram 本质上是一些桶。举例子说，我们为了计算 P99，可以将所有的请求分成 10 个桶，第一个存放 0-1ms 完成的请求的数量，后面 9 个桶存放的请求耗时上区间分别是 5ms 10ms 50ms 100ms 200ms 300ms 500ms 1s 2s. 这样只要保存 10 个数字就可以了。要计算 P99 的话，只需要计算第 99% 个数字落在了哪一个桶，比如说落在了 300ms-500ms 的通，那我们就可以说现在的 99% 的请求都在 300ms 到 500ms 之间完成。这些数据也可以用来计算 P90, P95 等等。</p>
+<p>由于我们的监控一般是绘制一条曲线，而不是一个区间。所以 300-500 是不行的，需要计算出一个数字来。</p>
+<p>Prometheus 是假设每一个桶内的数据都是线性分布的，比如说现在 300-500 的桶里面一共有 100 个请求，小于300个桶里面一共有 9850 个请求。所有的桶一共有 1万个请求。那么我们要找的 P99 其实是第 10000 * 0.99 = 9900 个请求。第 9900 个请求在 300-500 的桶里面是第 9900 – 9850 = 50 个请求。根据桶里面都是线性分布的假设，第50个请求在这个桶里面的耗时是 (500 – 300) * (50/100) = 400ms, 即 P99 就是 400ms.</p>
+<p>可以注意到因为是基于线性分布的假设，不是准确的数据。比如假设 300-500 的桶中耗时最高的请求也只有 310ms, 得到的计算结果也会是 400ms. 桶的区间越大，越不准确，桶的区间越小，越准确。</p>
+<hr>
+<p>写这篇文章，是因为昨天同事跑来问我，“为啥我的日志显示最慢的请求也才 1s 多，但是这个 P999 latency 显示是 3s？”</p>
+<p>我查了一下确实如他所说，但是这个结果确实预期的。因为我们设置的桶的分布是：10ms, 50ms, 100ms, 500ms, 1s, 5s, 10s, 60s.</p>
+<p>如上所说，Promtheus 只能保证 P999 latency 落在了 1s – 5s 之间，但不能保证误差。</p>
+<p>如果要计算准确的 Quantile, 可以使用 <a href="https://prometheus.io/docs/practices/histograms/" target="_blank" rel="noopener">Summary</a> 计算。简单来说，这个算法没有分桶，是直接在机器上计算准确的 P99 的值，然后保存 P99 这个数字。但问题一个是在机器本地计算，而不是在 Prometheus 机器上计算，会占用业务机器的资源；另一个是无法聚合，如果我们有很多实例，知道每一个实例的 P99 是没有什么意义的，我们更想知道所有请求的 P99. 显然，原始的信息已经丢失，这个 P99 per instance 是无法支持继续计算的。</p>
+<p>另外一个设计巧妙的地方是，300-500 这个桶保存的并不是 300-500 耗时的请求数，而是 &lt;500ms 的请求数。也就是说，后面的桶的请求数总是包含了它前面的所有的桶。这样的好处是，虽然我们保存的数据没有增加（还是10个数字），但是保存的信息增加了。假如说中间丢弃一个桶，依然能够计算出来 P99. 在某些情况下非常有用，比如监控资源不够了，我们可以临时不收集前5个桶，依然可以计算 P99.</p>
+<h3 id="相关文章"><a href="#相关文章" class="headerlink" title="相关文章:"></a>相关文章:</h3><ul>
+<li><a href="https://www.kawabangga.com/posts/4275" target="_blank" rel="noopener">使用 mtr 检查网络问题，以及注意事项</a></li>
+<li><a href="https://www.kawabangga.com/posts/3427" target="_blank" rel="noopener">程序员应该知道的时间概念</a></li>
+<li><a href="https://www.kawabangga.com/posts/1990" target="_blank" rel="noopener">VimScript学习笔记(12)：快速开关（Toggle）</a></li>
+<li><a href="https://www.kawabangga.com/posts/3972" target="_blank" rel="noopener">Redis RESP3 的一些想法</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/06/17/qiwihui-pocket_readings-1135/" rel="prev" title="Web层面上的那些拒绝服务攻击(DoS) · Chen's Blog">
+      <i class="fa fa-chevron-left"></i> Web层面上的那些拒绝服务攻击(DoS) · Chen's Blog
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/06/22/qiwihui-pocket_readings-1137/" rel="next" title="
+
+
+我国车牌设计29年来首次更新！全球20国车牌变迁史带你了解车牌背后的设计学 ">
+      
+
+
+我国车牌设计29年来首次更新！全球20国车牌变迁史带你了解车牌背后的设计学  <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#P99-是如何计算的-by-laixintao"><span class="nav-number"></span> <span class="nav-text">P99 是如何计算的 by laixintao</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#相关文章"><span class="nav-number">1.</span> <span class="nav-text">相关文章:</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

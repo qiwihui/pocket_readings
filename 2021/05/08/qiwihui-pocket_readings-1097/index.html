@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Rust 中 Trait 的使用及实现分析">
+<meta property="og:type" content="article">
+<meta property="og:title" content="
+
+
+Rust 中 Trait 的使用及实现分析 ">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/05/08/qiwihui-pocket_readings-1097/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="Rust 中 Trait 的使用及实现分析">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/fyj3MulwpeQo5F4A1eeK5IeXJMiaZXeG0gyyRVrcdVaEvZ5rb2XKb1abzMK8jia5W5UmKpEXP8oTtUuUt3kViaJ6w/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/fyj3MulwpeQo5F4A1eeK5IeXJMiaZXeG0gj4ZbS7BPwDnKO4q1C6z2NFLzuiaDubW2BIBvfjb8KAB2Gc4YiavgfGQ/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/fyj3MulwpeQo5F4A1eeK5IeXJMiaZXeG0Asa4YAaCNoFTGoUde5bHH4YtN3NlFicjZpFpSoyiahs09SZGicvPXUWvg/640?wx_fmt=png">
+<meta property="article:published_time" content="2021-05-08T10:21:04.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.406Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/fyj3MulwpeQo5F4A1eeK5IeXJMiaZXeG0gyyRVrcdVaEvZ5rb2XKb1abzMK8jia5W5UmKpEXP8oTtUuUt3kViaJ6w/640?wx_fmt=jpeg">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/05/08/qiwihui-pocket_readings-1097/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>
+
+
+Rust 中 Trait 的使用及实现分析  | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/05/08/qiwihui-pocket_readings-1097/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+
+
+Rust 中 Trait 的使用及实现分析 
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-05-08 10:21:04" itemprop="dateCreated datePublished" datetime="2021-05-08T10:21:04+00:00">2021-05-08</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">
+
+
+Rust 中 Trait 的使用及实现分析 </div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#21151;&#33021;&#20171;&#32461; Rust&#23448;&#26041;&#21450;&#31038;&#21306;&#26368;&#26032;&#20449;&#24687;&#25628;&#38598;&#12289;&#25991;&#31456;&#25512;&#36865;&#65292;&#25945;&#31243;&#23398;&#20064;&#65292;&#25216;&#24039;&#20998;&#20139;&#65292;&#31038;&#21306;&#20132;&#27969;&#12290;&#20449;&#24687;&#26469;&#28304;&#26159;&#25972;&#20010;&#20840;&#29699;Rust&#31038;&#21306;&#12290;<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/3uzbmxW" target="_blank" rel="noopener">https://ift.tt/3uzbmxW</a> original site<br><br><br><br>May 08, 2021 at 05:41PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1097#issuecomment-835271950" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>5/8/2021</strong></p>
+</blockquote>
+<h2 id="Rust-中-Trait-的使用及实现分析-by-Rust语言中文社区"><a href="#Rust-中-Trait-的使用及实现分析-by-Rust语言中文社区" class="headerlink" title="Rust 中 Trait 的使用及实现分析 by Rust语言中文社区"></a>Rust 中 Trait 的使用及实现分析 by Rust语言中文社区</h2><p><strong>2021-05-07</strong></p>
+<ul>
+<li>使用方式</li>
+</ul>
+<ul>
+<li>基本用法</li>
+</ul>
+<ul>
+<li><p>静态派发</p>
+</li>
+<li><p>动态派发</p>
+</li>
+<li><p>impl trait</p>
+</li>
+</ul>
+<ul>
+<li>高阶用法</li>
+</ul>
+<ul>
+<li><p>关联类型</p>
+</li>
+<li><p>Derive</p>
+</li>
+</ul>
+<ul>
+<li>常见问题</li>
+</ul>
+<ul>
+<li><p>向上转型（upcast）</p>
+</li>
+<li><p>向下转型（downcast）</p>
+</li>
+<li><p>Object safety</p>
+</li>
+</ul>
+<ul>
+<li><p>总结</p>
+</li>
+<li><p>参考</p>
+</li>
+</ul>
+<p>在 Rust 设计目标中，零成本抽象是非常重要的一条，它让 Rust 具备高级语言表达能力的同时，又不会带来性能损耗。零成本的基石是泛型与 trait，它们可以在编译期把高级语法编译成与高效的底层代码，从而实现运行时的高效。这篇文章就来介绍 trait，包括使用方式与三个常见问题的分析，在问题探究的过程中来阐述其实现原理。</p>
+<blockquote>
+<p>本文最先发表于 RustMagazine 中文月刊（<a href="https://rustmagazine.github.io/rust\_magazine\_2021/chapter\_4/ant\_trait.html）" target="_blank" rel="noopener">https://rustmagazine.github.io/rust\_magazine\_2021/chapter\_4/ant\_trait.html）</a></p>
+</blockquote>
+<h1 id="使用方式"><a href="#使用方式" class="headerlink" title="使用方式"></a>使用方式</h1><h2 id="基本用法"><a href="#基本用法" class="headerlink" title="基本用法"></a>基本用法</h2><p>Trait 的主要作用是用来抽象行为，类似于其他编程语言中的「接口」，这里举一示例阐述 trait 的基本使用方式：</p>
+<pre><code>trait Greeting {</code></pre><p>在上述代码中，定义了一个 trait Greeting，两个 struct 实现了它，根据函数调用方式，主要两种使用方式：</p>
+<ul>
+<li><p>基于泛型的静态派发</p>
+</li>
+<li><p>基于 trait object 的动态派发</p>
+</li>
+</ul>
+<p>泛型的概念比较常见，这里着重介绍下 trait object：</p>
+<blockquote>
+<p>A trait object is an opaque value of another type that implements a set of traits. The set of traits is made up of an object safe base trait plus any number of auto traits.</p>
+</blockquote>
+<p>比较重要的一点是 trait object 属于 Dynamically Sized Types（DST），在编译期无法确定大小，只能通过指针来间接访问，常见的形式有 <code>Box&lt;dyn trait&gt;</code> <code>&amp;dyn trait</code> 等。</p>
+<pre><code>fn print_greeting_static&lt;G: Greeting&gt;(g: G) {</code></pre><h3 id="静态派发"><a href="#静态派发" class="headerlink" title="静态派发"></a>静态派发</h3><p>在 Rust 中，泛型的实现采用的是单态化（monomorphization），会针对不同类型的调用者，在编译时生成不同版本的函数，所以泛型也被称为类型参数。好处是没有虚函数调用的开销，缺点是最终的二进制文件膨胀。在上面的例子中， <code>print_greeting_static</code> 会编译成下面这两个版本：</p>
+<pre><code>print_greeting_static_cat(Cat);</code></pre><h3 id="动态派发"><a href="#动态派发" class="headerlink" title="动态派发"></a>动态派发</h3><p>不是所有函数的调用都能在编译期确定调用者类型，一个常见的场景是 GUI 编程中事件响应的 callback，一般来说一个事件可能对应多个 callback 函数，而这些 callback 函数都是在编译期不确定的，因此泛型在这里就不适用了，需要采用动态派发的方式：</p>
+<pre><code>trait ClickCallback {</code></pre><h3 id="impl-trait"><a href="#impl-trait" class="headerlink" title="impl trait"></a>impl trait</h3><p>在 Rust 1.26 版本中，引入了一种新的 trait 使用方式，即：impl trait，可以用在两个地方：函数参数与返回值。该方式主要是简化复杂 trait 的使用，算是泛型的特例版，因为在使用 impl trait 的地方，也是静态派发，而且作为函数返回值时，数据类型只能有一种，这一点要尤为注意！</p>
+<pre><code>fn print_greeting_impl(g: impl Greeting) {</code></pre><h2 id="高阶用法"><a href="#高阶用法" class="headerlink" title="高阶用法"></a>高阶用法</h2><h3 id="关联类型"><a href="#关联类型" class="headerlink" title="关联类型"></a>关联类型</h3><p>在上面介绍的基本用法中，trait 中方法的参数或返回值类型都是确定的，Rust 提供了类型「惰性绑定」的机制，即关联类型（associated type），这样就能在实现 trait 时再来确定类型，一个常见的例子是标准库中的 Iterator，next 的返回值为 <code>Self::Item</code> ：</p>
+<pre><code>trait Iterator {</code></pre><p>关联类型的使用和泛型相似，Iterator 也可使用泛型来定义：</p>
+<pre><code>pub trait Iterator&lt;T&gt; {</code></pre><p>它们的区别主要在于：</p>
+<ul>
+<li><p>一个特定类型（比如上文中的 Cat）可以多次实现泛型 trait。比如对于 From，可以有 <code>impl From&lt;&amp;str&gt; for Cat</code> 也可以有 <code>impl From&lt;String&gt; for Cat</code></p>
+</li>
+<li><p>但是对于关联类型的 trait，只能实现一次。比如对于 FromStr，只能有 <code>impl FromStr for Cat</code> ，类似的 trait 还有 <code>Iterator</code> <code>Deref</code></p>
+</li>
+</ul>
+<h3 id="Derive"><a href="#Derive" class="headerlink" title="Derive"></a>Derive</h3><p>在 Rust 中，可以使用 derive 属性来实现一些常用的 trait，比如：Debug/Clone 等，对于用户自定义的 trait，也可以实现过程宏支持 derive，具体可参考：How to write a custom derive macro?（<a href="https://stackoverflow.com/questions/53135923/how-to-write-a-custom-derive-macro/53136446#53136446）" target="_blank" rel="noopener">https://stackoverflow.com/questions/53135923/how-to-write-a-custom-derive-macro/53136446#53136446）</a> ，这里不再赘述。</p>
+<h1 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h1><h2 id="向上转型（upcast）"><a href="#向上转型（upcast）" class="headerlink" title="向上转型（upcast）"></a>向上转型（upcast）</h2><p>对于 <code>trait SubTrait: Base</code> ，在目前的 Rust 版本中，是无法将 <code>&amp;dyn SubTrait</code> 转换到 <code>&amp;dyn Base</code>的。这个限制与 trait object 的内存结构有关。</p>
+<p>在 Exploring Rust fat pointers（<a href="https://iandouglasscott.com/2018/05/28/exploring-rust-fat-pointers/）" target="_blank" rel="noopener">https://iandouglasscott.com/2018/05/28/exploring-rust-fat-pointers/）</a> 一文中，该作者通过 transmute 将 trait object 的引用转为两个 usize，并且验证它们是指向数据与函数虚表的指针：</p>
+<pre><code>use std::mem::transmute;</code></pre><p>从这里可以看出：Rust 使用 fat pointer（即两个指针） 来表示 trait object 的引用，分布指向 data 与 vtable，这和 Go 中的 interface 十分类似。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/fyj3MulwpeQo5F4A1eeK5IeXJMiaZXeG0gyyRVrcdVaEvZ5rb2XKb1abzMK8jia5W5UmKpEXP8oTtUuUt3kViaJ6w/640?wx_fmt=jpeg" alt="" title="image"></p>
+<pre><code>pub struct TraitObjectReference {</code></pre><p>尽管 fat pointer 导致指针体积变大（无法使用 Atomic 之类指令），但是好处是更明显的：</p>
+<ol>
+<li><p>可以为已有类型实现 trait（比如 blanket implementations）</p>
+</li>
+<li><p>调用虚表中的函数时，只需要引用一次，而在 C++ 中，vtable 是存在对象内部的，导致每一次函数调用都需要两次引用，如下图所示：<br><img src="https://mmbiz.qpic.cn/mmbiz_jpg/fyj3MulwpeQo5F4A1eeK5IeXJMiaZXeG0gj4ZbS7BPwDnKO4q1C6z2NFLzuiaDubW2BIBvfjb8KAB2Gc4YiavgfGQ/640?wx_fmt=jpeg" alt="" title="image"></p>
+</li>
+</ol>
+<p>如果 trait 有继承关系时，vtable 是怎么存储不同 trait 的方法的呢？在目前的实现中，是依次存放在一个 vtable 中的，如下图：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/fyj3MulwpeQo5F4A1eeK5IeXJMiaZXeG0Asa4YAaCNoFTGoUde5bHH4YtN3NlFicjZpFpSoyiahs09SZGicvPXUWvg/640?wx_fmt=png" alt="" title="image"></p>
+<p>可以看到，所有 trait 的方法是顺序放在一起，并没有区分方法属于哪个 trait，这样也就导致无法进行 upcast，社区内有 RFC 2765 在追踪这个问题，感兴趣的读者可参考，这里就不讨论解决方案了，介绍一种比较通用的解决方案，通过引入一个 AsBase 的 trait 来解决：</p>
+<pre><code>trait Base {</code></pre><h2 id="向下转型（downcast）"><a href="#向下转型（downcast）" class="headerlink" title="向下转型（downcast）"></a>向下转型（downcast）</h2><p>向下转型是指把一个 trait object 再转为之前的具体类型，Rust 提供了 Any 这个 trait 来实现这个功能。</p>
+<pre><code>pub trait Any: &apos;static {</code></pre><p>大多数类型都实现了 Any，只有那些包含非 <code>&#39;static</code> 引用的类型没有实现。通过 type_id 就能够在运行时判断类型，下面看一示例：</p>
+<pre><code>use std::any::Any;</code></pre><p>上面的代码重点在 downcast_ref，其实现为：  </p>
+<pre><code>pub fn downcast_ref&lt;T: Any&gt;(&amp;self) -&gt; Option&lt;&amp;T&gt; {</code></pre><p>可以看到，在类型一致时，通过 unsafe 代码把 trait object 引用的第一个指针（即 data 指针）转为了指向具体类型的引用。</p>
+<h2 id="Object-safety"><a href="#Object-safety" class="headerlink" title="Object safety"></a>Object safety</h2><p>在 Rust 中，并不是所有的 trait 都可用作 trait object，需要满足一定的条件，称之为 object safety 属性。主要有以下几点：</p>
+<ol>
+<li><p>函数返回类型不能是 Self（即当前类型）。这主要因为把一个对象转为 trait object 后，原始类型信息就丢失了，所以这里的 Self 也就无法确定了。</p>
+</li>
+<li><p>函数中不允许有泛型参数。主要原因在于单态化时会生成大量的函数，很容易导致 trait 内的方法膨胀。比如</p>
+</li>
+</ol>
+<pre><code>trait Trait {</code></pre><ol start="3">
+<li>Trait 不能”继承(trait bound)” Sized。这是由于 Rust 会默认为 trait object 实现该 trait，生成类似下面的代码：<br>如果 Foo 继承了 Sized，那么就要求 trait object 也是 Sized，而 trait object 是 DST 类型，属于 <code>?Sized</code> ，所以 trait 不能继承 Sized。<br>对于非 safe 的 trait，能修改成 safe 是最好的方案，如果不能，可以尝试泛型的方式。</li>
+</ol>
+<pre><code>trait Foo {</code></pre><h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>本文开篇就介绍了 trait 是实现零成本抽象的基础，通过 trait 可以为已有类型增加新方法，这其实解决了表达式问题，可以进行运算符重载，可以进行面向接口编程等。希望通过本文的分析，可以让读者更好的驾驭 trait 的使用，在面对编译器错误时，能够做到游刃有余。</p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ul>
+<li><p>想要改变世界的 Rust 语言: <a href="https://www.infoq.cn/article/Uugi\_eIJusEka1aSPmQM" target="_blank" rel="noopener">https://www.infoq.cn/article/Uugi\_eIJusEka1aSPmQM</a></p>
+</li>
+<li><p>Abstraction without overhead: traits in Rust: <a href="https://blog.rust-lang.org/2015/05/11/traits.html" target="_blank" rel="noopener">https://blog.rust-lang.org/2015/05/11/traits.html</a></p>
+</li>
+<li><p>Advanced Traits: <a href="https://doc.rust-lang.org/book/ch19-03-advanced-traits.html" target="_blank" rel="noopener">https://doc.rust-lang.org/book/ch19-03-advanced-traits.html</a></p>
+</li>
+<li><p>Peeking inside Trait Objects: <a href="http://huonw.github.io/blog/2015/01/peeking-inside-trait-objects/" target="_blank" rel="noopener">http://huonw.github.io/blog/2015/01/peeking-inside-trait-objects/</a></p>
+</li>
+<li><p>Object Safety: <a href="http://huonw.github.io/blog/2015/01/object-safety/" target="_blank" rel="noopener">http://huonw.github.io/blog/2015/01/object-safety/</a></p>
+</li>
+<li><p>Interface Dispatch: <a href="https://lukasatkinson.de/2018/interface-dispatch/" target="_blank" rel="noopener">https://lukasatkinson.de/2018/interface-dispatch/</a></p>
+</li>
+<li><p>3 Things to Try When You Can’t Make a Trait Object: <a href="https://www.possiblerust.com/pattern/3-things-to-try-when-you-can-t-make-a-trait-object" target="_blank" rel="noopener">https://www.possiblerust.com/pattern/3-things-to-try-when-you-can-t-make-a-trait-object</a></p>
+</li>
+</ul>
+<h1 id="关于我们"><a href="#关于我们" class="headerlink" title="关于我们"></a>关于我们</h1><p>我们是蚂蚁智能监控技术中台的时序存储团队，我们正在使用 Rust 构建高性能、低成本并具备实时分析能力的新一代时序数据库，欢迎加入或者推荐，目前我们也正在寻找优秀的实习生，也欢迎广大应届同学来我们团队实习，请联系：jiachun.fjc@ antgroup.com</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/05/06/qiwihui-pocket_readings-1096/" rel="prev" title="Moving from Flask to FastAPI">
+      <i class="fa fa-chevron-left"></i> Moving from Flask to FastAPI
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/05/09/qiwihui-pocket_readings-1098/" rel="next" title="itch.io：一个充满独立气质的游戏宝库 - 触乐">
+      itch.io：一个充满独立气质的游戏宝库 - 触乐 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Rust-中-Trait-的使用及实现分析-by-Rust语言中文社区"><span class="nav-number"></span> <span class="nav-text">Rust 中 Trait 的使用及实现分析 by Rust语言中文社区</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#使用方式"><span class="nav-number"></span> <span class="nav-text">使用方式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#基本用法"><span class="nav-number"></span> <span class="nav-text">基本用法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#静态派发"><span class="nav-number">1.</span> <span class="nav-text">静态派发</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#动态派发"><span class="nav-number">2.</span> <span class="nav-text">动态派发</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#impl-trait"><span class="nav-number">3.</span> <span class="nav-text">impl trait</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#高阶用法"><span class="nav-number"></span> <span class="nav-text">高阶用法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#关联类型"><span class="nav-number">1.</span> <span class="nav-text">关联类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Derive"><span class="nav-number">2.</span> <span class="nav-text">Derive</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#常见问题"><span class="nav-number"></span> <span class="nav-text">常见问题</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#向上转型（upcast）"><span class="nav-number"></span> <span class="nav-text">向上转型（upcast）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#向下转型（downcast）"><span class="nav-number"></span> <span class="nav-text">向下转型（downcast）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Object-safety"><span class="nav-number"></span> <span class="nav-text">Object safety</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#总结"><span class="nav-number"></span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考"><span class="nav-number"></span> <span class="nav-text">参考</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#关于我们"><span class="nav-number"></span> <span class="nav-text">关于我们</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

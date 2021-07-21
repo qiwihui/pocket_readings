@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="《深度剖析CPython解释器》26. 解密Python中的多线程(第二部分)：源码剖析Python线程的创建、销毁、调度，以及GIL的实现原理 - 古明地盆 - 博客园">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《深度剖析CPython解释器》26. 解密Python中的多线程(第二部分)：源码剖析Python线程的创建、销毁、调度，以及GIL的实现原理 - 古明地盆 - 博客园">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1022/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="《深度剖析CPython解释器》26. 解密Python中的多线程(第二部分)：源码剖析Python线程的创建、销毁、调度，以及GIL的实现原理 - 古明地盆 - 博客园">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200912035621242-1036825105.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200912035628568-1560244594.png">
+<meta property="article:published_time" content="2021-02-16T14:17:24.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.430Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200912035621242-1036825105.png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1022/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>《深度剖析CPython解释器》26. 解密Python中的多线程(第二部分)：源码剖析Python线程的创建、销毁、调度，以及GIL的实现原理 - 古明地盆 - 博客园 | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1022/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          《深度剖析CPython解释器》26. 解密Python中的多线程(第二部分)：源码剖析Python线程的创建、销毁、调度，以及GIL的实现原理 - 古明地盆 - 博客园
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-02-16 14:17:24" itemprop="dateCreated datePublished" datetime="2021-02-16T14:17:24+00:00">2021-02-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">《深度剖析CPython解释器》26. 解密Python中的多线程(第二部分)：源码剖析Python线程的创建、销毁、调度，以及GIL的实现原理 - 古明地盆 - 博客园</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#19979;&#38754;&#25105;&#20204;&#26469;&#35828;&#19968;&#19979;Python&#20013;&#32447;&#31243;&#30340;&#21019;&#24314;&#65292;&#25105;&#20204;&#30693;&#36947;&#22312;&#21019;&#24314;&#22810;&#32447;&#31243;&#30340;&#26102;&#20505;&#20250;&#20351;&#29992;threading&#36825;&#20010;&#26631;&#20934;&#24211;&#65292;&#36825;&#20010;&#24211;&#26159;&#20197;&#19968;&#20010;py&#25991;&#20214;&#23384;&#22312;&#30340;&#24418;&#24335;&#23384;&#22312;&#30340;&#65292;&#19981;&#36807;&#36825;&#20010;&#27169;&#22359;&#20381;&#36182;&#20110;_thread&#27169;&#22359;&#65292;&#25105;&#20204;&#26469;&#30475;&#30475;&#23427;&#38271;&#20160;&#20040;&#26679;&#23376;&#12290;<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/3dfcfWR" target="_blank" rel="noopener">https://ift.tt/3dfcfWR</a> original site<br><br><br><br>February 16, 2021 at 10:15PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1022#issuecomment-789377538" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>3/3/2021</strong></p>
+</blockquote>
+<h2 id="《深度剖析CPython解释器》26-解密Python中的多线程-第二部分-：源码剖析Python线程的创建、销毁、调度，以及GIL的实现原理-古明地盆-博客园"><a href="#《深度剖析CPython解释器》26-解密Python中的多线程-第二部分-：源码剖析Python线程的创建、销毁、调度，以及GIL的实现原理-古明地盆-博客园" class="headerlink" title="《深度剖析CPython解释器》26. 解密Python中的多线程(第二部分)：源码剖析Python线程的创建、销毁、调度，以及GIL的实现原理 - 古明地盆 - 博客园"></a>《深度剖析CPython解释器》26. 解密Python中的多线程(第二部分)：源码剖析Python线程的创建、销毁、调度，以及GIL的实现原理 - 古明地盆 - 博客园</h2><h1 id="《深度剖析CPython解释器》26-解密Python中的多线程-第二部分-：源码剖析Python线程的创建、销毁、调度，以及GIL的实现原理"><a href="#《深度剖析CPython解释器》26-解密Python中的多线程-第二部分-：源码剖析Python线程的创建、销毁、调度，以及GIL的实现原理" class="headerlink" title="《深度剖析CPython解释器》26. 解密Python中的多线程(第二部分)：源码剖析Python线程的创建、销毁、调度，以及GIL的实现原理"></a><a href="https://www.cnblogs.com/traditional/p/13655426.html" target="_blank" rel="noopener">《深度剖析CPython解释器》26. 解密Python中的多线程(第二部分)：源码剖析Python线程的创建、销毁、调度，以及GIL的实现原理</a></h1><h2 id="初见Python的-thread模块"><a href="#初见Python的-thread模块" class="headerlink" title="初见Python的_thread模块"></a>初见Python的_thread模块</h2><p><strong>下面我们来说一下Python中线程的创建，我们知道在创建多线程的时候会使用threading这个标准库，这个库是以一个py文件存在的形式存在的，不过这个模块依赖于_thread模块，我们来看看它长什么样子。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200912035621242-1036825105.png" alt=""></p>
+<p><strong>_thread是真正用来创建线程的模块，这个模块是由C编写，内嵌在解释器里面。我们可以import调用，但是在Python安装目录里面则是看不到的。像这种底层由C编写、内嵌在解释器里面的模块，以及那些无法使用文本打开的pyd文件，pycharm都会给你做一个抽象，并且把注释给你写好。</strong></p>
+<p><strong>记得我们之前说过Python源码中的Modules目录，这个目录里面存放了大量使用C编写的模块，我们在编译完Python之后就，这些模块就内嵌在解释器里面了。而这些模块都是针对那些性能要求比较高的，而要求不高的则由Python编写，存放在Lib目录下。像我们平时调用random、collections、threading，其实它们背后会调用_random、_collections、_thread。再比如我们使用的re模块，真正用来做正则匹配的逻辑实际上位于 <em>Modules/_sre.c</em> 里面。</strong></p>
+<p><strong>说了这么多，只是为引出_thread是在Modules里面。玛德，前戏真长啊。Python中 _thread 的底层实现是在 _threadmodule.c中，我们来看看它都提供了哪些接口。</strong></p>
+<pre><code>static PyMethodDef thread_methods[] = {
+    {&quot;start_new_thread&quot;,        (PyCFunction)thread_PyThread_start_new_thread,
+     METH_VARARGS, start_new_doc},
+    {&quot;start_new&quot;,               (PyCFunction)thread_PyThread_start_new_thread,
+     METH_VARARGS, start_new_doc},
+    {&quot;allocate_lock&quot;,           thread_PyThread_allocate_lock,
+     METH_NOARGS, allocate_doc},
+    {&quot;allocate&quot;,                thread_PyThread_allocate_lock,
+     METH_NOARGS, allocate_doc},
+    {&quot;exit_thread&quot;,             thread_PyThread_exit_thread,
+     METH_NOARGS, exit_doc},
+    {&quot;exit&quot;,                    thread_PyThread_exit_thread,
+     METH_NOARGS, exit_doc},
+    {&quot;interrupt_main&quot;,          thread_PyThread_interrupt_main,
+     METH_NOARGS, interrupt_doc},
+    {&quot;get_ident&quot;,               thread_get_ident,
+     METH_NOARGS, get_ident_doc},
+#ifdef PY_HAVE_THREAD_NATIVE_ID
+    {&quot;get_native_id&quot;,           thread_get_native_id,
+     METH_NOARGS, get_native_id_doc},
+#endif
+    {&quot;_count&quot;,                  thread__count,
+     METH_NOARGS, _count_doc},
+    {&quot;stack_size&quot;,              (PyCFunction)thread_stack_size,
+     METH_VARARGS, stack_size_doc},
+    {&quot;_set_sentinel&quot;,           thread__set_sentinel,
+     METH_NOARGS, _set_sentinel_doc},
+    {&quot;_excepthook&quot;,              thread_excepthook,
+     METH_O, excepthook_doc},
+    {NULL,                      NULL}           /* sentinel */
+};</code></pre><p><strong>我们看到第一个 <em>start_new_thread</em> 和第二个 <em>start_new</em> ，发现它们都对应 <em>thread_PyThread_start_new_thread</em> 这个函数，这些接口和_thread.py中对应的是一致的。</strong></p>
+<h2 id="线程的创建"><a href="#线程的创建" class="headerlink" title="线程的创建"></a>线程的创建</h2><p><strong>当我们使用threading模块创建一个线程的时候，threading会调用_thread模块来创建，而在_thread中显然是通过里面 <em>start_new_thread</em> 对应的 <em>thread_PyThread_start_new_thread</em> 来创建，下面我们就来看看这个函数。</strong></p>
+<pre><code>//Modules/_threadmodule.c
+static PyObject *
+thread_PyThread_start_new_thread(PyObject *self, PyObject *fargs)
+{
+    PyObject *func, *args, *keyw = NULL;
+    struct bootstate *boot;
+    unsigned long ident;
+
+    //下面都是参数检测逻辑, thread.Thread()里面我们一般传递target、args、kwargs
+    if (!PyArg_UnpackTuple(fargs, &quot;start_new_thread&quot;, 2, 3,
+                           &amp;func, &amp;args, &amp;keyw))
+        return NULL;
+    //target必须可调用
+    if (!PyCallable_Check(func)) {
+        PyErr_SetString(PyExc_TypeError,
+                        &quot;first arg must be callable&quot;);
+        return NULL;
+    }
+    //args是个元组
+    if (!PyTuple_Check(args)) {
+        PyErr_SetString(PyExc_TypeError,
+                        &quot;2nd arg must be a tuple&quot;);
+        return NULL;
+    }
+    //kwargs是个字典
+    if (keyw != NULL &amp;&amp; !PyDict_Check(keyw)) {
+        PyErr_SetString(PyExc_TypeError,
+                        &quot;optional 3rd arg must be a dictionary&quot;);
+        return NULL;
+    }
+
+    //创建bootstate结构体实例
+    /*
+    struct bootstate {
+        PyInterpreterState *interp;
+        PyObject *func;
+        PyObject *args;
+        PyObject *keyw;
+        PyThreadState *tstate;
+    };    
+    */
+    boot = PyMem_NEW(struct bootstate, 1);
+    if (boot == NULL)
+        return PyErr_NoMemory();
+    //获取进程状态对象、函数、args、kwargs
+    boot-&gt;interp = _PyInterpreterState_Get();
+    boot-&gt;func = func;
+    boot-&gt;args = args;
+    boot-&gt;keyw = keyw;
+    boot-&gt;tstate = _PyThreadState_Prealloc(boot-&gt;interp);
+    if (boot-&gt;tstate == NULL) {
+        PyMem_DEL(boot);
+        return PyErr_NoMemory();
+    }
+    Py_INCREF(func);
+    Py_INCREF(args);
+    Py_XINCREF(keyw);
+    //初始化多线程环境，记住这一步
+    PyEval_InitThreads(); /* Start the interpreter&apos;s thread-awareness */
+
+    //创建线程, 返回id
+    ident = PyThread_start_new_thread(t_bootstrap, (void*) boot);
+    if (ident == PYTHREAD_INVALID_THREAD_ID) {
+        PyErr_SetString(ThreadError, &quot;can&apos;t start new thread&quot;);
+        Py_DECREF(func);
+        Py_DECREF(args);
+        Py_XDECREF(keyw);
+        PyThreadState_Clear(boot-&gt;tstate);
+        PyMem_DEL(boot);
+        return NULL;
+    }
+    return PyLong_FromUnsignedLong(ident);
+}</code></pre><p><strong>因此在这个函数中，我们看到Python虚拟机通过三个主要的动作完成一个线程的创建。</strong></p>
+<ul>
+<li><code>1. 创建并初始化bootstate结构体实例对象boot，在boot中，会保存一些相关信息</code></li>
+<li><code>2. 初始化Python的多线程环境</code></li>
+<li><code>3. 以boot为参数，创建子线程，子线程也会对应操作系统的原生线程</code></li>
+</ul>
+<p><strong>另外我们看到了这一步：<code>boot-&gt;interp = _PyInterpreterState_Get();</code>，说明boost保存了Python的 <em>PyInterpreterState</em> 对象，这个对象中携带了Python的<code>模块对象池(module pool)</code>这样的全局信息，Python中所有的thread都会保存这些全局信息。</strong></p>
+<p><strong>我们在下面还看到了多线程环境的初始化动作，这一点需要注意，Python在启动的时候是不支持多线程的。换言之，Python中支持多线程的数据结构、以及GIL都是没有被创建的。因为对多线程的支持是需要代价的，如果上来就激活了多线程，但是程序却只有一个主线程，那么Python仍然会执行所谓的线程调度机制，只不过调度完了还是它自己，所以这无异于在做无用功。因此Python将开启多线程的权利交给了程序员，自己在启动的时候是单线程的，既然是单线程，自然就不存在线程调度了、当然也没有GIL。一旦用户调用了<code>threading.Thread(...).start() =&gt; _thread.start_new_thread()</code>，则代表明确地指示虚拟机要创建新的线程了，这个时候Python虚拟机就知道自己该创建与多线程相关的东西了，比如：数据结构、环境、以及那个至关重要的GIL。</strong></p>
+<h3 id="建立多线程环境"><a href="#建立多线程环境" class="headerlink" title="建立多线程环境"></a>建立多线程环境</h3><p><strong>多线程环境的建立，说的直白一点，主要就是创建GIL。我们已经知道了GIL对于Python的多线程机制的重要意义，那么这个GIL是如何实现的呢？这是一个比较有趣的问题，下面我们就来看看GIL长什么样子吧。</strong></p>
+<pre><code>//include/internal/pycore_pystate.h
+struct _ceval_runtime_state {
+    /* 递归限制, 可以通过sys.getrecursionlimit()查看 */
+    int recursion_limit;
+    /*
+       记录是否对任意线程启用跟踪，同时计算 tstate-&gt;c_tracefunc 为空的线程数。
+       如果该值为0，那么将不会检查该线程的 c_tracefunc
+       这会加快 PyEval_EvalFrameEx() 中 fast_next_opcode 后的if语句
+
+       这里我们不做深入讨论
+    */
+    int tracing_possible;
+
+    //eval循环中所有跳出快速通道的请求, 不深入讨论
+    _Py_atomic_int eval_breaker;
+
+    //放弃GIL的请求
+    _Py_atomic_int gil_drop_request;
+
+    //线程调度相关, 比如: 加锁
+    struct _pending_calls pending;
+
+    //信号检测相关
+    _Py_atomic_int signals_pending;
+
+    //重点来了, GIL, 我们看到GIL是一个struct _gil_runtime_state
+    struct _gil_runtime_state gil;
+};</code></pre><p><strong>所以GIL在Python的底层是一个结构体，这个结构体藏身于 <em>include/internal/pycore_gil</em> 中。</strong></p>
+<pre><code>//Python/ceval_gil.h
+#define DEFAULT_INTERVAL 5000
+
+//include/internal/pycore_gil
+struct _gil_runtime_state {
+    /* 一个线程拥有gil的间隔，默认是5000微妙，也就是我们上面用sys.getswitchinterval()得到的0.005 */
+    unsigned long interval;
+
+    /*最后一个持有GIL的PyThreadState(线程)，
+    这有助于我们知道在丢弃GIL后是否还有其他线程被调度    
+    */
+    _Py_atomic_address last_holder;
+    /* GIL是否被获取，这个是原子性的，因为在ceval.c中不需要任何锁就能够读取它 */
+    _Py_atomic_int locked;
+
+    /* 从GIL创建之后，总共切换的次数 */
+    unsigned long switch_number;
+    /* cond允许一个或多个线程等待，直到GIL被释放 */
+    PyCOND_T cond;
+
+    /* mutex则是负责保护上面的变量 */
+    PyMUTEX_T mutex;
+#ifdef FORCE_SWITCHING
+    /* &quot;GIL等待线程&quot;在被调度获取GIL之前, &quot;GIL释放线程&quot;一致处于等待状态 */
+    PyCOND_T switch_cond;
+    PyMUTEX_T switch_mutex;
+#endif
+};</code></pre><blockquote>
+<p><strong>所以我们看到gil是<em>struct _gil_runtime_state</em> 类型，然后内嵌在结构体 <em>struct _ceval_runtime_state</em> 里面。</strong></p>
+<p><strong>gil是一个结构体实例，根据里面的gil.locked判断这个gil有没有人获取，而这个locked可以看成是一个布尔变量，其访问受到gil.mutex保护，是否改变则取决于gil.cond。在持有gil的线程中，主循环(PyEval_EvalFrameEx)必须能通过另一个线程来按需释放gil。</strong></p>
+</blockquote>
+<p><strong>并且我们知道在创建多线程的时候，首先是需要调用 <em>PyEval_InitThreads</em> 进行初始化的。我们就来看看这个函数，位于 <em>Python/ceval.c</em> 中。</strong></p>
+<pre><code>void
+PyEval_InitThreads(void)
+{    
+    //获取运行时状态对象
+    _PyRuntimeState *runtime = &amp;_PyRuntime;
+    //拿到ceval, struct _ceval_runtime_state类型, gil就在里面
+    struct _ceval_runtime_state *ceval = &amp;runtime-&gt;ceval;
+    //获取gil
+    struct _gil_runtime_state *gil = &amp;ceval-&gt;gil;
+
+    //如果gil已经创建，那么直接返回
+    if (gil_created(gil)) {
+        return;
+    }
+
+    //线程的初始化
+    PyThread_init_thread();
+    //创建gil
+    create_gil(gil);
+    //获取线程状态对象
+    PyThreadState *tstate = _PyRuntimeState_GetThreadState(runtime);
+    //gil创建了，那么就要拿到这个gil
+    take_gil(ceval, tstate);
+
+    //我们说这个是和线程调度相关的
+    struct _pending_calls *pending = &amp;ceval-&gt;pending;
+    //如果拿到gil了，其它线程就不能获取了，那么不好意思这个时候要加锁
+    pending-&gt;lock = PyThread_allocate_lock();
+    if (pending-&gt;lock == NULL) {
+        Py_FatalError(&quot;Can&apos;t initialize threads for pending calls&quot;);
+    }
+}</code></pre><p><strong>然后我们看看 <em>gil_created</em> 、 <em>create_gil</em> 、 <em>take_gil</em> 这三个函数，我们说它是用来检测 gil是否被创建、创建gil、和获取gil，定义在 <em>Python/ceval_gil.h</em> 中。</strong></p>
+<pre><code>static int gil_created(struct _gil_runtime_state *gil)
+{    
+    //我们看到这个gil_created就是用来检测gil有没有被创建的
+    return (_Py_atomic_load_explicit(&amp;gil-&gt;locked, _Py_memory_order_acquire) &gt;= 0);
+}
+
+
+static void create_gil(struct _gil_runtime_state *gil)
+{
+    //这里是创建gil
+    //我们看到这里负责初始化gil里面的成员
+    MUTEX_INIT(gil-&gt;mutex);
+#ifdef FORCE_SWITCHING
+    MUTEX_INIT(gil-&gt;switch_mutex);
+#endif
+    COND_INIT(gil-&gt;cond);
+#ifdef FORCE_SWITCHING
+    COND_INIT(gil-&gt;switch_cond);
+#endif
+    _Py_atomic_store_relaxed(&amp;gil-&gt;last_holder, 0);
+    _Py_ANNOTATE_RWLOCK_CREATE(&amp;gil-&gt;locked);
+    _Py_atomic_store_explicit(&amp;gil-&gt;locked, 0, _Py_memory_order_release);
+}
+
+
+static void
+take_gil(struct _ceval_runtime_state *ceval, PyThreadState *tstate)
+{
+    if (tstate == NULL) {
+        Py_FatalError(&quot;take_gil: NULL tstate&quot;);
+    }
+
+    struct _gil_runtime_state *gil = &amp;ceval-&gt;gil;
+    int err = errno;
+    MUTEX_LOCK(gil-&gt;mutex);
+
+    //判断gil是否被释放, 如果被释放, 那么直接跳转到_ready
+    if (!_Py_atomic_load_relaxed(&amp;gil-&gt;locked)) {
+        goto _ready;
+    }
+
+    while (_Py_atomic_load_relaxed(&amp;gil-&gt;locked)) {
+        int timed_out = 0;
+        unsigned long saved_switchnum;
+        //如果没有释放，代表gil被人使用了，会一直循环请求获取gil
+        //.....
+        //.....
+    }
+_ready:
+#ifdef FORCE_SWITCHING
+    //.....
+    /* 获取到gil的时候，那么会通过_Py_atomic_store_relaxed对其再次上锁 */
+    _Py_atomic_store_relaxed(&amp;gil-&gt;locked, 1);
+    _Py_ANNOTATE_RWLOCK_ACQUIRED(&amp;gil-&gt;locked, /*is_write=*/1);
+
+    //.....
+}</code></pre><p><strong>事实上，Python的多线程机制和平台有关系，需要进行统一的封装。比如：线程的销毁，Windows系统下就位于 <em>Python/thread_nt.h</em> 中，可以自己看一看。</strong></p>
+<p><strong>总之Python的线程在获取gil的时候，会检查当前gil是否可用。而其中的locked域就是指示当前gil是否可用，如果这个值为0，那么代表可用，那么就必须要将gil的locked设置为1，表示当前gil已被占用。一旦当该线程释放gil的时候，就一定要将该值减去1，这样gil的值才会从1变成0，才能被其他线程使用，所以官方把gil的locked说成是布尔类型也不是没道理的。</strong></p>
+<p><strong>最终在一个线程释放gil时，会通知所有在等待gil的线程，这些线程会被操作系统唤醒。但是这个时候会选择哪一个线程执行呢？之前说了，这个时候Python会直接借用操作系统的调度机制随机选择一个。</strong></p>
+<h3 id="线程状态保护机制"><a href="#线程状态保护机制" class="headerlink" title="线程状态保护机制"></a>线程状态保护机制</h3><p><strong>要剖析线程状态的保护机制，我们首先需要回顾一下线程状态对象。在Python中肯定要有对象负责记录对应线程的状态信息，这个对象就是PyThreadState对象。</strong></p>
+<p><strong>每一个PyThreadState对象中都保存着当前的线程的PyFrameObject、线程id这样的信息，因为这些信息是需要被线程访问的。假设线程A访问线程对象，但是线程对象里面存储的却是B的id，这样的话就完蛋了。因此Python内部必须有一套机制，这套机制与操作系统管理进程的机制非常类似。在线程切换的时候，会保存当前线程的上下文，并且还能够进行恢复。在Python内部，维护这一个全局变量，当前活动线程所对应的线程状态对象就保存在该变量里。当Python调度线程时，会将被激活的线程所对应的线程状态对象赋给这个全局变量，让其始终保存活动线程的状态对象。</strong></p>
+<p><strong>但是这样就引入了一个问题：Python如何在调度线程时，获得被激活线程对应的状态对象呢？其实Python内部会通过一个单项链表来管理所有的Python线程状态对象，当需要寻找一个线程对应的状态对象时，就遍历这个链表，搜索其对应的状态对象。</strong></p>
+<p><strong>而对这个状态对象链表的访问，则不必在gil的保护下进行。因为对于这个状态对象链表，python会专门创建一个独立的锁，专职对这个链表进行保护，而且这个锁的创建是在python初始化的时候完成的。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200912035628568-1560244594.png" alt=""></p>
+<h3 id="从gil到字节码解释器"><a href="#从gil到字节码解释器" class="headerlink" title="从gil到字节码解释器"></a>从gil到字节码解释器</h3><p><strong>我们知道创建线程对象是通过 <em>PyThreadState_New</em> 函数创建的：</strong></p>
+<pre><code>//Python/pystate.c
+PyThreadState *
+PyThreadState_New(PyInterpreterState *interp)
+{
+    return new_threadstate(interp, 1);
+}
+
+
+static PyThreadState *
+new_threadstate(PyInterpreterState *interp, int init)
+{    
+    _PyRuntimeState *runtime = &amp;_PyRuntime;
+    //创建线程对象
+    PyThreadState *tstate = (PyThreadState *)PyMem_RawMalloc(sizeof(PyThreadState));
+    if (tstate == NULL) {
+        return NULL;
+    }
+
+    //用于获取当前线程的frame
+    if (_PyThreadState_GetFrame == NULL) {
+        _PyThreadState_GetFrame = threadstate_getframe;
+    }
+
+    //下面是线程的相关属性
+    tstate-&gt;interp = interp;
+
+    tstate-&gt;frame = NULL;
+    tstate-&gt;recursion_depth = 0;
+    tstate-&gt;overflowed = 0;
+    tstate-&gt;recursion_critical = 0;
+    tstate-&gt;stackcheck_counter = 0;
+    tstate-&gt;tracing = 0;
+    tstate-&gt;use_tracing = 0;
+    tstate-&gt;gilstate_counter = 0;
+    tstate-&gt;async_exc = NULL;
+    tstate-&gt;thread_id = PyThread_get_thread_ident();
+
+    tstate-&gt;dict = NULL;
+
+    tstate-&gt;curexc_type = NULL;
+    tstate-&gt;curexc_value = NULL;
+    tstate-&gt;curexc_traceback = NULL;
+
+    tstate-&gt;exc_state.exc_type = NULL;
+    tstate-&gt;exc_state.exc_value = NULL;
+    tstate-&gt;exc_state.exc_traceback = NULL;
+    tstate-&gt;exc_state.previous_item = NULL;
+    tstate-&gt;exc_info = &amp;tstate-&gt;exc_state;
+
+    tstate-&gt;c_profilefunc = NULL;
+    tstate-&gt;c_tracefunc = NULL;
+    tstate-&gt;c_profileobj = NULL;
+    tstate-&gt;c_traceobj = NULL;
+
+    tstate-&gt;trash_delete_nesting = 0;
+    tstate-&gt;trash_delete_later = NULL;
+    tstate-&gt;on_delete = NULL;
+    tstate-&gt;on_delete_data = NULL;
+
+    tstate-&gt;coroutine_origin_tracking_depth = 0;
+
+    tstate-&gt;async_gen_firstiter = NULL;
+    tstate-&gt;async_gen_finalizer = NULL;
+
+    tstate-&gt;context = NULL;
+    tstate-&gt;context_ver = 1;
+
+    tstate-&gt;id = ++interp-&gt;tstate_next_unique_id;
+
+    if (init) {
+        //其它的都是设置属性，我们在前面章节已经见过了
+        //之所以又拿出来，是因为关键的这一步
+        _PyThreadState_Init(runtime, tstate);
+    }
+
+    HEAD_LOCK(runtime);
+    tstate-&gt;prev = NULL;
+    tstate-&gt;next = interp-&gt;tstate_head;
+    if (tstate-&gt;next)
+        tstate-&gt;next-&gt;prev = tstate;
+    interp-&gt;tstate_head = tstate;
+    HEAD_UNLOCK(runtime);
+
+    return tstate;
+}
+
+
+//这一步_PyThreadState_Init就表示将线程对应的线程对象放入到我们刚才说的那个&quot;线程状态对象链表&quot;当中
+void
+_PyThreadState_Init(_PyRuntimeState *runtime, PyThreadState *tstate)
+{
+    _PyGILState_NoteThreadState(&amp;runtime-&gt;gilstate, tstate);
+}</code></pre><p><strong>这里有一个特别需要注意的地方，就是当前活动的Python线程不一定获得了gil。比如主线程获得了gil，但是子线程还没有申请gil，那么操作系统也不会将其挂起。由于主线程和子线程都对应操作系统的原生线程，所以操作系统系统是可能在主线程和子线程之间切换的，因为操作系统级别的线程调度和Python级别的线程调度是不同的。当所有的线程都完成了初始化动作之后，操作系统的线程调度和Python的线程调度才会统一。那时python的线程调度会迫使当前活动线程释放gil，而这一操作会触发操作系统内核的用于管理线程调度的对象，进而触发操作系统对线程的调度。所以我们说，Python对线程的调度是交给操作系统的<code>(使用的是操作系统内核调度线程的调度机制)</code>，当操作系统随机选择一个线程的时候，Python就会根据这个线程去<code>线程状态对象链表</code>当中找到对应的线程状态对象，并赋值给那个保存当前线程活动状态对象的全局变量。从而开始获取gil，执行字节码，执行一段时间，再次被强迫释放gil，然后操作系统再次调度，选择一个线程，再获取对应的线程状态对象，然后该线程获取gil，执行一段时间字节码，再次被强迫释放gil，然后操作系统再次随机选择，依次往复。。。。。。</strong></p>
+<p><strong>显然，当子线程还没有获取gil的时候，相安无事。然而一旦 <em>PyThreadState_New</em> 之后，多线程机制初始化完成，那么子线程就开始互相争夺话语权了。</strong></p>
+<pre><code>//Modules/_threadmodule.c
+static void
+t_bootstrap(void *boot_raw)
+{    
+    //线程信息都在里面
+    struct bootstate *boot = (struct bootstate *) boot_raw;
+    //线程状态对象
+    PyThreadState *tstate;
+    PyObject *res;
+    //获取线程状态对象
+    tstate = boot-&gt;tstate;
+    //拿到线程id
+    tstate-&gt;thread_id = PyThread_get_thread_ident();
+    _PyThreadState_Init(&amp;_PyRuntime, tstate);
+
+    //下面说
+    PyEval_AcquireThread(tstate);
+
+    //进程内部的线程数量+1
+    tstate-&gt;interp-&gt;num_threads++;
+    //执行字节码
+    res = PyObject_Call(boot-&gt;func, boot-&gt;args, boot-&gt;keyw);
+    if (res == NULL) {
+        if (PyErr_ExceptionMatches(PyExc_SystemExit))
+            /* SystemExit is ignored silently */
+            PyErr_Clear();
+        else {
+            _PyErr_WriteUnraisableMsg(&quot;in thread started by&quot;, boot-&gt;func);
+        }
+    }
+    else {
+        Py_DECREF(res);
+    }
+    Py_DECREF(boot-&gt;func);
+    Py_DECREF(boot-&gt;args);
+    Py_XDECREF(boot-&gt;keyw);
+    PyMem_DEL(boot_raw);
+    tstate-&gt;interp-&gt;num_threads--;
+    PyThreadState_Clear(tstate);
+    PyThreadState_DeleteCurrent();
+    PyThread_exit_thread();
+}</code></pre><p><strong>这里面有一个 <em>PyEval_AcquireThread</em> ，之前我们没有说，但如果我要说它是做什么的你就知道了。在 <em>PyEval_AcquireThread</em> 中，子线程进行了最后的冲刺，于是在里面它通过 <em>PyThread_acquire_lock</em> 争取gil。到了这一步，子线程将自己挂起了，操作系统没办法靠自己的力量将其唤醒，只能等待Python的线程调度机制强迫主线程放弃gil后，触发操作系统内核的线程调度，子线程才会被唤醒。然而当子线程被唤醒之后，主线程却又陷入了苦苦的等待当中，同样苦苦地等待这Python强迫子线程放弃gil的那一刻。<code>(假设我们这里只有一个主线程和一个子线程)</code></strong></p>
+<p><strong>当子线程被Python的线程调度机制唤醒之后，它所做的第一件事就是通过 <em>PyThreadState_Swap</em> 将Python维护的当前线程状态对象设置为其自身的状态对象，就如同操作系统进程的上下文环境恢复一样。这个 <em>PyThreadState_Swap</em> 我们也没有详细展开说，因为有些东西我们只需要知道是干什么的就行。</strong></p>
+<p><strong>子线程获取了gil之后，还不算成功，因为它还没有进入字节码解释器<code>(想象成大大的for循环，里面有一个巨大的switch)</code>。当Python线程唤醒子线程之后，子线程将回到<code>t_bootstrap</code>，并进入 <em>PyObject_Call</em> ，从这里一路往前，最终调用 <em>PyEval_EvalFrameEx</em> ，才算是成功。因为 <em>PyEval_EvalFrameEx</em> 执行的是字节码指令，而Python最终执行的也是一个字节码，所以此时才算是真正的执行，之前的都只能说是初始化。当进入 <em>PyEval_EvalFrameEx</em> 的那一刻，子线程就和主线程一样，完全受Python线程度调度机制控制了。</strong></p>
+<h2 id="Python的线程调度"><a href="#Python的线程调度" class="headerlink" title="Python的线程调度"></a>Python的线程调度</h2><h3 id="标准调度"><a href="#标准调度" class="headerlink" title="标准调度"></a>标准调度</h3><p><strong>当主线程和子线程都进入了Python解释器后，Python的线程之间的切换就完全由Python的线程调度机制掌控了。Python的线程调度机制肯定是在Python解释器核心 <em>PyEval_EvalFrameEx</em> 里面的，因为线程是在执行字节码的时候切换的，那么肯定是在 <em>PyEval_EvalFrameEx</em> 里面。而在分析字节码的时候，我们看到过 <em>PyEval_EvalFrameEx</em> ，尽管说它是字节码执行的核心，但是它实际上调用了其它的函数，但毕竟是从它开始的，所以我们还是说字节码核心是 <em>PyEval_EvalFrameEx</em> 。总之，在分析字节码的时候，我们并没有看线程的调度机制，那么下面我们就来分析一下。</strong></p>
+<pre><code>//ceval.c
+PyObject* _Py_HOT_FUNCTION
+_PyEval_EvalFrameDefault(PyFrameObject *f, int throwflag)
+{
+    for (;;) {
+        /* Give another thread a chance */
+        if (_PyThreadState_Swap(&amp;runtime-&gt;gilstate, NULL) != tstate) {
+            Py_FatalError(&quot;ceval: tstate mix-up&quot;);
+        }
+        //释放gil，给其他线程一个机会
+        drop_gil(ceval, tstate);
+
+
+        /* Other threads may run now */
+        //你一旦释放了，那么就必须要再次申请，才能等待下一次被调度。
+        take_gil(tstate);       
+    }
+}</code></pre><p><strong>主线程获得了gil执行字节码，但是我们知道在Python2中是通过执行字节码数量<code>(_Py_Ticker)</code>判断的，每执行一条字节码这个<code>_Py_Ticker</code>将减少1，初始为100。而在Python3中，则是通过执行时间来判断的，默认是0.005秒。一旦达到了执行时间，那么主线程就会将维护当前线程状态对象的全局变量设置为NULL并释放掉gil，这时候由于等待gil而被挂起的子线程被操作系统的线程调度机制重新唤醒，从而进入 <em>PyEval_EvalFrameEx</em> 。而对于主线程，虽然它失去了gil，但是由于它没有被挂起，所以对于操作系统的线程调度机制，它是可以再次被切换为活动线程的。</strong></p>
+<p><strong>当操作系统的调度机制将主线程切换为活动线程的时候，主线程将主动申请gil，但由于gil被子线程占有，主线程将自身挂起。从这时开始，操作系统就不能再将主线程切换为活动线程了。所以我们发现，线程释放gil并不是马上就被挂起的，而是在释放完之后重新申请gil的时候才被挂起的。然后子线程执行0.005s之后，又会释放gil，申请gil，将自身挂起。而释放gil，会触发操作系统线程调度机制，唤醒主线程，如果是多个子线程的话，那么会从挂起的主线程和其它子线程中随机选择一个恢复。当主线程执行一段时间之后，又给子线程，如此反复，从而实现对Python多线程的支持。</strong></p>
+<h3 id="阻塞调度"><a href="#阻塞调度" class="headerlink" title="阻塞调度"></a>阻塞调度</h3><p><strong>标准调度就是Python的调度机制掌控的，每个线程都是相当公平的。但是如果仅仅只有标准调度的话，那么可以说Python的多线程没有任何意义，但为什么可以很多场合使用多线程呢？就是因为调度除了标准调度之外，还存在阻塞调度。</strong></p>
+<p><strong>阻塞调度是指，当某个线程遇到io阻塞的时候，会主动释放gil，让其它线程执行，因为io是不耗费cpu的。假设time.sleep，或者从网络上请求数据等等，这些都是处于io阻塞，那么会发生线程调度，当阻塞的线程可以执行了<code>(如：sleep结束，请求的数据成功返回)</code>，那么再切换回来。除了这一种情况之外，还有一种情况，也会导致线程不得不挂起，那就是input函数等待用户输入，这个时候也不得不释放gil。</strong></p>
+<h2 id="Python子线程的销毁"><a href="#Python子线程的销毁" class="headerlink" title="Python子线程的销毁"></a>Python子线程的销毁</h2><p><strong>我们创建一个子线程的时候，往往是执行一个函数，或者重写一个类继承自threading.Thread，当然Python的threading模块我们后面会介绍。当一个子线程执行结束之后，Python肯定是要把对应的子线程销毁的，当然销毁主线程和销毁子线程是不同的，销毁主线程必须要销毁Python的运行时环境，而子线程的销毁则不需要这些动作，因此我们只看子线程的销毁。</strong></p>
+<p><strong>通过前面的分析我们知道，线程的主体框架是在t_bootstrap中：</strong></p>
+<pre><code>//Modules/_threadmodule.c
+static void
+t_bootstrap(void *boot_raw)
+{
+    struct bootstate *boot = (struct bootstate *) boot_raw;
+    PyThreadState *tstate;
+    PyObject *res;
+
+    //......
+    Py_DECREF(boot-&gt;func);
+    Py_DECREF(boot-&gt;args);
+    Py_XDECREF(boot-&gt;keyw);
+    PyMem_DEL(boot_raw);
+    tstate-&gt;interp-&gt;num_threads--;
+    PyThreadState_Clear(tstate);
+    PyThreadState_DeleteCurrent();
+    PyThread_exit_thread();
+}</code></pre><p><strong>Python首先会将进程内部的线程数量自减1，然后通过 <em>PyThreadState_Clear</em> 清理当前线程所对应的线程状态对象。所谓清理实际上比较简单，就是改变引用计数。随后，Python通过 <em>PyThreadState_DeleteCurrent</em> 函数释放gil。</strong></p>
+<pre><code>//Modules/pystate.c
+void
+PyThreadState_DeleteCurrent()
+{
+    _PyThreadState_DeleteCurrent(&amp;_PyRuntime);
+}
+
+
+static void
+_PyThreadState_DeleteCurrent(_PyRuntimeState *runtime)
+{
+    struct _gilstate_runtime_state *gilstate = &amp;runtime-&gt;gilstate;
+    PyThreadState *tstate = _PyRuntimeGILState_GetThreadState(gilstate);
+    if (tstate == NULL)
+        Py_FatalError(
+            &quot;PyThreadState_DeleteCurrent: no current tstate&quot;);
+    tstate_delete_common(runtime, tstate);
+    if (gilstate-&gt;autoInterpreterState &amp;&amp;
+        PyThread_tss_get(&amp;gilstate-&gt;autoTSSkey) == tstate)
+    {
+        PyThread_tss_set(&amp;gilstate-&gt;autoTSSkey, NULL);
+    }
+    _PyRuntimeGILState_SetThreadState(gilstate, NULL);
+    PyEval_ReleaseLock();
+}</code></pre><p><strong>然后首先会删除当前的线程状态对象，然后通过 <em>PyEval_ReleaseLock</em> 释放gil。当然这只是完成了绝大部分的销毁工作，至于剩下的收尾工作就依赖于对应的操作系统了，当然这跟我们也就没关系了。</strong></p>
+<h2 id="Python线程的用户级互斥与同步"><a href="#Python线程的用户级互斥与同步" class="headerlink" title="Python线程的用户级互斥与同步"></a>Python线程的用户级互斥与同步</h2><p><strong>我们知道，Python的线程在gil的控制之下，线程之间对Python提供的c api访问都是互斥的，并且每次在字节码执行的过程中不会被打断，这可以看做是Python的内核级的用户互斥。但是这种互斥不是我们能够控制的，内核级通过gil的互斥保护了内核共享资源，比如<code>del obj</code>，它对应的指令是DELETE_NAME，这个是不会被打断的。但是像<code>n += 1</code>这种一行代码对应多条字节码，即便是有gil，但由于在执行到一半的时候，碰巧gil释放了，那么也会出岔子。所以我们还需要一种互斥，也就是用户级互斥。</strong></p>
+<p><strong>实现用户级互斥的一种方法就是加锁，我们来看看Python提供的锁。</strong></p>
+<pre><code>static PyMethodDef lock_methods[] = {
+    {&quot;acquire_lock&quot;, (PyCFunction)(void(*)(void))lock_PyThread_acquire_lock,
+     METH_VARARGS | METH_KEYWORDS, acquire_doc},
+    {&quot;acquire&quot;,      (PyCFunction)(void(*)(void))lock_PyThread_acquire_lock,
+     METH_VARARGS | METH_KEYWORDS, acquire_doc},
+    {&quot;release_lock&quot;, (PyCFunction)lock_PyThread_release_lock,
+     METH_NOARGS, release_doc},
+    {&quot;release&quot;,      (PyCFunction)lock_PyThread_release_lock,
+     METH_NOARGS, release_doc},
+    {&quot;locked_lock&quot;,  (PyCFunction)lock_locked_lock,
+     METH_NOARGS, locked_doc},
+    {&quot;locked&quot;,       (PyCFunction)lock_locked_lock,
+     METH_NOARGS, locked_doc},
+    {&quot;__enter__&quot;,    (PyCFunction)(void(*)(void))lock_PyThread_acquire_lock,
+     METH_VARARGS | METH_KEYWORDS, acquire_doc},
+    {&quot;__exit__&quot;,    (PyCFunction)lock_PyThread_release_lock,
+     METH_VARARGS, release_doc},
+    {NULL,           NULL}              /* sentinel */
+};</code></pre><p><strong>这些方法我们肯定都见过，acquire表示上锁、release就是释放。假设有两个线程A和B，A线程执行了lock.acquire()，然后执行下面的代码。这个时候依旧会进行线程调度，线程B执行的时候，也遇到了lock.acquire()，那么不好意思B线程就只能在这里等着了。没错，是轮到B线程执行了，但是由于我们在用户级层面上设置了一把锁lock，而这把锁已经被A线程获取了，那么即使后面切换到B线程，但是在A还没有lock.release()的时候，B也只能卡在lock.acquire()上面。因为A先拿到了锁，那么只要A不释放，B就拿不到锁，从而一直卡在lock.acquire()上面。</strong></p>
+<blockquote>
+<p><strong>用户级互斥：即便你拿到了GIL，你也无法执行。</strong></p>
+</blockquote>
+<h2 id="Python的threading模块"><a href="#Python的threading模块" class="headerlink" title="Python的threading模块"></a>Python的threading模块</h2><p><strong>上面说了这么多，那么我们来看看Python中的threading模块，下面就是从Python层面上介绍这个模块的使用方法、api。</strong></p>
+<h3 id="创建一个线程"><a href="#创建一个线程" class="headerlink" title="创建一个线程"></a>创建一个线程</h3><pre><code>import threading
+
+
+def hello():
+    print(&quot;hello world&quot;)
+
+
+# 创建一个线程
+t = threading.Thread(target=hello, name=&quot;线程1&quot;)
+&quot;&quot;&quot;
+target：执行的函数
+args：位置参数
+kwargs：关键字参数
+name：线程名字
+daemon：布尔类型。表示是否设置为守护线程。设置为守护线程，那么当主线程执行结束会立即自杀
+        默认不是守护线程，表示主线程执行完毕但不会退出，而是等待子线程执行结束才会退出。
+&quot;&quot;&quot;
+
+# 我们调用threading.Thread会创建一个线程
+# 介绍几个简单的属性吧
+
+# 1.拿到线程名字,等价于t.getName()
+print(t.name)
+
+# 2.查看是否是守护线程，等价于t.isDaemon()
+print(t.daemon)  # False
+
+# 3.线程创建之后，还可以重新设置名字、或者守护线程
+t.setName(&quot;线程2&quot;)
+t.setDaemon(True)
+
+print(t.getName())  # 线程2
+print(t.isDaemon())  # True</code></pre><h3 id="启动线程"><a href="#启动线程" class="headerlink" title="启动线程"></a>启动线程</h3><pre><code>import threading
+
+l = []
+
+
+def hello():
+    import time
+    time.sleep(1)
+    l.append(123)
+    print(&quot;hello world&quot;)
+
+
+# 创建一个线程
+t = threading.Thread(target=hello, name=&quot;线程1&quot;)
+
+# 线程创建好了，但是我们如何启动呢？
+# 直接调用t.start()即可。
+t.start()
+
+print(l)
+&quot;&quot;&quot;
+[]
+hello world
+&quot;&quot;&quot;</code></pre><p><strong>我们看到启动一个子线程之后，主线程是不会等待子线程的，而是会继续往下走。因此在子线程进行append之前，主线程就已经打印了。那么如何等待子线程执行完毕之后，再让主线程往下走呢？</strong></p>
+<pre><code>import threading
+
+l = []
+
+
+def hello():
+    import time
+    time.sleep(1)
+    l.append(123)
+    print(&quot;hello world&quot;)
+
+
+# 创建一个线程
+t = threading.Thread(target=hello, name=&quot;线程1&quot;)
+t.start()
+
+# 这里就表示必须等t这个线程执行完毕，主线程才能向下走。
+# 当然这里面是可以传递一个超时时间的，如果执行完毕那么主线程往下走
+# 但是执行完毕之前，时间到了，主线程也会向下走
+t.join()
+
+print(l)
+&quot;&quot;&quot;
+hello world
+[123]
+&quot;&quot;&quot;
+# 由于多个线程操作系统调度，所以无法决定谁先打印。
+# 但是我们看到确实是等待子线程结束之后才向下走的
+
+# 如果我们没有写t.jojn()
+# 那么主线程执行完毕之后，会在最后默认执行一个join，不然它就直接结束了。
+
+# 如果是守护线程的话，那么就不用等了，直接结束
+# 如果是多个子线程，同样的逻辑</code></pre><p><strong>突然发现这个模块的api实在简单，没啥可介绍的。可以直接网上搜索。</strong></p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p><strong>这次我们算是将Python的多线程分析完毕了，很多人都说Python的多线程比较”鸡肋”，主要就是因为GIL导致Python无法利用多核。但是GIL也是有它的优点的，所以关于GIL也是仁者见仁智者见智吧。</strong></p>
+<p>posted @  2020-09-12 03:54  <a href="https://www.cnblogs.com/traditional/" target="_blank" rel="noopener">古明地盆</a>  阅读(234)  评论(0)  <a href="https://i.cnblogs.com/EditPosts.aspx?postid=13655426" target="_blank" rel="noopener">编辑</a>  <a href="https://www.cnblogs.com/traditional/p/13655426.html" target="_blank" rel="noopener">收藏</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-1020/" rel="prev" title="《深度剖析CPython解释器》24. Python运行时环境的初始化、源码分析Python解释器在启动时都做了哪些事情？ - 古明地盆 - 博客园">
+      <i class="fa fa-chevron-left"></i> 《深度剖析CPython解释器》24. Python运行时环境的初始化、源码分析Python解释器在启动时都做了哪些事情？ - 古明地盆 - 博客园
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-1021/" rel="next" title="《深度剖析CPython解释器》25. 解密Python中的多线程(第一部分)：初识GIL、以及多个线程之间的调度机制 - 古明地盆 - 博客园">
+      《深度剖析CPython解释器》25. 解密Python中的多线程(第一部分)：初识GIL、以及多个线程之间的调度机制 - 古明地盆 - 博客园 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#《深度剖析CPython解释器》26-解密Python中的多线程-第二部分-：源码剖析Python线程的创建、销毁、调度，以及GIL的实现原理-古明地盆-博客园"><span class="nav-number"></span> <span class="nav-text">《深度剖析CPython解释器》26. 解密Python中的多线程(第二部分)：源码剖析Python线程的创建、销毁、调度，以及GIL的实现原理 - 古明地盆 - 博客园</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#《深度剖析CPython解释器》26-解密Python中的多线程-第二部分-：源码剖析Python线程的创建、销毁、调度，以及GIL的实现原理"><span class="nav-number"></span> <span class="nav-text">《深度剖析CPython解释器》26. 解密Python中的多线程(第二部分)：源码剖析Python线程的创建、销毁、调度，以及GIL的实现原理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#初见Python的-thread模块"><span class="nav-number"></span> <span class="nav-text">初见Python的_thread模块</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#线程的创建"><span class="nav-number"></span> <span class="nav-text">线程的创建</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#建立多线程环境"><span class="nav-number">1.</span> <span class="nav-text">建立多线程环境</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#线程状态保护机制"><span class="nav-number">2.</span> <span class="nav-text">线程状态保护机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#从gil到字节码解释器"><span class="nav-number">3.</span> <span class="nav-text">从gil到字节码解释器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Python的线程调度"><span class="nav-number"></span> <span class="nav-text">Python的线程调度</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#标准调度"><span class="nav-number">1.</span> <span class="nav-text">标准调度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#阻塞调度"><span class="nav-number">2.</span> <span class="nav-text">阻塞调度</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Python子线程的销毁"><span class="nav-number"></span> <span class="nav-text">Python子线程的销毁</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Python线程的用户级互斥与同步"><span class="nav-number"></span> <span class="nav-text">Python线程的用户级互斥与同步</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Python的threading模块"><span class="nav-number"></span> <span class="nav-text">Python的threading模块</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#创建一个线程"><span class="nav-number">1.</span> <span class="nav-text">创建一个线程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#启动线程"><span class="nav-number">2.</span> <span class="nav-text">启动线程</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#小结"><span class="nav-number"></span> <span class="nav-text">小结</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

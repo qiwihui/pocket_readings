@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="《深度剖析CPython解释器》20. Python类机制的深度解析(第四部分): 实例对象的创建、以及属性访问 - 古明地盆 - 博客园">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《深度剖析CPython解释器》20. Python类机制的深度解析(第四部分): 实例对象的创建、以及属性访问 - 古明地盆 - 博客园">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1016/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="《深度剖析CPython解释器》20. Python类机制的深度解析(第四部分): 实例对象的创建、以及属性访问 - 古明地盆 - 博客园">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200902230328951-1929168710.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200902230338001-2083493292.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200902230348348-1015770855.png">
+<meta property="article:published_time" content="2021-02-16T14:17:21.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.430Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200902230328951-1929168710.png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1016/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>《深度剖析CPython解释器》20. Python类机制的深度解析(第四部分): 实例对象的创建、以及属性访问 - 古明地盆 - 博客园 | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1016/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          《深度剖析CPython解释器》20. Python类机制的深度解析(第四部分): 实例对象的创建、以及属性访问 - 古明地盆 - 博客园
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-02-16 14:17:21" itemprop="dateCreated datePublished" datetime="2021-02-16T14:17:21+00:00">2021-02-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+
+          
+            <div class="post-description">《深度剖析CPython解释器》20. Python类机制的深度解析(第四部分): 实例对象的创建、以及属性访问 - 古明地盆 - 博客园</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#20171;&#32461;&#23436;&#31867;&#23545;&#35937;&#20043;&#21518;&#65292;&#25105;&#20204;&#26469;&#20171;&#32461;&#23454;&#20363;&#23545;&#35937;&#12290;&#25105;&#20204;&#20043;&#21069;&#36153;&#20102;&#32769;&#40763;&#23376;&#21170;&#23558;&#31867;&#23545;&#35937;&#21078;&#26512;&#20102;&#19968;&#36941;&#65292;&#20294;&#36825;&#20165;&#20165;&#26159;&#19975;&#37324;&#38271;&#24449;&#30340;&#31532;&#19968;&#27493;&#12290;&#22240;&#20026;Python&#34394;&#25311;&#26426;&#25191;&#34892;&#26102;&#65292;&#22312;&#20869;&#23384;&#20013;&#20852;&#39118;&#20316;&#28010;&#30340;&#26159;&#19968;&#20010;&#20010;&#30340;&#23454;&#20363;&#23545;&#35937;&#65292;&#32780;&#31867;&#23545;&#35937;&#21482;&#26159;&#24149;&#21518;&#33521;&#38596;&#12290;<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/3jUuZMn" target="_blank" rel="noopener">https://ift.tt/3jUuZMn</a> original site<br><br><br><br>February 16, 2021 at 10:14PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1016#issuecomment-792571195" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>3/8/2021</strong></p>
+</blockquote>
+<h2 id="《深度剖析CPython解释器》20-Python类机制的深度解析-第四部分-实例对象的创建、以及属性访问-古明地盆-博客园"><a href="#《深度剖析CPython解释器》20-Python类机制的深度解析-第四部分-实例对象的创建、以及属性访问-古明地盆-博客园" class="headerlink" title="《深度剖析CPython解释器》20. Python类机制的深度解析(第四部分): 实例对象的创建、以及属性访问 - 古明地盆 - 博客园"></a>《深度剖析CPython解释器》20. Python类机制的深度解析(第四部分): 实例对象的创建、以及属性访问 - 古明地盆 - 博客园</h2><h1 id="《深度剖析CPython解释器》20-Python类机制的深度解析-第四部分-实例对象的创建、以及属性访问"><a href="#《深度剖析CPython解释器》20-Python类机制的深度解析-第四部分-实例对象的创建、以及属性访问" class="headerlink" title="《深度剖析CPython解释器》20. Python类机制的深度解析(第四部分): 实例对象的创建、以及属性访问"></a><a href="https://www.cnblogs.com/traditional/p/13605011.html" target="_blank" rel="noopener">《深度剖析CPython解释器》20. Python类机制的深度解析(第四部分): 实例对象的创建、以及属性访问</a></h1><h2 id="楔子"><a href="#楔子" class="headerlink" title="楔子"></a>楔子</h2><p><strong>介绍完类对象之后，我们来介绍实例对象。我们之前费了老鼻子劲将类对象剖析了一遍，但这仅仅是万里长征的第一步。因为Python虚拟机执行时，在内存中兴风作浪的是一个个的实例对象，而类对象只是幕后英雄。</strong></p>
+<h2 id="通过class类对象创建实例对象"><a href="#通过class类对象创建实例对象" class="headerlink" title="通过class类对象创建实例对象"></a>通过class类对象创建实例对象</h2><p><strong>我们还以之前的代码为例：</strong></p>
+<pre><code>class Girl:
+
+    name = &quot;夏色祭&quot;
+    def __init__(self):
+        print(&quot;__init__&quot;)
+
+    def f(self):
+        print(&quot;f&quot;)
+
+    def g(self, name):
+        self.name = name
+        print(self.name)
+
+
+girl = Girl()</code></pre><p><strong>看一下它的字节码，这里我们只看创建实例对象的字节码，也就是模块的字节码。</strong></p>
+<pre><code> 1           0 LOAD_BUILD_CLASS
+             2 LOAD_CONST               0 (&lt;code object Girl at 0x000002B7A85FABE0, file &quot;instance&quot;, line 1&gt;)
+             4 LOAD_CONST               1 (&apos;Girl&apos;)
+             6 MAKE_FUNCTION            0
+             8 LOAD_CONST               1 (&apos;Girl&apos;)
+            10 CALL_FUNCTION            2
+            12 STORE_NAME               0 (Girl)
+
+15          14 LOAD_NAME                0 (Girl)
+            16 CALL_FUNCTION            0
+            18 STORE_NAME               1 (girl)
+            20 LOAD_CONST               2 (None)
+            22 RETURN_VALUE</code></pre><p><strong>我们看到在类构建完毕之后，14 LOAD_NAME这条指令便将刚刚构建的类Girl取了出来、压入运行时栈，然后通过CALL_FUNCTION将栈里面的类弹出、进行调用，得到实例对象，再将实例对象设置在栈顶。18 STORE_NAME将栈顶的实例对象弹出，让符号girl与之绑定，放在local空间中。</strong></p>
+<p><strong>所以我们看到调用类对象的指令居然也是CALL_FUNCTION，因为一开始我们说了，类和函数一样，都是要先将PyCodeObject变成PyFunctionObject。</strong></p>
+<p><strong>因此执行完毕之后，模块的local空间就会变成这样：</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200902230328951-1929168710.png" alt=""></p>
+<p><strong>在CALL_FUNCTION中，Python同样会执行对应类型的tp_call操作。所以创建实例的时候，显然执行PyType_Type的tp_call，因此最终是在PyType_Type.tp_call中调用Girl.tp_new来创建instance对象的。</strong></p>
+<p><strong>需要注意的是，在创建class Girl这个对象时，Python虚拟机调用PyType_Ready对class Girl进行了初始化，其中一项动作就是继承基类，所以Girl.tp_new实际上就是object.tp_new，而在PyBaseObject_Type中，这个操作被定义为object_new。创建class对象和创建instance对象的不同之处正是在于tp_new不同。创建class对象，Python虚拟机使用的是tp_new，创建instance对象，Python虚拟机则使用object_new。使用类重写__new__的话，应该很容易明白。</strong></p>
+<p><strong>因此，由于我们创建的不是class对象，而是instance对象，type_call会尝试进行初始化的动作。</strong></p>
+<pre><code>static PyObject *
+type_call(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+    //......
+    type = Py_TYPE(obj);
+    if (type-&gt;tp_init != NULL) {
+        int res = type-&gt;tp_init(obj, args, kwds);
+        if (res &lt; 0) {
+            assert(PyErr_Occurred());
+            Py_DECREF(obj);
+            obj = NULL;
+        }
+        else {
+            assert(!PyErr_Occurred());
+        }
+    }
+    return obj;
+}</code></pre><p><strong>那么这个tp_init是哪里来的的，是在使用tp_new创建类对象的时候来的，tp_init在PyType_Ready时会继承PyBaseObject_Type的object_init操作。但正如我们之前说的那样，因为A中的定义重写了__init__，所以在 <em>fixup_slot_dispatchers</em> 中，tp_init会指向slotdef中指定的与__init__对应的slot_tp_init。并且还会设置tp_alloc，这与内存分配有关，源码中会有所体现。</strong></p>
+<pre><code>static PyObject *
+type_new(PyTypeObject *metatype, PyObject *args, PyObject *kwds)
+{
+    //........
+
+    //tp_alloc被设置为PyType_GenericAlloc, 表示为实例对象分配内存, 因为内存大小的元信息存在对应的类对象中
+    //并且在分配内存的同时会将实例对象的ob_type设置为对应的类对象
+    type-&gt;tp_alloc = PyType_GenericAlloc;
+    if (type-&gt;tp_flags &amp; Py_TPFLAGS_HAVE_GC) {
+        type-&gt;tp_free = PyObject_GC_Del;
+        type-&gt;tp_traverse = subtype_traverse;
+        type-&gt;tp_clear = subtype_clear;
+    }
+    else
+        type-&gt;tp_free = PyObject_Del;
+
+    //设置tp_init
+    fixup_slot_dispatchers(type);
+    //......
+}
+
+
+PyObject *
+PyType_GenericAlloc(PyTypeObject *type, Py_ssize_t nitems)
+{
+    PyObject *obj;
+    const size_t size = _PyObject_VAR_SIZE(type, nitems+1);
+
+    //分配内存
+    if (PyType_IS_GC(type))
+        obj = _PyObject_GC_Malloc(size);
+    else
+        obj = (PyObject *)PyObject_MALLOC(size);
+
+    if (obj == NULL)
+        return PyErr_NoMemory();
+
+    memset(obj, &apos;\0&apos;, size);
+
+    //设置实例对象的ob_type
+    if (type-&gt;tp_itemsize == 0)
+        (void)PyObject_INIT(obj, type);
+    else
+        (void) PyObject_INIT_VAR((PyVarObject *)obj, type, nitems);
+
+    if (PyType_IS_GC(type))
+        _PyObject_GC_TRACK(obj);
+    return obj;
+}</code></pre><p><strong>而在 <em>slot_tp_init</em> 中又做了哪些事情呢？</strong></p>
+<pre><code>static int
+slot_tp_init(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    _Py_IDENTIFIER(__init__);
+    int unbound;
+    //虚拟机会通过lookup_method从class对象及其mro列表中搜索属性__init__对应的操作
+    PyObject *meth = lookup_method(self, &amp;PyId___init__, &amp;unbound);
+    //返回结果
+    PyObject *res;
+
+    if (meth == NULL)
+        return -1;
+    //执行
+    if (unbound) {
+        res = _PyObject_Call_Prepend(meth, self, args, kwds);
+    }
+    else {
+        res = PyObject_Call(meth, args, kwds);
+    }
+    Py_DECREF(meth);
+    if (res == NULL)
+        return -1;
+    //如果返回的不是None，那么报错，这个信息熟悉不
+    if (res != Py_None) {
+        PyErr_Format(PyExc_TypeError,
+                     &quot;__init__() should return None, not &apos;%.200s&apos;&quot;,
+                     Py_TYPE(res)-&gt;tp_name);
+        Py_DECREF(res);
+        return -1;
+    }
+    Py_DECREF(res);
+    return 0;
+}</code></pre><p><strong>所以如果你在定义class时，重写了__init__函数，那么创建实例对象时搜索的结果就是你写的函数，如果没有重写那么执行object的__init__操作，而在object的__init__中，Python虚拟机则什么也不做，而是直接返回。</strong></p>
+<p><strong>到了这里可以小结一下，从class对象创建instance对象的两个步骤：</strong></p>
+<ul>
+<li><code>instance = class.__new__(class, *args, **kwargs)</code></li>
+<li><code>class.__init__(instance, *args, **kwargs)</code></li>
+</ul>
+<p><strong>需要注意的是，这两个步骤同样也适用于从metaclass对象创建class对象，因为从metaclass对象创建class对象的过程其实和class对象创建instance对象是一样的，我们说class具有二象性。</strong></p>
+<h2 id="访问instance对象中的属性"><a href="#访问instance对象中的属性" class="headerlink" title="访问instance对象中的属性"></a>访问instance对象中的属性</h2><p><strong>在前面的章节中我们讨论名字空间时就提到，在Python中，形如x.y形式的表达式称之为”属性引用”，其中x为对象，y为对象的某个属性，这个属性可以是很多种，比如：整数、字符串、函数、类、甚至是模块等等。</strong></p>
+<pre><code>class Girl:
+
+    name = &quot;夏色祭&quot;
+    def __init__(self):
+        print(&quot;__init__&quot;)
+
+    def f(self):
+        print(&quot;f&quot;)
+
+    def g(self, name):
+        self.name = name
+        print(self.name)
+
+
+girl = Girl()
+girl.f()
+girl.g(&quot;神乐mea&quot;)</code></pre><p><strong>我们加上属性查找逻辑，看看它的字节码如何。</strong></p>
+<pre><code> 1           0 LOAD_BUILD_CLASS
+             2 LOAD_CONST               0 (&lt;code object Girl at 0x0000019158F5ABE0, file &quot;instance&quot;, line 1&gt;)
+             4 LOAD_CONST               1 (&apos;Girl&apos;)
+             6 MAKE_FUNCTION            0
+             8 LOAD_CONST               1 (&apos;Girl&apos;)
+            10 CALL_FUNCTION            2
+            12 STORE_NAME               0 (Girl)
+
+15          14 LOAD_NAME                0 (Girl)
+            16 CALL_FUNCTION            0
+            18 STORE_NAME               1 (girl)
+
+16          20 LOAD_NAME                1 (girl)
+            22 LOAD_METHOD              2 (f)
+            24 CALL_METHOD              0
+            26 POP_TOP
+
+17          28 LOAD_NAME                1 (girl)
+            30 LOAD_METHOD              3 (g)
+            32 LOAD_CONST               2 (&apos;神乐mea&apos;)
+            34 CALL_METHOD              1
+            36 POP_TOP
+            38 LOAD_CONST               3 (None)
+            40 RETURN_VALUE</code></pre><ul>
+<li><code>20 LOAD_NAME: 加载变量girl, 因为是girl.f, 所以首先要把girl加载进来, 也就是压入运行时栈;</code></li>
+<li><code>22 LOAD_METHOD: 我们看到了一个新的指令, LOAD_METHOD, 显然这是加载一个方法, 关于函数和方法的区别我们后面会详细说;</code></li>
+<li><code>24 CALL_METHOD: 调用方法;</code></li>
+<li><code>26 POP_TOP: 从栈顶将元素弹出;</code></li>
+<li><code>32 LOAD_CONST: 除了加载girl和g之外, 还要加载一个常量字符串;</code></li>
+<li><code>34 CALL_METHOD: 调用方法, 这里参数是1个;</code></li>
+</ul>
+<p><strong>所以关键指令就在于LOAD_METHOD和CALL_METHOD，我们先来看看LOAD_METHOD都做了什么吧。</strong></p>
+<pre><code>case TARGET(LOAD_METHOD): {
+    //从符号表中获取符号, 如果是girl.f的话, 那么这个name就是一个PyUnicodeObject对象&quot;f&quot;
+    PyObject *name = GETITEM(names, oparg);
+    //从栈顶获取(不是弹出, 弹出是POP)obj, 显然这个obj就是实例对象girl
+    PyObject *obj = TOP();
+    //meth是一个PyObject *指针，显然它要指向一个方法
+    PyObject *meth = NULL;
+
+    //这里是获取obj中和符号name绑定的方法，然后让meth指向它
+    //传入二级指针&amp;meth，然后让meth存储的地址变成指向具体方法的地址
+    int meth_found = _PyObject_GetMethod(obj, name, &amp;meth);
+
+    //如果meth == NULL，raise AttributeError
+    if (meth == NULL) {
+        /* Most likely attribute wasn&apos;t found. */
+        goto error;
+    }
+
+    //另外还返回了一个meth_found, 要么为1、要么为0
+    if (meth_found) {
+        //如果meth_found为1，说明meth是一个未绑定的方法，obj就是self
+        //关于绑定和未绑定我们后面会详细介绍
+        SET_TOP(meth);
+        PUSH(obj);  // self
+    }
+    else {
+        //否则meth不是一个未绑定的方法，而是一个描述符协议返回的一个普通属性、亦或是其他的什么东西
+        //那么栈的第二个元素就会设置为NULL
+        SET_TOP(NULL);
+        Py_DECREF(obj);
+        PUSH(meth);
+    }
+    DISPATCH();
+}</code></pre><p><strong>获取方法是LOAD_METHOD，那么获取属性呢？对，其实肯定有人想到了，获取属性是LOAD_ATTR。</strong></p>
+<pre><code>case TARGET(LOAD_ATTR): {
+    //可以看到这个和LOAD_METHOD本质上是类似的，并且还要更简单一些
+    //name依旧是符号
+    PyObject *name = GETITEM(names, oparg);
+    //owner是所有者，为什么不叫obj，因为方法都是给实例用的，尽管类也能调用，但是方法毕竟是给实例用的
+    //但是属性的话，类和实例都可以访问，各自互不干扰，所以是owner
+    PyObject *owner = TOP();
+    //res显然就是获取属性返回的结果了, 通过PyObject_GetAttr进行获取
+    PyObject *res = PyObject_GetAttr(owner, name);
+    Py_DECREF(owner);
+    //设置到栈顶
+    SET_TOP(res);
+    if (res == NULL)
+        goto error;
+    DISPATCH();
+}</code></pre><p><strong>LOAD_ATTR和LOAD_METHOD这两个指令集我们都看到了，但是里面具体实现的方法还没有看，LOAD_ATTR调用了 <em>PyObject_GetAttr</em> 函数，LOAD_METHOD调用了 <em>\</em>PyObject_GetMethod_ ，我们来看看这两个方法都长什么样子。首先就从 <em>PyObject_GetAttr</em> 开始。</strong></p>
+<pre><code>//Objects/object.c
+PyObject *
+PyObject_GetAttr(PyObject *v, PyObject *name)
+{    
+    //v: 对象
+    //name: 属性名
+
+    //获取类型对象
+    PyTypeObject *tp = Py_TYPE(v);
+
+    //name必须是一个字符串
+    if (!PyUnicode_Check(name)) {
+        PyErr_Format(PyExc_TypeError,
+                     &quot;attribute name must be string, not &apos;%.200s&apos;&quot;,
+                     name-&gt;ob_type-&gt;tp_name);
+        return NULL;
+    }
+    //通过类型对象的tp_getattro获取对应的属性, 实例获取属性(包括方法)的时候都是通过类来获取的
+    //girl.f()本质上就是Girl.f(girl), 但是后者是不是长得有点丑啊, 所以Python提供了girl.f()
+    //并且我们也看到了, 实例调用方法的时候会自动将自身作为参数传进去, 而类默认则不会
+    //也正因为如此类获取的话(Girl.f)叫函数, 实例获取(girl.f)的话叫方法, 后面会介绍
+    if (tp-&gt;tp_getattro != NULL)
+        return (*tp-&gt;tp_getattro)(v, name);
+
+    //通过tp_getattr获取属性对应的对象, 这里的name是一个char *, 而tp_getattro是一个PyObject *
+    //显然tp_getattro还可以处理中文的情况, 只不过我们不会使用中文来命名就是了
+    if (tp-&gt;tp_getattr != NULL) {
+        const char *name_str = PyUnicode_AsUTF8(name);
+        if (name_str == NULL)
+            return NULL;
+        return (*tp-&gt;tp_getattr)(v, (char *)name_str);
+    }
+
+    //属性不存在，抛出异常
+    PyErr_Format(PyExc_AttributeError,
+                 &quot;&apos;%.50s&apos; object has no attribute &apos;%U&apos;&quot;,
+                 tp-&gt;tp_name, name);
+    return NULL;
+}</code></pre><p><strong>在Python的class对象中，定义了两个与属性访问相关的操作：tp_getattro和tp_getattr。其中tp_getattro是优先选择的属性访问动作，而tp_getattr在Python中已不推荐使用。而这两者的区别在 <em>PyObject_GetAttr</em> 中已经显示的很清楚了，主要是在属性名的使用上，tp_getattro所使用的属性名必须是一个PyUnicodeObject对象，而tp_getattr所使用的属性名必须是一个char *。因此如果某个类型定义了tp_getattro和tp_getattr，那么 <em>PyObject_GetAttr</em> 优先使用tp_getattro，因为这位老铁写在上面。</strong></p>
+<p><strong>在Python虚拟机创建class Girl时，会从PyBaseObject_Type中继承其<code>tp_getattro-&gt;PyObject_GenericGetAttr</code>，所以Python虚拟机又会在这里进入 <em>PyObject_GenericGetAttr</em> ，并且 <em>PyObject_GenericGetAttr</em> 正好涉及到了Python中的描述符，因此也为我们我们后面介绍描述符埋下了一个伏笔。</strong></p>
+<pre><code>//Objects/object.c
+PyObject *
+PyObject_GenericGetAttr(PyObject *obj, PyObject *name)
+{
+    return _PyObject_GenericGetAttrWithDict(obj, name, NULL, 0);
+}
+
+
+PyObject *
+_PyObject_GenericGetAttrWithDict(PyObject *obj, PyObject *name,
+                                 PyObject *dict, int suppress)
+{
+    //拿到obj的类型，对于我们的例子来说， 显然是class Girl
+    PyTypeObject *tp = Py_TYPE(obj);
+    //一个描述符对象
+    PyObject *descr = NULL;
+    PyObject *res = NULL;
+    descrgetfunc f;
+    Py_ssize_t dictoffset;
+    PyObject **dictptr;
+
+    //name必须是str
+    if (!PyUnicode_Check(name)){
+        PyErr_Format(PyExc_TypeError,
+                     &quot;attribute name must be string, not &apos;%.200s&apos;&quot;,
+                     name-&gt;ob_type-&gt;tp_name);
+        return NULL;
+    }
+    Py_INCREF(name);
+
+    //字典为空则进行初始化
+    if (tp-&gt;tp_dict == NULL) {
+        if (PyType_Ready(tp) &lt; 0)
+            goto done;
+    }
+
+    //尝试从mro列表中拿到符号对应的值，等价于descr = Girl.符号 if hasattr(Girl, &apos;符号&apos;) else NULL
+    descr = _PyType_Lookup(tp, name);
+
+    f = NULL;
+    if (descr != NULL) {
+        Py_INCREF(descr);
+        //f = descr.__class__.__get__ 
+        f = descr-&gt;ob_type-&gt;tp_descr_get;
+        if (f != NULL &amp;&amp; PyDescr_IsData(descr)) {
+            //f不为NULL，并且descr是数据描述符，那么直接将描述符中__get__方法的结果返回
+            //这个f就是描述符里面的__get__方法，而这个descr就是描述符的一个实例对象
+            res = f(descr, obj, (PyObject *)obj-&gt;ob_type);
+            if (res == NULL &amp;&amp; suppress &amp;&amp;
+                    PyErr_ExceptionMatches(PyExc_AttributeError)) {
+                PyErr_Clear();
+            }
+            goto done;
+        }
+    }
+
+    //那么显然要从instance对象自身的__dict__中寻找属性
+    if (dict == NULL) {
+        /* Inline _PyObject_GetDictPtr */
+        dictoffset = tp-&gt;tp_dictoffset;
+        //但如果dict为NULL，并且dictoffset不为0, 说明继承自变长对象，那么要调整tp_dictoffset
+        if (dictoffset != 0) {
+            if (dictoffset &lt; 0) {
+                Py_ssize_t tsize;
+                size_t size;
+
+                tsize = ((PyVarObject *)obj)-&gt;ob_size;
+                if (tsize &lt; 0)
+                    tsize = -tsize;
+                size = _PyObject_VAR_SIZE(tp, tsize);
+                _PyObject_ASSERT(obj, size &lt;= PY_SSIZE_T_MAX);
+
+                dictoffset += (Py_ssize_t)size;
+                _PyObject_ASSERT(obj, dictoffset &gt; 0);
+                _PyObject_ASSERT(obj, dictoffset % SIZEOF_VOID_P == 0);
+            }
+            dictptr = (PyObject **) ((char *)obj + dictoffset);
+            dict = *dictptr;
+        }
+    }
+    //dict不为NULL，从字典中获取
+    if (dict != NULL) {
+        Py_INCREF(dict);
+        res = PyDict_GetItemWithError(dict, name);
+        if (res != NULL) {
+            Py_INCREF(res);
+            Py_DECREF(dict);
+            goto done;
+        }
+        else {
+            Py_DECREF(dict);
+            if (PyErr_Occurred()) {
+                if (suppress &amp;&amp; PyErr_ExceptionMatches(PyExc_AttributeError)) {
+                    PyErr_Clear();
+                }
+                else {
+                    goto done;
+                }
+            }
+        }
+    }
+
+    //我们看到这里又判断了一次，但是这次少了个条件
+    //没错熟悉Python描述符的应该知道，上面的需要满足是数据描述符
+    //这个是非数据描述符
+    if (f != NULL) {
+        res = f(descr, obj, (PyObject *)Py_TYPE(obj));
+        if (res == NULL &amp;&amp; suppress &amp;&amp;
+                PyErr_ExceptionMatches(PyExc_AttributeError)) {
+            PyErr_Clear();
+        }
+        goto done;
+    }
+
+    //返回
+    if (descr != NULL) {
+        res = descr;
+        descr = NULL;
+        goto done;
+    }
+
+    //找不到，就报错
+    if (!suppress) {
+        PyErr_Format(PyExc_AttributeError,
+                     &quot;&apos;%.50s&apos; object has no attribute &apos;%U&apos;&quot;,
+                     tp-&gt;tp_name, name);
+    }
+  done:
+    Py_XDECREF(descr);
+    Py_DECREF(name);
+    return res;
+}</code></pre><p><strong>属性访问是从 <em>PyObject_GetAttr</em> 开始，那么下面我们来看看 <em>\</em>PyObject_GetMethod_ 生的什么模样，其实不用想也知道，它和 <em>PyObject_GetAttr</em> 高度相似。</strong></p>
+<pre><code>//Objects/object.c
+int
+_PyObject_GetMethod(PyObject *obj, PyObject *name, PyObject **method)
+{
+    PyTypeObject *tp = Py_TYPE(obj);
+    PyObject *descr;
+    descrgetfunc f = NULL;
+    PyObject **dictptr, *dict;
+    PyObject *attr;
+    int meth_found = 0;
+
+    assert(*method == NULL);
+
+    if (Py_TYPE(obj)-&gt;tp_getattro != PyObject_GenericGetAttr
+            || !PyUnicode_Check(name)) {
+        *method = PyObject_GetAttr(obj, name);
+        return 0;
+    }
+
+    if (tp-&gt;tp_dict == NULL &amp;&amp; PyType_Ready(tp) &lt; 0)
+        return 0;
+
+    descr = _PyType_Lookup(tp, name);
+    if (descr != NULL) {
+        Py_INCREF(descr);
+        if (PyType_HasFeature(Py_TYPE(descr), Py_TPFLAGS_METHOD_DESCRIPTOR)) {
+            meth_found = 1;
+        } else {
+            f = descr-&gt;ob_type-&gt;tp_descr_get;
+            if (f != NULL &amp;&amp; PyDescr_IsData(descr)) {
+                *method = f(descr, obj, (PyObject *)obj-&gt;ob_type);
+                Py_DECREF(descr);
+                return 0;
+            }
+        }
+    }
+
+    dictptr = _PyObject_GetDictPtr(obj);
+    if (dictptr != NULL &amp;&amp; (dict = *dictptr) != NULL) {
+        Py_INCREF(dict);
+        attr = PyDict_GetItemWithError(dict, name);
+        if (attr != NULL) {
+            Py_INCREF(attr);
+            *method = attr;
+            Py_DECREF(dict);
+            Py_XDECREF(descr);
+            return 0;
+        }
+        else {
+            Py_DECREF(dict);
+            if (PyErr_Occurred()) {
+                Py_XDECREF(descr);
+                return 0;
+            }
+        }
+    }
+
+    if (meth_found) {
+        *method = descr;
+        return 1;
+    }
+
+    if (f != NULL) {
+        *method = f(descr, obj, (PyObject *)Py_TYPE(obj));
+        Py_DECREF(descr);
+        return 0;
+    }
+
+    if (descr != NULL) {
+        *method = descr;
+        return 0;
+    }
+
+    PyErr_Format(PyExc_AttributeError,
+                 &quot;&apos;%.50s&apos; object has no attribute &apos;%U&apos;&quot;,
+                 tp-&gt;tp_name, name);
+    return 0;
+}</code></pre><p><strong>非常类似，这里就不介绍了。</strong></p>
+<h3 id="实例对象的属性字典"><a href="#实例对象的属性字典" class="headerlink" title="实例对象的属性字典"></a>实例对象的属性字典</h3><p><strong>在属性访问的时候，我们可以通过girl.__dict__这种形式访问。但是这就奇怪了，在之前的描述中，我们看到从class Girl创建instance girl的时候，Python并没有为instance创建PyDictObject对象啊。</strong></p>
+<p><strong>但是在上一篇介绍metaclass的时候，我们说过这样一句话，对于任意继承object的class对象来说，这个大小为<code>PyBaseObject_Type-&gt;tp_basicsize + 16</code>，其中的16是2 * sizeof(PyObject *)。后面跟着的两个PyObject *的空间被设置给了tp_dictoffset和tp_weaklistoffset，那么现在是时候揭开谜底了。</strong></p>
+<p><strong>在创建class类对象时我们曾说，Python虚拟机设置了一个名为tp_dictoffset的域，从名字推断，这个可能就是instance对象中__dict__的偏移位置。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200902230338001-2083493292.png" alt=""></p>
+<p><strong>虚线中画出的dict对象就是我们期望中的实例对象的属性字典，这个猜想可以在PyObject_GenericGetAttr中得到证实。</strong></p>
+<pre><code>//object.c
+PyObject *
+PyObject_GenericGetAttr(PyObject *obj, PyObject *name)
+{
+    return _PyObject_GenericGetAttrWithDict(obj, name, NULL, 0);
+}
+
+PyObject *
+_PyObject_GenericGetAttrWithDict(PyObject *obj, PyObject *name,
+                                 PyObject *dict, int suppress)
+{
+    //那么显然要从instance对象自身的__dict__中寻找属性
+    if (dict == NULL) {
+        /* Inline _PyObject_GetDictPtr */
+        dictoffset = tp-&gt;tp_dictoffset;
+        if (dictoffset != 0) {
+            //但如果dict为NULL，并且dictoffset说明继承自变长对象，那么要调整tp_dictoffset
+            if (dictoffset &lt; 0) {
+                Py_ssize_t tsize;
+                size_t size;
+
+                tsize = ((PyVarObject *)obj)-&gt;ob_size;
+                if (tsize &lt; 0)
+                    tsize = -tsize;
+                size = _PyObject_VAR_SIZE(tp, tsize);
+                assert(size &lt;= PY_SSIZE_T_MAX);
+
+                dictoffset += (Py_ssize_t)size;
+                assert(dictoffset &gt; 0);
+                assert(dictoffset % SIZEOF_VOID_P == 0);
+            }
+            dictptr = (PyObject **) ((char *)obj + dictoffset);
+            dict = *dictptr;
+        }
+    }</code></pre><p><strong>如果dictoffset小于0，意味着Girl是继承自类似str这样的变长对象，Python虚拟机会对dictoffset做一些处理，最终仍然会使dictoffset指向a的内存中额外申请的位置。而PyObject_GenericGetAttr正是根据这个dictoffset获得了一个dict对象。更近一步，我们发现函数g中有设置self.name的代码，这个instance对象的属性设置也会访问属性字典，而这个设置的动作最终会调用 <em>PyObject_GenericSetAttr</em> ，也就是<code>girl.__dict__</code>最初被创建的地方。</strong></p>
+<pre><code>//object.c
+int
+PyObject_GenericSetAttr(PyObject *obj, PyObject *name, PyObject *value)
+{
+    return _PyObject_GenericSetAttrWithDict(obj, name, value, NULL);
+}
+
+
+int
+_PyObject_GenericSetAttrWithDict(PyObject *obj, PyObject *name,
+                                 PyObject *value, PyObject *dict)
+{
+    PyTypeObject *tp = Py_TYPE(obj);
+    PyObject *descr;
+    descrsetfunc f;
+    PyObject **dictptr;
+    int res = -1;
+
+    //老规矩，name必须是PyUnicodeObject对象
+    if (!PyUnicode_Check(name)){
+        PyErr_Format(PyExc_TypeError,
+                     &quot;attribute name must be string, not &apos;%.200s&apos;&quot;,
+                     name-&gt;ob_type-&gt;tp_name);
+        return -1;
+    }
+
+    //字典为空、则进行初始化
+    if (tp-&gt;tp_dict == NULL &amp;&amp; PyType_Ready(tp) &lt; 0)
+        return -1;
+
+    Py_INCREF(name);
+
+    //老规矩，获取属性
+    descr = _PyType_Lookup(tp, name);
+
+    if (descr != NULL) {
+        Py_INCREF(descr);
+        f = descr-&gt;ob_type-&gt;tp_descr_set;
+        if (f != NULL) {
+            res = f(descr, obj, value);
+            goto done;
+        }
+    }
+
+    if (dict == NULL) {
+        //这行代码就是PyObject_GenericGetAttr中根据dictoffset获取dict对象的那段代码
+        dictptr = _PyObject_GetDictPtr(obj);
+        if (dictptr == NULL) {
+            if (descr == NULL) {
+                PyErr_Format(PyExc_AttributeError,
+                             &quot;&apos;%.100s&apos; object has no attribute &apos;%U&apos;&quot;,
+                             tp-&gt;tp_name, name);
+            }
+            else {
+                PyErr_Format(PyExc_AttributeError,
+                             &quot;&apos;%.50s&apos; object attribute &apos;%U&apos; is read-only&quot;,
+                             tp-&gt;tp_name, name);
+            }
+            goto done;
+        }
+        res = _PyObjectDict_SetItem(tp, dictptr, name, value);
+    }
+    else {
+        Py_INCREF(dict);
+        if (value == NULL)
+            res = PyDict_DelItem(dict, name);
+        else
+            res = PyDict_SetItem(dict, name, value);
+        Py_DECREF(dict);
+    }
+    if (res &lt; 0 &amp;&amp; PyErr_ExceptionMatches(PyExc_KeyError))
+        PyErr_SetObject(PyExc_AttributeError, name);
+
+  done:
+    Py_XDECREF(descr);
+    Py_DECREF(name);
+    return res;
+}</code></pre><h3 id="再论descriptor"><a href="#再论descriptor" class="headerlink" title="再论descriptor"></a>再论descriptor</h3><p><strong>前面我们看到，在 <em>PyType_Ready</em> 中，Python虚拟机会填充tp_dict，其中与操作名对应的是一个个descriptor(描述符)，那时我们看到的是descriptor这个概念在Python内部是如何实现的。现在我们将要剖析的是descriptor在Python的类机制中究竟会起到怎样的作用。</strong></p>
+<p><strong>在Python虚拟机对class对象或instance对象进行属性访问时，descriptor将对属性访问的行为产生重大的影响。一般而言，对于一个对象obj，如果<code>obj.__class__</code>对应的class对象中存在<code>__get__、__set__、__delete__</code>操作<code>(不要求三者同时存在)</code>，那么obj便可以称之为描述符。在slotdefs中，我们会看到这三种魔法方法对应的操作。</strong></p>
+<pre><code>//typeobject,c
+
+    TPSLOT(&quot;__get__&quot;, tp_descr_get, slot_tp_descr_get, wrap_descr_get,
+           &quot;__get__($self, instance, owner, /)\n--\n\nReturn an attribute of instance, which is of type owner.&quot;),
+    TPSLOT(&quot;__set__&quot;, tp_descr_set, slot_tp_descr_set, wrap_descr_set,
+           &quot;__set__($self, instance, value, /)\n--\n\nSet an attribute of instance to value.&quot;),
+    TPSLOT(&quot;__delete__&quot;, tp_descr_set, slot_tp_descr_set,
+           wrap_descr_delete,
+           &quot;__delete__($self, instance, /)\n--\n\nDelete an attribute of instance.&quot;),</code></pre><p><strong>前面我看到了 <em>PyWrapperDescrObject</em> 、<em>PyMethodDescrObject</em> 等对象，它们对应的类对象中分别为tp_descr_get设置了wrapperdescr_get，method_get等函数，所以它们是当之无愧的descriptor。</strong></p>
+<p><strong>另外如果细分，descriptor还可以分为两种。</strong></p>
+<blockquote>
+<p><strong>关于python中的描述符，我这里有一篇博客写的很详细，对描述符机制不太懂的话可以先去看看，<a href="https://www.cnblogs.com/traditional/p/11714356.html%E3%80%82" target="_blank" rel="noopener">https://www.cnblogs.com/traditional/p/11714356.html。</a></strong></p>
+</blockquote>
+<ul>
+<li><p><strong>data descriptor：数据描述符，对应的__class__中定义了__get__和__set__的descriptor</strong></p>
+</li>
+<li><p><strong>no data descriptor：非数据描述符，对应的__class__中只定义了__get__方法。</strong></p>
+</li>
+</ul>
+<p><strong>在Python虚拟机访问instance对象的属性时，descriptor的一个作用就是影响Python虚拟机对属性的选择。从 <em>PyObject_GenericGetAttr</em> 源码中可以看到，Python虚拟机会在instance对象自身的<code>__dict__</code>中寻找属性，也会在instance对象对应的class对象的mro列表中寻找属性，我们将前一种属性称之为instance属性，后一种属性称之为class属性。在属性的选择上，有如下规律：</strong></p>
+<ul>
+<li><code>Python虚拟机优先按照instance属性、class属性的顺序选择属性，即instance属性优先于class属性</code></li>
+<li><code>如果在class属性中发现同名的data descriptor，那么该descriptor会优先于instance属性被Python虚拟机选择</code></li>
+</ul>
+<p><strong>这两条规则在对属性进行设置时仍然会被严格遵守，换句话说，如果执行<code>girl.value = 1</code>，而在Girl中出现了名为value的数据描述符，那么不好意思，会执行<code>__set__</code>方法，如果是非数据描述符，那么就不再走<code>__set__</code>了，而是设置属性，相当于<code>a.__dict__[&#39;value&#39;] = 1</code>。</strong></p>
+<p><strong>所以，获取被描述符代理的属性时，会直接调用__get__方法。设置的话，会调用__set__。当然要考虑优先级的问题，至于优先级的问题是什么，这里就不再解释，强烈建立看我上面发的博客链接，对描述符的解析很详细。</strong></p>
+<h3 id="函数变身"><a href="#函数变身" class="headerlink" title="函数变身"></a>函数变身</h3><p><strong>在Girl的成员f对应的def语句中，我们分明一个self参数，那么self在Python中是不是一个真正有效的参数呢？还是它仅仅只是一个语法意义是占位符而已？这一点可以从函数g中看到答案，在g中有这样的语句：<code>self.name = name</code>，这条语句毫无疑问地揭示了self确实是一个实实在在的对象，所以表面上看起来f是一个不需要参数的函数，但实际上是一个货真价值的带参函数，只不过第一个参数自动帮你传递了。根据使用Python的经验，我们都知道，传递给self的就是实例本身。但是现在问题来了，这是怎么实现的呢？我们先再看一遍字节码：</strong></p>
+<pre><code> 1           0 LOAD_BUILD_CLASS
+             2 LOAD_CONST               0 (&lt;code object Girl at 0x0000019D7B4EABE0, file &quot;instance&quot;, line 1&gt;)
+             4 LOAD_CONST               1 (&apos;Girl&apos;)
+             6 MAKE_FUNCTION            0
+             8 LOAD_CONST               1 (&apos;Girl&apos;)
+            10 CALL_FUNCTION            2
+            12 STORE_NAME               0 (Girl)
+
+15          14 LOAD_NAME                0 (Girl)
+            16 CALL_FUNCTION            0
+            18 STORE_NAME               1 (girl)
+
+16          20 LOAD_NAME                1 (girl)
+            22 LOAD_METHOD              2 (f)
+            24 CALL_METHOD              0
+            26 POP_TOP
+
+17          28 LOAD_NAME                1 (girl)
+            30 LOAD_METHOD              3 (g)
+            32 LOAD_CONST               2 (&apos;神乐mea&apos;)
+            34 CALL_METHOD              1
+            36 POP_TOP
+            38 LOAD_CONST               3 (None)
+            40 RETURN_VALUE</code></pre><p><strong>我们看一下：24 CALL_METHOD，我们说会将girl.f压入运行时栈，然后就执行CALL_METHOD指令了，注意这里的oparg是0，表示不需要参数<code>(不需要我们传递参数)</code>。注意:这里是CALL_METHOD，不是CALL_FUNCTION。因此我们可以有两条路可走，一条是看看CALL_METHOD是什么，另一条是再研究一下PyFunctionObject。我们先来看看CALL_METHOD这个指令长什么样子吧。</strong></p>
+<pre><code>        case TARGET(CALL_METHOD): {
+            /* Designed to work in tamdem with LOAD_METHOD. */
+            PyObject **sp, *res, *meth;
+
+            sp = stack_pointer;
+
+            meth = PEEK(oparg + 2);
+            if (meth == NULL) {
+                res = call_function(tstate, &amp;sp, oparg, NULL);
+                stack_pointer = sp;
+                (void)POP(); /* POP the NULL. */
+            }
+            else {
+                res = call_function(tstate, &amp;sp, oparg + 1, NULL);
+                stack_pointer = sp;
+            }
+
+            PUSH(res);
+            if (res == NULL)
+                goto error;
+            DISPATCH();
+        }
+
+
+//为了对比，我们再把CALL_FUNCTION的源码贴出来
+        case TARGET(CALL_FUNCTION): {
+            PREDICTED(CALL_FUNCTION);
+            PyObject **sp, *res;
+            sp = stack_pointer;
+            res = call_function(tstate, &amp;sp, oparg, NULL);
+            stack_pointer = sp;
+            PUSH(res);
+            if (res == NULL) {
+                goto error;
+            }
+            DISPATCH();
+        }</code></pre><p><strong>通过对比，发现端倪，这两个都调用了call_function，但是传递的参数不一样，call_function的第二个参数一个oparg+1<code>(猜测第一个给了self)</code>，一个是oparg，但是这还不足以支持我们找出问题所在。其实在剖析函数的时候，我们放过了PyFunctionObject的<code>ob_type -&gt;PyFunction_Type</code>。在这个PyFunction_Type中，隐藏着一个惊天大秘密。</strong></p>
+<pre><code>PyTypeObject PyFunction_Type = {
+    PyVarObject_HEAD_INIT(&amp;PyType_Type, 0)
+    &quot;function&quot;,
+    sizeof(PyFunctionObject),
+    //...
+    //...
+
+    //注意注意注意注意注意注意注意，看下面这行
+    func_descr_get,                             /* tp_descr_get */
+    0,                                          /* tp_descr_set */
+    offsetof(PyFunctionObject, func_dict),      /* tp_dictoffset */
+    0,                                          /* tp_init */
+    0,                                          /* tp_alloc */
+    func_new,                                   /* tp_new */
+};</code></pre><p><strong>我们发现 tp_descr_get 被设置成了func_descr_get，这意味着我们得到的是一个描述符。另外由于 <code>girl.__dict__</code> 中没有f，那么 girl.f 的返回值将会被 descriptor 改变，也就是 <code>func_descr_get(Girl.f, girl, Girl)</code></strong></p>
+<pre><code>//funcobject.c
+static PyObject *
+func_descr_get(PyObject *func, PyObject *obj, PyObject *type)
+{    
+    //如果是类获取函数, 那么这里的obj就是NULL, type就是类对象本身
+    //如果是实例获取函数, 那么这里的obj就是实例对象, type仍是类对象本身
+
+    //如果obj为空, 说明是类获取, 那么直接返回func本身, 也就是原来的函数
+    if (obj == Py_None || obj == NULL) {
+        Py_INCREF(func);
+        return func;
+    }
+    //如果是实例对象, 那么通过PyMethod_New将函数和实例绑定在一起, 得到一个PyMethodObject对象
+    return PyMethod_New(func, obj);
+}</code></pre><p><strong>func_descr_get将Girl.f对应的PyFunctionObject进行了一番包装，所以通过PyMethod_New，Python虚拟机在PyFunctionObject的基础上创建一个新的对象PyMethodObject，那么这个PyMethodObject是什么呢？到PyMethod_New中一看，这个神秘的对象就现身了：</strong></p>
+<pre><code>//classobjet.c
+PyObject *
+PyMethod_New(PyObject *func, PyObject *self)
+{
+    PyMethodObject *im; //PyMethodObject对象的指针
+    if (self == NULL) {
+        PyErr_BadInternalCall();
+        return NULL;
+    }
+    im = free_list;
+    //使用缓冲池
+    if (im != NULL) {
+        free_list = (PyMethodObject *)(im-&gt;im_self);
+        (void)PyObject_INIT(im, &amp;PyMethod_Type);
+        numfree--;
+    }
+    //不使用缓冲池，直接创建PyMethodObject对象
+    else {
+        im = PyObject_GC_New(PyMethodObject, &amp;PyMethod_Type);
+        if (im == NULL)
+            return NULL;
+    }
+    im-&gt;im_weakreflist = NULL;
+    Py_INCREF(func);
+    //im_func指向PyFunctionObject对象
+    im-&gt;im_func = func; 
+    Py_XINCREF(self);
+    //im_self指向实例对象
+    im-&gt;im_self = self;
+    im-&gt;vectorcall = method_vectorcall;
+    _PyObject_GC_TRACK(im);
+    return (PyObject *)im;
+}</code></pre><p><strong>一切真相大白，原来那个神秘的对象就是PyMethodObject对象，看到free_list这样熟悉的字眼，我们就知道Python内部对PyMethodObject的实现和管理中使用缓冲池的技术。现在再来看看这个PyMethodObject：</strong></p>
+<pre><code>//classobject.h
+typedef struct {
+    PyObject_HEAD
+    //可调用的PyFunctionObject对象
+    PyObject *im_func;  
+    //self参数，instance对象
+    PyObject *im_self;   
+    //弱引用列表
+    PyObject *im_weakreflist; /* List of weak references */
+    vectorcallfunc vectorcall;
+} PyMethodObject;</code></pre><p><strong>在PyMethod_New中，分别将im_func，im_self设置了不同的值，分别是：f对应PyFunctionObject对象、实例girl对应的instance对象。因此通过PyMethodObject对象将PyFunctionObject对象和instance对象结合在一起，而这个PyMethodObject对象就是我们说的方法。</strong></p>
+<blockquote>
+<p><strong>不管是类还是实例，获取成员函数都会走描述符的 func_descr_get，在里面会判断是类获取还是实例获取。如果是类获取，那么直接返回函数本身，如果实例获取则会通过PyMethod_New将func和instance绑定起来得到PyMethodObject对象，再调用函数的时候其实调用的是PyMethodObject。当调用PyMethodObject中会处理自动传参的逻辑，将instance和我们传递的参数组合起来<code>(如果我们没有传参, 那么只有一个self)</code>，然后整体传递给PyFunctionObject，所以为什么实例调用方法的时候会自动传递第一个参数现在是真相大白了。</strong></p>
+</blockquote>
+<p><strong>这个过程称之为成员函数的绑定，就是将实例和函数绑定起来，使之成为一个整体<code>(方法)</code>。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200902230348348-1015770855.png" alt=""></p>
+<pre><code>class Girl:
+    name = &quot;夏色祭&quot;
+
+    def __init__(self):
+        print(&quot;__init__&quot;)
+
+    def f(self):
+        print(&quot;f&quot;)
+
+    def g(self, name):
+        self.name = name
+        print(self.name)
+
+
+girl = Girl()
+print(Girl.f)  # &lt;function Girl.f at 0x000001B7805A2820&gt;
+print(girl.f)  # &lt;bound method Girl.f of &lt;__main__.Girl object at 0x000001B7E92282B0&gt;&gt;
+
+print(type(Girl.f))  # &lt;class &apos;function&apos;&gt;
+print(type(girl.f))  # &lt;class &apos;method&apos;&gt;</code></pre><p><strong>我们看到通过类来调用成员的函数得到的就是一个普通的函数，如果是实例调用成员函数，那么会将成员函数包装成一个方法，也就是将成员函数和实例绑定在一起，得到结果就是方法，实现方式是通过描述符。</strong></p>
+<h3 id="方法调用"><a href="#方法调用" class="headerlink" title="方法调用"></a>方法调用</h3><p><strong>在LOAD_METHOD指令结束之后，那么便开始了CALL_METHOD，我们知道这个和CALL_FUNCTION之间最大的区别就是，CALL_METHOD调用的是一个PyMethodObject对象，而CALL_FUNCTION调用的一个PyFunctionObject对象。</strong></p>
+<blockquote>
+<p><strong>CALL_METHOD底层也调用了CALL_FUNCTION，因为方法是将函数和实例绑定在了一起，但最终执行的还是函数。</strong></p>
+</blockquote>
+<pre><code>//ceval.c
+Py_LOCAL_INLINE(PyObject *) _Py_HOT_FUNCTION
+call_function(PyThreadState *tstate, PyObject ***pp_stack, Py_ssize_t oparg, PyObject *kwnames)
+{
+    //......
+    if (tstate-&gt;use_tracing) {
+        x = trace_call_function(tstate, func, stack, nargs, kwnames);
+    }
+    //......
+    return x;
+}
+
+
+static PyObject *
+trace_call_function(PyThreadState *tstate,
+                    PyObject *func,
+                    PyObject **args, Py_ssize_t nargs,
+                    PyObject *kwnames)
+{
+    PyObject *x; //返回值
+
+    //如果func是一个函数, 那么直接通过_PyObject_Vectorcall进行调用, 然后将返回值设置给x
+    if (PyCFunction_Check(func)) {
+        C_TRACE(x, _PyObject_Vectorcall(func, args, nargs, kwnames));
+        return x;
+    }
+
+    //如果func是一个描述符, 注意：此时的 func 不是方法，方法的类型是 PyMethod_Type，这里是描述符
+    //那么nargs(func的参数个数)必须大于0, 因为默认会传递一个self
+    else if (Py_TYPE(func) == &amp;PyMethodDescr_Type &amp;&amp; nargs &gt; 0) {
+        /* We need to create a temporary bound method as argument
+           for profiling.
+
+           If nargs == 0, then this cannot work because we have no
+           &quot;self&quot;. In any case, the call itself would raise
+           TypeError (foo needs an argument), so we just skip
+           profiling. */
+        PyObject *self = args[0]; //self就是args的第一个参数
+        //通过调用 PyMethodDescr_Type 的tp_descr_get, 接收三个参数: 函数(显然是通过类获取的)、实例对象、类对象
+        //然后调用该描述符的 __get__ 方法，获取返回值
+        func = Py_TYPE(func)-&gt;tp_descr_get(func, self, (PyObject*)Py_TYPE(self));
+        if (func == NULL) {
+            return NULL;
+        }
+        C_TRACE(x, _PyObject_Vectorcall(func, //调整参数信息变量
+                                        args+1, nargs-1,
+                                        kwnames));
+        Py_DECREF(func);
+        return x;
+    }
+    // 说明是一个方法，还是走同样的逻辑，在里面会自动处理参数逻辑
+    return _PyObject_Vectorcall(func, args, nargs | PY_VECTORCALL_ARGUMENTS_OFFSET, kwnames);
+}</code></pre><p><strong>所以函数调用和方法调用本质上都是类似的，方法里面的成员im_func指向一个函数。调用方法的时候底层还是会调用函数，只不过在调用的时候会自动把方法里面的im_self作为第一个参数传到函数里面去。而我们通过类调用的时候，调用的就是一个普通的函数，所以第一个参数需要我们手动传递。</strong></p>
+<p><strong>因此到了这里，我们可以在更高层次俯视一下Python的运行模型了，最核心的模型非常简单，可以简化为两条规则：</strong></p>
+<ul>
+<li><code>1. 在某个名字空间中寻找符号对应的对象</code></li>
+<li><code>2. 对得到的对象进行某些操作</code></li>
+</ul>
+<p><strong>抛开面向对象这些花里胡哨的外表，其实我们发现class类对象其实就是一个名字空间，实例对象也是一个名字空间，不过这些名字空间通过一些特殊的规则连接在一起，使得符号的搜索过程变得复杂，从而实现了面向对象这种编程模式，それだけ。</strong></p>
+<h3 id="bound-method和unbound-method"><a href="#bound-method和unbound-method" class="headerlink" title="bound method和unbound method"></a>bound method和unbound method</h3><p><strong>在Python中，当对作为方法<code>(或者说作为属性的函数)</code>进行引用时，会有两种形式，bound method和unbound method。</strong></p>
+<ul>
+<li><code>bound method：这种形式是通过实例对象进行属性引用，就像我们之前说的a.f这样</code></li>
+<li><code>unbound method：这种形式是通过类对象进行属性引用，比如A.f</code></li>
+</ul>
+<p><strong>在Python中，bound method和unbound method的本质区别就在于PyFunctionObject有没有和对象绑定在一起，成为PyMethodObject对象。bound method完成了绑定动作，而unbound method没有完成绑定动作。</strong></p>
+<p><strong>所以无论是类还是实例，在调用成员函数的时候都会经过func_descr_get，但如果是类调用obj为NULL，实例对象调用obj就是实例。而obj如果为NULL，那么就直接返回了，否则通过PyMethod_New变成一个方法。</strong></p>
+<pre><code>//funcobject.c
+static PyObject *
+func_descr_get(PyObject *func, PyObject *obj, PyObject *type)
+{    
+    if (obj == Py_None || obj == NULL) {
+        Py_INCREF(func);
+        return func;
+    }
+    return PyMethod_New(func, obj);
+}</code></pre><p><strong>我们通过Python演示一下：</strong></p>
+<pre><code>class Descr:
+
+    def __init__(self, *args):
+        pass
+
+    def __get__(self, instance, owner):
+        print(instance)
+        print(owner)
+
+
+
+class Girl:
+
+    @ Descr
+    def f(self):
+        pass
+
+
+Girl.f
+&quot;&quot;&quot;
+None
+&lt;class &apos;__main__.Girl&apos;&gt;
+&quot;&quot;&quot;
+Girl().f
+&quot;&quot;&quot;
+&lt;__main__.Girl object at 0x000001BDEE7A85E0&gt;
+&lt;class &apos;__main__.Girl&apos;&gt;
+&quot;&quot;&quot;</code></pre><p><strong>从Python的层面上我们也可以看到区别。</strong></p>
+<p><strong>所以在对unbound method进行调用时，我们必须要显示的传递一个对象<code>(这个对象可以任意，具体什么意思后面会演示)</code>作为成员函数的第一个参数，因为f无论如何都需要一个self参数，所以本质上就是Girl.f(girl)这种形式。而无论是对unbound method进行调用，还是对bound method进行调用，Python虚拟机的动作本质都是一样的，都是调用带位置参数的一般函数。区别只在于：当调用bound method时，由于Python虚拟机帮我们完成了PyFunctionObject对象和调用者的绑定，调用者将自动成为self参数；而调用unbound method时，没有这个绑定，我们需要自己传入self参数。</strong></p>
+<pre><code>class Girl(object):
+
+    def f(self):
+        print(self)
+
+
+girl = Girl()
+Girl.f(123)  # 123
+# 我们看到即便传入一个123也是可以的
+# 这是我们自己传递的，传递什么就是什么
+
+girl.f()  # &lt;__main__.A object at 0x000001F0FFE81F10&gt;
+# 但是girl.f()就不一样了，首先girl.f()表示先通过girl获取f对应值, 压入运行时栈, 然后再进行调用、完事之后将返回值设置在栈顶
+# 而在girl.f的时候就已经通过func_descr_get(Girl.f, girl, Girl)将这个函数和调用者绑定在一起了
+# 然后调用的时候自动将调用者作为第一个参数传递进去
+
+print(Girl.f)  # &lt;function A.f at 0x000001F0FFEEFF70&gt;
+print(girl.f)  # &lt;bound method A.f of &lt;__main__.A object at 0x000001F0FFE81F10&gt;&gt;</code></pre><p><strong>注意：我们上面一直说的是调用者<code>(其实说调用者也不是很准确)</code>，而不是实例对象，这是因为函数不仅可以和实例绑定，也可以和类绑定。</strong></p>
+<pre><code>class Girl(object):
+
+    @ classmethod
+    def f(self):
+        print(self)
+
+
+print(Girl.f)  # &lt;bound method Girl.f of &lt;class &apos;__main__.Girl&apos;&gt;&gt;
+print(Girl().f)  # &lt;bound method Girl.f of &lt;class &apos;__main__.Girl&apos;&gt;&gt;
+
+Girl.f()  # &lt;class &apos;__main__.Girl&apos;&gt;
+Girl().f()  # &lt;class &apos;__main__.Girl&apos;&gt;</code></pre><p><strong>我们看到此时通过类去调用得到的不再是一个函数，而是一个方法，这是因为我们加上classmethod装饰器，当然classmethod也是一个描述符。当类在调用的时候，类也和函数绑定起来了，因此也会得到一个方法。不过被classmethod装饰之后，即使是实例调用，第一个参数传递的还是类本身，因为和 PyFunctionObject 绑定的是类、而不是实例。</strong></p>
+<p><strong>所以得到的究竟是函数还是方法，就看这个函数有没有和某个对象进行绑定，只要绑定了，那么它就会变成方法。</strong></p>
+<h2 id="千变万化的descriptor"><a href="#千变万化的descriptor" class="headerlink" title="千变万化的descriptor"></a>千变万化的descriptor</h2><p><strong>当我们调用instance对象的函数时，最关键的一个动作就是从PyFunctionObject对象向PyMethodObject对象的转变，而这个关键的转变就取决于Python中的descriptor。当我们访问对象中的属性时，由于descriptor的存在，这种转换自然而然的就发生了。事实上，Python中的descriptor很强大，我们可以使用它做很多事情，而在Python的内部，也存在各种各样的descriptor，比如property、staticmethod、classmethod等等，这些descriptor给python的类机制赋予了强大的力量。具体源码就不分析了，我们直接通过Python代码的层面演示一下，这三种描述符的实现。</strong></p>
+<p><strong>实现property</strong></p>
+<pre><code>class Property:
+
+    def __init__(self, func):
+        self.func = func
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            # 如果instance是None说明是类调用，那么直接返回这个描述符本身
+            # 这个和内置property的处理方式是一样
+            return self
+        res = self.func(instance)
+        return res
+
+
+class A:
+
+    @ Property
+    def f(self):
+        return &quot;name: hanser&quot;
+
+
+a = A()
+print(a.f)  # name: hanser
+print(A.f)  # &lt;__main__.Property object at 0x000001FABFE910A0&gt;</code></pre><p><strong>总结：property是为了实例对象准备的，当然property支持的功能远不止我们上面演示的这么简单，它还可以进行set、delete，这些我们在介绍魔法方法的时候再说吧。</strong></p>
+<p><strong>实现staticmethod</strong></p>
+<pre><code>class StaticMethod:
+
+    def __init__(self, func):
+        self.func = func
+
+    def __get__(self, instance, owner):
+        # 静态方法的话，类和实例都可以用
+        # 类调用不会自动传参，但是实例会自动传递，因此我们需要把实例调用传来的self给扔掉
+
+        # 做法是直接返回self.func即可，注意：self.func是A.func
+        # 因此调用的时候，是类去调用的，而类调用是不会自动加上参数的。
+        return self.func
+
+
+class A:
+
+    @ StaticMethod
+    def f():
+        return &quot;name: hanser&quot;
+
+
+a = A()
+print(a.f())  # name: hanser
+print(A.f())  # name: hanser</code></pre><p><strong>总结：staticmethod也是为了实例对象准备的，但是类也可以调用。</strong></p>
+<p><strong>实现classmethod</strong></p>
+<pre><code>class ClassMethod:
+
+    def __init__(self, func):
+        self.func = func
+
+    def __get__(self, instance, owner):
+        # 类方法，目的是在类调用的时候，将类本身作为第一个参数传递进去
+        # 显然是这里的owner
+
+        # 返回一个闭包，然后当调用的时候，接收参数
+        # 不管是谁调用，最终这个self.func都是A.func，然后手动将cls也就是owner传递进去
+        def inner(*args, **kwargs):
+            return self.func(owner, *args, **kwargs)
+        # 所以在上面我们看到, 函数被classmethod装饰之后，即使是实例调用，第一个参数传递的还是类本身
+        return inner
+
+
+class A:
+
+    name = &quot;hanser&quot;
+
+    @ ClassMethod
+    def f(cls):
+        return f&quot;name: {cls.name}&quot;
+
+
+a = A()
+print(a.f())  # name: hanser
+print(A.f())  # name: hanser</code></pre><p><strong>总结：classmethod是为了类对象准备的，但是实例也可以调用。</strong></p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p><strong>这一次我们介绍了Python中实例对象的创建以及属性访问，下一篇我们介绍魔法方法。</strong></p>
+<p>posted @  2020-09-02 23:04  <a href="https://www.cnblogs.com/traditional/" target="_blank" rel="noopener">古明地盆</a>  阅读(217)  评论(4)  <a href="https://i.cnblogs.com/EditPosts.aspx?postid=13605011" target="_blank" rel="noopener">编辑</a>  <a href="https://www.cnblogs.com/traditional/p/13605011.html" target="_blank" rel="noopener">收藏</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-1017/" rel="prev" title="《深度剖析CPython解释器》21. Python类机制的深度解析(第五部分): 全方位介绍Python中的魔法方法，一网打尽 - 古明地盆 - 博客园">
+      <i class="fa fa-chevron-left"></i> 《深度剖析CPython解释器》21. Python类机制的深度解析(第五部分): 全方位介绍Python中的魔法方法，一网打尽 - 古明地盆 - 博客园
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-1018/" rel="next" title="《深度剖析CPython解释器》22. 解密Python中的生成器对象，从字节码的角度分析生成器的底层实现以及执行逻辑 - 古明地盆 - 博客园">
+      《深度剖析CPython解释器》22. 解密Python中的生成器对象，从字节码的角度分析生成器的底层实现以及执行逻辑 - 古明地盆 - 博客园 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#《深度剖析CPython解释器》20-Python类机制的深度解析-第四部分-实例对象的创建、以及属性访问-古明地盆-博客园"><span class="nav-number"></span> <span class="nav-text">《深度剖析CPython解释器》20. Python类机制的深度解析(第四部分): 实例对象的创建、以及属性访问 - 古明地盆 - 博客园</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#《深度剖析CPython解释器》20-Python类机制的深度解析-第四部分-实例对象的创建、以及属性访问"><span class="nav-number"></span> <span class="nav-text">《深度剖析CPython解释器》20. Python类机制的深度解析(第四部分): 实例对象的创建、以及属性访问</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#楔子"><span class="nav-number"></span> <span class="nav-text">楔子</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#通过class类对象创建实例对象"><span class="nav-number"></span> <span class="nav-text">通过class类对象创建实例对象</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#访问instance对象中的属性"><span class="nav-number"></span> <span class="nav-text">访问instance对象中的属性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#实例对象的属性字典"><span class="nav-number">1.</span> <span class="nav-text">实例对象的属性字典</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#再论descriptor"><span class="nav-number">2.</span> <span class="nav-text">再论descriptor</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#函数变身"><span class="nav-number">3.</span> <span class="nav-text">函数变身</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#方法调用"><span class="nav-number">4.</span> <span class="nav-text">方法调用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bound-method和unbound-method"><span class="nav-number">5.</span> <span class="nav-text">bound method和unbound method</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#千变万化的descriptor"><span class="nav-number"></span> <span class="nav-text">千变万化的descriptor</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#小结"><span class="nav-number"></span> <span class="nav-text">小结</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="从谷歌辞职后，作为独立开发者的第三年，我从年入 3 万做到了年入 40 万">
+<meta property="og:type" content="article">
+<meta property="og:title" content="
+
+
+从谷歌辞职后，作为独立开发者的第三年，我从年入 3 万做到了年入 40 万 ">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/05/09/qiwihui-pocket_readings-1099/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="从谷歌辞职后，作为独立开发者的第三年，我从年入 3 万做到了年入 40 万">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXxhtteYPgW8X5esrWXbZER89AmNhhHKNZQMZA41pBQ0hPn10Ol8iaiaFuQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXxib8zzb5OZwmkhic3gmdxG0ZvPB9sM5Zj2xJ8iaGXGfxHbdicHc1JnDJsjA/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXxXaeW3vBJaWJ3TOwBVmnVdvZiaf3sFibPNaRmFmGrnf1TLS10LSzZZQrQ/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXx9JxXic105iczUvzDb7n1haOiaA9Eiba7hEwflEpuARvic0qibvy8u9biaVNEw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXxK5hUNTawk1v2DOaYbiatLdXKfITyRDAhibO8KjROb4MqAMVuDA9ktPHQ/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXxQchmjzs9kxoicTuvXMHQvERuq4GIU1EpvvicLnlZqOsPM7TQu5VQVGlA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXx7nUsIzxgNvibhfePCJxkuIiaI8TVpcpq8LeB5JDVrGVRy8OKBUvjv4kA/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXxs0xA5EdJBDHxTTt2ZfRJxLQf61rAxtGsgaD8W16op3SL1rVPquaUCA/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXxUoQRfk0MjIh2SjJ063TE3yIjwibotEuz1uHsWTRg74GicfXjRNJb2VEg/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXxyS8UicRIjMoOBK9bxRBNEusVjtrW3NibmEfokvVCnQvtVO0VoJfJOb5A/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXxArLOmrcfpqM98WqkH3lOaFHLsARokO9xv5DDaUjHOExt86Rxzpxfjg/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXxwVYwW7wWZIiamWoIqsKFxrpSB2aepSibtbsjSQBpnr4PIoDknGP5iaqicA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXxLfAT7KjEUsUSZwgIxIr2FR6xtNqBciayhCJz4XspvBcxtMe9Z2hjbDg/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXxUUACtsDL46E0TgexPTBOyoD8Va6tTTjrrxRP4NbmyUDUNgTJpmAShA/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXx9JxXic105iczUvzDb7n1haOiaA9Eiba7hEwflEpuARvic0qibvy8u9biaVNEw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXxz6R5bxXD1GhVCZ35980N8GiaBDu9t1N2gDo9JbibghaiaJjXpKGBiaZJHg/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXxwIlJ4PJouaD7QofFpoibJXlQQ0zXfK1k6KA9s2YicUgp66SNaKUibXcGQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXxaaSdp8tLHWs0o8zkG3yXCzkmTCOiakjHLaVmbIjX88s4CQdnHzpuDPw/640?wx_fmt=png">
+<meta property="article:published_time" content="2021-05-09T07:21:19.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.406Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://mmbiz.qpic.cn/mmbiz_png/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXxhtteYPgW8X5esrWXbZER89AmNhhHKNZQMZA41pBQ0hPn10Ol8iaiaFuQ/640?wx_fmt=png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/05/09/qiwihui-pocket_readings-1099/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>
+
+
+从谷歌辞职后，作为独立开发者的第三年，我从年入 3 万做到了年入 40 万  | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/05/09/qiwihui-pocket_readings-1099/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+
+
+从谷歌辞职后，作为独立开发者的第三年，我从年入 3 万做到了年入 40 万 
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-05-09 07:21:19" itemprop="dateCreated datePublished" datetime="2021-05-09T07:21:19+00:00">2021-05-09</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">
+
+
+从谷歌辞职后，作为独立开发者的第三年，我从年入 3 万做到了年入 40 万 </div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#24494;&#20449;&#21495; LinuxHub &#21151;&#33021;&#20171;&#32461; &#28857;&#20987;&#33719;&#21462;&#12298;&#27599;&#22825;&#19968;&#20010;Linux&#21629;&#20196;&#12299;&#31995;&#21015;&#21644;&#31934;&#36873;Linux&#25216;&#26415;&#36164;&#28304;&#12290;&#12300;Linux&#29233;&#22909;&#32773;&#12301;&#26085;&#24120;&#20998;&#20139; Linux/Unix &#30456;&#20851;&#20869;&#23481;&#65292;&#21253;&#25324;&#65306;&#24037;&#20855;&#36164;&#28304;&#12289;&#20351;&#29992;&#25216;&#24039;&#12289;&#35838;&#31243;&#20070;&#31821;&#31561;&#12290; &darr;&#25512;&#33616;&#20851;&#27880;&darr;&#25105;&#36766;&#25481;&#22312;&#35895;&#27468;&#30340;&#24037;&#20316;&#65292;&#21019;&#21150;&#33258;&#24049;&#30340;&#36719;&#20214;&#20844;&#21496;<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/3ut2FVY" target="_blank" rel="noopener">https://ift.tt/3ut2FVY</a> original site<br><br><br><br>May 09, 2021 at 02:46PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1099#issuecomment-835724215" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>5/9/2021</strong></p>
+</blockquote>
+<h2 id="从谷歌辞职后，作为独立开发者的第三年，我从年入-3-万做到了年入-40-万-by-Linux爱好者"><a href="#从谷歌辞职后，作为独立开发者的第三年，我从年入-3-万做到了年入-40-万-by-Linux爱好者" class="headerlink" title="从谷歌辞职后，作为独立开发者的第三年，我从年入 3 万做到了年入 40 万 by Linux爱好者"></a>从谷歌辞职后，作为独立开发者的第三年，我从年入 3 万做到了年入 40 万 by Linux爱好者</h2><p><strong>2021-05-09</strong></p>
+<p>↓推荐关注↓</p>
+<p>我辞掉在谷歌的工作，创办自己的软件公司已经 3 年了。这是我迄今为止收入最高的一年，年收入 6.3 万美元，比 2019 年增长了 7 倍。  </p>
+<p>今天是我辞掉在谷歌的工作，创建自己的软件业务的 3 周年纪念日。在第 1 年和第 2 年结束时，我都作了总结，所以，是时候分享我的进步了。</p>
+<h3 id="这一年，一切顺利"><a href="#这一年，一切顺利" class="headerlink" title="这一年，一切顺利"></a>这一年，一切顺利</h3><p>在我自己工作的头两年里，我的总收入不足 1 万美元（约人民币 6.5 万元，平均年入 3 万元），第 3 年我的目标是赚取 2 万美金的收入。</p>
+<p>这一年过了一半，看起来我的目标要落空了。我的业务每个月总共能挣 300 美元，而我的新点子没一个管用。</p>
+<p>5 月的一款新产品奇迹般地扭转了局面。截至去年年底，我获得了 6.3 万美元的收入，远远超过了我的目标。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXxhtteYPgW8X5esrWXbZER89AmNhhHKNZQMZA41pBQ0hPn10Ol8iaiaFuQ/640?wx_fmt=png" alt=""></p>
+<p>嗯，我的净收入还是个负数，不过这次我有个好的理由！</p>
+<p>目前，我在销售实物产品，因此，我的收入比支出滞后两三个月。每笔销售的利润都在 30~50%，所以最终数据将会跟上。</p>
+<h3 id="按项目介绍"><a href="#按项目介绍" class="headerlink" title="按项目介绍"></a>按项目介绍</h3><h4 id="TinyPilot"><a href="#TinyPilot" class="headerlink" title="TinyPilot"></a>TinyPilot</h4><p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXxib8zzb5OZwmkhic3gmdxG0ZvPB9sM5Zj2xJ8iaGXGfxHbdicHc1JnDJsjA/640?wx_fmt=jpeg" alt=""></p>
+<p>TinyPilot 是我为了远程管理服务器而开发的一个廉价设备。</p>
+<p>在过去的几年里，我的所有软件开发都是在家庭服务器上完成的。它工作得很好，除非我搞砸了网络配置或者想要安装一个新的操作系统。我的服务器没有连接显示器或键盘，所以我必须把它放到我的办公桌上，用工作站的所有线缆都插到服务器，等我做完了再把它们换回来。</p>
+<p>我了解到树莓派（Raspberry Pi）可以伪装成 USB 键盘，而且我也了解它可以捕捉视频。要是一款 Web 应用将这两种功能结合在一起，将树莓派转变为微型远程管理设备，结果会怎样？</p>
+<p>经过几个月的修修补补，我有了一个工作原型。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXxXaeW3vBJaWJ3TOwBVmnVdvZiaf3sFibPNaRmFmGrnf1TLS10LSzZZQrQ/640?wx_fmt=jpeg" alt=""></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXx9JxXic105iczUvzDb7n1haOiaA9Eiba7hEwflEpuARvic0qibvy8u9biaVNEw/640?wx_fmt=png" alt=""></p>
+<p>我制作的 TinyPilot 的原型，通过 IP 设备的开源 KVM。</p>
+<p>我很质疑这玩意儿是否有市场？为什么有人会从我这里买这种设备？它只不过是一个广泛可用的硬件组件的集合而已。也许每个星期会有一两位客户来购买，所以如果每套设备能赚 80 美元的话，那就值得我花时间包装和运输订单。</p>
+<p>于是我就此发表了一篇博文：《TinyPilot：以不到一百美元构建一个通过 IP 设备的 KVM》（TinyPilot: Build a KVM Over IP for Under $100）。</p>
+<p>很快，我意识到这个生意和我以前做过的任何生意都不一样。这篇博文发表后不到 4 个小时，客户们就从我的存货里买下了全部 9 个套件，而且他们还继续购买，即使是延迟交货。</p>
+<p>不到一个星期，这篇博文就带来了 8800 美元的销售额。它登上了 Hacker News 的头版，并成为有史以来最热门的“Show HN”帖子之一。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXxK5hUNTawk1v2DOaYbiatLdXKfITyRDAhibO8KjROb4MqAMVuDA9ktPHQ/640?wx_fmt=jpeg" alt=""></p>
+<p>TinyPilot 在 Hacker News 和 Reddit 上的回应。</p>
+<p>在最初的那个高峰之后，销售额有所下滑，但 TinyPilot 自那以后一直保持增长。在销售实体产品方面，我并没有任何经验，所以我很快就学会了如何管理库存，如何系统地执行订单，如何与供应商合作制作电路板和 3D 打印外壳。</p>
+<p>TinyPilot 以近 5.4 万美元的收入结束了这一年。我的净收入仍然是负数，但这是因为我的成本是前期的。TinyPilot 在 2020 年的支出包括持续到 2021 年 2 月的库存。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXxQchmjzs9kxoicTuvXMHQvERuq4GIU1EpvvicLnlZqOsPM7TQu5VQVGlA/640?wx_fmt=png" alt=""></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXx7nUsIzxgNvibhfePCJxkuIiaI8TVpcpq8LeB5JDVrGVRy8OKBUvjv4kA/640?wx_fmt=jpeg" alt=""></p>
+<p>*：绝大多数代码都是我写的，但我雇了一个开发人员来帮助我打理销售页面。</p>
+<h3 id="登上-Hacker-News-头版"><a href="#登上-Hacker-News-头版" class="headerlink" title="登上 Hacker News 头版"></a>登上 Hacker News 头版</h3><p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXxs0xA5EdJBDHxTTt2ZfRJxLQf61rAxtGsgaD8W16op3SL1rVPquaUCA/640?wx_fmt=jpeg" alt=""></p>
+<p>登上 Hacker News 头版的是我博客写作的课程。</p>
+<p>五月份，我给同行导师小组做了一次非正式的演讲，题目是《如何成为一个成功的软件博客》（How to be a Sort of Successful Software Blogger）。我试图讲解我在 Hacker News 和 Reddit 等网站上写作的成功技巧。分享这个过程非常有趣，但我不知道该如何处理这些材料。</p>
+<p>在这一年里，我看到越来越多的开发人员在付费课程上教他们所知道的东西。TinyPilot 向我展示了将我的博客与我的业务联系在一起有多强大。如果人们喜欢我的博客，他们也许会有兴趣购买一门我的写作课程。</p>
+<p>录制课程比我想象的要难。我本来打算工作 30~40 个小时，但后来变成了将近 200 个小时。</p>
+<p>该课程在 2021 年 1 月推出，所以下面的数字不包括推出后的订单。迄今为止，销售情况并不好，但是要知道长期的收益还为时尚早。不管怎样，我为这本教材而骄傲，我的一些学生告诉我，这些课程对他们的写作有很大的帮助。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXxUoQRfk0MjIh2SjJ063TE3yIjwibotEuz1uHsWTRg74GicfXjRNJb2VEg/640?wx_fmt=jpeg" alt=""></p>
+<h3 id="mtlynch-io-（博客）"><a href="#mtlynch-io-（博客）" class="headerlink" title="mtlynch.io （博客）"></a>mtlynch.io （博客）</h3><p>在博客方面，今年我最大的改变就是对文章主题进行了更有策略的思考。2020 年之前，我的写作态度是：“这个主题现在就在我的脑子里，所以我要把它写出来，看看会发生什么事。”有时候博文能找到读者，但更多的时候，却不能。</p>
+<p>今年，在我开始撰写任何一篇新文章之前，我都会问自己两个问题：</p>
+<ol>
+<li><p>有多少读者对这个话题感兴趣？有办法打动他们吗？</p>
+</li>
+<li><p>这一点小小的规划，让阅读量有了很大的改变。</p>
+</li>
+</ol>
+<p>在 2019 年，我的文章在第 1 周平均有 5000 个读者。在 2020 年，这个数字跃升至 25000 个。在我发表的 9 篇新博文中，除了一篇之外，其余的博文都登上了 Hacker News 头版，其中有 4 篇出现在第一的位置。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXxyS8UicRIjMoOBK9bxRBNEusVjtrW3NibmEfokvVCnQvtVO0VoJfJOb5A/640?wx_fmt=jpeg" alt=""></p>
+<p>我在 2020 年底，从这个博客上删除了所有合作伙伴关系。</p>
+<h3 id="失败的项目"><a href="#失败的项目" class="headerlink" title="失败的项目"></a>失败的项目</h3><p>在过去一年中，我学到的最重要经验之一就是，追求正确的想法意味着拒绝错误的想法。6~8 周后，如果一项业务无法带来有意义的收入，我就会转向其他客户，或者转向一个全新的项目。</p>
+<h4 id="Is-It-Keto"><a href="#Is-It-Keto" class="headerlink" title="Is It Keto"></a>Is It Keto</h4><p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXxArLOmrcfpqM98WqkH3lOaFHLsARokO9xv5DDaUjHOExt86Rxzpxfjg/640?wx_fmt=jpeg" alt=""></p>
+<p>Is It Keto 告诉读者哪些食物适合酮基饮食（keto diet）。</p>
+<p>从 2018 年起，我开始开发 Is It Keto 网站。这是一个简单的网站，告诉你某些食物是否适合酮基饮食。</p>
+<p>2019 年我放弃了这个网站，但在我的一些新的商业想法失败之后，在 2020 年 4 月又重新开始。Is It Keto 网站虽然盈利，但几乎可以说是微乎其微。每名访客带来少于 0.01 美元的收入，因此需要大量增加访客和 / 或收入。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXxwVYwW7wWZIiamWoIqsKFxrpSB2aepSibtbsjSQBpnr4PIoDknGP5iaqicA/640?wx_fmt=png" alt=""></p>
+<p>我试图把文章的写作自动化，以获得更大的发展。对于 Is It Keto 网站来说，每一篇文章都是 100% 的原创，是由我或者我雇佣的写手们定制撰写的。在回顾我已有的内容时，我注意到一致的模式，我可以把它们抽象到一个模板中，然后添加正确的食物名称、照片和营养信息，这样能够快速地创建新的网页。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXxLfAT7KjEUsUSZwgIxIr2FR6xtNqBciayhCJz4XspvBcxtMe9Z2hjbDg/640?wx_fmt=jpeg" alt=""></p>
+<p>在模板中创建 Is It Keto 网站的文章，采用程序化方式。</p>
+<p>一开始，将内容模板化似乎可以每周增加数百篇文章，但事实证明，在不牺牲质量的前提下，如此快速地扩大规模是一项挑战。在 2 个月内，我只设法增加了 118 篇文章。我添加的模板越多，速度就越快，但增加的内容却没有吸引到足够的用户，不值得。</p>
+<p>另一个想法来自我的朋友 Justin Vincent，他听说我的网站每月 70000~100000 的页面浏览量，收入却如此之少，这让他很震惊。他建议我创建一种付费的姊妹产品，用 Is It Keto 来吸引合格的潜在客户。</p>
+<p>我测试了一些酮基饮食社区和应用程序的登录页面，但只有 0.1% 的访客注册了更多信息。TinyPilot 项目就在这时开始起飞，所以我把 Is It Keto 放到了次要位置。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXxUUACtsDL46E0TgexPTBOyoD8Va6tTTjrrxRP4NbmyUDUNgTJpmAShA/640?wx_fmt=jpeg" alt=""></p>
+<p>*我在 2020 年 1 月放弃了膳食计划。</p>
+<h4 id="WanderJest"><a href="#WanderJest" class="headerlink" title="WanderJest"></a>WanderJest</h4><p><img src="https://mmbiz.qpic.cn/mmbiz_png/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXx9JxXic105iczUvzDb7n1haOiaA9Eiba7hEwflEpuARvic0qibvy8u9biaVNEw/640?wx_fmt=png" alt=""></p>
+<p>WanderJest 帮助喜剧迷找到附近的现场喜剧表演。</p>
+<p>WanderJest 是我在 2020 年初开始的一个“短命”项目。我把它描述为“一种类似 Bandsintown 的应用，但它是用来寻找喜剧”。（译注：Bandsintown 是一款获奖的 Android 音乐会信息和现场音乐会发现应用。）</p>
+<p>我喜欢喜剧，但我已经错过了无数次在我附近看喜剧演员表演的机会。要么是我没有加入正确的邮件列表，要么是没有关注正确的社交媒体账号，要么是没有在正确的时间查看 Ticketmaster。WanderJest 想要解决这个问题，将尽可能多的节目列表来源聚合在一起。</p>
+<p>我计划通过和电影院的联盟交易来赚钱，但是没人用我的折扣码。后来新冠疫情一爆发，我就关闭了网站。</p>
+<h4 id="Portfolio-RebalPortfolio-Rebalancer（投资组合再平衡应用）帮助被动型投资者管理他们的投资。ancer"><a href="#Portfolio-RebalPortfolio-Rebalancer（投资组合再平衡应用）帮助被动型投资者管理他们的投资。ancer" class="headerlink" title="Portfolio RebalPortfolio Rebalancer（投资组合再平衡应用）帮助被动型投资者管理他们的投资。ancer"></a>Portfolio RebalPortfolio Rebalancer（投资组合再平衡应用）帮助被动型投资者管理他们的投资。ancer</h4><p><img src="https://mmbiz.qpic.cn/mmbiz_png/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXxz6R5bxXD1GhVCZ35980N8GiaBDu9t1N2gDo9JbibghaiaJjXpKGBiaZJHg/640?wx_fmt=png" alt=""></p>
+<p>Portfolio Rebalancer（投资组合再平衡应用）帮助被动型投资者管理他们的投资。</p>
+<p>我的投资组合是不同类别的股票和债券的组合，每种资产类型都有一个目标比例。随着价格的波动，我的投资余额也会发生变化，所以我必须不断调仓，才能回到我的目标比例。每一年，我都会这样重复几次，单调乏味地把数字输入电子表格，直到一切看起来都正确为止。</p>
+<p>如果一个 Web 应用可以自动实现这一点呢？我做了一个快速的原型，并在 reddit，我的博客和谷歌广告上进行了分享。第 1 个月，该工具吸引了 1000 名访客。很遗憾，只有一个人注册了免费试用，他们从来没有升级过付费计划。起初我就不相信这个主意，因此一个月后我改变了主意。</p>
+<h3 id="经验教训"><a href="#经验教训" class="headerlink" title="经验教训"></a>经验教训</h3><h4 id="产品与市场契合是魔术"><a href="#产品与市场契合是魔术" class="headerlink" title="产品与市场契合是魔术"></a>产品与市场契合是魔术</h4><p>寻找“产品与市场契合”（product/market fit，PMF）意味着要创造一款产品，并与足够多的客户建立联系，从而让你的业务充满活力。当创始人谈到实现产品与市场契合时，他们以一种同样令人窒息的语调描述寻找真爱。我现在知道为什么了。</p>
+<p>在我独自工作的头两年半里，我会花几百个小时来执行一个想法，却只看到几美元的额外收入。初看起来，TinyPilot 就是产品与市场契合，我一发表博文就知道了。</p>
+<p>对于 TinyPilot，我感觉是产品推动了业务，而我则顺其自然。有几个月，我在管理业务时犯了严重的错误，但是它一直在发展。</p>
+<p>当我对产品进行改进时，效果是立竿见影的，而且是实质性的。11 月，我发布了一款高端型号的新 TinyPilot。第 1 个月就卖出了 55 台，创造了 1.4 万美元的额外收入。比起我在 Is It Keto 和 Portfolio Rebalancer 上 0.1% 的注册率来说，这是个不错的成绩。</p>
+<h4 id="成功的业务创建无需全天候"><a href="#成功的业务创建无需全天候" class="headerlink" title="成功的业务创建无需全天候"></a>成功的业务创建无需全天候</h4><p>我还清楚地记得 2017 年底在 UCB 喜剧剧场看的一场演出，但我却不记得演出中的任何笑话。我只记得全程都在担心口袋里的寻呼机会随时响起，迫使我赶紧回家。</p>
+<p>我在谷歌的团队有一个“随叫随到”的轮值制度，也就是说，每 2 个月，你去哪都要带着一个寻呼机，持续两周。如果寻呼机响了，你必须在 30 分钟内做到“手指放在键盘上”。</p>
+<p>离开谷歌后，我对自己未来的计划没有把握，但有一点可以肯定，那就是：我不再使用寻呼机了。而我也没有—我拒绝认为任何停机会成为一个大问题。</p>
+<p>在两年左右的时间里，我的脑海里开始浮现出这样一种想法：那就是这件事阻碍了我的前进。别的创始人都在创建承诺持续可用的服务，而我为什么要以更少的投入获得成功呢？</p>
+<p>幸运的是，Jason Cohen，这位非凡的引导型创始人告诉我，继续做我现在正在做的事。好吧，他并没有确切地告诉我，但感觉他是直接对我说的。Cohen 在他长达 32 分钟的精彩演讲《设计理想的引导型企业》（Designing the Ideal Bootstrapped Business）中，强烈反对创始人创建“实时”业务。他解释说，如果你是一家自筹资金的小企业，不值得让客户半夜把你叫醒。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXxwIlJ4PJouaD7QofFpoibJXlQQ0zXfK1k6KA9s2YicUgp66SNaKUibXcGQ/640?wx_fmt=png" alt=""></p>
+<p>视频网址：<a href="https://youtu.be/otbnC2zE2rw" target="_blank" rel="noopener">https://youtu.be/otbnC2zE2rw</a></p>
+<p>我很高兴自己没有向恐惧屈服。TinyPilot 离“实时”已经很远了。客户在他们自己的硬件上运行我的软件，这样我就可以关闭每台服务器和代码库而不会影响到任何人的工作流程。</p>
+<h4 id="成功比失败更有压力"><a href="#成功比失败更有压力" class="headerlink" title="成功比失败更有压力"></a>成功比失败更有压力</h4><p>虽然 TinyPilot 并不要求持续可用性，但我却常常忘记它。</p>
+<p>自从我大张旗鼓地发布之后，有两天我都无法入睡。我把所有 9 套设备都寄给了我的客户，然后苦恼于接下来会发生什么。假如所有人都收到他们的设备，却没有一个可以使用呢？假如我的客户想让 TinyPilot 做些完全不同的事情呢？要是每个人的服务器都出了什么问题怎么办？</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/YriaiaJPb26VNV0LOUXWKUjsD629HsUEXxaaSdp8tLHWs0o8zkG3yXCzkmTCOiakjHLaVmbIjX88s4CQdnHzpuDPw/640?wx_fmt=png" alt=""></p>
+<p>我打包的最初 9 份 TinyPilot 订单</p>
+<p>幸运的是，最初的客户都很喜欢他们的 TinyPilots，所以我终于如释重负。但是每隔几周，就会有新的事情发生，这让我担心了好几天。比如，邮局丢失了一批关键部件；一个积极的评价促使订单激增，耗尽了我的库存；我弄错了一份海关表格，担心自己会在出口监狱坐牢，并为此做好了准备。</p>
+<p>事实上，我所感受到的压力是自寻烦恼。谁会在意我是否几天都没货？由于计划不周延误了订单，我感到非常焦急，害怕会使客户失望，但从来没人会抱怨。实际上，当我向客户道歉，说货会晚到的时候，客户只会说他们被感动了，我会花时间告诉他们。</p>
+<p>为了减轻压力，把工作和个人生活分开，我做得越来越好，但这是个持续的过程。</p>
+<h3 id="给去年的目标打分"><a href="#给去年的目标打分" class="headerlink" title="给去年的目标打分"></a>给去年的目标打分</h3><p>去年年初，我制定了 3 个高级别目标。</p>
+<h4 id="在我的各项业务中赚取-2-万美元的收入"><a href="#在我的各项业务中赚取-2-万美元的收入" class="headerlink" title="在我的各项业务中赚取 2 万美元的收入"></a>在我的各项业务中赚取 2 万美元的收入</h4><ul>
+<li><p>结果：收入 6.3 万美元。</p>
+</li>
+<li><p>成绩：A+</p>
+</li>
+</ul>
+<p>一开始看起来很黯淡，但我远远超过了我的目标。我觉得这是一个很大的成就，因为我在 2019 年的收入只有 7200 美元，增长了近 7 倍。</p>
+<h4 id="发表-10-篇博文"><a href="#发表-10-篇博文" class="headerlink" title="发表 10 篇博文"></a>发表 10 篇博文</h4><ul>
+<li><p>结果：发表了 9 篇博文。</p>
+</li>
+<li><p>成绩：A-</p>
+</li>
+</ul>
+<p>我本来打算发表 10 篇文章，但为了开设我的写作课程，我没完成第 10 篇文章。尽管如此，今年我在博客上的成绩还是让我非常满意。我写了几篇文章，这些文章使我感到自豪，也使我和读者产生了共鸣。</p>
+<h4 id="学习一项新技术"><a href="#学习一项新技术" class="headerlink" title="学习一项新技术"></a>学习一项新技术</h4><ul>
+<li><p>结果：学到了更多的 JavaScript 知识。成绩：B-</p>
+</li>
+<li><p>本想找个借口学习 Rust，但一直找不到合适的对象。</p>
+</li>
+</ul>
+<p>相反，我在 JavaScript 方面获得了广度和深度。我已经知道 Vue，但今年，我学会了 Gridsome，一个基于 Vue 的静态网站生成器。我用它建立了我的 TinyPilot 销售网站，并重写了 Is It Keto 网站。</p>
+<p>我还学会了如何更有效地使用纯 JavaScript。TinyPilot 的 Web 应用是用纯 JavaScript 写的，没有构建或编译的步骤。令人吃惊的是，避免使用现代 JavaScript 框架可以节省大量的复杂性。</p>
+<h3 id="第-4-年目标"><a href="#第-4-年目标" class="headerlink" title="第 4 年目标"></a>第 4 年目标</h3><h4 id="将-TinyPilot-的年收入增长到-60-万美元"><a href="#将-TinyPilot-的年收入增长到-60-万美元" class="headerlink" title="将 TinyPilot 的年收入增长到 60 万美元"></a>将 TinyPilot 的年收入增长到 60 万美元</h4><p>嗯，尽管听起来有些疯狂，从 2 万 / 年的目标变成 60 万 / 年，但我认为这是可以实现的。</p>
+<p>TinyPilot 在 2021 年 1 月赚了 4.3 万美金，因此，按每月平均 3% 的增长率计算，它一年可以赚到 60 万美元。</p>
+<h4 id="发表-6-篇博文，出版一本书"><a href="#发表-6-篇博文，出版一本书" class="headerlink" title="发表 6 篇博文，出版一本书"></a>发表 6 篇博文，出版一本书</h4><p>自从我开始为自己工作之后，我就一直幻想着自己能出版一本书。今年，我终于做到了。</p>
+<p>这本书将教给软件工程师一些提高写作水平的实用方法。暂定书名为《重构英语：软件开发者的有效写作》（Refactoring English: Effective Writing for Software Developers）。</p>
+<h4 id="TinyPilot-自动化管理"><a href="#TinyPilot-自动化管理" class="headerlink" title="TinyPilot 自动化管理"></a>TinyPilot 自动化管理</h4><p>在 TinyPilot，我的女朋友和我一起兼职，负责库存管理和包装订单。我们喜欢在一起工作，但这是一个非常脆弱的系统，规模非常小。假如我们中的一个有几天没空，很快就会有大量的积压。</p>
+<p>我想把我们的流程系统化并外包出去，这样我们就可以放两个星期的假，而不至于一切都停滞不前。</p>
+<h3 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h3><p>在我辞职之前，我不断地看书，听关于初创公司的播客节目，最让我感兴趣的部分是无限的可能性。</p>
+<p>当你经营自己的业务时，你可以做任何事情。只要有 1 个月的可用时间和 1 万美元的资金，就有数百万种方法来开发你的业务。你可以增加新的功能，尝试新的营销策略，或者雇佣新的销售人员。你可以创造出一种在你的行业中没有人见过的全新技术。</p>
+<p>在我的整个职业生涯中，总是处于一种预定的职业阶梯上。要取得进展，我必须证明自己达到了与日常工作只有一点点相似的任意标准。如果经理让我增加一个新功能，我就不能说：“不，我认为我们需要一个更好的营销策略，所以我要去做这件事。”但对于我自己的业务，我经常说这样的话。（不过目前，经理和员工都是我自己。）</p>
+<p>当我终于看到我的一项业务取得了财务上的成功，而且有了更多的收入，这就意味着更多的可能性，就像我希望的一样好玩。尽管压力很大，但很有趣。</p>
+<p>我再一次感到无比的幸运，能够为自己工作，我希望永远做下去。</p>
+<p>作者介绍：</p>
+<p>Michael Lynch，独立开发者。单元测试爱好者。TinyPilot KVM 开发者。曾在谷歌、微软工作。</p>
+<p>原文链接：</p>
+<p><a href="https://mtlynch.io/solo-developer-year-3/" target="_blank" rel="noopener">https://mtlynch.io/solo-developer-year-3/</a></p>
+<blockquote>
+<p>转自：InfoQ</p>
+</blockquote>
+<p>- EOF -</p>
+<p>推荐阅读  点击标题可跳转</p>
+<p>1、<a href="http://mp.weixin.qq.com/s?__biz=MzAxODI5ODMwOA==&mid=2666554193&idx=1&sn=8e060e5cd1a5cf3384af127cfc389bab&chksm=80dca7fab7ab2eecba70de1b712490362b4737f0c23082128a7eda986b0d39272d7b378b9f58&scene=21#wechat_redirect" target="_blank" rel="noopener">P7 砖家：这是我们 NB 项目上线的完整过程</a></p>
+<p>2、<a href="http://mp.weixin.qq.com/s?__biz=MzAxODI5ODMwOA==&mid=2666554186&idx=1&sn=3f5c1824b42e3dded1de62fdc53eacfa&chksm=80dca7e1b7ab2ef70fdcce05d76dd1485f4e6207e206741d59bca43fff192307fe1a065978d6&scene=21#wechat_redirect" target="_blank" rel="noopener">如何搭建一个拖垮公司的技术架构？</a></p>
+<p>3、<a href="http://mp.weixin.qq.com/s?__biz=MzAxODI5ODMwOA==&mid=2666554184&idx=1&sn=0dd5a3324d78cb6b0da1c409c086ccb6&chksm=80dca7e3b7ab2ef59093adbba251033ec52d84a8220355040d4ab4a96d0208f2062bc2a7f98f&scene=21#wechat_redirect" target="_blank" rel="noopener">拆解1968年的美国军用计算机，真的怀疑是“穿越”啊！</a></p>
+<p>看完本文有收获？请分享给更多人  </p>
+<p>推荐关注「Linux 爱好者」，提升Linux技能</p>
+<p>点赞和在看就是最大的支持❤️</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/05/09/qiwihui-pocket_readings-1098/" rel="prev" title="itch.io：一个充满独立气质的游戏宝库 - 触乐">
+      <i class="fa fa-chevron-left"></i> itch.io：一个充满独立气质的游戏宝库 - 触乐
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/05/12/qiwihui-pocket_readings-1101/" rel="next" title="
+
+
+人口数据再剖析 ">
+      
+
+
+人口数据再剖析  <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#从谷歌辞职后，作为独立开发者的第三年，我从年入-3-万做到了年入-40-万-by-Linux爱好者"><span class="nav-number"></span> <span class="nav-text">从谷歌辞职后，作为独立开发者的第三年，我从年入 3 万做到了年入 40 万 by Linux爱好者</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#这一年，一切顺利"><span class="nav-number">1.</span> <span class="nav-text">这一年，一切顺利</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#按项目介绍"><span class="nav-number">2.</span> <span class="nav-text">按项目介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#TinyPilot"><span class="nav-number">2.1.</span> <span class="nav-text">TinyPilot</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#登上-Hacker-News-头版"><span class="nav-number">3.</span> <span class="nav-text">登上 Hacker News 头版</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mtlynch-io-（博客）"><span class="nav-number">4.</span> <span class="nav-text">mtlynch.io （博客）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#失败的项目"><span class="nav-number">5.</span> <span class="nav-text">失败的项目</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Is-It-Keto"><span class="nav-number">5.1.</span> <span class="nav-text">Is It Keto</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#WanderJest"><span class="nav-number">5.2.</span> <span class="nav-text">WanderJest</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Portfolio-RebalPortfolio-Rebalancer（投资组合再平衡应用）帮助被动型投资者管理他们的投资。ancer"><span class="nav-number">5.3.</span> <span class="nav-text">Portfolio RebalPortfolio Rebalancer（投资组合再平衡应用）帮助被动型投资者管理他们的投资。ancer</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#经验教训"><span class="nav-number">6.</span> <span class="nav-text">经验教训</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#产品与市场契合是魔术"><span class="nav-number">6.1.</span> <span class="nav-text">产品与市场契合是魔术</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#成功的业务创建无需全天候"><span class="nav-number">6.2.</span> <span class="nav-text">成功的业务创建无需全天候</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#成功比失败更有压力"><span class="nav-number">6.3.</span> <span class="nav-text">成功比失败更有压力</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#给去年的目标打分"><span class="nav-number">7.</span> <span class="nav-text">给去年的目标打分</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#在我的各项业务中赚取-2-万美元的收入"><span class="nav-number">7.1.</span> <span class="nav-text">在我的各项业务中赚取 2 万美元的收入</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#发表-10-篇博文"><span class="nav-number">7.2.</span> <span class="nav-text">发表 10 篇博文</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#学习一项新技术"><span class="nav-number">7.3.</span> <span class="nav-text">学习一项新技术</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#第-4-年目标"><span class="nav-number">8.</span> <span class="nav-text">第 4 年目标</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#将-TinyPilot-的年收入增长到-60-万美元"><span class="nav-number">8.1.</span> <span class="nav-text">将 TinyPilot 的年收入增长到 60 万美元</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#发表-6-篇博文，出版一本书"><span class="nav-number">8.2.</span> <span class="nav-text">发表 6 篇博文，出版一本书</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#TinyPilot-自动化管理"><span class="nav-number">8.3.</span> <span class="nav-text">TinyPilot 自动化管理</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#结束语"><span class="nav-number">9.</span> <span class="nav-text">结束语</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

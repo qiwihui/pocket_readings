@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Moving from Flask to FastAPI">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Moving from Flask to FastAPI">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/05/06/qiwihui-pocket_readings-1096/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="Moving from Flask to FastAPI">
+<meta property="og:image" content="https://testdriven.io/blog/moving-from-flask-to-fastapi/">
+<meta property="og:image" content="https://testdriven.io/blog/moving-from-flask-to-fastapi/">
+<meta property="og:image" content="https://testdriven.io/blog/moving-from-flask-to-fastapi/">
+<meta property="article:published_time" content="2021-05-06T03:21:08.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.410Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://testdriven.io/blog/moving-from-flask-to-fastapi/">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/05/06/qiwihui-pocket_readings-1096/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>Moving from Flask to FastAPI | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/05/06/qiwihui-pocket_readings-1096/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Moving from Flask to FastAPI
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-05-06 03:21:08" itemprop="dateCreated datePublished" datetime="2021-05-06T03:21:08+00:00">2021-05-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">Moving from Flask to FastAPI</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Python is one of the most popular programming languages. From scripting to API development to machine learning – Python has a footprint. Its popularity is fueled by the tools it offers. Flask, a web framework, is one such tool, which is popular amongst the machine learning community.<br><br><br><br>Tags: python<br><br><br><br>via Pocket <a href="https://ift.tt/32YzbnN" target="_blank" rel="noopener">https://ift.tt/32YzbnN</a> original site<br><br><br><br>May 06, 2021 at 11:13AM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1096#issuecomment-833195381" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>5/6/2021</strong></p>
+</blockquote>
+<h2 id="Moving-from-Flask-to-FastAPI"><a href="#Moving-from-Flask-to-FastAPI" class="headerlink" title="Moving from Flask to FastAPI"></a>Moving from Flask to FastAPI</h2><p>Python is one of the most popular programming languages. From scripting to API development to machine learning – Python has a footprint. Its popularity is fueled by the tools it offers. Flask, a web framework, is one such tool, which is popular amongst the machine learning community. It’s also widely used for API development. But there’s a new framework on the rise: <a href="https://fastapi.tiangolo.com/" target="_blank" rel="noopener">FastAPI</a>. Unlike Flask, FastAPI is an ASGI (Asynchronous Server Gateway Interface) framework. On par with Go and NodeJS, FastAPI is one of the fastest Python-based web frameworks.</p>
+<p>This article, which is aimed for those interested in moving from Flask to FastAPI, compares and contrasts common patterns in both Flask and FastAPI.</p>
+<h2 id="FastAPI-vs-Flask"><a href="#FastAPI-vs-Flask" class="headerlink" title="FastAPI vs Flask"></a>FastAPI vs Flask</h2><p>FastAPI was built with these three main concerns in mind:</p>
+<ol>
+<li>Speed</li>
+<li>Developer experience</li>
+<li>Open standards</li>
+</ol>
+<p>You can think of FastAPI as the glue that brings together <a href="https://www.starlette.io/" target="_blank" rel="noopener">Starlette</a>, <a href="https://pydantic-docs.helpmanual.io/" target="_blank" rel="noopener">Pydantic</a>, <a href="https://github.com/OAI/OpenAPI-Specification" target="_blank" rel="noopener">OpenAPI</a>, and <a href="https://json-schema.org/" target="_blank" rel="noopener">JSON Schema</a>.</p>
+<ul>
+<li>Under the hood, FastAPI uses Pydantic for data validation and Starlette for tooling, making it blazing fast compared to Flask, giving comparable performance to high-speed web APIs in Node or Go.</li>
+<li>Starlette + <a href="https://www.uvicorn.org/" target="_blank" rel="noopener">Uvicorn</a> offers async capability, something that Flask lacks.</li>
+<li>With Pydantic along with <a href="https://docs.python.org/3/library/typing.html" target="_blank" rel="noopener">type hints</a>, you get a nice editor experience with autocompletion. You also get data validation, serialization and deserialization (for building an API), and automatic documentation (via JSON Schema and OpenAPI).</li>
+</ul>
+<p>That said, Flask is much more widely used, so it’s battle-tested and has a much larger community supporting it. Since both frameworks are meant to be extended, Flask is the clear winner here due to it’s vast plugin ecosystem.</p>
+<p>Recommendations:</p>
+<ul>
+<li>Use FastAPI if you resonate with the above three concerns, are tired of the plethora of choices when it comes to Flask extensions, wish to leverage async, or are just wanting to stand up a RESTful API.</li>
+<li>Use Flask if you aren’t comfortable with the maturity-level of FastAPI, need to build a full-stack app with server-side templating, or can’t live without some of the community-maintained Flask extensions.</li>
+</ul>
+<h2 id="Getting-Started"><a href="#Getting-Started" class="headerlink" title="Getting Started"></a>Getting Started</h2><h3 id="Installation"><a href="#Installation" class="headerlink" title="Installation"></a>Installation</h3><p>Like any other Python package, installation is fairly straightforward.</p>
+<p><strong>Flask</strong></p>
+<p>pip install flask</p>
+<h1 id="or"><a href="#or" class="headerlink" title="or"></a>or</h1><p>poetry add flask<br>pipenv install flask<br>conda install flask</p>
+<p><strong>FastAPI</strong></p>
+<p>pip install fastapi uvicorn</p>
+<h1 id="or-1"><a href="#or-1" class="headerlink" title="or"></a>or</h1><p>poetry add fastapi uvicorn<br>pipenv install fastapi uvicorn<br>conda install fastapi uvicorn -c conda-forge</p>
+<blockquote>
+<p>Unlike Flask, FastAPI does not have a built-in development server, so an <a href="https://asgi.readthedocs.io/en/latest/" target="_blank" rel="noopener">ASGI</a> server like <a href="https://www.uvicorn.org/" target="_blank" rel="noopener">Uvicorn</a> or <a href="https://github.com/django/daphne" target="_blank" rel="noopener">Daphne</a> is required.</p>
+</blockquote>
+<h3 id="“Hello-World”-App"><a href="#“Hello-World”-App" class="headerlink" title="“Hello World” App"></a>“Hello World” App</h3><p><strong>Flask</strong></p>
+<p># flask_code.py</p>
+<p>from flask import Flask</p>
+<p>app = Flask(__name__)</p>
+<p>@ app.route(“/“)<br>def home():<br>    return {“Hello”: “World”}</p>
+<p>if __name__ == “__main__“:<br>    app.run()</p>
+<p><strong>FastAPI</strong></p>
+<p># fastapi_code.py</p>
+<p>import uvicorn<br>from fastapi import FastAPI</p>
+<p>app = FastAPI()</p>
+<p>@ app.get(“/“)<br>def home():<br>    return {“Hello”: “World”}</p>
+<p>if __name__ == “__main__“:<br>    uvicorn.run(“fastapi_code:app”)</p>
+<p>Parameters like <code>reload=True</code> can be passed into <code>uvicorn.run()</code> to enable hot-reloading for development.</p>
+<p>Alternatively, you can start the server directly form the terminal:</p>
+<p>uvicorn run fastapi_code:app</p>
+<p>For hot-reloading:</p>
+<p>uvicorn run fastapi_code:app –reload</p>
+<h3 id="Configuration"><a href="#Configuration" class="headerlink" title="Configuration"></a>Configuration</h3><p>Both Flask and FastAPI provide a number of options for dealing with different configurations for different environments. Both support the following patterns:</p>
+<ol>
+<li>Environment Variables</li>
+<li>Config File</li>
+<li>Instance Folder</li>
+<li>Classes and inheritance</li>
+</ol>
+<p>For more, refer to their respective documentation:</p>
+<p><strong>Flask</strong></p>
+<p>import os<br>from flask import Flask</p>
+<p>class Config(object):<br>    MESSAGE = os.environ.get(“MESSAGE”)</p>
+<p>app = Flask(__name__)<br>app.config.from_object(Config)</p>
+<p>@ app.route(“/settings”)<br>def get_settings():<br>    return { “message”: app.config[“MESSAGE”] }</p>
+<p>if __name__ == “__main__“:<br>    app.run()</p>
+<p>Now, before you run the server, set the appropriate environment variable:</p>
+<p>export MESSAGE=”hello, world”</p>
+<p><strong>FastAPI</strong></p>
+<p>import uvicorn<br>from fastapi import FastAPI<br>from pydantic import BaseSettings</p>
+<p>class Settings(BaseSettings):<br>    message: str</p>
+<p>settings = Settings()<br>app = FastAPI()</p>
+<p>@ app.get(“/settings”)<br>def get_settings():<br>    return { “message”: settings.message }</p>
+<p>if __name__ == “__main__“:<br>    uvicorn.run(“fastapi_code:app”)</p>
+<p>Again, before running the server, set the appropriate environment variable:</p>
+<p>export MESSAGE=”hello, world”</p>
+<h2 id="Routes-Templates-and-Views"><a href="#Routes-Templates-and-Views" class="headerlink" title="Routes, Templates, and Views"></a>Routes, Templates, and Views</h2><h3 id="HTTP-Methods"><a href="#HTTP-Methods" class="headerlink" title="HTTP Methods"></a>HTTP Methods</h3><p><strong>Flask</strong></p>
+<p>from flask import request</p>
+<p>@ app.route(“/“, methods=[“GET”, “POST”])<br>def home():<br>    # handle POST<br>    if request.method == “POST”:<br>        return {“Hello”: “POST”}<br>    # handle GET<br>    return {“Hello”: “GET”}</p>
+<p><strong>FastAPI</strong></p>
+<p>@ app.get(“/“)<br>def home():<br>    return {“Hello”: “GET”}</p>
+<p>@ app.post(“/“)<br>def home_post():<br>    return {“Hello”: “POST”}</p>
+<p>FastAPI provides separate decorators for each method:</p>
+<p>@ app.get(“/“)<br>@ app.post(“/“)<br>@ app.delete(“/“)<br>@ app.patch(“/“)</p>
+<h3 id="URL-Parameters"><a href="#URL-Parameters" class="headerlink" title="URL Parameters"></a>URL Parameters</h3><p>To pass in info through the URL (like <code>/employee/1</code>) for managing state:</p>
+<p><strong>Flask</strong></p>
+<p>@ app.route(“/employee/“)<br>def home():<br>    return {“id”: id}</p>
+<p><strong>FastAPI</strong></p>
+<p>@ app.get(“/employee/{id}”)<br>def home(id: int):<br>    return {“id”: id}</p>
+<p>The URL parameter is specified similar to an f-string expression. Also, you can make use of type hints. Here, we tell Pydantic at runtime that <code>id</code> is of type <code>int</code>. In development, this can lead to better code-completion as well.</p>
+<h3 id="Query-Parameters"><a href="#Query-Parameters" class="headerlink" title="Query Parameters"></a>Query Parameters</h3><p>Like URL parameters, query parameters (like <code>/employee?department=sales</code>) can also be used for managing state (usually for filtering or sorting):</p>
+<p><strong>Flask</strong></p>
+<p>from flask import request</p>
+<p>@ app.route(“/employee”)<br>def home():<br>    department = request.args.get(“department”)<br>    return {“department”: department}</p>
+<p><strong>FastAPI</strong></p>
+<p>@ app.get(“/employee”)<br>def home(department: str):<br>    return {“department”: department}</p>
+<h3 id="Templates"><a href="#Templates" class="headerlink" title="Templates"></a>Templates</h3><p><strong>Flask</strong></p>
+<p>from flask import render_template</p>
+<p>@ app.route(“/“)<br>def home():<br>    return render_template(“index.html”)</p>
+<p>By default, Flask looks for templates in a “templates” folder.</p>
+<p><strong>FastAPI</strong></p>
+<p>You need to install <a href="https://jinja.palletsprojects.com/" target="_blank" rel="noopener">Jinja</a>:</p>
+<p>Implementation:</p>
+<p>from fastapi import Request<br>from fastapi.templating import Jinja2Templates<br>from fastapi.responses import HTMLResponse</p>
+<p>app = FastAPI()</p>
+<p>templates = Jinja2Templates(directory=”templates”)</p>
+<p>@ app.get(“/“, response_class=HTMLResponse)<br>def home(request: Request):<br>    return templates.TemplateResponse(“index.html”, {“request”: request})</p>
+<p>For FastAPI, you need to explicitly define the “templates” folder. Then for each response, the request context needs to be provided.</p>
+<h3 id="Static-Files"><a href="#Static-Files" class="headerlink" title="Static Files"></a>Static Files</h3><p><strong>Flask</strong></p>
+<p>By default, Flask serves up static files from the “static” folder.</p>
+<p><strong>FastAPI</strong></p>
+<p>In FastAPI, you need to mount a folder for static files:</p>
+<p>from fastapi.staticfiles import StaticFiles</p>
+<p>app = FastAPI()</p>
+<p>app.mount(“/static”, StaticFiles(directory=”static”), name=”static”)</p>
+<h3 id="Asynchronous-tasks"><a href="#Asynchronous-tasks" class="headerlink" title="Asynchronous tasks"></a>Asynchronous tasks</h3><p><strong>Flask</strong></p>
+<p>Flask by default does not support asynchronous tasks. Async in flask can be achieved by using threads (concurrency) or multiprocessing (parallelism) or from tools like <a href="https://flask.palletsprojects.com/en/1.1.x/patterns/celery/" target="_blank" rel="noopener">Celery</a> or <a href="https://python-rq.org/" target="_blank" rel="noopener">RQ</a>.</p>
+<p><strong>FastAPI</strong></p>
+<p>FastAPI greatly simplifies asynchronous tasks due to it’s native support for asyncio. To use, simply add the <code>async</code> keyword to the view function:</p>
+<p>@ app.get(“/“)<br>async def home():<br>    result = await some_async_task()<br>    return result</p>
+<p>FastAPI also has a <a href="https://fastapi.tiangolo.com/tutorial/background-tasks/" target="_blank" rel="noopener">background tasks</a> feature, which you can use to define background tasks to be run after returning a response. This is useful for operations that don’t need to complete before the response is sent back.</p>
+<p>from fastapi import BackgroundTasks</p>
+<p>def process_file(filename: str):<br>    # process file :: takes minimum 3 secs(just an example)<br>    pass</p>
+<p>@ app.post(“/upload/{filename}”)<br>async def upload_and_process(filename: str, background_tasks: BackgroundTasks):<br>    background_tasks.add_task(process_file, filename)<br>    return {“message”: “processing file”}</p>
+<p>Here, the response will be sent instantly without making the user wait for the file processing to complete.</p>
+<h3 id="Dependency-Injection"><a href="#Dependency-Injection" class="headerlink" title="Dependency Injection"></a>Dependency Injection</h3><p><strong>Flask</strong></p>
+<p>Although you can implement your own Dependency Injection solution, Flask does not have true first-class support for it by default. Instead, you’ll want to use an external package like <a href="https://github.com/alecthomas/flask_injector" target="_blank" rel="noopener">flask-injector</a>.</p>
+<p><strong>FastAPI</strong></p>
+<p>FastAPI, on the other hand, has a powerful <a href="https://fastapi.tiangolo.com/tutorial/dependencies/#dependencies-first-steps" target="_blank" rel="noopener">solution</a> for handling Dependency injection.</p>
+<p>For example:</p>
+<p>from databases import Database<br>from fastapi import Depends<br>from starlette.requests import Request</p>
+<p>from db_helpers import get_all_data<br>def get_db(request: Request):<br>    return request.app.state._db</p>
+<p>@ app.get(“/data”)<br>def get_data(db: Database = Depends(get_db)):<br>    return get_all_data(db)</p>
+<p>So, <code>get_db</code> will grab a reference to the database connection create in the app’s startup event handler. Depends is then used to…</p>
+<h3 id="Data-Validation"><a href="#Data-Validation" class="headerlink" title="Data Validation"></a>Data Validation</h3><p><strong>Flask</strong></p>
+<p>Flask does not have any inhouse data validation support. You can use the powerful Pydantic package for data validation through <a href="https://github.com/bauerji/flask_pydantic" target="_blank" rel="noopener">Flask-Pydantic</a>.</p>
+<p><strong>FastAPI</strong></p>
+<p>One of the things that makes FastAPI so powerful is it’s support for Pydantic.</p>
+<p>from pydantic import BaseModel</p>
+<p>app = FastAPI()</p>
+<p>class Request(BaseModel):<br>    username: str<br>    password: str</p>
+<p>@ app.post(“/login”)<br>async def login(req: Request):<br>    if req.username == “testdriven.io” and req.password == “testdriven.io”:<br>        return {“message”: “success”}<br>    return {“message”: “Authentication Failed”}</p>
+<p>Here we take in an input of model <code>Request</code>. The payload must contain a username and password.</p>
+<p># correct payload format<br>✗ curl -X POST ‘localhost:8000/login’ \<br>    –header ‘Content-Type: application/json’ \<br>    –data-raw ‘{\“username\“: \“testdriven.io\“,\“password\“:\“testdriven.io\“}’</p>
+<p>{“message”:”success”}</p>
+<h1 id="incorrect-payload-format"><a href="#incorrect-payload-format" class="headerlink" title="incorrect payload format"></a>incorrect payload format</h1><p>✗ curl -X POST ‘localhost:8000/login’ \<br>    –header ‘Content-Type: application/json’ \<br>    –data-raw ‘{\“username\“: \“testdriven.io\“,\“passwords\“:\“testdriven.io\“}’</p>
+<p>{“detail”:[{“loc”:[“body”,”password”],”msg”:”field required”,”type”:”value_error.missing”}]}</p>
+<p>Take note of the request. We passed in <code>passwords</code> as key instead of <code>password</code>. The Pydantic model automatically tells the user that the <code>password</code> field is missing.</p>
+<h3 id="Serialization-and-Deserialization"><a href="#Serialization-and-Deserialization" class="headerlink" title="Serialization and Deserialization"></a>Serialization and Deserialization</h3><p><strong>Flask</strong></p>
+<p>The easiest way to serialize is to use <a href="https://flask.palletsprojects.com/en/1.1.x/api/#flask.json.jsonify" target="_blank" rel="noopener">jsonify</a>:</p>
+<p>from flask import jsonify<br>from data import get_data_as_dict</p>
+<p>@ app.route(“/“)<br>def send_data():<br>    return jsonify(get_data_as_dict)</p>
+<p>For complex objects, Flask developers often use <a href="https://flask-marshmallow.readthedocs.io/en/latest/" target="_blank" rel="noopener">Flask-Marshmallow</a>.</p>
+<p><strong>FastAPI</strong></p>
+<p>FastAPI automatically serializes any returned <code>dict</code>. For more complex and structured data, Pydantic is used:</p>
+<p>from pydantic import BaseModel</p>
+<p>app = FastAPI()</p>
+<p>class Request(BaseModel):<br>    username: str<br>    email: str<br>    password: str</p>
+<p>class Response(BaseModel):<br>    username: str<br>    email: str</p>
+<p>@ app.post(“/login”, response_model=Response)<br>async def login(req: Request):<br>    if req.username == “testdriven.io” and req.password == “testdriven.io”:<br>        return req<br>    return {“message”: “Authentication Failed”}</p>
+<p>Here, we added a <code>Request</code> model with three inputs: username, email, and password. We also defined a <code>Response</code> model with just the username and email. The input <code>Request</code> model handles deserialization while the output <code>Response</code> model handles object serialization. The response model is then passed in to the decorator via the <a href="https://fastapi.tiangolo.com/tutorial/response-model/" target="_blank" rel="noopener">response_model</a> parameter.</p>
+<p>Now if we return the request itself as the response, <code>Pydantic</code> will omit the <code>password</code>, because our defined response model does not contain a password field.</p>
+<p>Example:</p>
+<p># output<br>✗ curl -X POST ‘localhost:8000/login’ \<br>    –header ‘Content-Type: application/json’ \<br>    –data-raw ‘{\“username\“:\“testdriven.io\“,\“email\“:\“<a href="https://testdriven.io/cdn-cgi/l/email-protection" target="_blank" rel="noopener">[email protected]</a>\“,\“password\“:\“testdriven.io\“}’</p>
+<p>{“username”:”testdriven.io”,”email”:”<a href="https://testdriven.io/cdn-cgi/l/email-protection" target="_blank" rel="noopener">[email protected]</a>“}</p>
+<h3 id="Middleware"><a href="#Middleware" class="headerlink" title="Middleware"></a>Middleware</h3><p>Middleware is used to apply logic with every request before it’s processed by the view function.</p>
+<p><strong>Flask</strong></p>
+<p>class middleware:<br>    def __init__(self, app) -&gt; None:<br>        self.app = app</p>
+<pre><code>def \_\_call\_\_(self, environ, start\_response):
+    start = time.time()
+    response = self.app(environ, start\_response)
+    end = time.time() - start
+    print(f&quot;request processed in {end} s&quot;)
+    return response</code></pre><p>app = Flask(__name__)<br>app.wsgi_app = middleware(app.wsgi_app)</p>
+<p><strong>FastAPI</strong></p>
+<p>from fastapi import Request</p>
+<p>@ app.middleware(“http”)<br>async def add_process_time_header(request: Request, call_next):<br>    start_time = time.time()<br>    response = await call_next(request)<br>    process_time = time.time() - start_time<br>    print(f”request processed in {process_time} s”)<br>    return response</p>
+<p>The <code>@ app.middleware(&quot;http&quot;)</code> decorator is a must for <a href="https://fastapi.tiangolo.com/tutorial/middleware/#create-a-middleware" target="_blank" rel="noopener">creating</a> middleware in FastAPI. The above middleware calculates the time taken for processing a request. After the request is processed by the view function, the total processing time is calculated and sent back as a response header.</p>
+<p># flask output(logs)<br>request processed in 0.0010077953338623047 s<br>127.0.0.1 - - [22/Sep/2020 18:56:21] “GET / HTTP/1.1” 200 -</p>
+<h1 id="fastapi-output-logs"><a href="#fastapi-output-logs" class="headerlink" title="fastapi output(logs)"></a>fastapi output(logs)</h1><p>request processed in 0.0009925365447998047 s<br>INFO:     127.0.0.1:51123 - “GET / HTTP/1.1” 200 OK</p>
+<h2 id="Modularity"><a href="#Modularity" class="headerlink" title="Modularity"></a>Modularity</h2><p>As an app grows, at some point you’ll want to group similar views, templates, static files, and models together to help decompose the app into smaller components.</p>
+<p><strong>Flask</strong></p>
+<p>In Flask, <a href="https://flask.palletsprojects.com/en/1.1.x/blueprints/" target="_blank" rel="noopener">Blueprints</a> are used for modularity:</p>
+<p># blueprints/product/views.py<br>from flask import Blueprint</p>
+<p>product = Blueprint(“product”, __name__)</p>
+<p>@ product.route(“/product1”)<br>    …</p>
+<p># main.py</p>
+<p>from blueprints.product.views import product</p>
+<p>app.register_blueprint(product)</p>
+<p><strong>FastAPI</strong></p>
+<p>With FastAPI, meanwhile, modularity is achieved via an <a href="https://fastapi.tiangolo.com/tutorial/bigger-applications/#apirouter" target="_blank" rel="noopener">APIRouter</a>:</p>
+<p># routers/product/views.py<br>from fastapi import APIRouter</p>
+<p>product = APIRouter()</p>
+<p>@ product.get(“/product1”)<br>    …</p>
+<p># main.py</p>
+<p>from routers.product.views import product</p>
+<p>app.include_router(product)</p>
+<h2 id="Additional-Features"><a href="#Additional-Features" class="headerlink" title="Additional Features"></a>Additional Features</h2><h3 id="Automatic-Documentation"><a href="#Automatic-Documentation" class="headerlink" title="Automatic Documentation"></a>Automatic Documentation</h3><p><strong>Flask</strong></p>
+<p>Flask does not automatically create API documentation out-of-the-box. However, there are several extensions that handle this like <a href="https://github.com/gangverk/flask-swagger" target="_blank" rel="noopener">flask-swagger</a> and <a href="https://github.com/python-restx/flask-restx" target="_blank" rel="noopener">Flask RESTX</a> but they require additional setup.</p>
+<p><strong>FastAPI</strong></p>
+<p>FastAPI supports OpenAPI along with <a href="https://swagger.io/tools/swagger-ui/" target="_blank" rel="noopener">Swagger UI</a> and <a href="https://github.com/Redocly/redoc" target="_blank" rel="noopener">ReDoc</a> by default. This means that every endpoint is automatically documented from the metadata associated with the endpoint.</p>
+<p><img src="https://testdriven.io/blog/moving-from-flask-to-fastapi/" alt="Swagger UI"></p>
+<p>All the registered endpoints are listed here</p>
+<p><img src="https://testdriven.io/blog/moving-from-flask-to-fastapi/" alt="ReDoc"></p>
+<p>Alternative documentation</p>
+<p><img src="https://testdriven.io/blog/moving-from-flask-to-fastapi/" alt="ReDoc"></p>
+<h3 id="Admin-app"><a href="#Admin-app" class="headerlink" title="Admin app"></a>Admin app</h3><p><strong>Flask</strong></p>
+<p>Flask has a widely used third party admin package called <a href="https://github.com/flask-admin/flask-admin" target="_blank" rel="noopener">Flask-Admin</a>, which is used to quickly perform CRUD operations against your models.</p>
+<p><strong>FastAPI</strong></p>
+<p>As of writing, there are no FastAPI extensions for this.</p>
+<h3 id="Authentication"><a href="#Authentication" class="headerlink" title="Authentication"></a>Authentication</h3><p><strong>Flask</strong></p>
+<p>While Flask doesn’t have a native solution, <a href="https://github.com/mjhea0/awesome-flask#auth" target="_blank" rel="noopener">several third-party extensions are available</a>.</p>
+<p><strong>FastAPI</strong></p>
+<p>FastAPI natively supports a number of security and authentication tools via the <code>fastapi.security</code> package. With a few lines of code, you can add basic HTTP authentication to your application:</p>
+<p>import secrets</p>
+<p>from fastapi import Depends, FastAPI, HTTPException, status<br>from fastapi.security import HTTPBasic, HTTPBasicCredentials</p>
+<p>app = FastAPI()</p>
+<p>security = HTTPBasic()</p>
+<p>def get_current_username(credentials: HTTPBasicCredentials = Depends(security)):<br>    correct_username = secrets.compare_digest(credentials.username, “stanleyjobson”)<br>    correct_password = secrets.compare_digest(credentials.password, “swordfish”)<br>    if not (correct_username and correct_password):<br>        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)<br>    return credentials.username</p>
+<p>@ app.get(“/whoami”)<br>def who_ami_i(username: str = Depends(get_current_username)):<br>    return {“username”: username}</p>
+<p>FastAPI implements <a href="https://en.wikipedia.org/wiki/OAuth#OAuth_2.0_2" target="_blank" rel="noopener">OAuth2</a> and <a href="https://en.wikipedia.org/wiki/OpenID_Connect" target="_blank" rel="noopener">OpenID Connect</a> via the <a href="https://swagger.io/docs/specification/authentication/" target="_blank" rel="noopener">OpenAPI standards</a>.</p>
+<p>Review the following resources from the official documentation for more:</p>
+<h3 id="CORS"><a href="#CORS" class="headerlink" title="CORS"></a>CORS</h3><p>CORS (Cross-Origin Resource Sharing) middleware checks whether or not that requests are coming from allowed origins. If yes, the request is passed along to the next middleware or to the view function. If not, it rejects the request, which sends an error response back to the caller.</p>
+<p><strong>Flask</strong></p>
+<p>Flask requires an external package called <a href="https://github.com/corydolphin/flask-cors" target="_blank" rel="noopener">Flask-CORS</a> for CORS support:</p>
+<p>Basic implementation:</p>
+<p>from flask_cors import CORS</p>
+<p>app = Flask(__name__)</p>
+<p>CORS(app)</p>
+<p><strong>FastAPI</strong></p>
+<p>FastAPI natively supports CORS:</p>
+<p>from fastapi.middleware.cors import CORSMiddleware</p>
+<p>app = FastAPI()</p>
+<p>origins = [“*“]</p>
+<p>app.add_middleware(CORSMiddleware, allow_origins=origins)</p>
+<h2 id="Testing"><a href="#Testing" class="headerlink" title="Testing"></a>Testing</h2><p><strong>Flask</strong></p>
+<p>import pytest<br>from flask import Flask</p>
+<p>app = Flask(__name__)</p>
+<p>@ app.route(“/“)<br>def home():<br>    return {“message”: “OK”}</p>
+<p>def test_hello():<br>    res = app.test_client().get(“/“)</p>
+<pre><code>assert res.status\_code == 200
+assert res.data == b&apos;{&quot;message&quot;:&quot;OK&quot;}\\n&apos;</code></pre><p><strong>FastAPI</strong></p>
+<p>from fastapi import FastAPI<br>from fastapi.testclient import TestClient</p>
+<p>app = FastAPI()</p>
+<p>@ app.get(“/“)<br>async def home():<br>    return {“message”: “OK”}</p>
+<p>client = TestClient(app)</p>
+<p>def test_home():<br>    res = client.get(“/“)</p>
+<pre><code>assert res.status\_code == 200
+assert res.json() == {&quot;message&quot;: &quot;OK&quot;}</code></pre><p>FastAPI provides a <a href="https://fastapi.tiangolo.com/tutorial/testing/#using-testclient" target="_blank" rel="noopener">TestClient</a>. With it, you can run <code>pytest</code> directly with FastAPI. For more information, review the <a href="https://fastapi.tiangolo.com/tutorial/testing/" target="_blank" rel="noopener">Testing</a> guide from the official documentation.</p>
+<h2 id="Deployment"><a href="#Deployment" class="headerlink" title="Deployment"></a>Deployment</h2><h3 id="Production-Server"><a href="#Production-Server" class="headerlink" title="Production Server"></a>Production Server</h3><p><strong>Flask</strong></p>
+<p>Flask by default runs a development WSGI (Web Server Gateway Interface) application server. For production, you’ll need to use a production-grade WSGI app server like <a href="https://gunicorn.org/" target="_blank" rel="noopener">Gunicorn</a>, <a href="https://uwsgi-docs.readthedocs.io/" target="_blank" rel="noopener">uWSGI</a>, or <a href="https://modwsgi.readthedocs.io/" target="_blank" rel="noopener">mod_wsgi</a></p>
+<p>Install Gunicorn:</p>
+<p>Start server:</p>
+<p># main.py</p>
+<h1 id="app-Flask-name"><a href="#app-Flask-name" class="headerlink" title="app = Flask(__name__)"></a>app = Flask(__name__)</h1><p>gunicorn main:app</p>
+<p><strong>FastAPI</strong></p>
+<p>Since FastAPI doesn’t have a development server, you’ll use Uvicorn (or Daphne) for both development and production.</p>
+<p>Install Uvicorn:</p>
+<p>Start server:</p>
+<p># main.py</p>
+<h1 id="app-FastAPI"><a href="#app-FastAPI" class="headerlink" title="app = FastAPI()"></a>app = FastAPI()</h1><p>uvicorn main:app</p>
+<p>You may want to use Gunicorn to manage Uvicorn in order to take advantage of both concurrency (via Uvicorn) and parallelism (via Gunicorn workers):</p>
+<p># main.py</p>
+<h1 id="app-FastAPI-1"><a href="#app-FastAPI-1" class="headerlink" title="app = FastAPI()"></a>app = FastAPI()</h1><p>gunicorn -w 3 -k uvicorn.workers.UvicornWorker main:app</p>
+<h3 id="Docker"><a href="#Docker" class="headerlink" title="Docker"></a>Docker</h3><p><strong>Flask</strong></p>
+<p>FROM python3.8-slim</p>
+<p>WORKDIR /app</p>
+<p>COPY requirements.txt .</p>
+<p>RUN pip install -r requirements.txt</p>
+<p>COPY . .</p>
+<p>EXPOSE 5000</p>
+<p>CMD [“gunicorn”, “main:app”]</p>
+<p>This is one of the simplest Dockerfiles for Flask. To see how to fully configure it for production, review the <a href="https://testdriven.io/blog/dockerizing-flask-with-postgres-gunicorn-and-nginx/" target="_blank" rel="noopener">Dockerizing Flask with Postgres, Gunicorn, and Nginx</a> post.</p>
+<p><strong>FastAPI</strong></p>
+<p>FROM python3.8-slim</p>
+<p>WORKDIR /app</p>
+<p>COPY requirements.txt .</p>
+<p>RUN pip install -r requirements.txt</p>
+<p>COPY . .</p>
+<p>EXPOSE 8000</p>
+<p>CMD [“uvicorn”, “main:app”]</p>
+<p>Again, this is a very simple configuration. The FastAPI author has provided several production-ready Dockerfiles. For more, review the <a href="https://fastapi.tiangolo.com/deployment/#docker" target="_blank" rel="noopener">official FastAPI documentation</a>.</p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>Taking a step back, Django and Flask are the two most popular Python-based web frameworks. They have very different philosophies, though. The advantage of Flask over Django is that Flask is a micro-framework. The program structure is left to the programmers’ discretion and not enforced. Developers can add third-party extensions to improve their code as they see fit. That said, typically, as the code base grows, there’s a need for a number of common features that almost all web apps need. Tight integration of these features with the framework results in much less code that end developers need to create and maintain on their own.</p>
+<p>The code examples throughout this article convey the same thing. In other words, FastAPI includes many of required features. It also follows strict standards, making your code production-ready and easier to maintain. FastAPI is also very well-documented.</p>
+<p>While FastAPI may not be as battle-tested as Flask, more and more developers are turning to it for serving up a machine learning model or developing a RESTful API. Switching to FastAPI is a solid choice.</p>
+<h3 id="Official-Documentation"><a href="#Official-Documentation" class="headerlink" title="Official Documentation"></a>Official Documentation</h3><h3 id="Additional-Resources"><a href="#Additional-Resources" class="headerlink" title="Additional Resources"></a>Additional Resources</h3>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/05/06/qiwihui-pocket_readings-1095/" rel="prev" title="
+
+
+Rust 乱炖  |  Rust 让恶意软件也变强了 ">
+      <i class="fa fa-chevron-left"></i> 
+
+
+Rust 乱炖  |  Rust 让恶意软件也变强了 
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/05/08/qiwihui-pocket_readings-1097/" rel="next" title="
+
+
+Rust 中 Trait 的使用及实现分析 ">
+      
+
+
+Rust 中 Trait 的使用及实现分析  <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Moving-from-Flask-to-FastAPI"><span class="nav-number"></span> <span class="nav-text">Moving from Flask to FastAPI</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#FastAPI-vs-Flask"><span class="nav-number"></span> <span class="nav-text">FastAPI vs Flask</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Getting-Started"><span class="nav-number"></span> <span class="nav-text">Getting Started</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Installation"><span class="nav-number">1.</span> <span class="nav-text">Installation</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#or"><span class="nav-number"></span> <span class="nav-text">or</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#or-1"><span class="nav-number"></span> <span class="nav-text">or</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#“Hello-World”-App"><span class="nav-number">1.</span> <span class="nav-text">“Hello World” App</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Configuration"><span class="nav-number">2.</span> <span class="nav-text">Configuration</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Routes-Templates-and-Views"><span class="nav-number"></span> <span class="nav-text">Routes, Templates, and Views</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#HTTP-Methods"><span class="nav-number">1.</span> <span class="nav-text">HTTP Methods</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#URL-Parameters"><span class="nav-number">2.</span> <span class="nav-text">URL Parameters</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Query-Parameters"><span class="nav-number">3.</span> <span class="nav-text">Query Parameters</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Templates"><span class="nav-number">4.</span> <span class="nav-text">Templates</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Static-Files"><span class="nav-number">5.</span> <span class="nav-text">Static Files</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Asynchronous-tasks"><span class="nav-number">6.</span> <span class="nav-text">Asynchronous tasks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Dependency-Injection"><span class="nav-number">7.</span> <span class="nav-text">Dependency Injection</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Data-Validation"><span class="nav-number">8.</span> <span class="nav-text">Data Validation</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#incorrect-payload-format"><span class="nav-number"></span> <span class="nav-text">incorrect payload format</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Serialization-and-Deserialization"><span class="nav-number">1.</span> <span class="nav-text">Serialization and Deserialization</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Middleware"><span class="nav-number">2.</span> <span class="nav-text">Middleware</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#fastapi-output-logs"><span class="nav-number"></span> <span class="nav-text">fastapi output(logs)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Modularity"><span class="nav-number"></span> <span class="nav-text">Modularity</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Additional-Features"><span class="nav-number"></span> <span class="nav-text">Additional Features</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Automatic-Documentation"><span class="nav-number">1.</span> <span class="nav-text">Automatic Documentation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Admin-app"><span class="nav-number">2.</span> <span class="nav-text">Admin app</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Authentication"><span class="nav-number">3.</span> <span class="nav-text">Authentication</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CORS"><span class="nav-number">4.</span> <span class="nav-text">CORS</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Testing"><span class="nav-number"></span> <span class="nav-text">Testing</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Deployment"><span class="nav-number"></span> <span class="nav-text">Deployment</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Production-Server"><span class="nav-number">1.</span> <span class="nav-text">Production Server</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#app-Flask-name"><span class="nav-number"></span> <span class="nav-text">app &#x3D; Flask(__name__)</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#app-FastAPI"><span class="nav-number"></span> <span class="nav-text">app &#x3D; FastAPI()</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#app-FastAPI-1"><span class="nav-number"></span> <span class="nav-text">app &#x3D; FastAPI()</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Docker"><span class="nav-number">1.</span> <span class="nav-text">Docker</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Conclusion"><span class="nav-number"></span> <span class="nav-text">Conclusion</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Official-Documentation"><span class="nav-number">1.</span> <span class="nav-text">Official Documentation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Additional-Resources"><span class="nav-number">2.</span> <span class="nav-text">Additional Resources</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

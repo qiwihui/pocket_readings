@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="《深度剖析CPython解释器》3. Python的引用计数是什么？Python底层是如何管理对象的？ - 古明地盆 - 博客园">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《深度剖析CPython解释器》3. Python的引用计数是什么？Python底层是如何管理对象的？ - 古明地盆 - 博客园">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-999/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="《深度剖析CPython解释器》3. Python的引用计数是什么？Python底层是如何管理对象的？ - 古明地盆 - 博客园">
+<meta property="article:published_time" content="2021-02-16T14:12:18.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.434Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-999/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>《深度剖析CPython解释器》3. Python的引用计数是什么？Python底层是如何管理对象的？ - 古明地盆 - 博客园 | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-999/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          《深度剖析CPython解释器》3. Python的引用计数是什么？Python底层是如何管理对象的？ - 古明地盆 - 博客园
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-02-16 14:12:18" itemprop="dateCreated datePublished" datetime="2021-02-16T14:12:18+00:00">2021-02-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">《深度剖析CPython解释器》3. Python的引用计数是什么？Python底层是如何管理对象的？ - 古明地盆 - 博客园</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#26964;&#23376; &#22312;&#19978;&#19968;&#31687;&#20013;&#25105;&#20204;&#35828;&#21040;&#20102;Python&#20013;&#30340;&#23545;&#35937;&#22312;&#24213;&#23618;&#30340;&#25968;&#25454;&#32467;&#26500;&#65292;&#25105;&#20204;&#30693;&#36947;Python&#24213;&#23618;&#36890;&#36807;PyObject&#21644;PyTypeObject&#23436;&#25104;&#20102;C++&#25152;&#25552;&#20379;&#30340;&#23545;&#35937;&#30340;&#22810;&#24577;&#29305;&#24615;&#12290;&#22312;Python&#20013;&#21019;&#24314;&#19968;&#20010;&#23545;&#35937;&#65292;&#20250;&#20998;&#37197;&#20869;&#23384;&#24182;&#36827;&#34892;&#21021;&#22987;&#21270;&#65292;&#28982;&#21518;Python&#20250;&#29992;&#19968;&#20010;PyObject *&#26469;&#20445;&#23384;&#21644;<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/3jRqtOZ" target="_blank" rel="noopener">https://ift.tt/3jRqtOZ</a> original site<br><br><br><br>February 16, 2021 at 10:06PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/999#issuecomment-792586124" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>3/8/2021</strong></p>
+</blockquote>
+<h2 id="《深度剖析CPython解释器》3-Python的引用计数是什么？Python底层是如何管理对象的？-古明地盆-博客园"><a href="#《深度剖析CPython解释器》3-Python的引用计数是什么？Python底层是如何管理对象的？-古明地盆-博客园" class="headerlink" title="《深度剖析CPython解释器》3. Python的引用计数是什么？Python底层是如何管理对象的？ - 古明地盆 - 博客园"></a>《深度剖析CPython解释器》3. Python的引用计数是什么？Python底层是如何管理对象的？ - 古明地盆 - 博客园</h2><h1 id="《深度剖析CPython解释器》3-Python的引用计数是什么？Python底层是如何管理对象的？"><a href="#《深度剖析CPython解释器》3-Python的引用计数是什么？Python底层是如何管理对象的？" class="headerlink" title="《深度剖析CPython解释器》3. Python的引用计数是什么？Python底层是如何管理对象的？"></a><a href="https://www.cnblogs.com/traditional/p/13410961.html" target="_blank" rel="noopener">《深度剖析CPython解释器》3. Python的引用计数是什么？Python底层是如何管理对象的？</a></h1><h2 id="楔子"><a href="#楔子" class="headerlink" title="楔子"></a>楔子</h2><p><strong>在上一篇中我们说到了Python中的对象在底层的数据结构，我们知道Python底层通过PyObject和PyTypeObject完成了C++所提供的对象的多态特性。在Python中创建一个对象，会分配内存并进行初始化，然后Python会用一个PyObject *来保存和维护这个对象，当然所有对象都是如此。因为指针是可以相互转化的，所以变量在保存一个对象的指针时，会将该指针转成PyObject *之后再交给变量保存。因此在Python中，变量的传递<code>(包括函数的参数传递)</code>实际上传递的都是一个泛型指针：PyObject *。这个指针具体是指向的什么类型我们并不知道，只能通过其内部的ob_type成员进行动态判断，而正是因为这个ob_type，Python实现了多态机制。</strong></p>
+<p><strong>比如：a.pop()，我们不知道这个a指向的对象到底是什么类型，但只要a可以调用pop方法即可，因此a可以是一个列表、也可以是一个字典、或者是我们实现了pop方法的类的实例对象。所以如果a的ob_type是一个PyList_Type *，那么就调用PyList_Type中定义的pop操作；如果a的ob_type是一个PyDict_Type，那么就调用PyDict_Type中定义的pop操作。</strong></p>
+<blockquote>
+<p><strong>所以变量a在不同的情况下，会表现出不同的行为，这正是Python多态的核心所在。</strong></p>
+</blockquote>
+<p><strong>再比如列表，其内部的元素都是PyObject *，当我们通过索引获取到该指针进行操作的时候，会先通过ob_type获取其类型指针，然后再获取该操作对应的C一级的函数、进行执行，如果不支持相应的操作便会报错。</strong></p>
+<p><strong>从这里我们也能看出来Python为什么慢了，因为有相当一部分时间浪费在类型和属性的查找上面。</strong></p>
+<blockquote>
+<p><strong>以变量a + b为例，这个a和b指向的对象可以是整型、浮点型、字符串、列表、元组、甚至是我们自己实现了某个魔法方法的类的实例对象，因为我们说Python中的变量都是一个PyObject *，所以它可以指向任意的对象，因此Python它就无法做基于类型方面的优化。</strong></p>
+<p><strong>首先Python要通过ob_type判断变量到底指向的是什么类型，这在C级至少需要一次属性查找。然后Python将每一个操作都抽象成了一个魔法方法，所以实例相加时要在对应的类型对象中找到该方法对应的函数指针，这又是一次属性查找。找到了之后将a、b作为参数传递进去，这会发生一次函数调用，会将a和b中维护的值拿出来进行运算，然后根据相加结果创建一个新的对象，再返回其对应的PyObject *指针。</strong></p>
+<p><strong>而对于C来讲，由于已经规定好了类型，所以a + b在编译之后就是一条简单的机器指令，所以两者在效率上差别很大。</strong></p>
+</blockquote>
+<p><strong>当然我们不是来吐槽Python效率的问题的，因为任何语言都擅长的一面和不擅长的一面，只是通过回顾前面的知识来解释为什么Python效率慢。</strong></p>
+<blockquote>
+<p><strong>因此当别人问你Python为什么效率低的时候，希望你能从这个角度来回答它。不要动不动就GIL，那是在多线程情况下才需要考虑的问题，所以有时真的很反感那些在没涉及到多线程的时候还提Python GIL的人。</strong></p>
+</blockquote>
+<p><strong>简单回顾了一下前面的内容，下面我们说一说Python中的对象从创建到销毁的过程，了解一下Python中对象的生命周期。</strong></p>
+<h2 id="Python-C-API"><a href="#Python-C-API" class="headerlink" title="Python/C API"></a>Python/C API</h2><p><strong>当我们在控制台敲下这个语句的时候，Python内部是如何从无到有创建一个浮点数对象的？</strong></p>
+<pre><code>&gt;&gt;&gt; e = 2.71</code></pre><p><strong>另外Python又是怎么知道该如何将它打印到屏幕上面呢？</strong></p>
+<pre><code>&gt;&gt;&gt; print(e)
+2.71</code></pre><p><strong>对象使用完毕时，Python还要将其销毁，那么销毁的时机又该如何确定呢？带着这些问题，我们来探寻一个对象从创建到销毁整个生命周期中的行为表现，然后从中寻找答案。</strong></p>
+<p><strong>不过在探寻对象的创建之前，先介绍Python提供的C API，也叫Python/C API。</strong></p>
+<p><strong>Python对外提供了C API，让用户可以从C环境中与其交互。实际上，由于Python解释器是用C写成的，所以Python内部本身也在大量使用这些C API。为了更好的研读源码，系统地了解这些API的组成结构是很有必要的，而C API分为两类：**</strong>“泛型API”<strong><strong>和</strong></strong>“特型API”<strong>**。</strong></p>
+<p><strong>泛型API</strong></p>
+<p><strong>“泛型API”与类型无关，属于”抽象对象层(Abstract Object Layer，AOL)”，这类API的第一个参数是PyObject *，可以处理任意类型的对象，API内部会根据对象的类型进行区别处理。而且泛型API名称也是有规律的，具有PyObject_xxx这种形式。</strong></p>
+<p><strong>以对象打印函数为例：</strong></p>
+<pre><code>int PyObject_Print(PyObject *op, FILE *fp, int flags)</code></pre><p><strong>接口的第一个参数为待打印的对象的指针，可以是任意类型的对象的指针，因此参数类型是PyObject *。而我们说PyObject *是Python底层的一个泛型指针，通过这个泛型指针来实现多态的机制。第二个参数是文件句柄，表示输出的位置，默认是stdout、即控制台；而flags表示是要以<code>__str__</code>打印还是要以<code>__repr__</code>打印。</strong></p>
+<pre><code>// 假设有两个PyObject *, fo和lo
+// fo指向PyFloatObject, lo指向PyLongObject, 但是它们在打印的时候都可以调用这个相同的打印方法
+PyObject_Print(fo, stdout, 0);
+PyObject_Print(lo, stdout, 0);</code></pre><p><strong>PyObject_Print接口内部会根据对象类型，决定如何输出对象。</strong></p>
+<p><strong>特型API</strong></p>
+<p><strong>特型API与类型相关，属于”具体对象层(Concrete Object Layer，COL)”。这类API只能作用于某种具体类型的对象，比如：浮点数PyFloatObject，而Python内部为每一种内置对象的实例对象都提供了很多的特型API。比如：</strong></p>
+<pre><code>// 通过C的中double创建PyFloatObject
+PyObject* PyFloat_FromDouble(double v);
+
+// 通过C中的long创建PyLongObject
+PyObject* PyLong_FromLong(long v);
+// 通过C中的char *来创建PyLongObject
+PyObject* PyLong_FromString(const char *str, char **pend, int base)</code></pre><p><strong>特型API也是有规律的，尤其是关于C类型和Python类型互转的时候，会用到以下两种特型API：</strong></p>
+<ul>
+<li><code>Py###_From@ @ @ : 根据C的对象创建Python的对象，###表示Python的类型， @ @ @ 表示C的类型，比如PyFloat_FromDouble表示根据C中的double创建Python的float。</code></li>
+<li><code>Py###_As@ @ @ : 根据Python的对象创建C的对象, ###表示Python的类型，@ @ @ 表示C的类型，比如PyFloat_AsDouble表示根据Python的float创建C的double; PyLong_AsLong表示根据Python中的int创建C中的long，因为Python中的int是没有长度限制的，所以在底层使用的是PyLongObject，而不是PyIntObject。</code></li>
+</ul>
+<p><strong>了解了Python/C API之后，我们看对象是如何创建的。</strong></p>
+<h2 id="对象的创建"><a href="#对象的创建" class="headerlink" title="对象的创建"></a>对象的创建</h2><p><strong>经过前面的理论学习，我们知道对象的**</strong>元数据<strong><strong>保存在对应的</strong></strong>类型对象<strong>**，元数据当然也包括对象如何创建等信息。</strong></p>
+<blockquote>
+<p><strong>比如执行pi = 3.14，那么这个过程都发生了什么呢？首先解释器会根据3.14推断出要创建的对象是浮点数，所以会创建出维护的值为3.14的PyFloatObject，并将其指针转化成PyObject *交给变量pi。</strong></p>
+<p><strong>另外需要注意的是，我们说对象的元数据保存在对应的类型对象中，这就意味着对象想要被创建是需要借助对应的类型对象的，但是这是针对于创建我们自定义的类的实例对象而言。创建内置类型的实例对象是直接创建的，至于为什么，我们下面会说。</strong></p>
+</blockquote>
+<p><strong>而创建对象的方式有两种，一种是通过”泛型API”创建，另一种是通过”特型API”创建。比如创建一个浮点数：</strong></p>
+<p><strong>使用泛型API创建：</strong></p>
+<pre><code>PyObject* pi = PyObject_New(PyObject, &amp;PyFloat_Type);</code></pre><p><strong>使用特型API创建：</strong></p>
+<pre><code>PyObject* pi = PyFloat_FromDouble(3.14);
+
+//创建一个内部可以容纳5个元素的PyTupleObject
+PyObject* tpl = PyTuple_New(5);
+//创建一个内部可以容纳5个元素的PyListObject, 当然了这是初始容量, 列表可以扩容的
+PyObject* tpl = PyList_New(5);    </code></pre><p><strong>但不管采用哪种方式创建，最终的关键步骤都是分配内存，而创建内置类型的实例对象，Python是可以直接分配内存的。因为它们有哪些成员在底层都是写死的，而Python对它们了如指掌，因此可以通过Python/C API直接分配内存并初始化。以PyFloat_FromDouble为例，直接在接口内部为PyFloatObject结构体实例分配内存，并初始化相关字段即可。</strong></p>
+<blockquote>
+<p><strong>比如：pi = 3.14，解释器通过3.14知道要创建的对象是PyFloatObject，那么直接根据PyFloatObject里面的成员算一下就可以了，一个引用计数<code>(ob_refcnt)</code> + 一个指针<code>(ob_type)</code> + 一个double<code>(ob_fval)</code> 显然是24个字节，所以直接就分配了。然后将ob_refcnt始化为1，ob_type设置为&amp;PyFloat_Type，ob_fval设置为3.14即可。</strong></p>
+<p><strong>同理可变对象也是一样，因为成员都是固定的，类型、以及内部容纳的元素有多少个也可以根据赋的值得到，所以内部的所有元素<code>(PyObject *)</code>占用了多少内存也是可以算出来的，因此也是可以直接分配内存的。</strong></p>
+</blockquote>
+<p><strong>但对于我们自定义的类型就不行了，假设我们通过class Girl:定义了一个类，显然实例化的时候不可能通过<code>PyGirl_New</code>、或者<code>PyObject_New(PyObject, &amp;PyGirl_Type)</code>这样的API去创建，因为根本就没有PyGirl_New这样的API，也没有PyGirl_Type这个类型对象。这种情况下，创建Girl的实例对象就需要Girl这个类型对象来创建了。因此自定义类的实例对象如何分配内存、如何进行初始化，答案是需要在对应的类型对象里面寻找的。</strong></p>
+<p><strong>总的来说：Python内部创建一个对象的方法有两种：</strong></p>
+<ul>
+<li><code>通过Python/C API，可以是泛型API、也可以是特型API，用于内置类型；</code></li>
+<li><code>通过对应的类型对象去创建，多用于自定义类型；</code></li>
+</ul>
+<p><strong>抛出个问题: e = 2.71 和 e = float(2.71)得到的结果都是2.71，但它们之间有什么不同呢。或者说列表: lst = [] 和 lst = list()得到的lst也都是一个空列表，但这两种方式有什么区别呢？</strong></p>
+<p><strong>我们说创建实例对象可以通过Python/C API，用于内置类型；也可以通过对应的类型对象去创建，多用于自定义类型。但是通过对应类型对象去创建实例对象其实是一个更加通用的流程，因为它除了支持自定义类型之外、还支持内置类型。比如：</strong></p>
+<pre><code>&gt;&gt;&gt; lst = []  # 通过Python/C API创建
+&gt;&gt;&gt; lst
+[]
+&gt;&gt;&gt; lst = list()  # 通过类型对象创建
+&gt;&gt;&gt; lst
+[]
+&gt;&gt;&gt; e = 2.71  # 通过Python/C API创建 
+&gt;&gt;&gt; e
+2.71
+&gt;&gt;&gt; e = float(2.71)  # 通过类型对象创建
+&gt;&gt;&gt; e
+2.71
+&gt;&gt;&gt;</code></pre><p><strong>所以我们看到了对象的两种创建方式，我们写上2.71、或者[]，Python会直接解析成底层对应的数据结构；而float(2.71)、或者list()，虽然结果是一样的，但是我们看到这是一个调用，因此要进行参数解析、类型检测、创建栈帧、销毁栈帧等等，所以开销会大一些。</strong></p>
+<pre><code>import time
+
+t1 = time.perf_counter()
+for _ in range(10000000):
+    lst = []
+t2 = time.perf_counter()
+print(t2 - t1)  # 0.5595989
+
+
+t3 = time.perf_counter()
+for _ in range(10000000):
+    lst = list()
+t4 = time.perf_counter()
+print(t4 - t3)  # 1.1722419999999998</code></pre><blockquote>
+<p><strong>通过[]的方式创建一千万次空列表需要0.56秒，但是通过list()的方式创建一千万次空列表需要1.17秒，主要就在于list()是一个调用，而[]直接会被解析成底层对应的PyListObject，因此[]的速度会更快一些。同理3.14和float(3.14)也是如此。</strong></p>
+</blockquote>
+<p><strong>虽说使用Python/C API的方式创建的速度会更快一些，但这是针对内置类型而言。以我们上面那个自定义了Girl为例，如果想创建一个Girl的实例对象，除了通过Girl这个类型对象去创建，你还能想到其它方式吗？</strong></p>
+<blockquote>
+<p><strong>列表的话：可以list()、也可以[]；元组：可以tuple()、也可以()；字典：可以dict()、也可以{}，前者是通过类型对象去创建的，后者是通过Python/C API创建，会直接解析为对应的C一级数据结构。因为这些结构在底层都是已经实现好了的，是可以直接用的，无需通过调用的方式。</strong></p>
+<p><strong>但是显然自定义类型就没有这个待遇了，它的实例对象只能通过它自己去创建，比如：Girl这个类，Python不可能在底层定义一个PyGirlObject、然后把API提供给我们。所以，我们只能通过Girl()这种方式去创建Girl的实例对象。</strong></p>
+</blockquote>
+<p><strong>所以我们需要通过Girl这个类来创建它的实例对象，也就是调用Girl这个类，而一个对象可以是可调用的，也可以是不可调用的。如果一个对象可以被调用，那么这个对象就是callable，否则就不是callable。</strong></p>
+<p><strong>而决定一个对象是不是callable，就取决于其对应的类型对象中是否定义了某个方法。如果从Python的角度看的话，这个方法就是<code>__call__</code>，从解释器角度看的话，这个方法就是tp_call。</strong></p>
+<p><strong>1. 从Python的角度来看对象的调用：</strong></p>
+<pre><code># int可以调用, 那么它的类型对象(type)内部一定有__call__方法
+print(hasattr(type, &quot;__call__&quot;))  # True
+
+
+class A:
+    pass
+
+
+a = A()
+# 因为我们自定义的类A里面没有__call__, 所以a是不可以被调用的
+try:
+    a()
+except Exception as e:
+    # 告诉我们A的实例对象不可以被调用
+    print(e)  # &apos;A&apos; object is not callable
+
+
+# 如果我们给A设置了一个__call__
+type.__setattr__(A, &quot;__call__&quot;, lambda self: &quot;这是__call__&quot;)
+# 发现可以调用了
+print(a())  # 这是__call__
+
+# 我们看到这就是动态语言的特性, 即便在类创建完毕之后, 依旧可以通过type进行动态设置
+# 而这在静态语言中是不支持的, 所以type是所有类的元类, 它控制了我们自定义类的生成过程
+# type这个古老而又强大的类可以让我们玩出很多新花样
+# 但是对于内置的类type是不可以对其动态增加、删除或者修改的，因为内置的类在底层是静态定义好的
+# 因为从源码中我们看到, 这些内置的类、包括元类，它们都是PyTypeObject对象, 在底层已经被声明为全局变量了
+# 所以type虽然是所有类型对象的元类，但是只有在面对我们自定义的类的时候，type具有增删改的能力
+
+try:
+    type.__setattr__(dict, &quot;__call__&quot;, lambda self: &quot;这是__call__&quot;)
+except Exception as e:
+    print(e)  # can&apos;t set attributes of built-in/extension type &apos;dict&apos;
+# 我们看到抛异常了, 提示我们&quot;不可以给内置/扩展类型dict设置属性&quot;
+# 而dict属于内置类型，至于扩展类型是我们在编写扩展模块中定义的类
+# 内置类和扩展类是等价的，它们直接就指向了C一级的数据结构, 不需要经历被解释器解释这一步
+# 而动态特性是解释器在解释执行字节码(翻译成C级代码执行)的时候动态赋予的
+# 而内置类/扩展类它们本身就已经是指向C一级的数据结构了，绕过了解释器解释执行这一步, 所以它们的属性不能被动态设置
+
+
+try:
+    int.__dict__[&quot;a&quot;] = &quot;b&quot;
+except Exception as e:
+    # 它们的属性字典也是不可以设置的
+    print(e)  # &apos;mappingproxy&apos; object does not support item assignment
+
+
+class Girl: pass
+
+g = Girl()
+g.a = &quot;xx&quot;
+# 实例对象我们也可以手动设置属性
+print(g.a)  # xx
+
+
+lst = list()
+try:
+    lst.a = &quot;xx&quot;
+except Exception as e:
+    # 但是内置类型的实例对象是不可以的
+    print(e)  # &apos;list&apos; object has no attribute &apos;a&apos;
+# 可能有人奇怪了，为什么不行呢？
+# 答案是内置类型的实例对象没有__dict__属性字典, 有多少属性或方法底层已经定义好了，不可以动态添加
+# 如果我们自定义类的时候，设置了__slots__, 那么效果和内置的类是相同的
+print(hasattr(lst, &quot;__dict__&quot;))  # False</code></pre><p><strong>2. 从解释器的角度来看对象的调用：</strong></p>
+<p><strong>我们以内置类型float为例，我们说创建一个PyFloatObject，可以通过3.14或者float(3.14)的方式。前者使用Python/C API创建，3.14直接被解析为C一级数据结构PyFloatObject的对象；后者使用类型对象创建，通过对float进行一个调用、将3.14作为参数，最终也得到指向C一级数据结构PyFloatObject的对象。Python/C API的创建方式我们已经很清晰了，就是根据值来推断在底层应该对应哪一种数据结构，然后直接创建即可。我们重点看一下通过调用来创建实例对象的方式。</strong></p>
+<p><strong>如果一个对象可以被调用，我们说它的类型对象中一定要有tp_call<code>(更准确的说成员tp_call的值一定一个是函数指针, 不可以是0)</code>，而PyFloat_Type是可以调用的，这就说明PyType_Type内部的tp_call是一个函数指针，这在Python的层面是上我们已经验证过了，下面我们就来看看。</strong></p>
+<pre><code>//typeobject.c
+PyTypeObject PyType_Type = {
+    PyVarObject_HEAD_INIT(&amp;PyType_Type, 0)
+    &quot;type&quot;,                                     /* tp_name */
+    sizeof(PyHeapTypeObject),                   /* tp_basicsize */
+    sizeof(PyMemberDef),                        /* tp_itemsize */
+    (destructor)type_dealloc,                   /* tp_dealloc */
+    //...                                          /* tp_hash */
+    (ternaryfunc)type_call,                     /* tp_call */
+    //...
+}        </code></pre><p><strong>我们看到在实例化PyType_Type的时候PyTypeObject内部的成员tp_call被设置成了type_call，这是一个函数指针，当我们调用PyFloat_Type的时候，会触发这个type_call指向的函数。</strong></p>
+<p><strong>因此float(3.14)在C的层面上等价于：</strong></p>
+<pre><code>PyFloat_Type.ob_type.tp_call(&amp;PyFloat_Type, args, kwargs);
+//即：
+PyType_Type.tp_call(&amp;PyFloat_Type, args, kwargs);
+// 而在创建PyType_Type的时候，给tp_call成员传递的是type_call, 因此最终相当于
+type_call(&amp;PyFloat_Type, args, kwargs)</code></pre><p><strong>调用参数通过args和kwargs两个对象传递，关于参数传递暂时先不展开，留到函数机制中再详细介绍。</strong></p>
+<p><strong>然后我们围观一下type_call函数，它位于Object/typeobject.c中。</strong></p>
+<pre><code>static PyObject *
+type_call(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{    
+    // 如果我们调用的是float，那么显然这里的type就是&amp;PyFloat_Type
+
+    // 这里是声明一个PyObject *，显然这是要返回的实例对象的指针
+    PyObject *obj;
+
+    //这里的tp_new是什么估计有人已经猜到了，我们说__call__对应底层的tp_call
+    //那么这里tp_new呢？然后对应Python中的__new__方法，这里是为实例对象分配空间
+    if (type-&gt;tp_new == NULL) {
+        PyErr_Format(PyExc_TypeError,
+                     &quot;cannot create &apos;%.100s&apos; instances&quot;,
+                     type-&gt;tp_name);
+        return NULL;
+    }
+
+    //通过tp_new分配空间，此时实例对象就已经创建完毕了，这里会返回其指针
+    obj = type-&gt;tp_new(type, args, kwds);
+    //类型检测，暂时不用管
+    obj = _Py_CheckFunctionResult((PyObject*)type, obj, NULL);
+    if (obj == NULL)
+        return NULL;
+
+    //判断参数的，我们说这里的参数type是类型对象，但也可以是元类，元类也是由PyTypeObject结构体实例化得到的
+    //元类在调用的时候执行的依旧是type_call，所以这里是检测type指向的是不是PyType_Type
+    //如果是的话，那么实例化得到的obj就不是实例对象了，而是类型对象，要单独检测一下
+    if (type == &amp;PyType_Type &amp;&amp;
+        PyTuple_Check(args) &amp;&amp; PyTuple_GET_SIZE(args) == 1 &amp;&amp;
+        (kwds == NULL ||
+         (PyDict_Check(kwds) &amp;&amp; PyDict_GET_SIZE(kwds) == 0)))
+        return obj;
+
+    //tp_new应该返回相应类型对象的实例对象(的指针)，后面为了方便在Python层面就不提指针了，直接用实例对象代替了
+    //但如果返回的不是，那么就不会执行tp_init，而是直接将这里的obj返回
+    //这里不理解的话，我们后面会细说
+    if (!PyType_IsSubtype(Py_TYPE(obj), type))
+        return obj;
+
+    //拿到obj的类型
+    type = Py_TYPE(obj);
+    //执行tp_init，显然这个tp_init就是__init__函数，这与Python中类的实例化过程是一致的。
+    if (type-&gt;tp_init != NULL) {
+        //执行tp_init, 设置参数
+        int res = type-&gt;tp_init(obj, args, kwds);
+        if (res &lt; 0) {
+            //执行失败，将引入计数减1，然后将obj设置为NULL
+            assert(PyErr_Occurred());
+            Py_DECREF(obj);
+            obj = NULL;
+        }
+        else {
+            assert(!PyErr_Occurred());
+        }
+    }
+    //返回obj
+    return obj;
+}</code></pre><p><strong>因此从上面我们可以看到关键的部分有两个：</strong></p>
+<ul>
+<li><code>调用类型对象的tp_new函数指针指向的函数为实例对象申请内存。</code></li>
+<li><code>调用tp_init函数指针指向的函数为实例对象进行初始化，也就是设置属性。</code></li>
+</ul>
+<p><strong>所以这对应Python中的<code>__new__</code>和<code>__init__</code>，我们说<code>__new__</code>是为实例对象开辟一份内存，然后返回指向这片内存<code>(对象)</code>的指针，会自动传递给<code>__init__</code>中的self。</strong></p>
+<pre><code>class Girl:
+
+    def __new__(cls, name, age):
+        print(&quot;__new__方法执行啦&quot;)
+        # 写法非常固定，调用object.__new__(cls)就会创建Girl的实例对象
+        # 因此这里的cls指的就是这里的Girl, 但是一定要返回, 因为__new__会将自己的返回值交给__init__中的self
+        return object.__new__(cls)
+
+    def __init__(self, name, age):
+        print(&quot;__init__方法执行啦&quot;)
+        self.name = name
+        self.age = age
+
+
+g = Girl(&quot;古明地觉&quot;, 16)
+print(g.name, g.age)
+&quot;&quot;&quot;
+__new__方法执行啦
+__init__方法执行啦
+古明地觉 16
+&quot;&quot;&quot;</code></pre><p><strong>但是注意：__new__里面的参数要和__init__里面的参数保持一致，因为我们会先执行__new__，然后解释器会将__new__的返回值和我们传递的参数组合起来一起传递给self。因此__new__里面的参数位置除了cls之外，一般都会写*args和**kwargs。</strong></p>
+<p><strong>然后再回过头来看一下type_call中的这几行代码：</strong></p>
+<pre><code>static PyObject *
+type_call(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{    
+    //......
+    //......
+
+    //tp_new应该返回相应类型对象的实例对象(的指针)，但如果返回的不是
+    //那么就不会执行tp_init，而是直接将这里的obj返回
+    //这里不理解的话，我们后面会细说
+    if (!PyType_IsSubtype(Py_TYPE(obj), type))
+        return obj;
+
+    //......
+    //......
+}</code></pre><p><strong>我们说tp_new应该返回该类型对象的实例对象指针，而且一般情况下我们是不写__new__的，会默认执行。但是我们一旦重写了，那么必须要手动返回object.__new__(cls)，那么如果我们不返回，或者返回其它的话，会怎么样呢？</strong></p>
+<pre><code>class Girl:
+
+    def __new__(cls, *args, **kwargs):
+        print(&quot;__new__方法执行啦&quot;)
+        instance = object.__new__(cls)
+        # 打印看看instance到底是个什么东东
+        print(&quot;instance:&quot;, instance)
+        print(&quot;type(instance):&quot;, type(instance))
+
+        # 正确做法是将instance返回, 但是我们不返回, 而是返回个123
+        return 123
+
+    def __init__(self, name, age):
+        print(&quot;__init__方法执行啦&quot;)
+
+
+g = Girl()
+&quot;&quot;&quot;
+__new__方法执行啦
+instance: &lt;__main__.Girl object at 0x000002C0F16FA1F0&gt;
+type(instance): &lt;class &apos;__main__.Girl&apos;&gt;
+&quot;&quot;&quot;</code></pre><p><strong>这里面有很多可以说的点，首先就是__init__里面需要两个参数，但是我们没有传，却还不报错。原因就在于这个__init__压根就没有执行，因为__new__返回的不是Girl的实例对象。</strong></p>
+<p><strong>通过打印instance，我们知道了object.__new__(cls)返回的就是cls的实例对象，而这里的cls就是Girl这个类本身，我们必须要返回instance，才会执行对应的__init__，否则__new__直接就返回了。我们来打印一下其返回值：</strong></p>
+<pre><code>class Girl:
+
+    def __new__(cls, *args, **kwargs):
+        return 123
+
+    def __init__(self, name, age):
+        print(&quot;__init__方法执行啦&quot;)
+
+
+g = Girl()
+print(g, type(g))  # 123 &lt;class &apos;int&apos;&gt;</code></pre><p><strong>我们看到直接打印的就是123，所以再次总结一些tp_new和tp_init之间的区别，当然也对应__new__和__init__的区别：</strong></p>
+<ul>
+<li><code>tp_new：为该类型对象的实例对象申请内存，在Python的__new__方法中通过object.__new__(cls)的方式申请，然后将其返回。</code></li>
+<li><code>tp_init：tp_new的返回值会自动传递给self，然后为self绑定相应的属性，也就是执行构造函数进行初始化。</code></li>
+</ul>
+<blockquote>
+<p><strong>但如果tp_new返回的不是对应类型的实例对象指针，比如type_call中第一个参数接收的&amp;PyFloat_Type，但是tp_new中返回的却是PyLongObject类型的指针，所以此时就不会执行tp_init。</strong></p>
+<p><strong>以Python为例，我们Girl中的__new__应该返回Girl的实例对象才对，但实际上返回了整型，因此类型不一致，所以不会执行__init__。</strong></p>
+</blockquote>
+<p><strong>所以通过类型对象去创建实例对象的整体流程如下：</strong></p>
+<ul>
+<li><code>1. 执行类型对象的类型对象，说白了就是元类，执行元类中的type_call指向的函数；</code></li>
+<li><code>2. tp_call会调用该类型对象的tp_new指向的函数，如果tp_new为NULL(实际上肯定不会NULL，但是我们假设为NULL)，那么会到tp_base指定的父类里面去寻找tp_new。在新式类当中，所有的类都继承自object，因此最终会找到一个不为NULL的tp_new。然后通过tp_new会访问对应类型对象中的tp_basicsize信息，继而完成申请内存的操作。这个信息记录着一个该对象的实例对象需要占用多大内存。在为实例对象分配空间之后，会将指向这片空间的指针交给tp_init；</code></li>
+<li><code>3. 在调用type_new完成创建对象之后，流程就会转向PyLong_Type的tp_init，完成初始化对象的工作。当然这个tp_init也可能不被调用，原因我们上面已经分析过了；</code></li>
+</ul>
+<p><strong>所以我们说Python中__new__调用完了会自动调用__init__，而且还会将其返回值传递给__init__中的第一个参数。那是因为在type_call中先调用的tp_new，然后再调用的tp_init，同时将tp_new的返回值传进去了。从源码的角度再分析一遍：</strong></p>
+<pre><code>static PyObject *
+type_call(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{    
+    //当我们创建一个类的实例对象的时候，会去调用元类的__call__方法，所以是这里的tp_call
+    //比如Girl(&quot;古明地觉&quot;, 16) 等价于 type.__call__(Girl, &quot;古明地觉&quot;, 16)
+    //所以走到了这一步
+
+    //调用__new__方法， 拿到其返回值
+    obj = type-&gt;tp_new(type, args, kwds);
+
+    if (type-&gt;tp_init != NULL) {
+        //调用__init__，将返回值obj传递给__init__中的self，并在里面设置属性
+        int res = type-&gt;tp_init(obj, args, kwds);
+    return obj;
+}</code></pre><p><strong>因此底层所表现出来的和我们在Python中看到的，是一样的。</strong></p>
+<h2 id="对象的多态性"><a href="#对象的多态性" class="headerlink" title="对象的多态性"></a>对象的多态性</h2><p><strong>我们说Python创建一个对象，比如PyFloatObject，会分配内存并进行初始化。然后Python内部会统一使用一个叫做PyObject*的泛型指针来保存和维护这个对象，而不是PyFloatObject *。</strong></p>
+<p><strong>通过PyObject *保存和维护对象，可以实现更加抽象的上层逻辑，而不用关心对象的实际类型和实现细节。比如：哈希计算</strong></p>
+<pre><code>Py_hash_t
+PyObject_Hash(PyObject *v);</code></pre><p><strong>该对象可以计算任意对象的哈希值，而不用关心对象的类型是啥，它们都可以使用这个函数。</strong></p>
+<p><strong>但是不同类型的对象，其行为也千差万别，哈希值计算的方式也是如此，那么PyObject_Hash函数是如何解决这个问题的呢？不用想，因为元信息存储在对应的类型对象之中，所以肯定会通过其ob_type拿到指向的类型对象。而类型对象中有一个成员叫做tp_hash，它是一个函数指针，指向的函数专门用来计算其实例对象的哈希值，我们看一下PyObject_Hash的函数定义吧，它位于Object/Object.c中。</strong></p>
+<pre><code>Py_hash_t
+PyObject_Hash(PyObject *v)
+{    
+    //Py_TYPE是一个宏，用来获取一个PyObject *内部的ob_type，不过从名字也能看出来
+    PyTypeObject *tp = Py_TYPE(v);
+    //获取对应的类型对象内部的tp_hash方法，tp_hash是一个函数指针
+    if (tp-&gt;tp_hash != NULL)
+        //如果tp_hash不为空,证明确实指向了具体的hash函数，那么拿到拿到函数指针之后，通过*获取对应的函数
+        //然后将PyObject *传进去计算哈希值，返回。
+        return (*tp-&gt;tp_hash)(v);
+
+    //如果tp_hash为空，那么有两种可能。1. 说明该类型对象可能还未初始化, 导致tp_hash暂时为空; 2. 说明该类型本身就不支持其&quot;实例对象&quot;被哈希
+    // 如果是第1种情况，那么它的tp_dict、也就是属性字典一定为空，tp_dict是动态设置的，因此它若为空，是该类型对象没有初始化的重要特征
+    //如果它不为空，说明类型对象一定已经被初始化了，所以此时tp_hash为空，就真的说明该类型不支持实例对象被哈希
+    if (tp-&gt;tp_dict == NULL) {
+        //如果为空，那么先进行类型的初始化
+        if (PyType_Ready(tp) &lt; 0)
+            return -1;
+        //然后再看是否tp_hash是否为空，为空的话，说明不支持哈希
+        //不为空则调用对应的哈希函数
+        if (tp-&gt;tp_hash != NULL)
+            return (*tp-&gt;tp_hash)(v);
+    }
+    // 走到这里代表以上条件都不满足，说明该对象不可以被hash
+    return PyObject_HashNotImplemented(v);
+}</code></pre><p><strong>函数先通过ob_type指针找到对象的类型，然后通过类型对象的tp_hash函数指针调用对应的哈希计算函数。所以PyObject_Hash根据对象的类型，调用不同的哈希函数，这不正是实现了多态吗？</strong></p>
+<blockquote>
+<p><strong>通过ob_type字段，Python在C语言的层面实现了对象的多态特性，思路跟C++中的”虚表指针”有着异曲同工之妙。</strong></p>
+</blockquote>
+<p><strong>另外可能有人觉得这个函数的源码写的不是很精简，比如一开始已经判断过内部的tp_hash是否为NULL，然后在下面又判断了一次。那么可不可以先判断tp_dict是否为NULL，为NULL进行初始化，然后再判断tp_hash是否NULL，不为NULL的话执行tp_hash。这样的话，代码会变得精简很多。</strong></p>
+<blockquote>
+<p><strong>答案是可以的，而且这种方式似乎更直观，但是效率上不如源码。因为我们这种方式的话，无论是什么对象，都需要判断其类型对象中tp_dict和tp_hash是否为NULL。而源码中先判断tp_hash是否为NULL，不为NULL的话就不需要再判断tp_dict了；如果tp_hash为NULL，再判断是否tp_dict也为NULL，如果tp_dict为NULL则初始化，再进一步再判断tp_hash是否还是NULL。所以对于已经初始化<code>(tp_hash不为NULL)</code>的类型对象，源码中少了一次对tp_dict是否为NULL的判断，所以效率会更高。</strong></p>
+<p><strong>当然这并不是重点，我想说的重点是类似于<code>先判断tp_hash是否为空、如果不为空则直接调用</code>这种方式，叫做CPython中的快分支。而且CPython中还有很多其它的快分支，快分支的特点就是命中率极高，可以尽早做出判断、尽早处理。回到当前这个场景，只有当类型未被初始化的时候，才会不走快分支，而其余情况都走快分支。也就是说快分支只有在第一次调用的时候才可能不会命中，其余情况都是命中，因此没有必要每次都对tp_dict进行判断。所以源码的设计是非常合理的，我们在后面分析函数调用的时候，也会看到很多类似于这样的快分支。</strong></p>
+<p><strong>再举个生活中的栗子解释一下快分支：好比你去见心上人，但是心上人说你今天没有打扮，于是你又跑回去打扮一番之后再去见心上人。所以既然如此，那为什么不能先打扮完再去见心上人呢？答案是在绝大部分情况下，即使你不打扮，心上人也不会介意，只有在极少数情况下，比如心情不好，才会让你回去打扮之后再过来。所以不打扮直接去见心上人就能牵手便属于快分支，它的特点就是命中率极高，绝大部分都会走这个情况，所以没必要每次都因为打扮耽误时间，只有在极少数情况下快分支才不会命中。</strong></p>
+</blockquote>
+<h2 id="对象的行为"><a href="#对象的行为" class="headerlink" title="对象的行为"></a>对象的行为</h2><p><strong>这里说一句，关于对象我们知道Python中的类型对象和实例对象都属于对象，但是我们更关注的是实例对象的行为。</strong></p>
+<p><strong>而不同对象的行为不同，比如hash值的计算方法就不同，由类型对象中tp_hash字段决定。但除了tp_hash，PyTypeObject中还定义了很多函数指针，这些指针最终都会指向某个函数，或者为空表示不支持该操作。这些函数指针可以看做是”类型对象”中定义的操作，这些操作决定了其”实例对象”在运行时的”行为”。虽然所有类型对象在底层都是由同一个结构体PyTypeObject实例化得到的，但内部成员接收的值不同，得到的类型对象就不同；类型对象不同，导致其实例对象的行为就不同，这也正是一种对象区别于另一种对象的关键所在。</strong></p>
+<blockquote>
+<p><strong>比如列表支持append，这说明在PyList_Type中肯定有某个函数指针，能够找到用于列表append操作的函数。</strong></p>
+<p><strong>整型支持除法操作，说明PyLong_Type中也有对应除法操作的函数指针。</strong></p>
+<p><strong>整型、浮点型、字符串、元组、列表都支持加法操作，说明它们也都有对应加法操作的函数指针，并且类型不同，也会执行不同的加法操作。比如：1 + 1 = 2，”xx” + “yy” = “xxyy”，不可能对字符串使用整型的加法操作。而字典不支持加法操作，说明创建PyDict_Type的时候，没有给相应的结构体成员设置函数指针，可能传了一个空。</strong></p>
+</blockquote>
+<p><strong>而根据支持的操作不同，Python中可以将对象进行以下分类：</strong></p>
+<ul>
+<li><code>数值型操作：比如整型、浮点型的加减乘除；</code></li>
+<li><code>序列型操作：比如字符串、列表、元组的通过索引、切片取值行为；</code></li>
+<li><code>映射型操作：比如字典的通过key映射出value，相当于y = f(x)，将x传进去映射出y；另外有一本专门讲Python解释器的书，基于Python2.5，书中的这里不叫映射型，而是叫关联型。但我个人喜欢叫映射型，所以差不多都是一个东西，理解就可以。</code></li>
+</ul>
+<p><strong>而这三种操作，PyTypeObject中分别定义了三个指针。每个指针指向一个结构体实例，这个结构体实例中有大量的成员，成员也是函数指针，指向了具体的函数。</strong></p>
+<p><strong>我们看一下定义：</strong></p>
+<pre><code>typedef struct _typeobject {
+    PyObject_VAR_HEAD
+    const char *tp_name;
+
+    // .......
+    PyNumberMethods *tp_as_number;  // 数值型相关操作
+    PySequenceMethods *tp_as_sequence;   // 序列型相关操作
+    PyMappingMethods *tp_as_mapping;  // 映射型相关操作
+    // ......
+} PyTypeObject;</code></pre><p><strong>我们看一下tp_as_number，它是PyNumberMethods类型的结构体指针：</strong></p>
+<pre><code>//object.h
+typedef struct {
+    /* Number implementations must check *both*
+       arguments for proper type and implement the necessary conversions
+       in the slot functions themselves. */
+
+    binaryfunc nb_add;
+    binaryfunc nb_subtract;
+    binaryfunc nb_multiply;
+    binaryfunc nb_remainder;
+    binaryfunc nb_divmod;
+    ternaryfunc nb_power;
+    unaryfunc nb_negative;
+    unaryfunc nb_positive;
+    unaryfunc nb_absolute;
+    inquiry nb_bool;
+    unaryfunc nb_invert;
+    binaryfunc nb_lshift;
+    binaryfunc nb_rshift;
+    binaryfunc nb_and;
+    binaryfunc nb_xor;
+    binaryfunc nb_or;
+    unaryfunc nb_int;
+    void *nb_reserved;  /* the slot formerly known as nb_long */
+    unaryfunc nb_float;
+
+    binaryfunc nb_inplace_add;
+    binaryfunc nb_inplace_subtract;
+    binaryfunc nb_inplace_multiply;
+    binaryfunc nb_inplace_remainder;
+    ternaryfunc nb_inplace_power;
+    binaryfunc nb_inplace_lshift;
+    binaryfunc nb_inplace_rshift;
+    binaryfunc nb_inplace_and;
+    binaryfunc nb_inplace_xor;
+    binaryfunc nb_inplace_or;
+
+    binaryfunc nb_floor_divide;
+    binaryfunc nb_true_divide;
+    binaryfunc nb_inplace_floor_divide;
+    binaryfunc nb_inplace_true_divide;
+
+    unaryfunc nb_index;
+
+    binaryfunc nb_matrix_multiply;
+    binaryfunc nb_inplace_matrix_multiply;
+} PyNumberMethods;</code></pre><p><strong>你看到了什么，是的，这不就是python里面的魔法方法嘛。在PyNumberMethods里面定义了作为一个数值应该支持的操作。如果一个对象能被视为数值对象，比如整数，那么在其对应的类型对象PyLong_Type中，tp_as_number -&gt; nb_add就指定了对该对象进行加法操作时的具体行为。同样，PySequenceMethods和PyMappingMethods中分别定义了作为一个序列对象和映射对象应该支持的行为，这两种对象的典型例子就是list和dict。所以，只要 类型对象 提供相关 操作 ， 实例对象 便具备对应的 行为 。</strong></p>
+<p><strong>然而对于一种类型来说，它完全可以同时定义三个函数中的所有操作。换句话说，一个对象既可以表现出数值对象的特征，也可以表现出映射对象的特征。</strong></p>
+<pre><code>class Int(int):
+
+    def __getitem__(self, item):
+        return item
+
+
+a = Int(1)
+b = Int(2)
+
+print(a + b)  # 3
+print(a[&quot;(嘎~嘎~嘎~)&quot;])  # (嘎~嘎~嘎~)</code></pre><p><strong>看上去a[“”]这种操作是一个类似于dict这样的对象才支持的操作。从int继承出来的Int自然是一个数值对象，但是通过重写__getitem__这个魔法函数，可以视为指定了Int在python内部对应的PyTypeObject对象的tp_as_mapping -&gt; mp_subscript操作。最终Int实例对象表现的像一个map一样。归根结底就在于PyTypeObject中允许一种类型对象同时指定多种不同的行为特征。 默认使用PyTypeObject结构体实例化出来的PyLong_Type对象所生成的实例对象是不具备list和dict的属性特征的，但是我们继承PyLong_Type，同时指定__getitem__，使得我们自己构建出来的类型对象所生成的实例对象，同时具备int、list(部分)、dict(部分)的属性特征，就是因为python支持同时指定多种行为特征。</strong></p>
+<p><strong>我们以浮点型为例：</strong></p>
+<pre><code>//Object/floatobject.c
+PyTypeObject PyFloat_Type = {
+    PyVarObject_HEAD_INIT(&amp;PyType_Type, 0)
+    &quot;float&quot;,
+    sizeof(PyFloatObject),
+    //......
+    &amp;float_as_number,                           /* tp_as_number */
+    0,                                          /* tp_as_sequence */
+    0,                                          /* tp_as_mapping */
+    //......
+};
+
+//我们看到了该类型对象在创建时，给成员tp_as_number，传入了一个float_as_number指针
+//那么这个float_as_number指针就应该指向一个PyNumberMethods结构体实例
+//而指向的结构体实例中也应该有大量和浮点数运算相关的函数指针，每个函数指针指向了浮点数运算相关的函数
+
+static PyNumberMethods float_as_number = {
+    float_add,          /* nb_add */
+    float_sub,          /* nb_subtract */
+    float_mul,          /* nb_multiply */
+    float_rem,          /* nb_remainder */
+    float_divmod,       /* nb_divmod */
+    float_pow,          /* nb_power */
+    // ...
+};
+//里面的float_add、float_sub、float_mul等等显然都是已经定义好的函数的指针
+//然后创建PyNumberMethods结构体实例float_as_number的时候，分别赋值给了成员nb_add、nb_substract、nb_multiply等等等等
+//创建完浮点数相关操作的PyNumberMethods结构体实例float_as_number之后，将其指针交给PyFloat_Type中的tp_as_number成员
+//所以浮点数相加的时候，会执行object -&gt; ob_type -&gt; tp_as_number -&gt; nb_add, 而浮点类型对象的tp_as_number就是&amp;float_as_number
+//所以再获取其成员nb_add的时候，拿到的就是float_add指针，然后调用float_add函数</code></pre><p><strong>所以PyFloat_Type是支持数值型操作的，但是我们看到tp_as_sequence和tp_as_mapping这两个成员接收到的值则不是一个函数指针，而是0，相当于空。因此float对象、即浮点数不支持序列型操作和映射型操作，比如：pi = 3.14，我们无法使用len计算长度、无法通过索引或者切片获取指定位置的值、无法通过key获取value，这和我们使用Python时候的表现是一致的。</strong></p>
+<blockquote>
+<p><strong>我们看到PyFloat_Type中tp_as_number指向的结构体中的nb_add成员对应的函数指针是float_add，但如果是PyLong_Type的话，那么nb_add对应的函数指针则是long_add。</strong></p>
+<p><strong>不同对象，使用的操作是不同的。整型相加，使用的肯定是long_add，浮点型相加使用的是float_add。</strong></p>
+</blockquote>
+<h2 id="引用计数"><a href="#引用计数" class="headerlink" title="引用计数"></a>引用计数</h2><p><strong>在c和c++中，程序员被赋予了极大的自由，可以任意的申请内存。但是权利的另一面对应着责任，程序员最后不使用的时候，必须负责将申请的内存释放，并释放无效指针。可以说，这一点是万恶之源，大量内存泄漏、悬空指针、越界访问的bug由此产生。</strong></p>
+<p><strong>现代的开发语言当中都有垃圾回收机制，语言本身负责内存的管理和维护，比如C#和golang。垃圾回收机制将开发人员从维护内存分配和清理的繁重工作中解放出来，但同时也剥夺了程序员和内存亲密接触的机会，并牺牲了一定的运行效率。但好处就是提高了开发效率，并降低了bug发生的几率。Python里面同样具有垃圾回收机制，代替程序员进行繁重的内存管理工作，而引用计数正是垃圾收集机制的一部分。</strong></p>
+<p><strong>python通过对一个对象的引用计数的管理来维护对象在内存中的存在与否。我们知道Python中每一个东西都是一个对象，都有一个ob_refcnt成员。这个成员维护这该对象的引用计数，从而也最终决定着该对象的创建与消亡。</strong></p>
+<p><strong>在python中，主要是通过Py_INCREF(op)和Py_DECREF(op)两个宏，来增加和减少一个对象的引用计数，当一个对象的引用计数减少到0后，Py_DECREF将调用该对象的析构函数来释放该对象所占有的内存和系统资源。这个析构函数就是对象的类型对象(Py***_Type)中定义的函数指针来指定的，也就是tp_dealloc。</strong></p>
+<p><strong>如果熟悉设计模式中的Observer模式，就可以看到，这里隐隐约约透着Observer模式的影子。在ob_refcnt减少到0时，将触发对象的销毁事件。从python的对象体系来看，各个对象提供了不同事件处理函数，而事件的注册动作正是在各个对象对应的类型对象中完成的。</strong></p>
+<p><strong>我们在研究对象的行为的时候，说了比起类型对象，我们更关注实例对象的行为。那么对于引用计数也是一样的，只有实例对象，我们探讨引用计数才是有意义的。类型对象<code>(内置)</code>是超越引用计数规则的，永远都不会被析构，或者销毁，因为它们在底层是被静态定义好的。同理，我们自定义的类，虽然可以被回收，但是探讨它的引用计数也是没有价值的。我们以内置类型对象int为例：</strong></p>
+<pre><code># del关键字只能作用于变量, 不可以作用于对象
+# 比如：pi = 3.14, 你可以del pi, 但是不可以del 3.14, 这是不符合语法规则的
+# 而int虽然我们说它是整型的类型对象, 但这是从Python的层面
+# 如果从底层来讲, int它也是一个变量, 指向了对应的数据结构(PyLong_Type)
+# 既然是变量, 那么就可以删除, 但是这个删除并不是直接删除对象，而是将变量指向的对象的引用计数减去1，然后将这个变量也给删掉。
+# Python中的对象是否被删除是通过其引用计数是否为0决定的, &quot;del 变量&quot;只是删除了这个变量，让这个变量不再指向该对象罢了
+# 所以&quot;del 变量&quot;得到的结果就是我们没办法再使用这个变量了，这个变量就没了，但是变量之前指向的对象是不是也没了就看还有没有其它的引用也指向它。
+try:
+    del int
+except Exception as e:
+    print(e)  # name &apos;int&apos; is not defined
+
+# 神奇的事情发生了, 告诉我们int这个变量没有被定义
+# 原因就在于del关键字不会删除内置作用域里面的变量
+# 我们看一下int的引用计数
+import sys
+print(sys.getrefcount(int))  # 138</code></pre><p><strong>惊了，居然有130多个变量在指向int，这130多个变量分别都是谁我们就无需关注了，找出这130多个变量显然是一件很恐怖的事情。</strong></p>
+<blockquote>
+<p><strong>总之，我们探讨类型对象的引用计数是没有太大意义的，而且内置类型对象是超越了引用计数的规则的，所以我们没必要太关注，我们重心是在实例对象上。我们真正的操作也都是依赖实例对象进行操作的。</strong></p>
+</blockquote>
+<pre><code>&gt;&gt;&gt; import sys
+&gt;&gt;&gt; e = 2.71  # 创建一个新对象，显然此时的引用计数为1
+&gt;&gt;&gt; sys.getrefcount(e)
+2  # 估计有人好奇了，为啥引用计数是2, 难道不是1吗？因为e这个变量作为参数传到了sys.getrefcount这个函数里面
+   # 所以函数里面的参数也指向2.71这个PyFloatObject，所以引用计数加1。当函数结束后，局部变量被销毁，再将引用计数减1
+&gt;&gt;&gt;
+&gt;&gt;&gt; e1 = e  # 变量间的传递会传递指针，所以e1也会指向2.71这个浮点数，因此它的引用计数加1。
+           # 注意：我们说变量只是个符号，引用计数是针对变量指向的对象而言的，变量本身没有所谓的引用计数
+&gt;&gt;&gt; sys.getrefcount(e)  # 此时变量指向的对象的引用计数为3(sys.getrefcount函数参数对&quot;对象&quot;的引用也算在内)
+3
+&gt;&gt;&gt; sys.getrefcount(e1)  # 我们说操作变量相当于操作变量指向的对象,e和e1都指向同一个对象，所以获取也是同一个对象的引用计数
+3  # 因此结果是一样的,都是3
+&gt;&gt;&gt; l = [e, e1]  # 放在容器里面，显然列表l中多了两个指针，这两个指针也指向这里的PyFloatObject对象
+&gt;&gt;&gt; sys.getrefcount(e)  
+5  # 因此结果为5
+&gt;&gt;&gt; del l  # 将列表删除、或者将列表清空，那么里面的变量也就没了，因此在删除变量的时候，会先将变量指向的对象的引用计数减去1
+&gt;&gt;&gt; sys.getrefcount(e)  
+3  # 所以又变成了3
+&gt;&gt;&gt; del e1  # 再删除一个变量，引用计数再减1
+&gt;&gt;&gt; sys.getrefcount(e)
+2  # 结果为2，说明外部还有一个变量在引用它，因为这个浮点数不会被回收。
+&gt;&gt;&gt; del e  # 再次del，此时引用计数为0，这个浮点数就真的没了。
+&gt;&gt;&gt; </code></pre><p><strong>另外，引用计数什么时候会加1，什么时候会减1，我们在上一篇博客中也说的很详细了，可以去看一下。</strong></p>
+<p><strong>关于引用计数，Python底层也提供了几个宏。</strong></p>
+<pre><code>#define _Py_NewReference(op) (                          \
+    _Py_INC_TPALLOCS(op) _Py_COUNT_ALLOCS_COMMA         \
+    _Py_INC_REFTOTAL  _Py_REF_DEBUG_COMMA               \
+    Py_REFCNT(op) = 1)//对于新创建的对象，引用计数为1
+
+#define _Py_Dealloc(op) (                               \
+    _Py_INC_TPFREES(op) _Py_COUNT_ALLOCS_COMMA          \
+    (*Py_TYPE(op)-&gt;tp_dealloc)((PyObject *)(op)))
+//引用计数为0时执行析构函数, Py_TYPE(op)-&gt;tp_dealloc获取析构函数对应的函数指针，再通过*获取指向的函数
+//将传入PyObject *指针，将其回收
+
+
+//增加引用计数
+#define Py_INCREF(op) (                         \
+    _Py_INC_REFTOTAL  _Py_REF_DEBUG_COMMA       \
+    ((PyObject *)(op))-&gt;ob_refcnt++) //引用计数自增1
+
+
+//减少引用计数
+#define Py_DECREF(op)                                   \
+    do {                                                \
+        PyObject *_py_decref_tmp = (PyObject *)(op);    \
+        if (_Py_DEC_REFTOTAL  _Py_REF_DEBUG_COMMA       \
+        --(_py_decref_tmp)-&gt;ob_refcnt != 0)             \
+            _Py_CHECK_REFCNT(_py_decref_tmp)            \
+        else                                             \
+            _Py_Dealloc(_py_decref_tmp);                \
+            //引用计数减1，如果减完1变成了0，则执行析构函数
+    } while (0)
+
+//注意：Py_INCREF和Py_DECREF不可以处理NULL指针的，会报错
+//所以又有两个宏，做了一层检测，会判断对象指针为NULL的情况
+#define Py_XINCREF(op)                                \
+    do {                                              \
+        PyObject *_py_xincref_tmp = (PyObject *)(op); \
+        if (_py_xincref_tmp != NULL)                  \
+            Py_INCREF(_py_xincref_tmp);               \
+    } while (0)
+
+#define Py_XDECREF(op)                                \
+    do {                                              \
+        PyObject *_py_xdecref_tmp = (PyObject *)(op); \
+        if (_py_xdecref_tmp != NULL)                  \
+            Py_DECREF(_py_xdecref_tmp);               \
+    } while (0)
+
+//当然减少引用计数，除了Py_DECREF和Py_XDECREF之外，还有一个Py_CLEAR，也可以处理空指针的情况</code></pre><p><strong>因此这几个宏作用如下：</strong></p>
+<ul>
+<li><code>_Py_NewReference: 接收一个对象，将其引用计数设置为1，用于新创建的对象。此外我们在定义里面还看到了一个宏Py_REFCNT，这是用来获取对象引用计数的，当然除了Py_REFCNT之外，我们之前还见到了一个宏叫Py_TYPE，这是专门获取对象的类型的。</code></li>
+<li><code>_Py_Dealloc: 接收一个对象, 执行该对象的类型对象里面的析构函数, 来对该对象进行回收。</code></li>
+<li><code>Py_INCREF: 接收一个对象, 将该对象引用计数自增1。</code></li>
+<li><code>Py_DECREF: 接收一个对象, 将该对象引用计数自减1。</code></li>
+<li><code>Py_XINCREF: 和Py_INCREF功能一致，但是可以处理空指针。</code></li>
+<li><code>Py_XDECREF: 和Py_DECREF功能一致，但是可以处理空指针。</code></li>
+<li><code>Py_CLEAR: 和Py_XDECREF类似，也可以处理空指针。</code></li>
+</ul>
+<p><strong>在一个对象的引用计数为0时，与该对象对应的析构函数就会被调用，但是要特别注意的是，我们刚才一致调用析构函数，会回收对象、销毁对象或者删除对象等等，意思都是将这个对象从内存中抹去，但是这并不意味着最终一定调用free释放空间，换句话说就是对象没了，但是对象占用的内存却有可能还在。如果对象没了，占用的内存也要释放的话，那么频繁申请、释放内存空间会使Python的执行效率大打折扣(更何况Python已经背负了人们对其执行效率的不满这么多年)。一般来说，Python中大量采用了内存对象池的技术，使用这种技术可以避免频繁地申请和释放内存空间。因此在析构的时候，只是将对象占用的空间归还到内存池中。Python在操作系统之上提供了一个内存池，说白了就是对malloc进行了一层封装，事先申请一部分内存，然后用于对象(占用内存低)的创建，这样就不必频繁地向操作系统请求空间了，从而大大的节省时间。这一点，在后面的Python内置类型对象(PyLongObject，PyListObject等等)的实现中，将会看得一清二楚。当然内存比较大的对象，还是需要向操作系统申请的，内存池只是用于那些内存占用比较小的对象的创建，因为这种对象显然没必要每次都和操作系统内核打交道。关于内存池，我们在后续系列中也会详细说。</strong></p>
+<h2 id="python对象的分类"><a href="#python对象的分类" class="headerlink" title="python对象的分类"></a>python对象的分类</h2><p><strong>我们之前根据支持的操作，将Python对象分成了数值型、序列型、映射型，但其实我们是可以分为5类的：</strong></p>
+<ul>
+<li><code>Fundamental对象：类型对象，如int、float、bool</code></li>
+<li><code>Numeric对象：数值对象，如int实例、float实例、bool实例</code></li>
+<li><code>Sequence对象：序列对象，如str实例、list实例、tuple实例</code></li>
+<li><code>Mapping对象：关联对象(映射对象)，如dict实例</code></li>
+<li><code>Internal对象：python虚拟机在运行时内部使用的对象，如function实例(函数)、code实例(字节码)、frame实例(栈帧)、module实例(模块)、method实例(方法)，没错，函数、字节码、栈帧、模块、方法等等它们在底层一个一个类的实例对象。比如：函数的类型是&lt;class &#39;function&#39;&gt;，在底层对应PyFunctionObject，那么&lt;class &#39;function&#39;&gt;的类型对象是什么呢？显然就是&lt;class &#39;type&#39;&gt;啦。</code></li>
+</ul>
+<p><strong>关于Internal对象，我们在后续系列中会细说。</strong></p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p><strong>这一次我们说了Python中创建对象的两种方式，可以通过Python/C API创建，也可以通过类型对象创建。以及分析了对象的多态性，Python底层是如何通过C来实现多态，答案是通过ob_type。还说了对象的行为，对象进行某个操作的时候在底层发生了什么。最后说了引用计数，Python是通过引用计数来决定一个对象是否被回收的，但是有人知道它无法解决循环引用的问题。是的，所以Python中的gc就是为了解决这一点的，不过这也要等到介绍垃圾回收的时候再细说了。</strong></p>
+<p>posted @  2020-07-31 17:26  <a href="https://www.cnblogs.com/traditional/" target="_blank" rel="noopener">古明地盆</a>  阅读(469)  评论(0)  <a href="https://i.cnblogs.com/EditPosts.aspx?postid=13410961" target="_blank" rel="noopener">编辑</a>  <a href="https://www.cnblogs.com/traditional/p/13410961.html" target="_blank" rel="noopener">收藏</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-998/" rel="prev" title="《深度剖析CPython解释器》2.  解密PyObject、PyVarObject、PyTypeObject在Python对象体系中所代表的含义，用CPython来总结Python中type和object之间的关系 - 古明地盆 - 博客园">
+      <i class="fa fa-chevron-left"></i> 《深度剖析CPython解释器》2.  解密PyObject、PyVarObject、PyTypeObject在Python对象体系中所代表的含义，用CPython来总结Python中type和object之间的关系 - 古明地盆 - 博客园
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-1000/" rel="next" title="《深度剖析CPython解释器》4. 解密Python中最简单的对象--浮点数的底层实现 - 古明地盆 - 博客园">
+      《深度剖析CPython解释器》4. 解密Python中最简单的对象--浮点数的底层实现 - 古明地盆 - 博客园 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#《深度剖析CPython解释器》3-Python的引用计数是什么？Python底层是如何管理对象的？-古明地盆-博客园"><span class="nav-number"></span> <span class="nav-text">《深度剖析CPython解释器》3. Python的引用计数是什么？Python底层是如何管理对象的？ - 古明地盆 - 博客园</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#《深度剖析CPython解释器》3-Python的引用计数是什么？Python底层是如何管理对象的？"><span class="nav-number"></span> <span class="nav-text">《深度剖析CPython解释器》3. Python的引用计数是什么？Python底层是如何管理对象的？</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#楔子"><span class="nav-number"></span> <span class="nav-text">楔子</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Python-C-API"><span class="nav-number"></span> <span class="nav-text">Python&#x2F;C API</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#对象的创建"><span class="nav-number"></span> <span class="nav-text">对象的创建</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#对象的多态性"><span class="nav-number"></span> <span class="nav-text">对象的多态性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#对象的行为"><span class="nav-number"></span> <span class="nav-text">对象的行为</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#引用计数"><span class="nav-number"></span> <span class="nav-text">引用计数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#python对象的分类"><span class="nav-number"></span> <span class="nav-text">python对象的分类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#小结"><span class="nav-number"></span> <span class="nav-text">小结</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

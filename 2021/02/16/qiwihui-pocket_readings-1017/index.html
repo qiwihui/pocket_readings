@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="《深度剖析CPython解释器》21. Python类机制的深度解析(第五部分): 全方位介绍Python中的魔法方法，一网打尽 - 古明地盆 - 博客园">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《深度剖析CPython解释器》21. Python类机制的深度解析(第五部分): 全方位介绍Python中的魔法方法，一网打尽 - 古明地盆 - 博客园">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1017/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="《深度剖析CPython解释器》21. Python类机制的深度解析(第五部分): 全方位介绍Python中的魔法方法，一网打尽 - 古明地盆 - 博客园">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200904233034263-1037438318.png">
+<meta property="article:published_time" content="2021-02-16T14:17:21.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.430Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200904233034263-1037438318.png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1017/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>《深度剖析CPython解释器》21. Python类机制的深度解析(第五部分): 全方位介绍Python中的魔法方法，一网打尽 - 古明地盆 - 博客园 | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1017/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          《深度剖析CPython解释器》21. Python类机制的深度解析(第五部分): 全方位介绍Python中的魔法方法，一网打尽 - 古明地盆 - 博客园
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-02-16 14:17:21" itemprop="dateCreated datePublished" datetime="2021-02-16T14:17:21+00:00">2021-02-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+
+          
+            <div class="post-description">《深度剖析CPython解释器》21. Python类机制的深度解析(第五部分): 全方位介绍Python中的魔法方法，一网打尽 - 古明地盆 - 博客园</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>class A: def <strong>init</strong>(self): self.name = “&#22799;&#33394;&#31085;” self.<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/2ZjqrG7" target="_blank" rel="noopener">https://ift.tt/2ZjqrG7</a> original site<br><br><br><br>February 16, 2021 at 10:14PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1017#issuecomment-789377846" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>3/3/2021</strong></p>
+</blockquote>
+<h2 id="《深度剖析CPython解释器》21-Python类机制的深度解析-第五部分-全方位介绍Python中的魔法方法，一网打尽-古明地盆-博客园"><a href="#《深度剖析CPython解释器》21-Python类机制的深度解析-第五部分-全方位介绍Python中的魔法方法，一网打尽-古明地盆-博客园" class="headerlink" title="《深度剖析CPython解释器》21. Python类机制的深度解析(第五部分): 全方位介绍Python中的魔法方法，一网打尽 - 古明地盆 - 博客园"></a>《深度剖析CPython解释器》21. Python类机制的深度解析(第五部分): 全方位介绍Python中的魔法方法，一网打尽 - 古明地盆 - 博客园</h2><h1 id="《深度剖析CPython解释器》21-Python类机制的深度解析-第五部分-全方位介绍Python中的魔法方法，一网打尽"><a href="#《深度剖析CPython解释器》21-Python类机制的深度解析-第五部分-全方位介绍Python中的魔法方法，一网打尽" class="headerlink" title="《深度剖析CPython解释器》21. Python类机制的深度解析(第五部分): 全方位介绍Python中的魔法方法，一网打尽"></a><a href="https://www.cnblogs.com/traditional/p/13611233.html" target="_blank" rel="noopener">《深度剖析CPython解释器》21. Python类机制的深度解析(第五部分): 全方位介绍Python中的魔法方法，一网打尽</a></h1><h2 id="楔子"><a href="#楔子" class="headerlink" title="楔子"></a>楔子</h2><p><strong>下面我们来看一下Python中的魔法方法，我们知道Python将操作符都抽象成了一个魔法方法(magic method)，实例对象进行操作时，实际上会调用魔法方法。也正因为如此，numpy才得以很好的实现。</strong></p>
+<p><strong>那么Python中常见的魔法方法都有哪些呢？我们按照特征分成了几类，下面就来看看魔法方法都有哪些，然后再举例说明它们的用法。</strong></p>
+<h2 id="魔法方法概览"><a href="#魔法方法概览" class="headerlink" title="魔法方法概览"></a>魔法方法概览</h2><p><strong>我们根据不同的特征分为了以下几类：</strong></p>
+<blockquote>
+<p><strong>注意：有的方法是Python2中的，但是在Python3中依然存在，但是不推荐使用了。比如：__cmp__、__coerce__等等，我们就没有画在图中。</strong></p>
+</blockquote>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200904233034263-1037438318.png" alt=""></p>
+<p><strong>下面我们就来介绍一下上面的那些魔法方法的实际用途。</strong></p>
+<h2 id="魔法方法介绍"><a href="#魔法方法介绍" class="headerlink" title="魔法方法介绍"></a>魔法方法介绍</h2><h3 id="构建以及初始化"><a href="#构建以及初始化" class="headerlink" title="构建以及初始化"></a>构建以及初始化</h3><p><strong>__new__和__init__我们之前已经见识过了，还有一个__del__是做什么 呢？我们一起来看一下。</strong></p>
+<pre><code>class Girl:
+
+    def __new__(cls, *args):
+        print(&quot;__new__&quot;)
+        return object.__new__(cls)
+
+    def __init__(self):
+        print(&quot;__init__&quot;)
+
+    def __del__(self):
+        print(&quot;__del__&quot;)
+
+
+girl = Girl()
+print(&quot;################&quot;)
+&quot;&quot;&quot;
+__new__
+__init__
+################
+__del__
+&quot;&quot;&quot;</code></pre><p><strong>__del__被称为析构函数，当一个实例对象被销毁之后会调用该函数。如果没有销毁，那么程序结束时也会调用。</strong></p>
+<h3 id="比较操作"><a href="#比较操作" class="headerlink" title="比较操作"></a>比较操作</h3><p><strong>Python的比较操作符也抽象成了魔法方法，a == b，等价于a.__eq__(b)</strong></p>
+<pre><code>class Girl:
+
+    def __init__(self, name):
+        self.name = name
+
+    def __eq__(self, other):
+        return &quot;==&quot;, self.name, other.name
+
+    def __ne__(self, other):
+        return &quot;!=&quot;, self.name, other.name
+
+    def __le__(self, other):
+        return &quot;&lt;=&quot;, self.name, other.name
+
+    def __lt__(self, other):
+        return &quot;&lt;&quot;, self.name, other.name
+
+    def __ge__(self, other):
+        return &quot;&gt;=&quot;, self.name, other.name
+
+    def __gt__(self, other):
+        return &quot;&gt;&quot;, self.name, other.name
+
+
+girl1 = Girl(&quot;girl1&quot;)
+girl2 = Girl(&quot;girl2&quot;)
+
+print(girl1 == girl2)  # (&apos;==&apos;, &apos;girl1&apos;, &apos;girl2&apos;)
+print(girl1 != girl2)  # (&apos;!=&apos;, &apos;girl1&apos;, &apos;girl2&apos;)
+print(girl1 &lt; girl2)  # (&apos;&lt;&apos;, &apos;girl1&apos;, &apos;girl2&apos;)
+print(girl2 &lt;= girl1)  # (&apos;&lt;=&apos;, &apos;girl2&apos;, &apos;girl1&apos;)
+print(girl2 &gt; girl1)  # (&apos;&gt;&apos;, &apos;girl2&apos;, &apos;girl1&apos;)
+print(girl2 &gt;= girl1)  # (&apos;&gt;=&apos;, &apos;girl2&apos;, &apos;girl1&apos;)</code></pre><p><strong>我们看到如果是a &gt; b，那么会调用a的__gt__方法，self就是a、other就是b；如果是b &gt; a，那么调用b的__gt__方法，self就是b、other就是a；也就是说谁在前面，就调用谁的魔法方法。</strong></p>
+<p><strong>但如果a &gt; b，并且type(a)内部没有定义__gt__呢？那么会尝试调用type(b)内部的__gt__，如果都没有定义，那么就会调用object的__gt__，显然这个时候就会报错了。</strong></p>
+<blockquote>
+<p><strong>注意：如果操作符两边有一个是内置对象、或者内置对象的实例对象，那么会直接调用我们创建的实例对象的魔法方法<code>(前提是定义了)</code>。比如：123 != girl1，那么直接调用girl1的__ne__，尽管整数对象也有__ne__。</strong></p>
+</blockquote>
+<pre><code>class Girl:
+
+    def __init__(self, name):
+        self.name = name
+
+    def __eq__(self, other):
+        return self.name, other
+
+
+girl = Girl(&quot;matsuri&quot;)
+# 如果其中一方为内置，那么直接调用girl的__eq__
+# 如果girl在左边就更不用说了
+print(girl == 123)  # (&apos;matsuri&apos;, 123)
+print(123 == girl)  # (&apos;matsuri&apos;, 123)
+print(object == girl)  # (&apos;matsuri&apos;, &lt;class &apos;object&apos;&gt;)
+print(girl == object)  # (&apos;matsuri&apos;, &lt;class &apos;object&apos;&gt;)</code></pre><h3 id="单目运算"><a href="#单目运算" class="headerlink" title="单目运算"></a>单目运算</h3><p><strong>下面再来看看单目运算，估计很多人都不一定能百分百说出对应魔法方法的作用。</strong></p>
+<pre><code>class Girl:
+
+    # +self 的时候调用
+    def __pos__(self):
+        return &quot;__pos__&quot;
+
+    # -self 的时候调用
+    def __neg__(self):
+        return &quot;__neg__&quot;
+
+    # abs(self) 的时候会调用, 也可以是np.abs(self), 但不推荐numpy调用
+    def __abs__(self):
+        return &quot;__abs__&quot;
+
+    # ~self 的时候调用
+    def __invert__(self):
+        return &quot;__invert__&quot;
+
+    # round(self, n) 的时候调用
+    def __round__(self, n=None):
+        return f&quot;__round__, {n}&quot;
+
+    # math.floor(self)的时候调用, 也可以是np.floor(self), 但不推荐numpy调用
+    def __floor__(self):
+        return &quot;__floor__&quot;
+
+    # math.ceil(self)的时候调用, 也可以是np.ceil(self), 但不推荐numpy调用
+    def __ceil__(self):
+        return &quot;__ceil__&quot;
+
+    # math.trunc(self)的时候调用, 也可以是np.trunc(self), 或者int(self)
+    # 但不推荐numpy调用
+    def __trunc__(self):
+        return &quot;__trunc__&quot;
+
+
+girl = Girl()
+import numpy as np
+import math
+
+
+# 1. +girl触发__pos__
+print(+girl)  # __pos__
+
+# 2. -girl触发__pos__
+print(-girl)  # __neg__
+&quot;&quot;&quot;
+注意: 不可以写成 0 + girl 和 0 - girl, 尽管我们知道在数学上这与 girl和-girl是等价的
+但是在Python中不行, 因为这样会调用girl的__radd__和__rsub__, 我们后面会说
+&quot;&quot;&quot;
+
+# 3. abs(girl)或者np.abs(girl)触发__abs__
+print(abs(girl))  # __abs__
+print(np.abs(girl))  # __abs__
+
+# 4. ~girl触发__invert__
+print(~girl)  # __invert__
+
+# 5. round(girl)触发__round__
+print(round(girl))  # __round__, None
+print(round(girl, 2))  # __round__, 2
+
+# 6. math.floor(girl), np.floor(girl)触发__round__
+print(math.floor(girl))  # __floor__
+print(np.floor(girl))  # __floor__
+
+# 7. math.ceil(girl), np.ceil(girl)触发__round__
+print(math.ceil(girl))  # __ceil__
+print(np.ceil(girl))  # __ceil__
+
+# 8. math.trunc(girl), np.trunc(girl)触发__trunc__
+print(math.trunc(girl))  # __trunc__
+print(np.trunc(girl))  # __trunc__
+# __trunc__表示截断, 只保留整数位, 所以int(girl)也是可以触发的
+# 但如果是int(girl)这种方式, 它要求__trunc__必须返回一个整数
+try:
+    int(girl)
+except Exception as e:
+    print(e)  # __trunc__ returned non-Integral (type str)
+Girl.__trunc__ = lambda self: 666
+print(int(Girl()))  # 666</code></pre><p><strong>以上便是单目运算的一些魔法方法，但是说实话个人觉得只有__pos__、__neg__、__invert__会用上，因为我们可能希望一些操作的调用方式尽可能简单，所以会通过重些+、-、~ 操作符对应的魔法方法，来赋予实例对象一些特殊的含义。</strong></p>
+<p><strong>至于其它的简单了解一下即可，不过注意的是，有些方法numpy也是可以是使用的，但是并不推荐。</strong></p>
+<h3 id="算术运算"><a href="#算术运算" class="headerlink" title="算术运算"></a>算术运算</h3><p><strong>算术运算是比较常用的了，我们来看看算数运算对应的魔法方法。</strong></p>
+<pre><code>class Girl:
+
+    # a + b 的时候调用, self就是a、other就是b
+    def __add__(self, other):
+        return &quot;__add__&quot;
+
+    # a - b 的时候调用, self就是a、other就是b
+    def __sub__(self, other):
+        return &quot;__sub__&quot;
+
+    # a * b 的时候调用, self就是a、other就是b
+    def __mul__(self, other):
+        return &quot;__mul__&quot;
+
+    # a // b 的时候调用, self就是a、other就是b
+    def __floordiv__(self, other):
+        return &quot;__floordiv__&quot;
+
+    # a / b 的时候调用, self就是a、other就是b
+    # 还有一个__div__
+    def __truediv__(self, other):
+        return &quot;__truediv__&quot;
+
+    # a + b 的时候调用, self就是a、other就是b
+    def __mod__(self, other):
+        return &quot;__mod__&quot;
+
+    # divmod(a, b) 的时候调用, self就是a、other就是b
+    def __divmod__(self, other):
+        return &quot;__divmod__&quot;
+
+    # a ** b 的时候调用, self就是a、other就是b
+    def __pow__(self, power, modulo=None):
+        return &quot;__pow__&quot;
+
+    # a &lt;&lt; b 的时候调用, self就是a、other就是b
+    def __lshift__(self, other):
+        return &quot;__lshift__&quot;
+
+    # a &gt;&gt; b 的时候调用, self就是a、other就是b
+    def __rshift__(self, other):
+        return &quot;__rshift__&quot;
+
+    # a &amp; b 的时候调用, self就是a、other就是b
+    def __and__(self, other):
+        return &quot;__and__&quot;
+
+    # a | b 的时候调用, self就是a、other就是b
+    def __or__(self, other):
+        return &quot;__or__&quot;
+
+    # a ^ b 的时候调用, self就是a、other就是b
+    def __xor__(self, other):
+        return &quot;__xor__&quot;
+
+    # a @  b 的时候调用, self就是a、other就是b
+    def __matmul__(self, other):
+        # 这个方法是用在矩阵运算的, Python在3.5版本的时候将@ 抽象成了这个方法
+        # 比如numpy的两个数组如果想进行矩阵之间的相乘
+        # 除了np.dot(arr1, arr2)之外, 还可以直接arr1 @  arr2
+        return &quot;__matmul__&quot;
+
+
+girl1 = Girl()
+girl2 = Girl()
+
+print(girl1 + girl2)  # __add__
+print(girl1 - girl2)  # __sub__
+print(girl1 * girl2)  # __mul__
+print(girl1 // girl2)  # __floordiv__
+print(girl1 / girl2)  # __truediv__
+print(girl1 % girl2)  # __mod__
+print(divmod(girl1, girl2))  # __divmod__
+print(girl1 ** girl2)  # __pow__
+print(girl1 &lt;&lt; girl2)  # __lshift__
+print(girl1 &gt;&gt; girl2)  # __rshift__
+print(girl1 &amp; girl2)  # __and__
+print(girl1 | girl2)  # __or__
+print(girl1 ^ girl2)  # __xor__</code></pre><p><strong>常见的算术运算大概就是上面这些，还是很简单的。</strong></p>
+<h3 id="反射算术运算"><a href="#反射算术运算" class="headerlink" title="反射算术运算"></a>反射算术运算</h3><p><strong>反射算术运算指的是什么呢？比如: a + b，我们知道会调用a的__add__，但如果type(a)中没有定义__add__，那么会尝试寻找b的__radd__。</strong></p>
+<pre><code>class A:
+
+    def __add__(self, other):
+        return &quot;class A:&quot;, type(self).__name__, type(other).__name__
+
+
+class B:
+
+    def __radd__(self, other):
+        return &quot;class B:&quot;, type(self).__name__, type(other).__name__
+
+
+a = A()
+b = B()
+
+# type(a)中定义了__add__, 那么优先调用
+print(a + b)  # (&apos;class A:&apos;, &apos;A&apos;, &apos;B&apos;)
+
+# 如果type(a)中没有定义__add__, 那么会去看type(b)中有没有定义__radd__
+del A.__add__
+print(a + b)  # (&apos;class B:&apos;, &apos;B&apos;, &apos;A&apos;)
+
+
+# 如果a + b, 其中一个是内置对象, 那么做法和比较操作是类似的
+&quot;&quot;&quot;
+如果是一方为内置对象, 比如:
+a + 123: 直接调用a的__add__
+123 + a: 直接调用a的__radd__
+&quot;&quot;&quot;
+print(123 + b)  # (&apos;class B:&apos;, &apos;B&apos;, &apos;int&apos;)
+
+try:
+    123 + a
+except Exception as e:
+    # 显然a没有__radd__, 因此会选择object的__add__, 显然这个时候报错了
+    print(e)  # unsupported operand type(s) for +: &apos;int&apos; and &apos;A&apos;
+
+# 但a是有__add__的, 所以直接走a的__add__
+A.__add__ = lambda self, other: (self, other)
+print(a + &quot;xxx&quot;)  # (&lt;__main__.A object at 0x0000020FB72A82B0&gt;, &apos;xxx&apos;)</code></pre><p><strong>其它操作符也是类似的，<code>a 操作符 b</code>会调用a的<code>__xxx__</code>，但如果a没有，会尝试搜寻b的<code>__rxxx__</code>。</strong></p>
+<h3 id="赋值算术运算"><a href="#赋值算术运算" class="headerlink" title="赋值算术运算"></a>赋值算术运算</h3><p><strong>赋值算术运算适用于类似于+=这种形式，比如：</strong></p>
+<pre><code>class A:
+
+    def __iadd__(self, other):
+        return type(self).__name__ + other
+
+
+a = A()
+# 会调用__iadd__, 参数self就是a, other就是&quot;&gt;&gt;&gt;&quot;
+a += &quot;&gt;&gt;&gt;&quot;
+print(a)  # A&gt;&gt;&gt;</code></pre><p><strong>比较简单，其它的也与此类似。</strong></p>
+<h3 id="序列操作"><a href="#序列操作" class="headerlink" title="序列操作"></a>序列操作</h3><p><strong>下面我们看看序列操作。</strong></p>
+<pre><code>class A:
+
+    def __len__(self):
+        return 123
+
+
+a = A()
+print(len(a))  # 123
+
+# 所以len(a)本质上会调用type(a).__len__(a)
+
+# 注意: 是type(a).__len__(a), 不是a.__len__()
+a.__len__ = &quot;xxx&quot;
+print(a.__len__)  # xxx
+print(len(a))  # 123
+
+
+# 注意: __len__必须返回一个整型, 否则报错</code></pre><p><strong>此外，__len__还有充当布尔值的作用。</strong></p>
+<pre><code>class A:
+    pass
+
+
+# 默认返回的是True
+print(bool(A()))  # True
+
+A.__len__ = lambda self: 0
+print(bool(A()))  # False
+
+
+# __len__返回的是0, 为假, 所以结果为False
+# 当然真正起到决定性作用的是__bool__方法, 如果定义了__bool__, 那么以__bool__的返回值为准,必须返回布尔类型的值
+# 没有__bool__, 那么解释器会退化, 寻找__len__
+A.__bool__ = lambda self: True
+print(bool(A()))  # True</code></pre><p><strong>所以解释器具有退化功能，会优先寻找某个方法，但如果没有，那么会退化寻找替代方法。在后面，我们还会看到类似的实现。</strong></p>
+<pre><code>class A:
+
+    def __getitem__(self, item):
+        print(item)
+
+    def __setitem__(self, key, value):
+        print(key, value)
+
+    def __delitem__(self, key):
+        print(key)
+
+
+# 上面三个可以让我像操作字典一样, 操作实例对象
+a = A()
+a[&quot;xxx&quot;]  # xxx
+a[&quot;xxx&quot;] = &quot;yyy&quot;  # xxx yyy
+del a[&quot;aaa&quot;]  # aaa
+
+# 不仅如此, 它们还可以作用于切片
+a[3: 4]  # slice(3, 4, None)
+a[&quot;你好&quot;: &quot;我很可爱&quot;: &quot;请亏我全&quot;]  # slice(&apos;你好&apos;, &apos;我很可爱&apos;, &apos;请亏我全&apos;)
+a[&quot;你好&quot;: &quot;我很可爱&quot;: &quot;请亏我全&quot;] = &quot;屑女仆&quot;  # slice(&apos;你好&apos;, &apos;我很可爱&apos;, &apos;请亏我全&apos;) 屑女仆
+del a[&quot;神乐mea&quot;: &quot;迷迭迷迭帕里桑&quot;]  # slice(&apos;神乐mea&apos;, &apos;迷迭迷迭帕里桑&apos;, None)</code></pre><p><strong>这里我们再着重说一下__getitem__，我们说Python的for循环本质上会调用内部的__iter__，但如果内部没有定义，那么解释器会退化寻找__getitem__。</strong></p>
+<pre><code>class A:
+
+    def __getitem__(self, item):
+        return item
+
+
+lst = []
+for idx in A():
+    if idx &gt; 5:
+        break
+    lst.append(idx)
+
+# 我们看到遍历A()的时候, 在没有__iter__的时候会去找__getitem__
+# 并且默认传递0 1 2 3......, 所以循环遍历的话默认是无休止的
+print(lst)  # [0, 1, 2, 3, 4, 5]
+
+
+class B:
+
+    def __init__(self):
+        self.lst = [&quot;古明地觉&quot;, &quot;芙兰朵露&quot;, &quot;雾雨魔理沙&quot;, &quot;八意永琳&quot;, &quot;琪露诺&quot;]
+        self.__len = len(self.lst)
+
+    def __getitem__(self, item):
+        if item == self.__len:
+            raise StopIteration
+        return self.lst[item]
+
+
+print(list(B()))  # [&apos;古明地觉&apos;, &apos;芙兰朵露&apos;, &apos;雾雨魔理沙&apos;, &apos;八意永琳&apos;, &apos;琪露诺&apos;]
+(lst := []).extend(B())
+print(lst)  # [&apos;古明地觉&apos;, &apos;芙兰朵露&apos;, &apos;雾雨魔理沙&apos;, &apos;八意永琳&apos;, &apos;琪露诺&apos;]</code></pre><p><strong>怎么样，是不是很神奇呢？当然for循环肯定是优先寻找__iter__，没有的话会进行退化。</strong></p>
+<pre><code>class A:
+
+    def __reversed__(self):
+        return &quot;__reversed__&quot;
+
+    def __contains__(self, item):
+        return item
+
+
+print(reversed(A()))  # __reversed__
+
+# a in b等价于 b.__contains__(a), 但是会自动将返回值变成bool值
+# 也就是说我们上面的return item其实等价于return bool(item)
+print(&quot;xx&quot; in A())  # True
+print(&quot;&quot; in A())  # False
+print([] in A())  # False</code></pre><p><strong>最后一个__missing__比较特殊，它是针对于字典的，我们来看一下。</strong></p>
+<pre><code>class A(dict):
+
+    def __missing__(self, key):
+        return str(key).upper()
+
+
+a = A({&quot;name&quot;: &quot;夏色祭&quot;, &quot;age&quot;: -1})
+print(a[&quot;name&quot;])  # 夏色祭
+print(a[&quot;Name&quot;])  # NAME
+
+# 当我们使用获取元素时, 首先调用__getitem__
+# 由于我们没有重写, 显然调用父类的__getitem__, 如果获取到结果, 那么直接返回
+# 获取不到, 那么会调用__missing__, 如果没有重写则报错, 重写的话则是__missing__的返回值
+
+
+# 所以我们可以这么做
+class MyDict(dict):
+
+    def __getitem__(self, item):
+        return super().__getitem__(item)
+
+    def __missing__(self, key):
+        return f&quot;{key!r}不存在&quot;
+
+
+d = MyDict({&quot;name&quot;: &quot;夏色祭&quot;, &quot;age&quot;: -1})
+print(d[&quot;age&quot;])  # -1
+print(d[&quot;AGE&quot;])  # &apos;AGE&apos;不存在
+# 首先会执行我们重写的__getitem__, 但是我们通过super().__getitem__(item), 通过父类来获取对应的value
+# 父类发现在获取不到的时候, 会去找__missing__, 如果我们定义了就走我们重写的__missing__
+# 没有重写, 对于父类而言则报错, 因为dict没有__missing__</code></pre><h3 id="类型转换"><a href="#类型转换" class="headerlink" title="类型转换"></a>类型转换</h3><p><strong>很简单的内容了，我们直接来看一下。</strong></p>
+<pre><code>class A:
+
+    def __int__(self):
+        return 123
+
+    def __index__(self):
+        return 789
+
+# 上面两个作用类似, 在执行int(self)时候所调用
+# 但是存在一个优先级
+
+# 默认是__int__
+print(int(A()))  # 123
+
+# 如果没有__init__, 执行__index__
+del A.__int__
+print(int(A()))  # 789
+# __init__和__index__要求必须返回整型
+
+
+class B:
+
+    # 必须返回浮点型
+    def __float__(self):
+        return 3.  # 3.是可以的, 但是3不行
+
+print(float(B()))  # 3.0
+
+
+class C:
+    # 针对复数
+    def __complex__(self):
+        return 1 + 3j
+
+print(complex(C()))  # (1+3j)</code></pre><h3 id="上下文管理"><a href="#上下文管理" class="headerlink" title="上下文管理"></a>上下文管理</h3><p><strong>这部分不说了，可以看我的这一篇博客：<code>https://www.cnblogs.com/traditional/p/11487979.html</code>，通过源码分析contextlib标准库介绍with语句。</strong></p>
+<h3 id="属性访问"><a href="#属性访问" class="headerlink" title="属性访问"></a>属性访问</h3><p><strong>__getattr__、__setattr__、__delattr__和我们之前说的__getitem__、__setitem__、__delitem__类似，只不过这里是通过<code>.</code>的方式来访问的。</strong></p>
+<pre><code>class A:
+
+    def __getattr__(self, item):
+        print(item)
+
+    def __setattr__(self, key, value):
+        print(key, value)
+
+    def __delattr__(self, item):
+        print(item)
+
+
+a = A()
+a.name  # name
+a.name = &quot;夏色祭&quot;  # name 夏色祭
+del a.age  # age</code></pre><p><strong>getattr、setattr、delattr这几个内置函数本质上也是调用这几个魔法方法，只不过它额外做了一些其它的工作。以getattr为例：</strong></p>
+<pre><code>class A:
+
+    def __init__(self):
+        self.name = &quot;夏色祭&quot;
+        self.age = -1
+
+
+print(getattr(A(), &quot;name&quot;, &quot;不存在的属性&quot;))  # 夏色祭
+print(getattr(A(), &quot;gender&quot;, &quot;不存在的属性&quot;))  # 不存在的属性
+
+
+# 指定了不存在的属性, 会返回默认值, 注意: getattr必须指定三个参数
+# 否则属性不存在会报错, 而不是我们认为的None
+# 可能有人觉得第三个参数不传就是None, 其实不是的
+
+
+class B:
+
+    def __init__(self):
+        self.name = &quot;夏色祭&quot;
+        self.age = -1
+
+    def __getattr__(self, item):
+        try:
+            return self.__dict__[item]
+        except KeyError:
+            raise AttributeError
+
+
+print(getattr(B(), &quot;NAME&quot;, &quot;不存在的属性&quot;))  # 不存在的属性
+# 我们重写了__getattr__, 那么会调用我们重写的__getattr__
+# 然后通过字典返回, 但是注意: 在__getattr__里面可千万不能通过.来访问一个不存在的属性
+# 那样会陷入无限递归
+# 如果存在的话, 直接返回; 但如果不存在, 一定要raise AttributeError, 这样的话才会返回getattr的第三个参数, 即默认值
+# 如果是其它错误, getattr是无法捕获的; 正如自定义迭代器要raise StopIteration一样, 只有这样for循环才会捕捉到并终止迭代</code></pre><h3 id="对象调用"><a href="#对象调用" class="headerlink" title="对象调用"></a>对象调用</h3><p><strong>这一点我们好像很早之前就说过了，一个对象能否被调用，取决于它的类对象中是否定义了__call__。</strong></p>
+<pre><code>class Deco:
+
+    def __init__(self, func):
+        self.func = func
+
+    def __call__(self, *args, **kwargs):
+        print(&quot;start&quot;)
+        res = self.func(*args, **kwargs)
+        print(&quot;end&quot;)
+        return res
+
+
+@ Deco
+def foo(name, age):
+    print(name, age)
+
+
+foo(&quot;夏色祭&quot;, -1)
+&quot;&quot;&quot;
+start
+夏色祭 -1
+end
+&quot;&quot;&quot;</code></pre><h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p><strong>剩下的内容比较简单，当然描述符我们之前就说过了。最主要的是魔法方法的话，可以自己试一下就知道它们是干什么的了，没太大难度，这里就不说了。</strong></p>
+<p>posted @  2020-09-03 23:28  <a href="https://www.cnblogs.com/traditional/" target="_blank" rel="noopener">古明地盆</a>  阅读(276)  评论(0)  <a href="https://i.cnblogs.com/EditPosts.aspx?postid=13611233" target="_blank" rel="noopener">编辑</a>  <a href="https://www.cnblogs.com/traditional/p/13611233.html" target="_blank" rel="noopener">收藏</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-1015/" rel="prev" title="《深度剖析CPython解释器》19. Python类机制的深度解析(第三部分): 自定义类的底层实现、以及metaclass - 古明地盆 - 博客园">
+      <i class="fa fa-chevron-left"></i> 《深度剖析CPython解释器》19. Python类机制的深度解析(第三部分): 自定义类的底层实现、以及metaclass - 古明地盆 - 博客园
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-1016/" rel="next" title="《深度剖析CPython解释器》20. Python类机制的深度解析(第四部分): 实例对象的创建、以及属性访问 - 古明地盆 - 博客园">
+      《深度剖析CPython解释器》20. Python类机制的深度解析(第四部分): 实例对象的创建、以及属性访问 - 古明地盆 - 博客园 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#《深度剖析CPython解释器》21-Python类机制的深度解析-第五部分-全方位介绍Python中的魔法方法，一网打尽-古明地盆-博客园"><span class="nav-number"></span> <span class="nav-text">《深度剖析CPython解释器》21. Python类机制的深度解析(第五部分): 全方位介绍Python中的魔法方法，一网打尽 - 古明地盆 - 博客园</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#《深度剖析CPython解释器》21-Python类机制的深度解析-第五部分-全方位介绍Python中的魔法方法，一网打尽"><span class="nav-number"></span> <span class="nav-text">《深度剖析CPython解释器》21. Python类机制的深度解析(第五部分): 全方位介绍Python中的魔法方法，一网打尽</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#楔子"><span class="nav-number"></span> <span class="nav-text">楔子</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#魔法方法概览"><span class="nav-number"></span> <span class="nav-text">魔法方法概览</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#魔法方法介绍"><span class="nav-number"></span> <span class="nav-text">魔法方法介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#构建以及初始化"><span class="nav-number">1.</span> <span class="nav-text">构建以及初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#比较操作"><span class="nav-number">2.</span> <span class="nav-text">比较操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#单目运算"><span class="nav-number">3.</span> <span class="nav-text">单目运算</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#算术运算"><span class="nav-number">4.</span> <span class="nav-text">算术运算</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#反射算术运算"><span class="nav-number">5.</span> <span class="nav-text">反射算术运算</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#赋值算术运算"><span class="nav-number">6.</span> <span class="nav-text">赋值算术运算</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#序列操作"><span class="nav-number">7.</span> <span class="nav-text">序列操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#类型转换"><span class="nav-number">8.</span> <span class="nav-text">类型转换</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#上下文管理"><span class="nav-number">9.</span> <span class="nav-text">上下文管理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#属性访问"><span class="nav-number">10.</span> <span class="nav-text">属性访问</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#对象调用"><span class="nav-number">11.</span> <span class="nav-text">对象调用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#小结"><span class="nav-number"></span> <span class="nav-text">小结</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

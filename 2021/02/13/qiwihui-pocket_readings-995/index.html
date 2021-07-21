@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="惊了，数据库原来还可以这样实现秒级扩容？">
+<meta property="og:type" content="article">
+<meta property="og:title" content="
+
+
+惊了，数据库原来还可以这样实现秒级扩容？ ">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/02/13/qiwihui-pocket_readings-995/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="惊了，数据库原来还可以这样实现秒级扩容？">
+<meta property="og:image" content="https://mmbiz.qpic.cn/sz_mmbiz_png/YrezxckhYOxLao52LmmicZeQDicPYsB7jTicH1EvjXbiaWoDq5zCvibyMHlJEiaKCvWVUMWIYgfp2uZUjm46VbiapLickA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/sz_mmbiz_png/YrezxckhYOxLao52LmmicZeQDicPYsB7jTLrljg3Xfrbw8P2QygwIbWNmSAobwrcw7NOo4cMElyHDv231dddXicjg/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/sz_mmbiz_png/YrezxckhYOxLao52LmmicZeQDicPYsB7jTk1xAkv9iaPH2VguOkereUeeJLJYaTUZp5EhbzNnTG2G76XGkbahZBCA/640?wx_fmt=png">
+<meta property="article:published_time" content="2021-02-13T07:21:17.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.434Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://mmbiz.qpic.cn/sz_mmbiz_png/YrezxckhYOxLao52LmmicZeQDicPYsB7jTicH1EvjXbiaWoDq5zCvibyMHlJEiaKCvWVUMWIYgfp2uZUjm46VbiapLickA/640?wx_fmt=png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/02/13/qiwihui-pocket_readings-995/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>
+
+
+惊了，数据库原来还可以这样实现秒级扩容？  | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/02/13/qiwihui-pocket_readings-995/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+
+
+惊了，数据库原来还可以这样实现秒级扩容？ 
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-02-13 07:21:17" itemprop="dateCreated datePublished" datetime="2021-02-13T07:21:17+00:00">2021-02-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">
+
+
+惊了，数据库原来还可以这样实现秒级扩容？ </div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#24494;&#20449;&#21495; road5858 &#21151;&#33021;&#20171;&#32461; &#26550;&#26500;&#24072;&#20043;&#36335;&#65292;&#22362;&#25345;&#25776;&#20889;&#25509;&#22320;&#27668;&#30340;&#26550;&#26500;&#25991;&#31456; &#12298;&#22823;&#19987;&#26639;&#12299;&#30340;&#21478;&#19968;&#20010;&#37325;&#28857;&#65292;&#31532;&#20116;&#38454;&ldquo;&#25968;&#25454;&#24211;&#26550;&#26500;&rdquo;&#24050;&#32463;&#25918;&#20986;&#12290;&#24037;&#31243;&#19978;&#65292;&#25968;&#25454;&#24211;&#35201;&#35774;&#35745;&#19968;&#20123;&#20160;&#20040;&#65311;&#65288;1&#65289;&#26681;&#25454;&ldquo;&#19994;&#21153;&#27169;&#24335;&rdquo;&#35774;&#35745;&#34920;&#32467;&#26500;&#65307;&#65288;2&#65289;&#26681;&#25454;&ldquo;&#35775;&#38382;&#27169;&#24335;&rdquo;&#35774;&#35745;<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/3rOREwn" target="_blank" rel="noopener">https://ift.tt/3rOREwn</a> original site<br><br><br><br>February 13, 2021 at 02:43PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/995#issuecomment-778576079" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>2/13/2021</strong></p>
+</blockquote>
+<h2 id="惊了，数据库原来还可以这样实现秒级扩容？-by-架构师之路"><a href="#惊了，数据库原来还可以这样实现秒级扩容？-by-架构师之路" class="headerlink" title="惊了，数据库原来还可以这样实现秒级扩容？ by 架构师之路"></a>惊了，数据库原来还可以这样实现秒级扩容？ by 架构师之路</h2><p><strong>2021-02-12</strong></p>
+<p data-mpa-powered-by="yiban.io"><span>《大专栏》的另一个重点，第五阶“</span><strong>数据库架构</strong><span>”已经放出。</span></p><p><span><em><span><br></span></em></span></p><section><strong><span>工程上，数据库要设计一些什么？</span></strong><span></span></section><section><span>（1）根据“业务模式”设计</span><span>表结构</span><span>；</span></section><section><span>（2）根据“访问模式”设计</span><span>索引结构</span><span>；</span></section><section><br></section><section><strong><span>架构上，数据库还必须考虑什么？</span></strong><span></span></section><section><span>（1）读性能提升；</span></section><section><span>（2）高可用；</span></section><section><span>（3）一致性保障；</span></section><section><span>（4）扩展性；</span></section><section><span>（5）垂直拆分；</span></section><section><span><em><span>画外音：我C，我居然从来没考虑过这些问题。</span></em></span></section><section><br></section><section><strong><span>提升系统读取速度，有哪几种常见方法？</span></strong><span></span></section><section><span>（1）建立索引；</span></section><section><span>（2）增加从库；</span></section><section><span>（3）增加缓存；</span></section><section><br></section><section><strong><span>一个数据库分组集群，主从同步，读写分离，能不能在主库和从库建立不同的索引？</span></strong><span></span></section><section><span>可以</span><span>，例如：</span></section><section><span>（1）主库只响应写请求，不建立索引；</span></section><section><span>（2）线上从库，建立线上访问索引；</span></section><section><span>（3）后台从库，建立后台访问索引；</span></section><section><br></section><section><strong><span>如何保证数据库的高可用？</span></strong><span></span></section><section><span>核心思想是：</span><span>冗余+故障自动转移</span><span>：</span></section><section><span>（1）写库高可用，冗余写库；</span></section><section><span>（2）读库高可用，冗余读库；</span></section><section><br></section><section><strong><span>数据冗余会带来什么副作用？</span></strong><span></span></section><section><span>会引发一致性问题：</span></section><section><span>（1）两个写库数据可能不一致；</span></section><section><span>（2）主库和从库数据可能不一致；</span></section><section><br></section><section><strong><span>写库高可用，两个写库相互同步数据，自增ID可能冲突导致数据不一致，有什么优化方案？</span></strong><span></span></section><section><span>（1）为每个写库指定不同的初始值，相同的增长步长；</span></section><section><span>（2）生成不同的ID；</span></section><section><span>（3）一个写库提供服务，一个写库作为高可用影子主；</span></section><section><br></section><section><strong><span>主从延时，有什么优化方案？</span></strong><span></span></section><section><span>（1）业务容忍；</span></section><section><span>（2）强制读主；</span></section><section><span>（3）在从库有可能读到旧数据时，</span><span>选择性读主</span><span>（非常帅气的方案）；</span></section><section><br></section><section><strong><span>底层表结构变更，水平扩展分库个数发生变化，底层存储引擎升级，数据库如何平滑过度？</span></strong><span></span></section><section><span>如果业务能够接受，可以停服扩展。</span></section><section><span><br></span></section><section><span>否则，可以使用以下三种方法：</span></section><section><span>（1）</span><span>追日志<span>平滑</span><span>扩</span><span>容</span>法</span><span>，平滑过度；</span></section><section><span>（2）</span><span>双写<span>平滑</span><span>扩</span><span>容</span>法</span><span>，平滑过度；</span></section><section><span>（3）</span><span>秒级平滑扩容法</span><span>（非常帅气的方案）；</span></section><section><span><em><span>画外音：如何在秒级，实现读写实例加倍？容量加倍？</span></em></span></section><section><br></section><section><strong><span>数据库垂直拆分的最佳实践是什么？</span></strong><span></span></section><section><span>数据库垂直拆分，尽量把：</span></section><section><span>（1）长度短；</span></section><section><span>（2）访问频率高；</span></section><section><span>（3）经常一起访问；</span></section><section><span>的数据放在主表里。</span></section><section><br></section><section><span>如《</span><a target="_blank" href="http://mp.weixin.qq.com/s?__biz=MjM5ODYxMDA5OQ==&amp;mid=2651966351&amp;idx=1&amp;sn=675901f7c87fb806e5df39e46ccffaa2&amp;chksm=bd2d7e538a5af745db3ba0ec9d941e836d9235981182709a65cfd68ac4e991d2c85fafff3c04&amp;scene=21#wechat_redirect" data-itemshowtype="0" tab="innerlink" data-linktype="2">17次直播回看，50节架构师训练营干货重放</a><span>》中所述，17次直播回看，以及《架构师第五阶：数据库架构》的6节也已经放出，系统性的详聊了上面这些问题。</span><br></section><section><span></span></section><section><span><br></span></section><p><strong><span>17次直播精华回看，有哪些内容？</span></strong></p><blockquote data-type="2" data-url="" data-author-name="" data-content-utf8-length="226" data-source-title=""><section><section><section><em><span>（1）每秒100w请求，秒杀架构</span></em></section><section><em><span>（2）千万粉丝，feed架构</span></em></section><section><em><span>（3）千万同时在线，IM架构</span></em></section><section><em><span>（4）每秒100w检索，搜索引擎内核架构</span></em></section><section><em><span>（5）MQ内核细节</span></em></section><section><em><span>（6）RPC内核细节</span></em></section><section><em><span>（7）数据库架构</span></em></section><section><em><span>（8）多机房多活架构与细节</span></em></section><section><em><span>（9）分布式调用链追踪架构与细节</span></em></section><section><em><span>（10）3周自研自动化上线平台</span></em></section><section><em><span>（11）区块链中的架构理念</span></em></section><section><em><span>（12）数据库性能瓶颈定位</span></em></section><section><em><span>（13）反范式数据库设计</span></em></section><section><em><span>（14）微服务抽离与解耦</span></em></section><section><em><span>（15）经典架构10问</span></em></section><section><em><span>（16）微服务与数据库架构10问</span></em></section><section><em><span>（17）技术人职业发展规划</span></em></section></section></section></blockquote><p><span>每次1-2小时不等，全部已放出。</span></p><section><span><br></span></section><section><strong><span>50节架构师训练营干货重放，有哪些内容？</span></strong><span><br></span></section><blockquote data-type="2" data-url="" data-author-name="" data-content-utf8-length="117" data-source-title=""><section><section><p><span><em><span>第一阶：技术选型（5节，已放出）</span></em></span></p><p><span><em><span>第二阶：接入层架构<em>（5节，已放出）</em></span></em></span></p><p><span><em><span>第三阶：极速性能优化<em>（3节，已放出）</em></span></em></span></p><p><span><em><span>第四阶：微服务架构（7节，已放出）</span></em></span></p><p><span><em><span>第五阶：数据库架构（6节，已放出）</span></em></span></p><p><span><em><span>第六阶：缓存架构</span></em></span></p><p><span><em><span>第七阶：架构解耦</span></em></span></p><p><span><em><span>第八阶：架构分层</span></em></span></p><p><span><em><span>第九阶：架构进阶</span></em></span></p></section></section></blockquote><p><span>把控住这些，应该能成为一名P8的架构师吧？</span><br></p><section><br></section><section><strong><span>其他“阶”内容何时放出？</span></strong></section><section><span>2.21之前全部放出</span><span>。</span></section><section><br></section><section><strong><span>《大专栏》，有没有折扣？</span></strong></section><section><span>（1）巨折899（<span>原价1699</span>）；</span></section><section><span>（2）</span><span>参加过二期训练营的小伙伴免费</span><span>；</span></section><section><span>（3）邀请朋友一起学，返现20%；</span></section><section><span><br></span></section><section><strong><span>今天大年初一，有进一步福利么？</span></strong><span><br></span></section><section><span>大年初一可领200优惠券（699）。</span></section><section><span><em><span>画外音：仅限大年初一，抓紧时间。</span></em></span></section><section><br></section><section><strong><span>如何领优惠券？</span></strong></section><p><img data-ratio="1" data-s="300,640" data-type="png" data-w="160" data-src="https://mmbiz.qpic.cn/sz_mmbiz_png/YrezxckhYOxLao52LmmicZeQDicPYsB7jTicH1EvjXbiaWoDq5zCvibyMHlJEiaKCvWVUMWIYgfp2uZUjm46VbiapLickA/640?wx_fmt=png" src="https://mmbiz.qpic.cn/sz_mmbiz_png/YrezxckhYOxLao52LmmicZeQDicPYsB7jTicH1EvjXbiaWoDq5zCvibyMHlJEiaKCvWVUMWIYgfp2uZUjm46VbiapLickA/640?wx_fmt=png"></p><p><span>扫码领券</span><span>，直减200，仅限大年初一</span></p><section><br></section><section><strong><span>如何邀请小伙伴参加？</span></strong></section><section><img data-ratio="1.4" data-s="300,640" data-type="png" data-w="190" data-src="https://mmbiz.qpic.cn/sz_mmbiz_png/YrezxckhYOxLao52LmmicZeQDicPYsB7jTLrljg3Xfrbw8P2QygwIbWNmSAobwrcw7NOo4cMElyHDv231dddXicjg/640?wx_fmt=png" src="https://mmbiz.qpic.cn/sz_mmbiz_png/YrezxckhYOxLao52LmmicZeQDicPYsB7jTLrljg3Xfrbw8P2QygwIbWNmSAobwrcw7NOo4cMElyHDv231dddXicjg/640?wx_fmt=png"></section><section><span>详情页右上角</span><span>分享，</span><span>不买专栏也能邀返20%</span></section><section><br></section><section><strong><span>如何入手《<strong>大专栏</strong>》？</span></strong><br></section><section><img data-ratio="1.0054054054054054" data-s="300,640" data-type="png" data-w="185" data-src="https://mmbiz.qpic.cn/sz_mmbiz_png/YrezxckhYOxLao52LmmicZeQDicPYsB7jTk1xAkv9iaPH2VguOkereUeeJLJYaTUZp5EhbzNnTG2G76XGkbahZBCA/640?wx_fmt=png" src="https://mmbiz.qpic.cn/sz_mmbiz_png/YrezxckhYOxLao52LmmicZeQDicPYsB7jTk1xAkv9iaPH2VguOkereUeeJLJYaTUZp5EhbzNnTG2G76XGkbahZBCA/640?wx_fmt=png"></section><section><span><span>扫码</span><span>，入手架构师之路《<span>大专栏</span>》</span></span></section><section><br></section><section><span>白嫖了这么多年，欢迎为情怀补票，希望大家有收获，早日成为P8P9架构师</span><span>。</span></section><p><span><em><span>画外音：建议平均每天花2小时，倍速看1-2集直播，5节训练营，春节20天假期搞定。</span></em></span></p><section><span><br></span><strong><span>相关文章</span></strong><span>：</span></section><section><span>《<a target="_blank" href="http://mp.weixin.qq.com/s?__biz=MjM5ODYxMDA5OQ==&amp;mid=2651966351&amp;idx=1&amp;sn=675901f7c87fb806e5df39e46ccffaa2&amp;chksm=bd2d7e538a5af745db3ba0ec9d941e836d9235981182709a65cfd68ac4e991d2c85fafff3c04&amp;scene=21#wechat_redirect" data-itemshowtype="0" tab="innerlink" data-linktype="2">17次直播回看，50节架构师训练营干货重放</a>》</span></section><section><span><br></span></section><section><strong><span>作业题</span></strong><span>：</span></section><section><span>为了保证数据库主从一致性，<span>在从库有可能读到旧数据时，</span>如何选择性读主</span><span>？</span></section><section><span><br></span></section><section><span><strong>阅读原文</strong>，订阅《大专栏》。</span></section><section><span><em><span>画外音：优惠最后一天，200直减仅限大年初一。</span></em></span></section>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/13/qiwihui-pocket_readings-994/" rel="prev" title="简单聊聊编程语言的哲学，以及关于 Rust 的一些想法 (1)">
+      <i class="fa fa-chevron-left"></i> 简单聊聊编程语言的哲学，以及关于 Rust 的一些想法 (1)
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-997/" rel="next" title="《深度剖析CPython解释器》1. Python中一切皆对象，这里的对象究竟是什么？解密Python中的对象模型 - 古明地盆 - 博客园">
+      《深度剖析CPython解释器》1. Python中一切皆对象，这里的对象究竟是什么？解密Python中的对象模型 - 古明地盆 - 博客园 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#惊了，数据库原来还可以这样实现秒级扩容？-by-架构师之路"><span class="nav-number"></span> <span class="nav-text">惊了，数据库原来还可以这样实现秒级扩容？ by 架构师之路</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

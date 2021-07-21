@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="基于业务场景的漏洞挖掘">
+<meta property="og:type" content="article">
+<meta property="og:title" content="
+
+
+基于业务场景的漏洞挖掘 ">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/07/01/qiwihui-pocket_readings-1144/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="基于业务场景的漏洞挖掘">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/PvqUNuD3SmQPKN4nOze0Mxsznf6m6GGYVlSd146YM1MYCxeYhMCHhwZkpZEd40BHJKmw1iaYRVEqksoMibI7bNQw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/PvqUNuD3SmTf8R03WrXM23dR2dbVOtIHx5T22CEJyv1htAV3IucYKdvqxI76Qia80o4syJkSXrIjT7xreicxp6ibQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/PvqUNuD3SmQPKN4nOze0Mxsznf6m6GGYlRRP1DvDoDic4v3fibsSH5Lcy9c2HfBqWp8Crdxd6ETVeVWibrRpxGffg/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/PvqUNuD3SmTf8R03WrXM23dR2dbVOtIHV1pOGwjua8pNHOGkNnIoqhYpZv7L7fEEttTtgjuunaic27WfTCgqujQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/PvqUNuD3SmTf8R03WrXM23dR2dbVOtIHO2mjFgvo7wmdnVT5kaAZPGuuwpjOrImm7afwbK1COF8eoBlkmFGBuA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/PvqUNuD3SmTf8R03WrXM23dR2dbVOtIHhcFXRxDCicibjUibGOthz4IFhvvPQJ1WLpp6aVd6owHDiaNuuBr5vaUtIw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/PvqUNuD3SmTf8R03WrXM23dR2dbVOtIH3kIsJVXFKMyRuXZap4NvRUX94tiaoslh5Kg2LaibfGicffZqrAx9CqyDg/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/PvqUNuD3SmQPKN4nOze0Mxsznf6m6GGYJlu30RYm767qN734QAGUXjl8PBayMib8taQ7Cg4Xphrc2sjxMGuTvXw/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/PvqUNuD3SmQPKN4nOze0Mxsznf6m6GGYvVrlP1DkDsmM2icG6aXTCwlqIKRFFxkhM5T2WkGhrKrrJKgsr55kCMg/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/PvqUNuD3SmQPKN4nOze0Mxsznf6m6GGYt0OvQufKaueT0UWoM3yH2KLZMDW1sjD0CLEqEbibWHtpElX6lIwlABw/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/PvqUNuD3SmQPKN4nOze0Mxsznf6m6GGY515OrkibYh8M0UH5RrPsBibcDic4ejMdcXGp2LoibUWl6ReL8vs74LRLag/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/PvqUNuD3SmQPKN4nOze0Mxsznf6m6GGY9MAcElduLFcibicLM003B3ibSfAgQ9vhBpwp3r2pE83n75wLB8zj5OmZg/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/PvqUNuD3SmQPKN4nOze0Mxsznf6m6GGYWekszJ9KDLPZ28bOPlUtOqalNNicmUW8SxedxkzshFF5OlClLfgmrxA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/PvqUNuD3SmQPKN4nOze0Mxsznf6m6GGYfiajDogKEYtMhvtT1beP6Z16FficlCiaw0LOrYOiaZP2UmQh9lcRZERAsQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/PvqUNuD3SmQPKN4nOze0Mxsznf6m6GGY8rA9ibMg71Ea46peVibMkqc3TKVcCyibeLlbZQGuDLPOkm1YGo6FquPgw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/PvqUNuD3SmQPKN4nOze0Mxsznf6m6GGYoYTtr2h7yzft7FViahTB182S9V8m9guCh7aBwic0ibwRc7PNJQjtjrTCA/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/PvqUNuD3SmQPKN4nOze0Mxsznf6m6GGYiaWwsWKB6ewCI5iab0OutiamH77J7eMGWPpm2YjBtEM9yEsuD5dxaN9ibA/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/PvqUNuD3SmQPKN4nOze0Mxsznf6m6GGYZT1vdfflgtfnuKMgoMITfHaW7Q7wGicEC3E5LNt7u9YibPs4BDuPuBiaQ/640?wx_fmt=jpeg">
+<meta property="article:published_time" content="2021-07-01T04:21:13.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.414Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://mmbiz.qpic.cn/mmbiz_png/PvqUNuD3SmQPKN4nOze0Mxsznf6m6GGYVlSd146YM1MYCxeYhMCHhwZkpZEd40BHJKmw1iaYRVEqksoMibI7bNQw/640?wx_fmt=png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/07/01/qiwihui-pocket_readings-1144/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>
+
+
+基于业务场景的漏洞挖掘  | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/07/01/qiwihui-pocket_readings-1144/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+
+
+基于业务场景的漏洞挖掘 
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-07-01 04:21:13" itemprop="dateCreated datePublished" datetime="2021-07-01T04:21:13+00:00">2021-07-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">
+
+
+基于业务场景的漏洞挖掘 </div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#24494;&#20449;&#21495; gh_951c3555f599 &#21151;&#33021;&#20171;&#32461; &#21716;&#21737;&#21716;&#21737;&#23433;&#20840;&#24212;&#24613;&#21709;&#24212;&#20013;&#24515; &#24341;&#35328;&#38543;&#30528;WAF&#20135;&#21697;&#20174;&#20256;&#32479;&#35268;&#21017;&#24211;&#21040;&#26234;&#33021;&#24341;&#25806;&#30340;&#36716;&#22411;&#65292;&#36890;&#29992;&#28431;&#27934;&#31867;&#22411;&#24050;&#22522;&#26412;&#21487;&#20197;&#38450;&#25252;&#12290;&#20294;WAF&#30340;&#23616;&#38480;&#24615;&#20063;&#22312;&#20110;&#21482;&#33021;&#38450;&#24481;&#27969;&#37327;&#23618;&#38754;&#30340;&#25915;&#20987;&#65292;&#38590;&#20197;&#38450;&#24481;&#19994;&#21153;&#36923;&#36753;&#22411;&#30340;&#28431;&#27934;&#12290;&#32780;&#22914;&#20170;&#22823;<br><br><br><br>Tags: security<br><br><br><br>via Pocket <a href="https://ift.tt/2TmWS77" target="_blank" rel="noopener">https://ift.tt/2TmWS77</a> original site<br><br><br><br>July 01, 2021 at 11:22AM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1144#issuecomment-871905496" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>7/1/2021</strong></p>
+</blockquote>
+<h2 id="基于业务场景的漏洞挖掘-by-哔哩哔哩安全应急响应中心"><a href="#基于业务场景的漏洞挖掘-by-哔哩哔哩安全应急响应中心" class="headerlink" title="基于业务场景的漏洞挖掘 by 哔哩哔哩安全应急响应中心"></a>基于业务场景的漏洞挖掘 by 哔哩哔哩安全应急响应中心</h2><p><strong>2021-06-22</strong></p>
+<p>引言</p>
+<p>随着WAF产品从传统规则库到智能引擎的转型，通用漏洞类型已基本可以防护。但WAF的局限性也在于只能防御流量层面的攻击，难以防御业务逻辑型的漏洞。而如今大部分企业在Web应用层的防护主要依赖WAF，往往会忽视业务逻辑场景产生的漏洞。本文介绍一些基于业务逻辑场景的应用漏洞挖掘方法，希望可以对各企业安全建设和SRC漏洞挖掘有所启发。</p>
+<p>信息收集</p>
+<p>信息收集是漏洞挖掘的第一步，你拥有的“资产信息”决定了你的产出。下面列举几种常见的信息收集手段：子域名收集。</p>
+<p><strong>1. 暴力破解</strong></p>
+<p>推荐在线子域名扫描工具：YoungxjTools，速度快，内置大量字典且支持自定义字典，本地工具layer也很方便，比YoungxjTools多了端口配置功能。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/PvqUNuD3SmQPKN4nOze0Mxsznf6m6GGYVlSd146YM1MYCxeYhMCHhwZkpZEd40BHJKmw1iaYRVEqksoMibI7bNQw/640?wx_fmt=png" alt=""></p>
+<p><strong>2. 搜索引擎搜索</strong></p>
+<p>Google、百度、360、bing、搜狗等主流搜索引擎，可以通过搜索语法进行搜索，在发现域名时往往会同时发现一些敏感的页面，但收录有限。</p>
+<p><strong>3. 证书查询</strong></p>
+<p>常用的证书查询网站有censys.io crtsh等，可以发现暴力破解无法爆破出来的子域，但同样收录有限。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/PvqUNuD3SmTf8R03WrXM23dR2dbVOtIHx5T22CEJyv1htAV3IucYKdvqxI76Qia80o4syJkSXrIjT7xreicxp6ibQ/640?wx_fmt=png" alt=""></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/PvqUNuD3SmQPKN4nOze0Mxsznf6m6GGYlRRP1DvDoDic4v3fibsSH5Lcy9c2HfBqWp8Crdxd6ETVeVWibrRpxGffg/640?wx_fmt=png" alt=""></p>
+<p><strong>4. 微信公众号、小程序</strong></p>
+<p>微信已是如今人们日常生活中用的最多的软件之一，越来越多的公司选择在微信公众号、小程序来拓展业务及影响力，我们可以通过这些渠道来收集更多的域名或ip地址</p>
+<p>业务逻辑的切入点</p>
+<p><strong>1.登陆注册，修改密码处（验证码绕过）</strong></p>
+<p><strong>客户端刷新验证码</strong></p>
+<p>在挖掘验证码问题中，一般情况下会先通过抓取数据包验证常见的逻辑错误、暴力破解、短信轰炸等问题。此处讲解下检查源码方式，直接右键检查验证码的html代码，可以看到验证码是客户端通过一个img标签进行请求刷新的，&lt;imgsrc=”<a href="http://xxxx.xxxx:80//ImageServlet&quot;id=&quot;code\_img&quot;height=&quot;26&quot;/&gt;，此处src地址即为验证码地址。" target="_blank" rel="noopener">http://xxxx.xxxx:80//ImageServlet&quot;id=&quot;code\_img&quot;height=&quot;26&quot;/&gt;，此处src地址即为验证码地址。</a></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/PvqUNuD3SmTf8R03WrXM23dR2dbVOtIHV1pOGwjua8pNHOGkNnIoqhYpZv7L7fEEttTtgjuunaic27WfTCgqujQ/640?wx_fmt=png" alt=""></p>
+<p>正常当我们输入错误的验证码时，请求会返回验证码错误信息且刷新一次验证码，当我们将客户端刷新验证码的请求hold住时，验证码处会一直停留在原始的验证码，不会再做刷新，此时我们就可绕过验证码刷新并使用burpsuite进行账户密码的暴力破解了。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/PvqUNuD3SmTf8R03WrXM23dR2dbVOtIHO2mjFgvo7wmdnVT5kaAZPGuuwpjOrImm7afwbK1COF8eoBlkmFGBuA/640?wx_fmt=png" alt=""></p>
+<p><strong>2. 支付功能处（更改客户端）</strong></p>
+<p><strong>高并发问题</strong></p>
+<p>假设用户的账户余额100元，某商品单价100元/件，当用户使用账户余额购买此商品时只能购买一件数量，且购买成功后账户余额归零。但当业务存在高并发漏洞时，扣款的同时数据库未落锁，导致账户余额可能减少至负数，购买到的商品也可大于一件。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/PvqUNuD3SmTf8R03WrXM23dR2dbVOtIHhcFXRxDCicibjUibGOthz4IFhvvPQJ1WLpp6aVd6owHDiaNuuBr5vaUtIw/640?wx_fmt=png" alt=""></p>
+<p>如在某小程序中，有一处使用积分抽奖的功能，在使用积分抽奖按钮处使用fiddler抓包并截断数据包请求。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/PvqUNuD3SmTf8R03WrXM23dR2dbVOtIH3kIsJVXFKMyRuXZap4NvRUX94tiaoslh5Kg2LaibfGicffZqrAx9CqyDg/640?wx_fmt=jpeg" alt=""></p>
+<p>shift+r设置同时高并发50次，可看到抽奖次数已超出积分余额，同时剩余积分变为负数。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/PvqUNuD3SmQPKN4nOze0Mxsznf6m6GGYJlu30RYm767qN734QAGUXjl8PBayMib8taQ7Cg4Xphrc2sjxMGuTvXw/640?wx_fmt=jpeg" alt=""></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/PvqUNuD3SmQPKN4nOze0Mxsznf6m6GGYvVrlP1DkDsmM2icG6aXTCwlqIKRFFxkhM5T2WkGhrKrrJKgsr55kCMg/640?wx_fmt=png" alt=""></p>
+<p><strong>3.订单管理处（用户权限，用户未授权）如增删改查、本地验证绕过</strong></p>
+<p><strong>水平越权（不安全的直接对象引用IDOR）</strong></p>
+<p>越权漏洞是web应用程序常见的漏洞之一，主要分为以下几类：</p>
+<ul>
+<li><p>未授权访问：本来没有账号（即没有某个功能权限），但是通过越权操作，获取了某个功能权限；</p>
+</li>
+<li><p>水平越权：本来有个账号（即只能操作自己的数据，比如增删改查），但是通过越权操作，能操作其他同等权限账号的数据。</p>
+</li>
+<li><p>垂直越权：本来有个账号只有小权限，但是通过越权操作，获取了大权限。</p>
+</li>
+</ul>
+<p>在日常安全测试中，大部分发现的都是未授权访问和水平越权，本次讲解下水平越权。水平越权常见于业务系统中，对用户信息或者订单信息进行增删改查操作时，由于用户编号或者订单编号有规律可循（有序递增，订单编号常发现以日期开头后面再接几位有序增长的数字，类似20200520xxxx1，20200520xxxx2），且执行请求时未校验用户对应权限或权限校验不足，就可能存在越权漏洞，此时我们通过burpsuite的 intruder对目标参数进行遍历测试即可。</p>
+<p>如下是某厂商业务系统的分销中心，提供分销账单的查询功能：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/PvqUNuD3SmQPKN4nOze0Mxsznf6m6GGYt0OvQufKaueT0UWoM3yH2KLZMDW1sjD0CLEqEbibWHtpElX6lIwlABw/640?wx_fmt=jpeg" alt=""></p>
+<p>登陆账户后，任意选择一个分销账单，点击订单明细查询，使用burpsuite进行抓包，可以看到查询的参数只有”billld”一个选项，且参数值为简单的4位数字，返回包中含明文的订单明细信息：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/PvqUNuD3SmQPKN4nOze0Mxsznf6m6GGY515OrkibYh8M0UH5RrPsBibcDic4ejMdcXGp2LoibUWl6ReL8vs74LRLag/640?wx_fmt=jpeg" alt=""></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/PvqUNuD3SmQPKN4nOze0Mxsznf6m6GGY9MAcElduLFcibicLM003B3ibSfAgQ9vhBpwp3r2pE83n75wLB8zj5OmZg/640?wx_fmt=png" alt=""></p>
+<p>更改一个不在账户权限下billld，发现仍可正常返回，使用intruder对billld参数进行遍历，并对length排序，可得多条有效payload对应的订单明细，理论上遍历的参数值范围够大，可得全站分销账单明细。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/PvqUNuD3SmQPKN4nOze0Mxsznf6m6GGYWekszJ9KDLPZ28bOPlUtOqalNNicmUW8SxedxkzshFF5OlClLfgmrxA/640?wx_fmt=png" alt=""></p>
+<p><strong>4.配置不当</strong></p>
+<p><strong>SPF**</strong>邮件伪造**</p>
+<p>SPF是 Sender PolicyFramework 的缩写，一种以IP地址认证电子邮件发件人身份的技术。接收邮件方会首先检查域名的SPF记录，来确定发件人的IP地址是否被包含在SPF记录里面，如果在，就认为是一封正确的邮件，否则会认为是一封伪造的邮件进行退回。SPF可以防止别人伪造你来发邮件，是为了防范垃圾邮件而提出来的一种DNS记录，它是一种TXT类型的记录。</p>
+<p>由于SMTP邮件服务商互相发送邮件是不需要认证的，邮件伪造也是利用这个特性来实现伪造任意发件人。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/PvqUNuD3SmQPKN4nOze0Mxsznf6m6GGYfiajDogKEYtMhvtT1beP6Z16FficlCiaw0LOrYOiaZP2UmQh9lcRZERAsQ/640?wx_fmt=png" alt=""></p>
+<p>如何查看邮件服务器是否配置SPF记录:</p>
+<p>Windows下进入DOS模式后用以下命令：</p>
+<p>nslookup -type=txt 域名</p>
+<p>Unix操作系统下用：</p>
+<p>dig -t txt host</p>
+<p>已配置SPF的情况</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/PvqUNuD3SmQPKN4nOze0Mxsznf6m6GGY8rA9ibMg71Ea46peVibMkqc3TKVcCyibeLlbZQGuDLPOkm1YGo6FquPgw/640?wx_fmt=png" alt=""></p>
+<p>可以看到在ANSWER SECTION下存在一条</p>
+<p>“v=spf1include:spf1.baidu.com include:spf2.baidu.com include:spf3.baidu.com a mx ptr-all”</p>
+<p>简述下此条记录的含义，v=spf1 声明SPF的版本，include:<domain> 表示引入<domain>域名下的 SPF 记录，支持当前域名的a mx ptr记录进行验证，-all表示除此之外拒绝所有。</p>
+<p>未配置SPF的情况，可看到声明中无相关spf记录</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/PvqUNuD3SmQPKN4nOze0Mxsznf6m6GGYoYTtr2h7yzft7FViahTB182S9V8m9guCh7aBwic0ibwRc7PNJQjtjrTCA/640?wx_fmt=jpeg" alt=""></p>
+<p>攻击者可以找一个在线smtp发件服务器，伪造发件地址进行钓鱼，以下是某企业邮箱存在SPF邮件伪造的示意图：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/PvqUNuD3SmQPKN4nOze0Mxsznf6m6GGYiaWwsWKB6ewCI5iab0OutiamH77J7eMGWPpm2YjBtEM9yEsuD5dxaN9ibA/640?wx_fmt=jpeg" alt=""></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/PvqUNuD3SmQPKN4nOze0Mxsznf6m6GGYZT1vdfflgtfnuKMgoMITfHaW7Q7wGicEC3E5LNt7u9YibPs4BDuPuBiaQ/640?wx_fmt=jpeg" alt=""></p>
+<p>总结</p>
+<p>本篇文章只简单介绍了几个业务漏洞挖掘的方向，大家可在此基础上拓展思路，发掘更多姿势。业务问题产生的漏洞很多，一些扫描器、WAF等安全产品也难以覆盖，尤其一些新上线的大型业务系统接口多，功能点的逻辑复杂，容易产生被忽视的漏洞，是SRC漏洞挖掘的重点部分，同时也提醒我们甲方此类安全测试的重要性。</p>
+<p>作者</p>
+<p>盐风，bilibili高级安全工程师，现负责b站网络安全产品自研、安全运营工作。</p>
+<p>参考来源</p>
+<p><a href="https://www.freebuf.com/articles/web/237876.html" target="_blank" rel="noopener">https://www.freebuf.com/articles/web/237876.html</a></p>
+<p><a href="https://www.freebuf.com/articles/web/236988.html" target="_blank" rel="noopener">https://www.freebuf.com/articles/web/236988.html</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/07/01/qiwihui-pocket_readings-1143/" rel="prev" title="Typeclasses in Python">
+      <i class="fa fa-chevron-left"></i> Typeclasses in Python
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/07/01/qiwihui-pocket_readings-1145/" rel="next" title="A supply-chain breach: Taking over an Atlassian account - Check Point Research">
+      A supply-chain breach: Taking over an Atlassian account - Check Point Research <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#基于业务场景的漏洞挖掘-by-哔哩哔哩安全应急响应中心"><span class="nav-number"></span> <span class="nav-text">基于业务场景的漏洞挖掘 by 哔哩哔哩安全应急响应中心</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

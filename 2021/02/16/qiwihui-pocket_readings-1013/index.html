@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="《深度剖析CPython解释器》17. Python类机制的深度解析(第一部分): 回顾Python中的对象模型 - 古明地盆 - 博客园">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《深度剖析CPython解释器》17. Python类机制的深度解析(第一部分): 回顾Python中的对象模型 - 古明地盆 - 博客园">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1013/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="《深度剖析CPython解释器》17. Python类机制的深度解析(第一部分): 回顾Python中的对象模型 - 古明地盆 - 博客园">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200829221420657-1965272346.png">
+<meta property="article:published_time" content="2021-02-16T14:17:19.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.426Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200829221420657-1965272346.png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1013/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>《深度剖析CPython解释器》17. Python类机制的深度解析(第一部分): 回顾Python中的对象模型 - 古明地盆 - 博客园 | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1013/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          《深度剖析CPython解释器》17. Python类机制的深度解析(第一部分): 回顾Python中的对象模型 - 古明地盆 - 博客园
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-02-16 14:17:19" itemprop="dateCreated datePublished" datetime="2021-02-16T14:17:19+00:00">2021-02-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+
+          
+            <div class="post-description">《深度剖析CPython解释器》17. Python类机制的深度解析(第一部分): 回顾Python中的对象模型 - 古明地盆 - 博客园</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#26964;&#23376; &#36825;&#19968;&#27425;&#25105;&#20204;&#23601;&#26469;&#30475;&#30475;Python&#20013;&#31867;&#26159;&#24590;&#20040;&#23454;&#29616;&#30340;&#65292;&#25105;&#20204;&#30693;&#36947;C&#19981;&#26159;&#19968;&#20010;&#38754;&#21521;&#23545;&#35937;&#35821;&#35328;&#65292;&#32780;Python&#21364;&#26159;&#19968;&#20010;&#38754;&#21521;&#23545;&#35937;&#30340;&#35821;&#35328;&#65292;&#37027;&#20040;&#22312;Python&#30340;&#24213;&#23618;&#65292;&#26159;&#22914;&#20309;&#20351;&#29992;C&#26469;&#25903;&#25345;Python&#23454;&#29616;&#38754;&#21521;&#23545;&#35937;&#30340;&#21151;&#33021;&#21602;&#65311;&#24102;&#30528;&#36825;&#20123;&#30097;&#38382;&#65292;&#25105;&#20204;&#19979;&#38754;&#24320;&#22987;&#21078;&#26512;python<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/3pp6Z5n" target="_blank" rel="noopener">https://ift.tt/3pp6Z5n</a> original site<br><br><br><br>February 16, 2021 at 10:13PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1013#issuecomment-792571333" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>3/8/2021</strong></p>
+</blockquote>
+<h2 id="《深度剖析CPython解释器》17-Python类机制的深度解析-第一部分-回顾Python中的对象模型-古明地盆-博客园"><a href="#《深度剖析CPython解释器》17-Python类机制的深度解析-第一部分-回顾Python中的对象模型-古明地盆-博客园" class="headerlink" title="《深度剖析CPython解释器》17. Python类机制的深度解析(第一部分): 回顾Python中的对象模型 - 古明地盆 - 博客园"></a>《深度剖析CPython解释器》17. Python类机制的深度解析(第一部分): 回顾Python中的对象模型 - 古明地盆 - 博客园</h2><h1 id="《深度剖析CPython解释器》17-Python类机制的深度解析-第一部分-回顾Python中的对象模型"><a href="#《深度剖析CPython解释器》17-Python类机制的深度解析-第一部分-回顾Python中的对象模型" class="headerlink" title="《深度剖析CPython解释器》17. Python类机制的深度解析(第一部分): 回顾Python中的对象模型"></a><a href="https://www.cnblogs.com/traditional/p/13583752.html" target="_blank" rel="noopener">《深度剖析CPython解释器》17. Python类机制的深度解析(第一部分): 回顾Python中的对象模型</a></h1><h2 id="楔子"><a href="#楔子" class="headerlink" title="楔子"></a>楔子</h2><p><strong>这一次我们就来看看Python中类是怎么实现的，我们知道C不是一个面向对象语言，而Python却是一个面向对象的语言，那么在Python的底层，是如何使用C来支持Python实现面向对象的功能呢？带着这些疑问，我们下面开始剖析python中类的实现机制。另外，在Python2中存在着经典类(classic class)和新式类(new style class)，但是到Python3中，经典类已经消失了。并且python2官方都不维护了，因此我们这一章只会介绍新式类。</strong></p>
+<p><strong>另外关于类，我们在最开始介绍对象关系模型的时候其实说了不少，这里会再简单温习一遍。</strong></p>
+<h2 id="Python中的对象模型"><a href="#Python中的对象模型" class="headerlink" title="Python中的对象模型"></a>Python中的对象模型</h2><p><strong>我们在最开始介绍对象的时候就说了，在面向对象的理论中，有两个核心的概念：类和实例。类可以看成是一个模板，那么实例就是根据这个模板创建出来的对象。可以想象成docker的镜像和容器。但是在Python中，一切都是对象，所以类和实例都是对象，类叫做类对象，实例叫做实例对象。如果想用大白话来描述清楚的话，这无疑是一场灾难，我们还是需要使用一些专业术语来描述：</strong></p>
+<p><strong>首先我们这里把python中的对象分为三种：</strong></p>
+<ul>
+<li><code>内建对象: Python中的内建对象、或者叫内置对象, 比如int、str、list、type、object等等;</code></li>
+<li><code>class对象: 程序员通过Python中的class关键字定义的类。当然后面我们也会把内建对象和class对象统称为类对象;</code></li>
+<li><code>实例对象：由类对象(内建对象或者class对象)创建的实例;</code></li>
+</ul>
+<p><strong>而对象之间存在着以下两种关系：</strong></p>
+<ul>
+<li><p><code>is-kind-of: 对应面向对象理论中父类和子类之间的关系;</code></p>
+</li>
+<li><p><code>is-instance-of: 对应面向对象理论中类和实例之间的关系;</code></p>
+<p>class Girl(object):</p>
+<pre><code>def say(self):
+    return &quot;まつりさんじょう&quot;</code></pre></li>
+</ul>
+<pre><code>girl = Girl()
+print(girl.say())  # まつりさんじょう</code></pre><p><strong>这段代码中便包含了上面的三种对象：object(内建对象)，Girl(class对象)，girl(实例对象)。显然Girl和object之间是<code>is-kind-of</code>关系，即object是Girl的父类。另外值得一提的是，在python3中所有定义的类都是默认继承自object，即便我们这里不显式继承object，也会默认继承的，为了说明，我们就写上了。除了object是Girl的父类，我们还能看出girl和Girl存在<code>is-instance-of</code>关系，即girl是Girl的实例。当然如果再进一步的话，girl和object之间也存在<code>is-instance-of</code>关系，girl也是object的实例。</strong></p>
+<pre><code>class Girl(object):
+
+    def say(self):
+        return &quot;まつりさんじょう&quot;
+
+
+girl = Girl()
+print(girl.say())  # まつりさんじょう
+
+print(issubclass(Girl, object))  # True
+print(type(girl))  # &lt;class &apos;__main__.Girl&apos;&gt;
+print(isinstance(girl, Girl))  # True
+print(isinstance(girl, object))  # True</code></pre><p><strong>girl是Girl这个类实例化得到的，所以type(girl)得到的是类对象Girl，但girl也是object的实例对象，因为Girl继承了object，至于这其中的原理，我们会慢慢介绍到。</strong></p>
+<p><strong>Python中的类型检测</strong></p>
+<p><strong>Python提供了一些方法可以探测这些关系，除了我们上面的type之外，还可以使用对象的__class__属性探测一个对象和其它的哪些对象之间存在<code>is-instance-of</code>关系，而通过对象的__bases__属性则可以探测一个对象和其它的哪些对象之间存在着<code>is-kind-of</code>关系。此外python还提供了两个方法issubclass和isinstance来验证两个对象之间是否存在着我们期望的关系。</strong></p>
+<pre><code>class Girl(object):
+
+    def say(self):
+        return &quot;まつりさんじょう&quot;
+
+
+girl = Girl()
+print(girl.say())  # まつりさんじょう
+
+print(girl.__class__)  # &lt;class &apos;__main__.Girl&apos;&gt;
+print(Girl.__class__)  # &lt;class &apos;type&apos;&gt;
+# 另外__class__是查看自己的类型是什么,也就是生成自己的类。
+# 而在介绍Python对象的时候,我们就看到了,任何一个对象都至少具备两个东西: 一个是引用计数、一个是类型
+# 所以__class__在Python中，是所有的对象都具备的
+
+
+# __base__只显示继承的第一个类
+print(Girl.__base__)  # &lt;class &apos;object&apos;&gt;
+# __bases__会显示继承的所有类
+print(Girl.__bases__)  # (&lt;class &apos;object&apos;&gt;,)</code></pre><p><img src="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200829221420657-1965272346.png" alt=""></p>
+<p><strong>关于type和object的关系，我们在最开始介绍Python中的对象模型的时候已经说过了。我们type底层的结构是PyType_Type、object底层的结构体是PyBaseObject_Type，在创建object的时候，将内部的ob_type设置成了PyType_Type；在创建type的时候，将内部的tp_base设置成为了PyBaseObject_Type。因此这两者的定义是彼此依赖的，两者是同时出现的，我们后面还会看到。</strong></p>
+<p><strong>紧接着我们考察一下类Girl的行为，我们看到它支持属性设置：</strong></p>
+<pre><code>class Girl(object):
+
+    def say(self):
+        return &quot;まつりさんじょう&quot;
+
+
+print(hasattr(Girl, &quot;name&quot;))  # False
+Girl.name = &quot;夏色祭&quot;
+print(hasattr(Girl, &quot;name&quot;))  # True
+print(Girl.name)  # 夏色祭</code></pre><p><strong>一个类都已经定义完了，我们后续还可以进行属性的添加，这在其它的静态语言中是不可能做到的。那么Python是如何做到的呢？我们说能够对于属性进行动态添加，你会想到什么？是不是字典呢？正如global名字空间一样，我们猜测类应该也有自己的属性字典，往类里面设置一些属性的时候，等价于向字典中添加一个键值对，同理其它操作也是如此。</strong></p>
+<pre><code>class Girl(object):
+
+    def say(self):
+        return &quot;まつりさんじょう&quot;
+
+
+# 我们看到确实如此, 每一个类都有自己的属性字典
+print(Girl.__dict__)  # {&apos;__module__&apos;: &apos;__main__&apos;, &apos;say&apos;: &lt;function Girl.say at 0x0000015CE71E1160&gt;, ...}
+
+print(Girl.__dict__.get(&quot;name&quot;, &quot;不存在&quot;))  # 不存在
+Girl.name = &quot;夏色祭&quot;
+print(Girl.__dict__.get(&quot;name&quot;))  # 夏色祭
+
+
+# 我们看到和操作全局变量是类似的, 但是有一点需要注意: 我们不能直接通过类的属性字典来设置属性
+# Girl.name = &quot;夏色祭&quot; 是可以的, 但是 Girl.__dict__[&quot;name&quot;] = &quot;夏色祭&quot; 则不可以, 虽然这两者是等价的
+try:
+    Girl.__dict__[&quot;name&quot;] = &quot;神乐mea&quot;
+except Exception as e:
+    print(e)  # &apos;mappingproxy&apos; object does not support item assignment
+
+# 但是通过字典访问是可以的</code></pre><p><strong>除了设置属性之外，我们还可以设置函数。</strong></p>
+<pre><code>class Girl(object):
+
+    def say(self):
+        return &quot;まつりさんじょう&quot;
+
+
+Girl.info = lambda name, age: f&quot;我叫{name!r}, 今年{age}岁&quot;
+print(Girl.info(&quot;神乐mea&quot;, 38))  # 我叫&apos;神乐mea&apos;, 今年38岁
+
+# 但是此时实例对象调用的话, 会和我们想象的不太一样
+# 因为实例调用的话会将函数包装成方法(后面会重点说, 以及为什么实例调用的时候会自动将自身作为self传进去)
+try:
+    print(Girl().info(&quot;神乐mea&quot;, 38))
+except Exception as e:
+    print(e)  # &lt;lambda&gt;() takes 2 positional arguments but 3 were given
+
+# 我们看到实例在调用的时候会将自身也作为参数传进去, 所以第一个参数name实际上接收的是Girl的实例对象
+# 只不过第一个参数按照规范来讲应该叫做self, 但即便你起别的名字也是无所谓的
+print(Girl().info(38))  # 我叫&lt;__main__.Girl object at 0x00000164B90782B0&gt;, 今年38岁
+
+# 所以我们应该这么做, 将其包装成一个静态方法, 这样类和实例都可以调用了
+Girl.info = staticmethod(lambda name, age: f&quot;我叫{name!r}, 今年{age}岁&quot;)
+print(Girl.info(&quot;神乐mea&quot;, 38))  # 我叫&apos;神乐mea&apos;, 今年38岁
+print(Girl().info(&quot;神乐mea&quot;, 38))  # 我叫&apos;神乐mea&apos;, 今年38岁</code></pre><p><strong>此外我们还可以通过type来动态地往类里面进行属性的增加、修改和删除。</strong></p>
+<pre><code>class Girl(object):
+
+    def say(self):
+        return &quot;まつりさんじょう&quot;
+
+
+print(hasattr(Girl, &quot;say&quot;))  # True
+# 等价于delattr(Girl, &quot;say&quot;)
+type.__delattr__(Girl, &quot;say&quot;)
+print(hasattr(Girl, &quot;say&quot;))  # False
+
+# 我们看到Girl这个类里面已经没有&quot;say&quot;这个属性或者函数了
+# 事实上调用getattr、setattr、delattr等价于调用其类型对象的__getattr__、__setattr__、__delattr__
+
+# 我们设置一个属性吧, 等价于Girl.name = &quot;神乐mea&quot;
+setattr(Girl, &quot;name&quot;, &quot;神乐mea&quot;)
+print(Girl.name)  # 神乐mea</code></pre><p><strong>所以我们说过，一个对象有哪些行为，取决于其类型对象中定义了哪些操作。此外我们通过对象的类型对象，可以动态地给该对象进行属性的设置。所以Python中所有的类型对象的类型对象都是type，通过type我们便可以控制类的生成过程，即便类已经创建完毕了，也依旧可以进行属性设置。但是注意：这些仅仅针对于我们自己自定义的类，内置的类是不行的。</strong></p>
+<pre><code>try:
+    int.name = &quot;夏色祭&quot;
+except Exception as e:
+    print(e)  # can&apos;t set attributes of built-in/extension type &apos;int&apos;
+
+try:
+    int.__add__ = &quot;xxx&quot;
+except Exception as e:
+    print(e)  # can&apos;t set attributes of built-in/extension type &apos;int&apos;    </code></pre><p><strong>因为内建对象在解释器启动之后，就已经初始化好了。所以内建的类和使用class定义的类本质上是一样的，都是PyTypeObject对象，它们的类型都是type，但区别就是内建的类在底层是静态初始化的，我们不能进行属性的动态设置。</strong></p>
+<blockquote>
+<p><strong>这里多提一句，我们看到报错信息提示：不可以设置内建类和扩展类的属性，这里的扩展类就是我们使用Python/C API编写的扩展模块中的类，它和内建类是等价的。</strong></p>
+<p><strong>但是为什么不可以对内建类和扩展类进行属性的设置呢？首先我们要知道Python的动态特性是解释器(虚拟机)赐予的，而虚拟机的工作就是将Python的PyCodeObject对象解释成C的代码进行执行，所以Python的动态特性就是在这一步发生的。而内建的类(int、str、list等等)在解释器启动之后就已经静态初始化好了，直接指向C一级的数据结构，同理扩展类也是如此。它们相当于绕过了解释执行这一步，所以它们的属性是没有办法动态添加的。</strong></p>
+</blockquote>
+<p><strong>不光内建的类，其实例对象也是如此。</strong></p>
+<pre><code>a = 123
+print(hasattr(a, &quot;__dict__&quot;))  # False</code></pre><p><strong>我们看到它连自己的属性字典都没有，因为整数在底层对应的是PyLongObject对象，像这些实例对象都有哪些属性，解释器记得清清楚楚。</strong></p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p><strong>这次我们介绍了Python中的对象模型，比较简单，主要之前也说过了，相当于再温习一遍。</strong></p>
+<p><strong>关于类，要说的内容还是非常非常多的，我们分几个部分来说吧，下一篇介绍类的继承和属性查找。</strong></p>
+<p>posted @  2020-08-29 22:14  <a href="https://www.cnblogs.com/traditional/" target="_blank" rel="noopener">古明地盆</a>  阅读(190)  评论(0)  <a href="https://i.cnblogs.com/EditPosts.aspx?postid=13583752" target="_blank" rel="noopener">编辑</a>  <a href="https://www.cnblogs.com/traditional/p/13583752.html" target="_blank" rel="noopener">收藏</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-1014/" rel="prev" title="《深度剖析CPython解释器》18. Python类机制的深度解析(第二部分): 类的多继承与属性查找 - 古明地盆 - 博客园">
+      <i class="fa fa-chevron-left"></i> 《深度剖析CPython解释器》18. Python类机制的深度解析(第二部分): 类的多继承与属性查找 - 古明地盆 - 博客园
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-1015/" rel="next" title="《深度剖析CPython解释器》19. Python类机制的深度解析(第三部分): 自定义类的底层实现、以及metaclass - 古明地盆 - 博客园">
+      《深度剖析CPython解释器》19. Python类机制的深度解析(第三部分): 自定义类的底层实现、以及metaclass - 古明地盆 - 博客园 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#《深度剖析CPython解释器》17-Python类机制的深度解析-第一部分-回顾Python中的对象模型-古明地盆-博客园"><span class="nav-number"></span> <span class="nav-text">《深度剖析CPython解释器》17. Python类机制的深度解析(第一部分): 回顾Python中的对象模型 - 古明地盆 - 博客园</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#《深度剖析CPython解释器》17-Python类机制的深度解析-第一部分-回顾Python中的对象模型"><span class="nav-number"></span> <span class="nav-text">《深度剖析CPython解释器》17. Python类机制的深度解析(第一部分): 回顾Python中的对象模型</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#楔子"><span class="nav-number"></span> <span class="nav-text">楔子</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Python中的对象模型"><span class="nav-number"></span> <span class="nav-text">Python中的对象模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#小结"><span class="nav-number"></span> <span class="nav-text">小结</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

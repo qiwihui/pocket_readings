@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Improve Tensorflow Performance by 70% | Mux blog">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Improve Tensorflow Performance by 70% | Mux blog">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/05/25/qiwihui-pocket_readings-1114/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="Improve Tensorflow Performance by 70% | Mux blog">
+<meta property="article:published_time" content="2021-05-25T07:21:22.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.414Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/05/25/qiwihui-pocket_readings-1114/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>Improve Tensorflow Performance by 70% | Mux blog | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/05/25/qiwihui-pocket_readings-1114/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Improve Tensorflow Performance by 70% | Mux blog
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-05-25 07:21:22" itemprop="dateCreated datePublished" datetime="2021-05-25T07:21:22+00:00">2021-05-25</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">Improve Tensorflow Performance by 70% | Mux blog</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Tensorflow has grown to be the de facto ML platform, popular within both industry and research. The demand and support for Tensorflow has contributed to host of OSS libraries, tools and frameworks around training and serving ML models.<br><br><br><br>Tags: engineering<br><br><br><br>via Pocket <a href="https://ift.tt/3fIiQIR" target="_blank" rel="noopener">https://ift.tt/3fIiQIR</a> original site<br><br><br><br>May 25, 2021 at 12:22PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1114#issuecomment-847616016" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>5/25/2021</strong></p>
+</blockquote>
+<h2 id="Improve-Tensorflow-Performance-by-70-Mux-blog"><a href="#Improve-Tensorflow-Performance-by-70-Mux-blog" class="headerlink" title="Improve Tensorflow Performance by 70% | Mux blog"></a>Improve Tensorflow Performance by 70% | Mux blog</h2><p>Tensorflow has grown to be the de facto ML platform, popular within both industry and research. The demand and support for Tensorflow has contributed to host of OSS libraries, tools and frameworks around training and serving ML models. The Tensorflow Serving is a project built to focus on the inference aspect for serving ML models in a distributed, production environment.</p>
+<p>Mux uses Tensorflow Serving in several parts of its infrastructure, and we’ve previously discussed using Tensorflow Serving to power our per-title-encoding feature. Today, we’ll focus on techniques that improve latency by optimizing both the prediction server and client. Model predictions are usually “online” operations (on critical application request path), thus our primary optimization objectives are to handle high volumes of requests with as low latency as possible.</p>
+<p>First let’s do a quick overview of Tensorflow Serving.</p>
+<h2 id="What-is-Tensorflow-Serving"><a href="#What-is-Tensorflow-Serving" class="headerlink" title="What is Tensorflow Serving?"></a>What is Tensorflow Serving?</h2><p>Tensorflow Serving provides a flexible server architecture designed to deploy and serve ML models. Once a model is trained and ready to be used for prediction, Tensorflow Serving requires the model to be exported to a <em>Servable</em> compatible format.</p>
+<p>A <em>Servable</em> is the central abstraction that wraps Tensorflow objects. For example, a model could be represented as one or more <em>Servables</em>. Thus, <em>Servables</em> are the underlying objects that client uses to perform computation such as inference. The size of <em>Servable</em> matters, as smaller models use less memory, less storage, and will have faster load time. <em>Servables</em> expect models to be in SavedModel format for loading and serving with the Predict API.</p>
+<p>Tensorflow Serving puts together the core serving components to build a gRPC/HTTP server that can serve multiple ML models (or multiple versions), provide monitoring components, and a configurable architecture.</p>
+<h2 id="Tensorflow-Serving-with-Docker"><a href="#Tensorflow-Serving-with-Docker" class="headerlink" title="Tensorflow Serving with Docker"></a>Tensorflow Serving with Docker</h2><p>Lets get a base-line prediction performance latency metric with the standard Tensorflow Serving (no CPU optimizations).</p>
+<p>First, pull the latest serving image from Tensorflow Docker hub:</p>
+<p>For the purpose of this post, all containers are run on a 4 core, 15GB, Ubuntu 16.04 host machine.</p>
+<h3 id="Export-Tensorflow-model-to-SavedModel-format"><a href="#Export-Tensorflow-model-to-SavedModel-format" class="headerlink" title="Export Tensorflow model to SavedModel format"></a>Export Tensorflow model to SavedModel format</h3><p>When a model is trained using Tensorflow, the output can be saved as variable checkpoints (files on disk). Inference can be run directly by restoring model checkpoints or on its converted frozen graph (binary).</p>
+<p>In order to serve these models with Tensorflow Serving, the frozen graph has to be exported into <em>SavedModel</em> format. <a href="https://www.tensorflow.org/serving/serving_basic#train_and_export_tensorflow_model" target="_blank" rel="noopener">Tensorflow documentation</a> has examples on exporting trained models in SavedModel format.</p>
+<p>Tensorflow also provides a host of <a href="https://github.com/tensorflow/models" target="_blank" rel="noopener">official and research models</a> as starting point for experiments, research or production use.</p>
+<p>As an example, we will use the <a href="https://github.com/tensorflow/models/tree/master/official/resnet" target="_blank" rel="noopener">deep residual network (ResNet)</a> model that can be used to classify ImageNet’s dataset of 1000 classes. Download the <a href="https://github.com/tensorflow/models/tree/master/official/resnet#pre-trained-model" target="_blank" rel="noopener">pre-trained</a><code>ResNet-50 v2</code> model, specifically the channels_last (NHWC) convolution <em>SavedModel</em>, which is generally better for CPUs.</p>
+<p>Copy the RestNet model directory in the following structure:</p>
+<p>Tensorflow Serving expects models to be in numerically ordered directory structure to manage model versioning. In this case, the directory <code>1/</code> corresponds to model version <code>1</code>, which contains the model architecture <code>saved_model.pb</code> along with snapshot of the model weights (variables).</p>
+<h3 id="Load-and-serve-SavedModel"><a href="#Load-and-serve-SavedModel" class="headerlink" title="Load and serve SavedModel"></a>Load and serve SavedModel</h3><p>The following command spins up a Tensorflow Serving model server in docker container. In order to load the SavedModel, the model’s host directory needs to be mounted into the expected container directory.</p>
+<p>Inspecting the container logs show that the ModelServer is running and ready to serve inference requests for <code>resnet</code> model on gRPC and HTTP endpoints:</p>
+<h3 id="Prediction-Client"><a href="#Prediction-Client" class="headerlink" title="Prediction Client"></a>Prediction Client</h3><p>Tensorflow Serving defines the API services schema as <a href="https://developers.google.com/protocol-buffers/" target="_blank" rel="noopener">protocol buffers</a> (protobufs). The gRPC client implementations for the prediction API is packaged as <code>tensorflow_serving.apis</code> python package. We will also need the <code>tensorflow</code> python package for utility functionalities.</p>
+<p>Lets install dependencies to create a simple client:</p>
+<p>The <code>ResNet-50 v2</code> model expects floating point Tensor inputs in a channels_last (NHWC) formatted data structure. Hence, the input image is read using opencv-python which loads into a numpy array (height x width x channels) as float32 data type. The script below creates the prediction client stub and loads JPEG image data into numpy array, converts to Tensor proto to make the gRPC prediction request:</p>
+<p>The output of running the client with an input JPEG image is shown below:</p>
+<p>The output Tensor has the prediction result as an integer value and probabilities of features.</p>
+<p>For a single request, this kind of prediction latency is unacceptable. However, this is not totally unexpected; the default Tensorflow Serving binary targets the broadest range of hardware to cover most use cases. You may have noticed from the standard Tensorflow Serving container logs:</p>
+<p>This is an indication of Tensorflow Serving binary running on an incompatible CPU platform that it was not optimized for.</p>
+<h3 id="Building-CPU-optimized-serving-binary"><a href="#Building-CPU-optimized-serving-binary" class="headerlink" title="Building CPU optimized serving binary"></a>Building CPU optimized serving binary</h3><p>According to Tensorflow <a href="https://github.com/tensorflow/serving/blob/master/tensorflow_serving/g3doc/setup.md#building-from-source" target="_blank" rel="noopener">documentation</a>, it is recommended to compile Tensorflow from source with all the optimizations available for the CPU of the host platform the binary will run on. The Tensorflow build options expose flags to enable building for platform-specific CPU instruction sets:</p>
+<p>Instruction SetFlagsAVX–copt=-mavxAVX2–copt=-mavx2FMA–copt=-mfmaSSE 4.1–copt=-msse4.1SSE 4.2–copt=-msse4.2All supported by processor–copt=-march=native</p>
+<p>Clone Tensorflow Serving pinned to specific version. In this case, we’ll be using <code>1.13</code> (latest as of this publishing this post):</p>
+<p>Tensorflow Serving development image uses Bazel as the build tool. Build targets for processor-specific CPU instruction sets can be specified as follows:</p>
+<p>If memory is a constraint, limit the consumption of the memory intensive build process with <code>--local_resources=2048,.5,1.0</code> flag. See <a href="https://www.tensorflow.org/tfx/serving/docker#dockerfiles" target="_blank" rel="noopener">Tensorflow Serving with Docker</a> and <a href="https://docs.bazel.build/versions/master/user-manual.html#flag--local_resources" target="_blank" rel="noopener">Bazel docs</a> as resources on such build flags.</p>
+<p>Build the serving image with development image as base:</p>
+<p>ModelServer can be configured with <a href="https://github.com/tensorflow/tensorflow/blob/26b4dfa65d360f2793ad75083c797d57f8661b93/tensorflow/core/protobuf/config.proto#L158" target="_blank" rel="noopener">Tensorflow-specific flags</a> to enable Session parallelism. The following options configure two thread pools to parallelize executions:</p>
+<p><code>intra_op_parallelism_threads</code></p>
+<ul>
+<li>controls maximum number of threads to be used for parallel execution of a single operation.</li>
+<li>used to parallelize operations that have sub-operations that are inherently independent by nature.</li>
+</ul>
+<p><code>inter_op_parallelism_threads</code></p>
+<ul>
+<li>controls maximum number of threads to be used for parallel execution of independent different operations.</li>
+<li>operations on Tensorflow Graph that are independent from each other and thus can be run on different threads.</li>
+</ul>
+<p>The default for both options are set to a value of <code>0</code>. This means, the system picks an appropriate number, which most often entails one thread per CPU core available. However, this can be manually controlled for multi-core CPU parallelism.</p>
+<p>Next, start the serving container similarly to before, this time with the docker image built from source and with Tensorflow specific CPU optimization flags:</p>
+<p>The container logs should <em>not</em> show CPU guard warnings anymore. Without changing any code, running the same prediction request drops the prediction latency by ~35.8%:</p>
+<h2 id="Improving-speed-on-prediction-client"><a href="#Improving-speed-on-prediction-client" class="headerlink" title="Improving speed on prediction client"></a>Improving speed on prediction client</h2><p>Can we do better? Server side has been optimized for its CPU platform but a prediction latency over 1s still seems too high.</p>
+<p>It just so happens that there is a large latency cost to loading the <code>tensorflow_serving</code> and <code>tensorflow</code> libraries. Each call to <code>tf.contrib.util.make_tensor_proto</code> also adds an un-necessary latency overhead as well.</p>
+<p>“Hold up”, you might be thinking. “Don’t I need the Tensorflow Python packages to actually make prediction requests to Tensorflow Server?”</p>
+<p>The simple answer is no, we don’t actually <em>need</em> the <code>tensorflow</code> or <code>tensorflow_serving</code> packages to make prediction requests.</p>
+<p>As noted previously, Tensorflow prediction APIs are defined as protobufs. Hence, the two external dependencies can be replaced by generating the necessary <code>tensorflow</code> and <code>tensorflow_serving</code> protobuf python stubs. This avoids the need the pull in the entire (heavy) Tensorflow library on the client itself.</p>
+<p>To start with, get rid of <code>tensorflow</code> and <code>tensorflow_serving</code> dependencies and add <code>grpcio-tools</code> package.</p>
+<p>Clone the <code>tensorflow/tensorflow</code> and <code>tensorflow/serving</code> repositories and copy the following protobuf files into the client project:</p>
+<p>Copying the above protobuf files into a <code>protos/</code> directory and preserving the original paths:</p>
+<p>For simplicity, the <a href="https://github.com/tensorflow/serving/blob/master/tensorflow_serving/apis/prediction_service.proto" target="_blank" rel="noopener">prediction_service.proto</a> can be simplified to only implement the Predict RPC. This avoids pulling in nested dependencies of the other RPCs defined in the service. <a href="https://gist.github.com/masroorhasan/8e728917ca23328895499179f4575bb8" target="_blank" rel="noopener">Here</a> is an example of the simplified <code>prediction_service.proto</code>.</p>
+<p>Generate the gRPC python implementations using <code>grpcio.tools.protoc</code>:</p>
+<p>Now the entire <code>tensorflow_serving</code> module can be removed:</p>
+<p>and replaced with the generated protobufs from <code>protos/tensorflow_serving/apis</code>:</p>
+<p>The Tensorflow library is imported in order to use the helper function <code>make_tensor_proto</code>, which is <a href="https://www.tensorflow.org/api_docs/python/tf/make_tensor_proto" target="_blank" rel="noopener">used for wrapping</a> a python/numpy object as TensorProto object.</p>
+<p>Thus, we can replace the following dependency and code snippet:</p>
+<p>with protobuf imports and building the TensorProto object:</p>
+<p>Full python script available <a href="https://gist.github.com/masroorhasan/0e73a7fc7bb2558c65933338d8194130" target="_blank" rel="noopener">here</a>. Run the updated inception client that makes prediction request to optimized Tensorflow Serving:</p>
+<p>The following chart shows latency of a prediction request against standard, optimized Tensorflow serving and client over 10 runs:</p>
+<p>The average latency dropped from standard Tensorflow Serving to optimized version by ~70.4%.</p>
+<h2 id="Optimizing-Prediction-Throughput"><a href="#Optimizing-Prediction-Throughput" class="headerlink" title="Optimizing Prediction Throughput"></a>Optimizing Prediction Throughput</h2><p>Tensorflow Serving can also be configured for high throughput processing. Optimizing for throughput is usually done for “offline” batch processing where tight latency bounds are not a strict requirement.</p>
+<h3 id="Server-side-Batching"><a href="#Server-side-Batching" class="headerlink" title="Server-side Batching"></a>Server-side Batching</h3><p>Server-side batching is supported out of the box by Tensorflow Serving as mentioned in docs <a href="https://github.com/tensorflow/serving/tree/master/tensorflow_serving/batching" target="_blank" rel="noopener">here</a>.</p>
+<p>The trade-offs between latency and throughput are governed by the batching parameters supported. Tensorflow Serving batching works best to unlock the high throughput promised by hardware accelerators.</p>
+<p>To enable batching, set <code>--enable_batching</code> and <code>--batching_parameters_file</code> flags. Batching parameters can be set as defined by <a href="https://github.com/tensorflow/serving/blob/d77c9768e33e1207ac8757cff56b9ed9a53f8765/tensorflow_serving/servables/tensorflow/session_bundle_config.proto" target="_blank" rel="noopener">SessionBundleConfig</a>. For CPU-only systems, consider setting <code>num_batch_threads</code> to number of cores available. See <a href="https://github.com/tensorflow/serving/blob/master/tensorflow_serving/batching/README.md#gpu-one-approach" target="_blank" rel="noopener">here</a> for batching configuration approaches with GPU-enabled systems.</p>
+<p>Upon reaching full batch on server-side, inference requests are merged internally into a single large request (tensor) and a Tensorflow Session is run on the merged request. Running a batch of requests on a single Session is where CPU/GPU parallelism can really be leveraged.</p>
+<p>Some general use-cases to consider for batch proce Tensorflow Serving Batching:</p>
+<ul>
+<li>Use asynchronous client requests to populate batches on server side</li>
+<li>Speed up batch processing by putting model graph components on CPU/GPU</li>
+<li>Interleave prediction requests when serving multiple models from same server</li>
+<li>Batching is highly recommended for “offline” high volume inference processing</li>
+</ul>
+<h3 id="Client-side-Batching"><a href="#Client-side-Batching" class="headerlink" title="Client-side Batching"></a>Client-side Batching</h3><p>Batching on the client-side is grouping multiple inputs together to make a single request.</p>
+<p>Since the ResNet model expects input in NHWC format (first dimension being the number of inputs), we can aggregate multiple input images into a single RPC request:</p>
+<p>For a batch of N images, the output Tensor in the response would have prediction results for the same number of inputs in request batch, in this case N = 2:</p>
+<h2 id="Hardware-Acceleration"><a href="#Hardware-Acceleration" class="headerlink" title="Hardware Acceleration"></a>Hardware Acceleration</h2><p>A few words on GPUs.</p>
+<p>For training, parallelization can be exploited by GPUs more intuitively, since building deep neural networks requires massive calculations to arrive at optimal solution.</p>
+<p>However, this is not always the case for inference. Many times, CNN’s will get inference be sped-up when graph execution steps are placed on GPU devices. However, Picking hardware that optimizes the price-performance sweet spot requires rigorous testing, in-depth technical and cost analysis. Hardware accelerated parallelization are more valuable for “offline” inference batch processing (massive volumes).</p>
+<p>Before inviting GPUs to the party, consider the business requirements with a thorough cost (monetary, operational, technical) analysis over benefits (strict latency, high throughput).</p>
+<h2 id="Wrapping-up"><a href="#Wrapping-up" class="headerlink" title="Wrapping up"></a>Wrapping up</h2><p>To experience ML-driven video streaming quality settings, try out <a href="https://docs.mux.com/docs/video" target="_blank" rel="noopener">Mux Video</a>. Or if you’re interested in working on projects like this, check out our <a href="https://mux.com/jobs" target="_blank" rel="noopener">openings</a>!</p>
+<p>Photo by <a href="https://unsplash.com/photos/2zyyH5lQRaw?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText" target="_blank" rel="noopener">Fancycrave on Unsplash</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/05/24/qiwihui-pocket_readings-1113/" rel="prev" title="
+
+
+北大博士论文书写了怎样的外卖江湖｜大象公会 ">
+      <i class="fa fa-chevron-left"></i> 
+
+
+北大博士论文书写了怎样的外卖江湖｜大象公会 
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/05/26/qiwihui-pocket_readings-1115/" rel="next" title="
+
+
+Docker 兴衰记：关于开源的一些思考 ">
+      
+
+
+Docker 兴衰记：关于开源的一些思考  <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Improve-Tensorflow-Performance-by-70-Mux-blog"><span class="nav-number"></span> <span class="nav-text">Improve Tensorflow Performance by 70% | Mux blog</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#What-is-Tensorflow-Serving"><span class="nav-number"></span> <span class="nav-text">What is Tensorflow Serving?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Tensorflow-Serving-with-Docker"><span class="nav-number"></span> <span class="nav-text">Tensorflow Serving with Docker</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Export-Tensorflow-model-to-SavedModel-format"><span class="nav-number">1.</span> <span class="nav-text">Export Tensorflow model to SavedModel format</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Load-and-serve-SavedModel"><span class="nav-number">2.</span> <span class="nav-text">Load and serve SavedModel</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Prediction-Client"><span class="nav-number">3.</span> <span class="nav-text">Prediction Client</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Building-CPU-optimized-serving-binary"><span class="nav-number">4.</span> <span class="nav-text">Building CPU optimized serving binary</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Improving-speed-on-prediction-client"><span class="nav-number"></span> <span class="nav-text">Improving speed on prediction client</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Optimizing-Prediction-Throughput"><span class="nav-number"></span> <span class="nav-text">Optimizing Prediction Throughput</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Server-side-Batching"><span class="nav-number">1.</span> <span class="nav-text">Server-side Batching</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Client-side-Batching"><span class="nav-number">2.</span> <span class="nav-text">Client-side Batching</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Hardware-Acceleration"><span class="nav-number"></span> <span class="nav-text">Hardware Acceleration</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Wrapping-up"><span class="nav-number"></span> <span class="nav-text">Wrapping up</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

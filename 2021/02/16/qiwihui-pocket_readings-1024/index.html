@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="《深度剖析CPython解释器》28. Python内存管理与垃圾回收(第二部分)：源码解密Python中的垃圾回收机制 - 古明地盆 - 博客园">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《深度剖析CPython解释器》28. Python内存管理与垃圾回收(第二部分)：源码解密Python中的垃圾回收机制 - 古明地盆 - 博客园">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1024/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="《深度剖析CPython解释器》28. Python内存管理与垃圾回收(第二部分)：源码解密Python中的垃圾回收机制 - 古明地盆 - 博客园">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235209572-1489713358.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235224081-339809316.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235228142-2049550450.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235236491-1181272167.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235240699-1516371777.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235244783-2045048359.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235248250-1560490414.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235256306-326421086.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235304762-358893665.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235311117-969693744.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235316847-1172293069.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235325462-1737182587.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235334247-477657936.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235338000-648413294.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235354251-564121521.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235358278-1038967713.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235159608-835280971.png">
+<meta property="article:published_time" content="2021-02-16T14:17:26.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.430Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235209572-1489713358.png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1024/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>《深度剖析CPython解释器》28. Python内存管理与垃圾回收(第二部分)：源码解密Python中的垃圾回收机制 - 古明地盆 - 博客园 | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1024/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          《深度剖析CPython解释器》28. Python内存管理与垃圾回收(第二部分)：源码解密Python中的垃圾回收机制 - 古明地盆 - 博客园
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-02-16 14:17:26" itemprop="dateCreated datePublished" datetime="2021-02-16T14:17:26+00:00">2021-02-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+
+          
+            <div class="post-description">《深度剖析CPython解释器》28. Python内存管理与垃圾回收(第二部分)：源码解密Python中的垃圾回收机制 - 古明地盆 - 博客园</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#29616;&#22312;&#32477;&#22823;&#37096;&#20998;&#30340;&#35821;&#35328;&#37117;&#23454;&#29616;&#20102;&#22403;&#22334;&#22238;&#25910;&#26426;&#21046;&#65292;&#36825;&#20854;&#20013;&#20063;&#21253;&#25324;Python&#65292;&#32780;&#19981;&#21516;&#30340;&#35821;&#35328;&#37319;&#29992;&#30340;&#22403;&#22334;&#22238;&#25910;&#31639;&#27861;&#20063;&#21508;&#19981;&#30456;&#21516;&#12290;&#37027;&#20040;&#65292;&#24120;&#35265;&#30340;&#22403;&#22334;&#22238;&#25910;&#31639;&#27861;&#37117;&#26377;&#21738;&#20123;&#21602;&#65311;<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/3bcmSqx" target="_blank" rel="noopener">https://ift.tt/3bcmSqx</a> original site<br><br><br><br>February 16, 2021 at 10:15PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1024#issuecomment-781006925" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>2/18/2021</strong></p>
+</blockquote>
+<h2 id="《深度剖析CPython解释器》28-Python内存管理与垃圾回收-第二部分-：源码解密Python中的垃圾回收机制-古明地盆-博客园"><a href="#《深度剖析CPython解释器》28-Python内存管理与垃圾回收-第二部分-：源码解密Python中的垃圾回收机制-古明地盆-博客园" class="headerlink" title="《深度剖析CPython解释器》28. Python内存管理与垃圾回收(第二部分)：源码解密Python中的垃圾回收机制 - 古明地盆 - 博客园"></a>《深度剖析CPython解释器》28. Python内存管理与垃圾回收(第二部分)：源码解密Python中的垃圾回收机制 - 古明地盆 - 博客园</h2><h1 id="《深度剖析CPython解释器》28-Python内存管理与垃圾回收-第二部分-：源码解密Python中的垃圾回收机制"><a href="#《深度剖析CPython解释器》28-Python内存管理与垃圾回收-第二部分-：源码解密Python中的垃圾回收机制" class="headerlink" title="《深度剖析CPython解释器》28. Python内存管理与垃圾回收(第二部分)：源码解密Python中的垃圾回收机制"></a><a href="https://www.cnblogs.com/traditional/p/13698244.html" target="_blank" rel="noopener">《深度剖析CPython解释器》28. Python内存管理与垃圾回收(第二部分)：源码解密Python中的垃圾回收机制</a></h1><h2 id="楔子"><a href="#楔子" class="headerlink" title="楔子"></a>楔子</h2><p><strong>现在绝大部分的语言都实现了垃圾回收机制，这其中也包括Python，而不同的语言采用的垃圾回收算法也各不相同。那么，常见的垃圾回收算法都有哪些呢？</strong></p>
+<ul>
+<li><code>引用计数法(reference count): 记录对象的被引用此处, 引用计数降为0时回收</code></li>
+<li><code>标记-清除法(mark-sweep): 从根集合触发, 遍历所有能访问到的对象并对其进行标记, 然后将未被标记的对象清除</code></li>
+<li><code>停止-复制法(stop-copy): 将内存划分为大小相同的内存块, 一块用完后启用另一块、并将存活的对象拷贝过去, 原来那块则整体被回收</code></li>
+<li><code>分代回收法(generational-collection): 根据对象的存活时间将对象分为若干代, 并按照不同代的特征采用最合适的回收策略</code></li>
+</ul>
+<p><strong>那么我们下面来看看Python中的垃圾回收。</strong></p>
+<h2 id="引用计数"><a href="#引用计数" class="headerlink" title="引用计数"></a>引用计数</h2><p><strong>对于Python而言，其对象的生命周期是通过对象的引用计数来管理的，这一点在开始的章节我们就说了，对于Python中实现对象的基石PyObject，有两个属性，一个是该对象的类型，还有一个就是引用计数(ob_refcnt)。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235209572-1489713358.png" alt=""></p>
+<p><strong>ob_refcnt始终维护这对象的引用计数，所以从广义上将，引用计数也算是一种垃圾回收机制，而且它是一种最简单最直观的垃圾回收技术。尽管需要一个值来维护引用计数，但是引用计数有一个最大的优点：实时性。任何内存，一旦没有指向它的引用，那么就会被回收。而其他的垃圾回收技术必须在某种特定条件下<code>(比如内存分配失败)</code>才能进行无效内存的回收。</strong></p>
+<p><strong>那么在Python中引用计数什么时候会增加，什么时候会减少呢？</strong></p>
+<p><strong>引用计数加1</strong></p>
+<ul>
+<li><code>对象被创建：a=1</code></li>
+<li><code>对象被引用：b=a</code></li>
+<li><code>对象被作为参数传到一个函数中，func(a)</code></li>
+<li><code>对象作为列表、元组等其他容器里面的元素</code></li>
+</ul>
+<p><strong>引用计数减1</strong></p>
+<ul>
+<li><code>指向对象的变量(符号)被显式的销毁：del a</code></li>
+<li><code>对象的引用指向了其他的对象：a=2</code></li>
+<li><code>对象的引用离开了它的作用域，比如函数的局部变量，在函数执行完毕的时候，也会被销毁(如果没有获取栈帧的话)，而全局变量则不会</code></li>
+<li><code>对象的引用所在的容器被销毁，或者从容器中删除等等</code></li>
+</ul>
+<p><strong>查看引用计数</strong></p>
+<p><strong>查看一个对象的引用计数，可以通过sys.getrefcount(obj)，但是由于作为getrefcount这个函数的参数，所以引用计数会多1。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235224081-339809316.png" alt=""></p>
+<p><strong>我们之前说Python中的变量只是一个和对象绑定的符号，在底层都是PyObject *泛型指针，b = a在底层中则表示把指针变量a存储的地址拷贝给了指针变量b，所以此时b也指向了a指向的对象。因此字符串对象”mashiro”的引用计数就会加1，此时变为2。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235228142-2049550450.png" alt=""></p>
+<p><strong>而每当减少一个引用，引用计数就会减少1。尽管我们用<code>sys.getrefcount</code>得到的结果是2，但是当这个函数执行完，由于局部变量的销毁，其实结果已经变成了1。因此引用计数很方便，就是当一片空间没有人引用了，那么就直接销毁。</strong></p>
+<p><strong>所以我们看到ob_refcnt这个成员是维护引用计数的，一个对象是否要被销毁完全取决于它的引用计数是否为0，不为0、则存活，为0、则销毁。</strong></p>
+<p><strong>所以引用计数机制是需要一些额外操作的，因为需要有成员时刻维护引用计数，并且与Python运行中所进行的内存分配、释放、引用赋值的次数是成正比的。这一点，相对于主流的垃圾回收技术，比如标记–清除<code>(mark--sweep)</code>、停止–复制<code>(stop--copy)</code>等方法相比是一个弱点，因为它们带来额外操作只和内存数量有关，至于多少人引用了这块内存则不关心。因此为了与引用计数搭配、在内存的分配和释放上获得最高的效率，Python设计了大量的内存池机制，比如小整数对象池、字符串的intern机制，列表的freelist缓冲池等等，这些大量使用的面向特定对象的内存池机制正是为了弥补引用计数的软肋。</strong></p>
+<p><strong>其实对于现在的cpu和内存来说，上面的问题都不是什么问题，而且引用计数真的很方便、并且直观。但是引用计数还存在一个致命的缺陷，这一缺陷几乎将引用计数在垃圾回收机制中判了”死刑”，这一缺陷就是”循环引用”。而且也正是因为”循环引用”这个致命伤，导致在狭义上并不把引用计数看成是垃圾回收机制的一种。</strong></p>
+<pre><code>lst1 = []
+lst2 = []
+
+lst1.append(lst2)
+lst2.append(lst1)
+
+del lst1, lst2</code></pre><p><strong>初始的时候，lst1和lst2指向的内存的引用计数都为1，但是<code>lst1.append(lst2)</code>，那么lst2指向内存的引用计数变成了2，同理<code>lst2.append(lst1)</code>导致lst1指向内存的引用计数也变成了2。因此当我们<code>del lst1, lst2</code>的时候，引用计数会从2变成1，因此lst1和lst2都不会被回收，但我们是希望回收lst1和lst2的。因此此时我们就说lst1和lst2指向的对象之间发生了循环引用，所以如果只是引用计数的话，那么显然这两者是回收不了的。</strong></p>
+<p><strong>因此程序一直运行的话，是有可能发生内存泄露的。所以Python为了解决这个问题，又在引用计数之上引入了新的主流垃圾回收技术：标记–清除和分代回收计数来弥补这个最致命的漏洞。</strong></p>
+<h2 id="三色标记模型之标记–清除"><a href="#三色标记模型之标记–清除" class="headerlink" title="三色标记模型之标记–清除"></a>三色标记模型之标记–清除</h2><p><strong>无论何种垃圾回收机制，一般都分为两个阶段：垃圾检测和垃圾回收。垃圾检测是从所有的已经分配的内存中区别出”可回收”和”不可回收”的内存，而垃圾回收则是使操作系统重新掌握垃圾检测阶段所标识出来的”可回收”内存块。所以垃圾回收，并不是说直接把这块内存的数据清空了，而是将使用权从新交给了操作系统，不会自己霸占了。</strong></p>
+<p><strong>而我们说Python解决循环引用所采用的方法是标记–清除，那么我们看看这个方法是如何实现的，并未其建立一个三色标记模型，标记–清除正是基于这个模型实现的。</strong></p>
+<p><strong>从具体的实现上来讲，标记–清除方法同样遵循垃圾回收的两个阶段，其简要过程如下：</strong></p>
+<ul>
+<li><code>寻找根对象(root object)的集合，所谓的root object就是一些全局引用和函数栈的引用。这些引用所用的对象是不可被删除的，而这个root object集合也是垃圾检测动作的起点</code></li>
+<li><code>从root object集合出发，沿着root object集合中的每一个引用进行探索，如果能到达某个对象A，则称A是可达的(reachable)，可达的对象也不可被删除。这个阶段就是垃圾检测阶段</code></li>
+<li><code>当垃圾检测阶段结束后，所有的对象分为了可达的(reachable)和不可达的(unreachable)。而所有可达对象都必须予以保留，而不可达对象所占用的内存将被回收</code></li>
+</ul>
+<p><strong>我们通过几张图来简单描述一下：</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235236491-1181272167.png" alt=""></p>
+<p><strong>图中的圈圈表示对象，其中黑色部分表示需要回收、但是由于循环引用而无法回收的垃圾对象，换句话说就是不可达的对象，这里我们假设除了根对象之外都是不可达的。而白色部分表示被程序引用而不能回收的活跃对象。</strong></p>
+<p><strong>然后我们开始遍历了，显然从根对象开始遍历，首先根对象本身是可达的，不可以删除；被根对象引用的对象也是可达的，同样不能删除。当我们从根对象出发，沿着引用关系遍历，能够遍历到的对象都是可达的，我们将其标记为灰色。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235240699-1516371777.png" alt=""></p>
+<p><strong>我们看到被根对象直接引用的对象我们标记成了灰色，那么为什么不直接标记成白色呢？因为被根对象直接引用的对象，还有可能引用其它对象，我们需要一层一层遍历。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235244783-2045048359.png" alt=""></p>
+<p><strong>我们看到当灰色直接引用的对象检测完毕时，灰色就被标记成了白色，然后下面的黑色则变成了新的灰色。所以下面该谁了呢？显然从新的被标记成灰色的对象开始继续往下找，就是一层一层遍历嘛。</strong></p>
+<blockquote>
+<p><strong>可达对象标记成灰色，当其直接引用的对象被检查完毕时，就会被标记成白色，然后其直接引用的对象就会变成灰色。</strong></p>
+</blockquote>
+<p><strong>如果从根集合开始，按照广度优先的策略进行搜索的话，那么不难想象，灰色节点集合就如同波纹一样不断向外扩散。凡是被灰色波纹触碰到的就会变成白色，没有被触碰到的则还是原来的黑色。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235248250-1560490414.png" alt=""></p>
+<p><strong>如果是黑色，说明是不可达的，会被回收；白色，这说明是可达的，不会被回收。</strong></p>
+<p><strong>以上就是垃圾回收中的标记–清除法，思想其实很简单。Python内部也是采用这个办法来识别、回收垃圾对象。由于Python中的对象都是分配在堆上的，根对象集合其实不太直观，Python是先通过一个算法找出根对象，然后再从根对象出发找到可达的活跃对象。此外，为提升垃圾回收效率，Python还引入了分代回收技术。</strong></p>
+<h2 id="Python中的垃圾回收"><a href="#Python中的垃圾回收" class="headerlink" title="Python中的垃圾回收"></a>Python中的垃圾回收</h2><p><strong>如之前所说，Python中主要的内存管理手段是引用计数，而标记–清除和分代收集只是为了打破循环引用而引入的补充技术。这一事实意味着Python中的垃圾回收只关注可能会产生循环引用的对象，而像PyLongObject、PyUnicodeObject这些对象是绝对不可能产生循环引用的，因为它们内部不可能持有对其他对象的引用，所以这些直接通过引用计数机制就可以实现，而且后面我们说的垃圾回收也专指那些可能产生循环引用的对象。Python中的循环引用只会总是发生在container对象之间，所谓container对象就是<code>内部可持有对其他对象的引用</code>的对象，比如PyListObject、PyDictObject、自定义类对象、自定义类对象的实例对象等等。</strong></p>
+<p><strong>当Python的垃圾回收机制开始运行时，只需要检查这些container对象，而对于PyLongObject、PyUnicodeObject等对象则不需要理会，这使得垃圾回收带来的开销只依赖于container对象的数量，而非所有对象的数量。为了达到这一点，Python就必须跟踪所创建的每一个container对象，并将这些对象组织到一个集合中，只有这样，才能将垃圾回收的动作限制在这些对象上。而Python采用了一个双向链表，所有的container对象在创建之后，都会被插入到这个链表当中。</strong></p>
+<h3 id="可收集对象链表"><a href="#可收集对象链表" class="headerlink" title="可收集对象链表"></a>可收集对象链表</h3><p><strong>在对Python对象机制的分析当中我们已经看到，任何一个Python对象都可以分为两部分，一部分是PyObject_HEAD，另一部分是对象自身的数据。然而对于一个需要被垃圾回收机制跟踪的container来说还不够，因为这个对象还必须链入到Python内部的可收集对象链表中。而一个container对象要想成为一个可收集的对象，则必须加入额外的信息，这个信息位于PyObject_HEAD之前，称为PyGC_Head。</strong></p>
+<pre><code>//Include/objimpl.h
+
+typedef union _gc_head {
+    struct {
+        union _gc_head *gc_next;  //链表后向指针，指向后一个被跟踪的对象
+        union _gc_head *gc_prev;  //链表前向指针，指向前一个被跟踪的对象
+        Py_ssize_t gc_refs;  //对象引用计数副本，在标记清除算法中使用
+    } gc;
+    long double dummy;  //内存对齐用，确保 _gc_head 结构体大小至少是 16 字节，从而使对象地址以 8 字节对齐
+} PyGC_Head;</code></pre><p><strong>所以，对于Python所创建的可收集container对象，其内存布局与我们之前所了解的内存布局是不同的，我们可以从可收集container对象的创建过程中进行窥探。</strong></p>
+<pre><code>//Modules/gcmodule.c
+PyObject *
+_PyObject_GC_New(PyTypeObject *tp)
+{
+    PyObject *op = _PyObject_GC_Malloc(_PyObject_SIZE(tp));
+    if (op != NULL)
+        op = PyObject_INIT(op, tp);
+    return op;
+}
+
+PyObject *
+_PyObject_GC_Malloc(size_t basicsize)
+{
+    return _PyObject_GC_Alloc(0, basicsize);
+}
+
+static PyObject *
+_PyObject_GC_Alloc(int use_calloc, size_t basicsize)
+{
+    struct _gc_runtime_state *state = &amp;_PyRuntime.gc;
+    PyObject *op;
+    PyGC_Head *g;
+    size_t size;
+    if (basicsize &gt; PY_SSIZE_T_MAX - sizeof(PyGC_Head))
+        return PyErr_NoMemory();
+    //将对象和PyGC_Head所需内存加起来
+    size = sizeof(PyGC_Head) + basicsize;
+    //为对象本身和PyGC_Head申请内存
+    if (use_calloc)
+        g = (PyGC_Head *)PyObject_Calloc(1, size);
+    else
+        g = (PyGC_Head *)PyObject_Malloc(size);
+    if (g == NULL)
+        return PyErr_NoMemory();
+    //......
+    op = FROM_GC(g);
+    return op;
+}</code></pre><p><strong>因此我们可以很清晰的看到，当Python为可收集的container对象申请内存空间时，为PyGC_Head也申请了空间，并且其位置位于container对象之前。所以对于PyListObject、PyDictObject等container对象的内存分布的推测就应该变成这样。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235256306-326421086.png" alt=""></p>
+<p><strong>在可收集container对象的内存分布中，内存分为三个部分，首先第一块用于垃圾回收机制，然后紧跟着的是Python中所有对象都会有的PyObject_HEAD，最后才是container自身的数据。这里的container对象，既可以是PyDictObject、也可以是PyListObject等等。</strong></p>
+<p><strong>根据PyGC_Head，我们知道里面除了两个建立链表结构的前继指针和后继指针外，还有一个gc_ref，这个成员对垃圾回收的运行直观重要，我们后面会说。</strong></p>
+<p><strong>另外当垃圾回收机制运行期间，我们需要在一个可收集的container对象的PyGC_Head部分和PyObject_HEAD部分之间来回切换。更清楚的说，某些时候，我们持有一个对象A的PyObject_HEAD的地址，但是我们需要根据这个地址来获得PyGC_Head的地址；而且某些时候，我们又需要反过来进行逆运算。而Python提供了两个地址之间的转换算法：</strong></p>
+<pre><code>//Objects/gcmodule.c
+
+#define AS_GC(o) ((PyGC_Head *)(o)-1)//根据PyObject_HEAD得到PyGC_Head
+#define FROM_GC(g) ((PyObject *)(((PyGC_Head *)g)+1))//根据PyGC_Head得到PyObject_HEAD</code></pre><p><strong>我们在PyGC_Head中，出现了用于建立链表的两个指针，只有将创建的可收集container对象链接到Python内部维护的可收集对象链表中，Python的垃圾回收机制才能跟踪和处理这个container对象。但是我们发现，在创建可收集container对象之时，并没有立刻将这个对象链入到链表中。实际上，这个动作是发生在创建某个container对象最后一步，以PyListObject的创建举例。</strong></p>
+<pre><code>//listobject.c
+PyObject *
+PyList_New(Py_ssize_t size)
+{
+    PyListObject *op;
+    //...
+    Py_SIZE(op) = size;
+    op-&gt;allocated = size;
+    //创建PyListObject对象、并设置完属性之后，返回之前
+    //通过这一步_PyObject_GC_TRACK将所创建的container对象链接到了python中的可收集对象链表中
+    _PyObject_GC_TRACK(op);
+    return (PyObject *) op;
+}
+
+
+//Include/internal/pycore_object.h
+#define _PyObject_GC_TRACK(op) \
+    _PyObject_GC_TRACK_impl(__FILE__, __LINE__, _PyObject_CAST(op))
+
+static inline void _PyObject_GC_UNTRACK_impl(const char *filename, int lineno,
+                                             PyObject *op)
+{
+    _PyObject_ASSERT_FROM(op, _PyObject_GC_IS_TRACKED(op),
+                          &quot;object not tracked by the garbage collector&quot;,
+                          filename, lineno, &quot;_PyObject_GC_UNTRACK&quot;);
+
+    PyGC_Head *gc = _Py_AS_GC(op);
+    PyGC_Head *prev = _PyGCHead_PREV(gc);
+    PyGC_Head *next = _PyGCHead_NEXT(gc);
+    _PyGCHead_SET_NEXT(prev, next);
+    _PyGCHead_SET_PREV(next, prev);
+    gc-&gt;_gc_next = 0;
+    gc-&gt;_gc_prev &amp;= _PyGC_PREV_MASK_FINALIZED;
+}</code></pre><p><strong>前面我们说过，Python会将自己的垃圾回收机制限制在其维护的可收集对象链表上，因为所有的循环引用一定是发生这个链表的一群对象之间。在<code>_PyObject_GC_TRACK</code>之后，我们创建的container对象也就置身于Python垃圾回收机制的掌控机制当中了。</strong></p>
+<p><strong>同样的，Python还提供将一个container对象从链表中摘除的方法，显然这个方法应该会在对象被销毁的时候调用。</strong></p>
+<pre><code>//Include/internal/pycore_object.h
+
+#define _PyObject_GC_UNTRACK(op) \
+    _PyObject_GC_UNTRACK_impl(__FILE__, __LINE__, _PyObject_CAST(op))
+
+static inline void _PyObject_GC_UNTRACK_impl(const char *filename, int lineno,
+                                             PyObject *op)
+{
+    _PyObject_ASSERT_FROM(op, _PyObject_GC_IS_TRACKED(op),
+                          &quot;object not tracked by the garbage collector&quot;,
+                          filename, lineno, &quot;_PyObject_GC_UNTRACK&quot;);
+
+    PyGC_Head *gc = _Py_AS_GC(op);
+    PyGC_Head *prev = _PyGCHead_PREV(gc);
+    PyGC_Head *next = _PyGCHead_NEXT(gc);
+    _PyGCHead_SET_NEXT(prev, next);
+    _PyGCHead_SET_PREV(next, prev);
+    gc-&gt;_gc_next = 0;
+    gc-&gt;_gc_prev &amp;= _PyGC_PREV_MASK_FINALIZED;
+}</code></pre><p><strong>很明显，<code>_PyObject_GC_UNTRACK</code>只是<code>_PyObject_GC_TRACK</code>的逆运算而已。就这样，借助 <em>gc_next</em> 和 <em>gc_prev</em> 指针，<em>Python</em> 将需要跟踪的对象一个接一个组织成双向链表。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235304762-358893665.png" alt=""></p>
+<h3 id="分代回收机制"><a href="#分代回收机制" class="headerlink" title="分代回收机制"></a>分代回收机制</h3><p><strong>无论什么语言，写出来的程序都有共同之处，那就是不同对象的声明周期会存在不同。有的对象所占的内存块的生命周期很短，而有的内存块的生命周期则很长，甚至可能从程序的开始持续到程序结束，这两者的比例大概在80~90%。</strong></p>
+<p><strong>这对于垃圾回收机制有着重要的意义，因为我们已经知道，像标记–清除这样的垃圾回收机制所带来的额外操作实际上是和系统中内存块的数量相关，当需要回收的内存块越多的时候，垃圾检测带来的额外操作就越多，相反则越少。因此我们可以采用一种空间换时间的策略，因为目前所有对象都在一个链子上，每当进行垃圾回收机制的时候，都要把所有对象都检查一遍。而其实也有不少比较稳定的对象<code>(在多次垃圾回收的洗礼下能活下来)</code>，我们完全没有必要每次都检查，或者说检查的频率可以降低一些。于是聪明如你已经猜到了，我们再来一根链子不就可以了，把那些认为比较稳定的对象移到另外一条链子上，而新的链子进行垃圾回收的频率会低一些，总之频率不会像初始的链子那么高。</strong></p>
+<p><strong>所以这种思想就是：将系统中的所有内存块根据其存活时间划分为不同的集合，每一个集合就称为一个”代”，垃圾回收的频率随着”代”的存活时间的增大而减小。也就是说，存活的越长的对象就越可能不是垃圾，就越可能是程序中需要一直存在的对象，就应该少去检测它。反正不是垃圾，你检测也是白检测。那么关键的问题来了，这个存活时间是如何被衡量的呢？或者我们说当对象比较稳定的时候的这个稳定是如何衡量的呢？没错，我们上面已经暴露了，就是通过经历了几次垃圾回收动作来评判，如果一个对象经历的垃圾回收次数越多，那么显然其存活时间就越长。因为Python的垃圾回收器，每当条件满足时<code>(至于什么条件我们后面会说)</code>，就会进行一次垃圾回收<code>(注意：不同的代的垃圾回收的频率是不同的)</code>，而每次扫黄的时候你都不在，吭，每次垃圾回收的时候你都能活下来，这就说明你存活的时间更长，或者像我们上面说的更稳定，那么就不应该再把你放在这个链子上了，而是会移动到新的链子上。而在新的链子上，进行垃圾回收的频率会降低，因为既然稳定了，检测就不必那么频繁了，或者说新的链子上触发垃圾回收所需要的时间更长了。</strong></p>
+<p><strong>所以这种思想就是：将系统中的所有内存块根据其存活时间划分为不同的集合，每一个集合就称为一个”代”，垃圾回收的频率随着”代”的存活时间的增大而减小。也就是说，存活的越长的对象就越可能不是垃圾，就越可能是程序中需要一直存在的对象，就应该少去检测它。反正不是垃圾，你检测也是白检测。那么关键的问题来了，这个存活时间是如何被衡量的呢？或者我们说当对象比较稳定的时候的这个稳定是如何衡量的呢？没错，我们上面已经暴露了，就是通过经历了几次垃圾回收动作来评判，如果一个对象经历的垃圾回收次数越多，那么显然其存活时间就越长。因为Python的垃圾回收器，每当条件满足时<code>(至于什么条件我们后面会说)</code>，就会进行一次垃圾回收<code>(注意：不同的代的垃圾回收的频率是不同的)</code>，而每次扫黄的时候你都不在，吭，每次垃圾回收的时候你都能活下来，这就说明你存活的时间更长，或者像我们上面说的更稳定，那么就不应该再把你放在这个链子上了，而是会移动到新的链子上。而在新的链子上，进行垃圾回收的频率会降低，因为既然稳定了，检测就不必那么频繁了，或者说新的链子上触发垃圾回收所需要的时间更长了。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235311117-969693744.png" alt=""></p>
+<p><strong>“代”似乎是一个比较抽象的概念，但在Python中，你就把”代”想象成多个对象组成的集合，或者你把”代”想象成链表也可以，因为这些对象都串在链表上面。而属于同一”代”的内存块都被链接在同一个链表中。而在Python中总共存在三条链表，说明Python中所有的对象总共可以分为三代：零代、一代、二代。一个”代”就是一条我们上面提到的可收集对象链表。而在前面所介绍的链表的基础之上，为了支持分代机制，我们需要的仅仅是一个额外的表头而已。</strong></p>
+<pre><code>//Include/internal/mem.h
+
+#define NUM_GENERATIONS 3
+struct gc_generation {
+    PyGC_Head head;
+    int threshold; //阈值, 触发垃圾回收的条件, 这个值默认是700, 具体含义后面说
+    int count; //该链表中对象的个数
+};
+
+//Objects/gcmodule.c
+#define _GEN_HEAD(n) GEN_HEAD(state, n)
+    struct gc_generation generations[NUM_GENERATIONS] = {
+        /* PyGC_Head,                                    threshold,    count */
+        {{(uintptr_t)_GEN_HEAD(0), (uintptr_t)_GEN_HEAD(0)},   700,        0},
+        {{(uintptr_t)_GEN_HEAD(1), (uintptr_t)_GEN_HEAD(1)},   10,         0},
+        {{(uintptr_t)_GEN_HEAD(2), (uintptr_t)_GEN_HEAD(2)},   10,         0},
+    };
+    for (int i = 0; i &lt; NUM_GENERATIONS; i++) {
+        state-&gt;generations[i] = generations[i];
+    };
+    state-&gt;generation0 = GEN_HEAD(state, 0);
+    struct gc_generation permanent_generation = {
+          {(uintptr_t)&amp;state-&gt;permanent_generation.head,
+           (uintptr_t)&amp;state-&gt;permanent_generation.head}, 0, 0
+    };
+    state-&gt;permanent_generation = permanent_generation;
+}</code></pre><p><strong>上面这个维护了三个gc_generation结构体的数组，控制了三条可收集对象链表，这就是Python中用于分代垃圾收集的三个”代”。</strong></p>
+<p><strong>对于每一个gc_generation，其中的count记录了当前这条可收集对象链表中一共有多少个container对象。而在_PyObject_GC_Alloc中我们可以看到每当分配了内存，就会进行<code>_PyRuntime.gc.generations[0].count++</code>动作，将第0代链表中所维护的内存块数量加1，这预示着所有新创建的container对象实际上都会被加入到0代链表当中，而这一点也确实如此，已经被_PyObject_GC_TRACK证明了。</strong></p>
+<p><strong>当三个”代”初始化完毕之后，对应的gc_generation数据大概是这样的。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235316847-1172293069.png" alt=""></p>
+<p><strong>而gc_generation中的threshold则记录该条可收集对象链表中最多可以容纳多少个可收集对象，从Python的实现代码中，我们知道第0代链表中最多可以容纳700个对象<code>(只可能是container对象)</code>。而一旦第0代链表中的container对象超过了700个这个阈值，那么会立刻触发垃圾回收机制。</strong></p>
+<pre><code>//Objects/gcmodule.c
+static Py_ssize_t
+collect_generations(struct _gc_runtime_state *state)
+{
+    Py_ssize_t n = 0;
+    for (int i = NUM_GENERATIONS-1; i &gt;= 0; i--) {
+        //当count大于threshold的时候，但是这个仅仅针对于0代链表
+        if (state-&gt;generations[i].count &gt; state-&gt;generations[i].threshold) {
+            if (i == NUM_GENERATIONS - 1
+                &amp;&amp; state-&gt;long_lived_pending &lt; state-&gt;long_lived_total / 4)
+                continue;
+            n = collect_with_callback(state, i);
+            break;
+        }
+    }
+    return n;
+}</code></pre><p><strong>这里面虽然写了一个for循环，但是只有当第0代链表的count超过了threshold的时候才会触发垃圾回收，那么1代链表和2代链表触发垃圾回收的条件又是什么呢？当0代链表触发了10次垃圾回收的时候，会触发一次1代链表的垃圾回收。当1代链表触发了10次垃圾回收的时候，会触发一次2代链表的垃圾回收。而一旦经过垃圾回收，那么threshold和count变会重置为初始状态。另外：</strong></p>
+<ul>
+<li><code>在清理1代链表的时候，会顺带清理0代链表</code></li>
+<li><code>在清理2代链表的时候，会顺带清理0代链表和1代链表</code></li>
+</ul>
+<h3 id="Python中的标记–清除"><a href="#Python中的标记–清除" class="headerlink" title="Python中的标记–清除"></a>Python中的标记–清除</h3><p><strong>我们上面说到，当清理1代链表会顺带清理0代链表，总是就是把比自己”代”小的链子也清理了。那么这是怎么做到的呢？其实答案就在<code>gc_list_merge</code>函数中，如果清理的是1代链表，那么在开始垃圾回收之前，Python会将0代链表<code>(比它年轻的)</code>，整个链接到1代链表之后，这样的话在清理1代的时候也会清理0代。</strong></p>
+<pre><code>//Objects/gcmodule.c
+static void
+gc_list_merge(PyGC_Head *from, PyGC_Head *to)
+{
+    assert(from != to);
+    if (!gc_list_is_empty(from)) {
+        PyGC_Head *to_tail = GC_PREV(to);
+        PyGC_Head *from_head = GC_NEXT(from);
+        PyGC_Head *from_tail = GC_PREV(from);
+        assert(from_head != from);
+        assert(from_tail != from);
+
+        _PyGCHead_SET_NEXT(to_tail, from_head);
+        _PyGCHead_SET_PREV(from_head, to_tail);
+
+        _PyGCHead_SET_NEXT(from_tail, to);
+        _PyGCHead_SET_PREV(to, from_tail);
+    }
+    gc_list_init(from);
+}</code></pre><p><strong>以我们举的例子来说的话，那么这里的from就是0代链表，to就是1代链表，所以此后的标记–清除算法就将在merge之后的那一条链表上进行。</strong></p>
+<p><strong>在介绍Python中的标记–清除垃圾回收方法之前，我们需要建立一个循环引用的最简单例子。</strong></p>
+<pre><code>list1 = []
+list2 = []
+
+list1.append(list2)
+list2.append(list1)
+
+# 注意这里多了一个外部引用
+a = list1
+
+list3 = []
+list4 = []
+list3.append(list4)
+list4.append(list3)</code></pre><p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235325462-1737182587.png" alt=""></p>
+<p><strong>上面的数字指的是当前对象的引用计数<code>ob_refcnt</code>的值。</strong></p>
+<h4 id="寻找root-object集合"><a href="#寻找root-object集合" class="headerlink" title="寻找root object集合"></a>寻找root object集合</h4><p><strong>为了使用标记–清除算法，按照我们之前对垃圾收集算法的一般性描述，首先我们需要找到root object，那么在我们上面的那幅图中，哪些是属于root object呢？</strong></p>
+<p><strong>让我们换个角度来思考，前面提到，root object是不能被删除的对象。也就是说，在可收集对象链表的外部存在着某个引用在引用这个对象，删除这个对象会导致错误的行为，那么在我们当前这个例子中只有list1是属于root object的。但这仅仅是观察的结果，那么如何设计一种算法来得到这个结果呢？</strong></p>
+<p><strong>我们注意到这样一个事实，如果两个对象的引用计数都为1，但是仅仅它们之间存在着循环引用，那么这两个对象是需要被回收的，也就是说，尽管它们的引用计数表现为非0，但是实际上有效的引用计数为0。这里，我们提出了有效引用计数的概念，为了从引用计数中获得有效的引用计数，必须将循环引用的影响消除，也就是说，将这个闭环从引用中摘除，而具体的实现就是两个对象各自的引用值都减去1。这样一来，两个对象的引用计数都成为了0，这样我们便挥去了循环引用的迷雾，是有效引用计数出现了真身。那么如何使两个对象的引用计数都减1呢，很简单，假设这两个对象为A和B，那么从A出发，由于它有一个对B的引用，则将B的引用计数减1；然后顺着引用达到B，发现它有一个对A的引用，那么同样会将A的引用减1，这样就完成了循环引用对象间环的删除。</strong></p>
+<blockquote>
+<p><strong>总结一下就是，python会寻找那些具有循环引用的、但是没有被外部引用的对象，并尝试把它们的引用计数都减去1。</strong></p>
+</blockquote>
+<p><strong>但是这样就引出了一个问题，假设可收集对象链表中的container对象A有一个对对象C的引用，而C并不在这个链表中，如果将C的引用计数减去1，而最后A并没有被回收，那么显然，C的引用计数被错误地减少1，这将导致未来的某个时刻对C的引用会出现悬空。这就要求我们必须在A没有被删除的情况下恢复C的引用计数，可是如果采用这样的方案的话，那么维护引用计数的复杂度将成倍增长。换一个角度，其实我们有更好的做法，我们不改动真实的引用计数，而是改动引用计数的副本。对于副本，我们无论做什么样的改动，都不会影响对象生命周期的维护，因为这个副本的唯一作用就是寻找root object集合，而这个副本就是PyGC_Head中的gc.gc_ref。在垃圾回收的第一步，就是遍历可收集对象链表，将每个对象的gc.gc_ref的值设置为其ob_refcnt的值。</strong></p>
+<pre><code>//Objects/gcmodule.c
+static void
+update_refs(PyGC_Head *containers)
+{
+    PyGC_Head *gc = GC_NEXT(containers);
+    for (; gc != containers; gc = GC_NEXT(gc)) {
+        gc_reset_refs(gc, Py_REFCNT(FROM_GC(gc)));
+        _PyObject_ASSERT(FROM_GC(gc), gc_get_refs(gc) != 0);
+    }
+}
+
+//而接下来的动作就是要将环引用从引用中摘除
+static void
+subtract_refs(PyGC_Head *containers)
+{
+    traverseproc traverse;
+    PyGC_Head *gc = GC_NEXT(containers);
+    // 遍历链表每一个对象
+    for (; gc != containers; gc = GC_NEXT(gc)) {
+        // 遍历当前对象所引用的对象，调用visit_decref将它们的引用计数减一
+        PyObject *op = FROM_GC(gc);
+        traverse = Py_TYPE(op)-&gt;tp_traverse;
+        (void) traverse(FROM_GC(gc),
+                       (visitproc)visit_decref,
+                       op);
+    }
+}</code></pre><p><strong>我们注意到里面有一个traverse，这个是和特定的container 对象有关的，在container对象的类型对象中定义。一般来说，traverse的动作就是遍历container对象中的每一个引用，然后对引用进行某种动作，而这个动作在subtract_refs中就是visit_decref，它以一个回调函数的形式传递到traverse操作中。比如：我们来看看PyListObject对象所定义traverse操作。</strong></p>
+<pre><code>//Includeobject.h
+typedef int (*visitproc)(PyObject *, void *);
+typedef int (*traverseproc)(PyObject *, visitproc, void *);
+
+//Objects/listobject.c
+PyTypeObject PyList_Type = {
+    ...
+    (traverseproc)list_traverse,                /* tp_traverse */
+    ...
+};
+
+static int
+list_traverse(PyListObject *o, visitproc visit, void *arg)
+{
+    Py_ssize_t i;
+
+    for (i = Py_SIZE(o); --i &gt;= 0; )
+        //对列表中的每一个元素都进行回调的操作
+        Py_VISIT(o-&gt;ob_item[i]);
+    return 0;
+}
+
+//Objects/gcmodule.c
+static int
+visit_decref(PyObject *op, void *parent)
+{
+    _PyObject_ASSERT(_PyObject_CAST(parent), !_PyObject_IsFreed(op));
+
+    //PyObject_IS_GC判断op指向的对象是不是被垃圾收集监控的
+    if (PyObject_IS_GC(op)) {
+        //获取container对象PyGC_Head
+        PyGC_Head *gc = AS_GC(op);
+        if (gc_is_collecting(gc)) {
+            //减少引用计数
+            gc_decref(gc);
+        }
+    }
+    return 0;
+}</code></pre><p><strong>在完成了subtract_refs之后，可收集对象链表中所有container对象之间的环引用就被摘除了。这时有一些container对象的<code>PyGC_Head.gc_ref</code>还不为0，这就意味着存在对这些对象的外部引用，这些对象就是开始标记–清除算法的root object。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235334247-477657936.png" alt=""></p>
+<p><strong>举个栗子：</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235338000-648413294.png" alt=""></p>
+<p><strong>由于sys.getrefcount函数本身会多一个引用，所以减去1的话，那么都是3。表示它们指向的对象的引用计数为3。所以这个时候a就想到了，除了我，还有两位老铁<code>(list1、list2[0])</code>指向了我指向的内存。</strong></p>
+<h4 id="垃圾标记"><a href="#垃圾标记" class="headerlink" title="垃圾标记"></a>垃圾标记</h4><pre><code>list1 = []
+list2 = []
+
+list1.append(list2)
+list2.append(list1)
+
+# 注意这里多了一个外部引用
+a = list1
+
+list3 = []
+list4 = []
+list3.append(list4)
+list4.append(list3)</code></pre><p><strong>还是以上面为例，假设我们现在执行了删除操作<code>del list1, list2, list3, list4</code>，那么成功地寻找到root object集合之后，我们就可以从root object触发，沿着引用链，一个接一个地标记不能回收的内存。由于root object集合中的对象是不能回收的，因此，被这些对象直接或间接引用的对象也是不能回收的，比如这里的list2，即便del list2，但是因为list1不能回收，而又append了list2，所以list2指向的内存也是不可以释放的。下面在从root object出发前，我们首先需要将现在的内存链表一分为二，一条链表维护root object集合，成为root链表，而另一条链表中维护剩下的对象，成为unreachable链表。之所以要分解成两个链表，是出于这样一种考虑：显然，现在的unreachable链表是名不副实的，因为里面可能存在被root链表中的对象直接或者间接引用的对象，这些对象也是不可以回收的，因此一旦在标记中发现了这样的对象，那么就应该将其从unreachable中移到root链表中；当完成标记之后，unreachable链表中剩下的对象就是名副其实的垃圾对象了，那么接下来的垃圾回收只需要限制在unreachable链表中即可。</strong></p>
+<p><strong>为此Python专门准备了一条名为unreachable的链表，通过move_unreachable函数完成了对原始链表的切分。</strong></p>
+<pre><code>//Objects/gcmodule.c
+static void
+move_unreachable(PyGC_Head *young, PyGC_Head *unreachable)
+{
+    PyGC_Head *prev = young;
+    PyGC_Head *gc = GC_NEXT(young);
+
+    // 遍历链表每个对象
+    while (gc != young) {
+        //如果是root object
+        if (gc_get_refs(gc)) {
+            PyObject *op = FROM_GC(gc);
+            traverseproc traverse = Py_TYPE(op)-&gt;tp_traverse;
+            // 将它标记为可达
+            _PyObject_ASSERT_WITH_MSG(op, gc_get_refs(gc) &gt; 0,
+                                      &quot;refcount is too small&quot;);
+            // 遍历被它引用的对象，调用visit_reachable将被引用对象标记为可达
+            (void) traverse(op,
+                    (visitproc)visit_reachable,
+                    (void *)young);
+            _PyGCHead_SET_PREV(gc, prev);
+            gc_clear_collecting(gc);
+            prev = gc;
+        }
+        else {
+            //对于非root object，移到unreachable链表中
+            prev-&gt;_gc_next = gc-&gt;_gc_next;
+            PyGC_Head *last = GC_PREV(unreachable);
+            last-&gt;_gc_next = (NEXT_MASK_UNREACHABLE | (uintptr_t)gc);
+            _PyGCHead_SET_PREV(gc, last);
+            gc-&gt;_gc_next = (NEXT_MASK_UNREACHABLE | (uintptr_t)unreachable);
+            unreachable-&gt;_gc_prev = (uintptr_t)gc;
+        }
+        gc = (PyGC_Head*)prev-&gt;_gc_next;
+    }
+    young-&gt;_gc_prev = (uintptr_t)prev;
+}</code></pre><p><strong>如果一个对象可达，<em>Python</em> 还通过 <em>tp_traverse</em> 逐个遍历它引用的对象，并调用 <em>visit_reachable</em> 函数进行标记：</strong></p>
+<pre><code>static int
+visit_reachable(PyObject *op, PyGC_Head *reachable)
+{
+    if (!PyObject_IS_GC(op)) {
+        return 0;
+    }
+
+    PyGC_Head *gc = AS_GC(op);
+    const Py_ssize_t gc_refs = gc_get_refs(gc);
+
+    // 忽略掉1代和2代、以及没有被gc跟踪的对象
+    if (gc-&gt;_gc_next == 0 || !gc_is_collecting(gc)) {
+        return 0;
+    }
+
+    if (gc-&gt;_gc_next &amp; NEXT_MASK_UNREACHABLE) {
+        //对于已经被挪到unreachable链表中的对象，将其再次挪动到原来的链表
+        PyGC_Head *prev = GC_PREV(gc);
+        PyGC_Head *next = (PyGC_Head*)(gc-&gt;_gc_next &amp; ~NEXT_MASK_UNREACHABLE);
+        _PyObject_ASSERT(FROM_GC(prev),
+                         prev-&gt;_gc_next &amp; NEXT_MASK_UNREACHABLE);
+        _PyObject_ASSERT(FROM_GC(next),
+                         next-&gt;_gc_next &amp; NEXT_MASK_UNREACHABLE);
+        prev-&gt;_gc_next = gc-&gt;_gc_next;  // copy NEXT_MASK_UNREACHABLE
+        _PyGCHead_SET_PREV(next, prev);
+
+        gc_list_append(gc, reachable);
+        gc_set_refs(gc, 1);
+    }
+    else if (gc_refs == 0) {
+        //对于还没有处理的对象，恢复其gc_refs
+        gc_set_refs(gc, 1);
+    }
+    else {
+        _PyObject_ASSERT_WITH_MSG(op, gc_refs &gt; 0, &quot;refcount is too small&quot;);
+    }
+    return 0;
+}</code></pre><p><strong>总结一下就是：如果被引用的对象引用计数为 <em>0</em> ，将它的引用计数设为 <em>1</em> ，之后它将被 <em>move_unreachable</em> 遍历到并设为可达；如果被引用的对象被临时移入 <em>unreachable</em> 链表，同样将它的引用计数设为 <em>1</em> ，并从 <em>unreachable</em> 链表移回原链表尾部，之后它将被 <em>move_unreachable</em> 遍历到并设为可达。</strong></p>
+<p><strong>当 <em>move_unreachable</em> 完成之后，最初的一条链表就被切分成了两条链表，在 <em>unreachable</em> 链表中，就是我们发现的垃圾对象，是垃圾回收的目标。但是等一等，在 <em>unreachable</em> 链表中，所有的对象都可以安全回收吗？其实，垃圾回收在清理对象的时候，默认是会清理的，但是一旦当我们定义了函数<code>__del__</code>，那么在清理对象的时候就会调用这个<code>__del__</code>方法，因此也叫析构函数，这是Python为开发人员提供的在对象被销毁时进行某些资源释放的Hook机制。在Python3中，即使我们重写了也没事，因为Python会把含有<code>__del__</code>函数的 <em>PyInstanceObject</em> 对象都统统移动到一个名为garbage的 <em>PyListObject</em> 对象中。</strong></p>
+<h4 id="垃圾回收"><a href="#垃圾回收" class="headerlink" title="垃圾回收"></a>垃圾回收</h4><p><strong>要回收unreachable链表中的垃圾对象，就必须先打破对象间的循环引用，前面我们已经阐述了如何打破循环引用的办法，下面来看看具体的销毁过程。</strong></p>
+<pre><code>//Objects/gcmodule.c
+static inline int
+gc_list_is_empty(PyGC_Head *list)
+{
+    return (list-&gt;_gc_next == (uintptr_t)list);
+}
+
+
+static void
+delete_garbage(struct _gc_runtime_state *state,
+               PyGC_Head *collectable, PyGC_Head *old)
+{
+    assert(!PyErr_Occurred());
+
+    while (!gc_list_is_empty(collectable)) {
+        PyGC_Head *gc = GC_NEXT(collectable);
+        PyObject *op = FROM_GC(gc);
+
+        _PyObject_ASSERT_WITH_MSG(op, Py_REFCNT(op) &gt; 0,
+                                  &quot;refcount is too small&quot;);
+
+        if (state-&gt;debug &amp; DEBUG_SAVEALL) {
+            assert(state-&gt;garbage != NULL);
+            if (PyList_Append(state-&gt;garbage, op) &lt; 0) {
+                PyErr_Clear();
+            }
+        }
+        else {
+            inquiry clear;
+            if ((clear = Py_TYPE(op)-&gt;tp_clear) != NULL) {
+                Py_INCREF(op);
+                (void) clear(op);
+                if (PyErr_Occurred()) {
+                    _PyErr_WriteUnraisableMsg(&quot;in tp_clear of&quot;,
+                                              (PyObject*)Py_TYPE(op));
+                }
+                Py_DECREF(op);
+            }
+        }
+        if (GC_NEXT(collectable) == gc) {
+            /* object is still alive, move it, it may die later */
+            gc_list_move(gc, old);
+        }
+    }
+}</code></pre><p><strong>其中会调用container对象的类型对象中的tp_clear操作，这个操作会调整container对象中引用的对象的引用计数值，从而打破完成循环的最终目标。还是以PyListObject为例：</strong></p>
+<pre><code>//listobject.c
+static int
+_list_clear(PyListObject *a)
+{
+    Py_ssize_t i;
+    PyObject **item = a-&gt;ob_item;
+    if (item != NULL) {
+        i = Py_SIZE(a);
+        //将ob_size调整为0
+        Py_SIZE(a) = 0;
+        //ob_item是一个二级指针，本来指向一个数组的指针
+        //现在指向为NULL
+        a-&gt;ob_item = NULL;
+        //容量也设置为0
+        a-&gt;allocated = 0;
+        while (--i &gt;= 0) {
+            //数组里面元素也全部减少引用计数
+            Py_XDECREF(item[i]);
+        }
+        //释放数组
+        PyMem_FREE(item);
+    }
+    return 0;
+}</code></pre><p><strong>我们注意到，在delete_garbage中，有一些unreachable链表中的对象会被重新送回到reachable链表<code>(即delete_garbage的old参数)</code>中，这是由于进行clear动作时，如果成功进行，通常一个对象会把自己从垃圾回收机制维护的链表中摘除<code>(也就是这里的collectable链表)</code>。由于某些原因，对象可能在clear动作时，没有成功完成必要的动作，从而没有将自己从collectable链表摘除，这表示对象认为自己还不能被销毁，所以Python需要讲这种对象放回到reachable链表中。</strong></p>
+<p><strong>然后我们知道当对象被销毁时，肯定要调用析构函数，我们在上面看到了_list_clear，假设是调用了list3的_list_clear，那么不好意思，接下来是要调用list4的析构函数。因为list3和list4存在循环引用，所以调用了list3的_list_clear会减少list4的引用计数。由于这两位老铁都被删除了，还惺惺相惜赖在内存里面不走，所以将list4的引用计数减少1之后，只能归于湮灭了，然后会调用其list_dealloc，注意：这时候调用的是list4的list_dealloc。</strong></p>
+<pre><code>//listobjct.c
+static void
+list_dealloc(PyListObject *op)
+{
+    Py_ssize_t i;
+    //从可收集链表中移除
+    PyObject_GC_UnTrack(op);
+    Py_TRASHCAN_BEGIN(op)
+    if (op-&gt;ob_item != NULL) {
+        //依次遍历，减少内部元素的引用计数
+        i = Py_SIZE(op);
+        while (--i &gt;= 0) {
+            Py_XDECREF(op-&gt;ob_item[i]);
+        }
+        //释放内存
+        PyMem_FREE(op-&gt;ob_item);
+    }
+    //缓冲池机制
+    if (numfree &lt; PyList_MAXFREELIST &amp;&amp; PyList_CheckExact(op))
+        free_list[numfree++] = op;
+    else
+        Py_TYPE(op)-&gt;tp_free((PyObject *)op);
+    Py_TRASHCAN_END(op)
+}</code></pre><p><strong>我们知道调用list3的_list_clear，减少内部元素引用计数的时候，导致list4引用计数为0。而一旦list4的引用计数为0，那么是不是也要执行和list3一样的_list_clear动作呢？然后会发现list3的引用计数也为0了，因此list3也会被销毁。循环引用，彼此共生，销毁之路，怎能独自前行？最终list3和list4都会执行内部的list_dealloc，释放内部元素，调整参数，当然还有所谓的缓冲池机制等等。总之如此一来，list3和list4就都被安全地回收了，准确的说是指向的对象被回收了。</strong></p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p><strong>虽然有很多对象挂在垃圾收集机制监控的链表上，但是很多时候是引用计数在维护这些对象，只有引用计数无能为力的循环引用，垃圾收集机制才会起到作用。这里没有把引用计数看成垃圾回收，当然如果别人问你Python的垃圾回收机制的时候，你也可以把引用计数机制加上。事实上，如果不是循环引用的话，那么垃圾回收是不会出马的，因为挂在垃圾回收机制上的对象都是引用计数不为0的，如果为0早被引用计数机制干掉了。而引用计数不为0的情况只有两种：一种是被程序使用的对象，二是循环引用中的对象。被程序使用的对象是不能被回收的，所以垃圾回收只能处理那些循环引用的对象。</strong></p>
+<blockquote>
+<p><strong>所以python的垃圾回收就是：引用计数为主，分代回收为辅，两者结合使用，后者主要是为了弥补前者的缺点而存在的。</strong></p>
+</blockquote>
+<h2 id="python中的gc模块"><a href="#python中的gc模块" class="headerlink" title="python中的gc模块"></a>python中的gc模块</h2><p><strong>这个gc模块，底层就是gcmodule，我们说这些模块底层是用c写的，当python编译好时，就内嵌在解释器里面了。我们可以导入它，但是在Python安装目录上看不到。</strong></p>
+<p><strong>gc.enable：开启垃圾回收</strong></p>
+<p><strong>这个函数表示开启垃圾回收机制，默认是自动开启的。</strong></p>
+<p><strong>gc.disable：关闭垃圾回收</strong></p>
+<pre><code>import gc
+
+
+class A:
+    pass
+
+
+# 关掉gc
+gc.disable()
+
+
+while True:
+    a1 = A()
+    a2 = A()
+    # 此时内部出现了循环引用
+    a1.__dict__[&quot;attr&quot;] = a2
+    a2.__dict__[&quot;attr&quot;] = a1
+
+    # 由于循环引用，此时是del a1, a2，光靠引用计数是删不掉的
+    # 需要垃圾回收，但是我们给关闭了
+    del a1, a2</code></pre><p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235354251-564121521.png" alt=""></p>
+<p><strong>无限循环，并且每次循环都会创建新的对象，最终导致内存无限增大。</strong></p>
+<pre><code>import gc
+
+
+class A:
+    pass
+
+
+# 关掉gc
+gc.disable()
+
+
+while True:
+    a1 = A()
+    a2 = A()</code></pre><p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235358278-1038967713.png" alt=""></p>
+<p><strong>这里即使我们关闭了gc，但是每一次循环都会指向一个新的对象，而之前的对象由于没有人指向了，那么引用计数为0，直接就被引用计数机制干掉了，内存会一直稳定，不会出现增长。所以我们看到，即使关闭了gc，但是对于那些引用计数为0的，该删除还是会删除的。所以引用计数很简单，就是按照对应的规则该加1加1，该减1减1，一旦为0直接销毁。而当出现循环引用的时候，才需要gc闪亮登场。这里关闭了gc，但是没有循环引用所以没事，而上一个例子，关闭了gc，但是出现了循环引用，而引用计数机制只会根据引用计数来判断，而发现引用计数不为0，所以就一直傻傻地不回收，程序又一直创建新的对象，最终导致内存越用越多。而上一个例子若是开启了gc，那么分代回收技术，就会通过标记–清除的方式将产生循环引用的对象的引用计数减1，而引用计数机制发现引用计数为0了，那么就会将对象回收掉。所以这个引用计数机制到底算不算垃圾回收机制的一种呢？你要说算吧，我把gc关闭了，引用计数机制还可以发挥作用，你要说不算吧，它确实是负责判定对象是否应该被回收的唯一标准，所以该怎么说就具体看情况吧。</strong></p>
+<p><strong>gc.isenabled()：判断gc是否开启</strong></p>
+<pre><code>import gc
+
+
+print(gc.isenabled())  # True
+gc.disable() 
+print(gc.isenabled())  # False</code></pre><p><strong>gc.collect()：立刻触发垃圾回收</strong></p>
+<p><strong>我们说，垃圾回收触发是需要条件的，比如0代链表，清理零代链表的时候，需要对象的个数count大于阈值threshold<code>(默认是700)</code>，但是这个函数可以强制触发垃圾回收。</strong></p>
+<p><strong>gc.get_threshold()：返回每一代的阈值</strong></p>
+<pre><code>import gc
+
+
+print(gc.get_threshold())  # (700, 10, 10)
+# 700：零代链表的对象超过700个，触发垃圾回收
+# 10：零代链表，垃圾回收10次，会清理一代链表
+# 10：一代链表，垃圾回收10次，会清理二代链表</code></pre><p><strong>gc.set_threshold()：设置每一代的阈值</strong></p>
+<pre><code>import gc
+
+
+gc.set_threshold(1000, 100, 100)
+print(gc.get_threshold())  # (1000, 100, 100)</code></pre><p><strong>gc.get_count()：查看每一代的值达到了多少</strong></p>
+<pre><code>import gc
+
+
+print(gc.get_count())  # (44, 7, 5)</code></pre><p><strong>gc.get_stats()：返回每一代的具体信息</strong></p>
+<pre><code>from pprint import pprint
+import gc
+
+
+pprint(gc.get_stats())
+&quot;&quot;&quot;
+[{&apos;collected&apos;: 316, &apos;collections&apos;: 62, &apos;uncollectable&apos;: 0},
+ {&apos;collected&apos;: 538, &apos;collections&apos;: 5, &apos;uncollectable&apos;: 0},
+ {&apos;collected&apos;: 0, &apos;collections&apos;: 0, &apos;uncollectable&apos;: 0}]
+&quot;&quot;&quot;</code></pre><p><strong>gc.get_objects()：返回被垃圾回收器追踪的所有对象，一个列表</strong></p>
+<p><strong>gc.is_tracked(obj)：查看对象obj是否被垃圾收集器追踪</strong></p>
+<pre><code>import gc
+
+
+a = 1
+b = []
+
+print(gc.is_tracked(a))  # False
+print(gc.is_tracked(b))  # True
+
+# 我们说只有那些可能会产生循环引用的对象才会被垃圾回收器跟踪</code></pre><p><strong>gc.get_referrers(obj)：回所有引用了obj的对象</strong></p>
+<p><strong>gc.get_referents(obj)：返回所有被obj引用了的对象</strong></p>
+<p><strong>gc.freeze()：冻结所有被垃圾回收器跟踪的对象并在以后的垃圾回收中不被处理</strong></p>
+<p><strong>gc.unfreeze()：取消所有冻结的对象，让它们继续参数垃圾回收</strong></p>
+<p><strong>gc.get_freeze_count()：获取冻结的对象个数</strong></p>
+<pre><code>import gc
+
+
+# 不需要参数，会自动找到被垃圾回收器跟踪的对象
+gc.freeze()
+# 说明有很多内置对象在被跟踪，被我们冻结了
+print(gc.get_freeze_count())  # 24397
+
+b = []
+gc.freeze()
+# 只要这里比上面多1个就行
+print(gc.get_freeze_count())  # 24398
+
+# 取消冻结
+gc.unfreeze()
+print(gc.get_freeze_count())  # 0</code></pre><p><strong>gc.get_debug()：获取debug级别</strong></p>
+<pre><code>import gc
+
+
+print(gc.get_debug())  # 0</code></pre><p><strong>gc.set_debug()：设置debug级别</strong></p>
+<pre><code>import gc
+
+
+&quot;&quot;&quot;
+DEBUG_STATS - 在垃圾收集过程中打印所有统计信息
+DEBUG_COLLECTABLE - 打印发现的可收集对象
+DEBUG_UNCOLLECTABLE - 打印unreachable对象(除了uncollectable对象)
+DEBUG_SAVEALL - 将对象保存到gc.garbage(一个列表)里面，而不是释放它
+DEBUG_LEAK - 对内存泄漏的程序进行debug (everything but STATS).
+
+&quot;&quot;&quot;
+class A:
+    pass
+
+
+class B:
+    pass
+
+
+a = A()
+b = B()
+
+gc.set_debug(gc.DEBUG_STATS | gc.DEBUG_SAVEALL)
+print(gc.garbage)  # []
+a.b = b
+b.a = a
+del a, b
+gc.collect()  # 强制触发垃圾回收
+# 下面都是自动打印的
+&quot;&quot;&quot;
+gc: collecting generation 2...
+gc: objects in each generation: 123 3732 20563
+gc: objects in permanent generation: 0
+gc: done, 4 unreachable, 0 uncollectable, 0.0000s elapsed
+gc: collecting generation 2...
+gc: objects in each generation: 0 0 24249
+gc: objects in permanent generation: 0
+gc: done, 0 unreachable, 0 uncollectable, 0.0150s elapsed
+gc: collecting generation 2...
+gc: objects in each generation: 525 0 23752
+gc: objects in permanent generation: 0
+gc: done, 7062 unreachable, 0 uncollectable, 0.0000s elapsed
+gc: collecting generation 2...
+gc: objects in each generation: 0 0 21941
+gc: objects in permanent generation: 0
+gc: done, 4572 unreachable, 0 uncollectable, 0.0000s elapsed
+&quot;&quot;&quot;
+print(gc.garbage)
+&quot;&quot;&quot;
+[&lt;__main__.A object at 0x0000020CFDB50250&gt;, 
+&lt;__main__.B object at 0x0000020CFDB50340&gt;, 
+{&apos;b&apos;: &lt;__main__.B object at 0x0000020CFDB50340&gt;},
+{&apos;a&apos;: &lt;__main__.A object at 0x0000020CFDB50250&gt;}]
+&quot;&quot;&quot;</code></pre><h2 id="总结-1"><a href="#总结-1" class="headerlink" title="总结"></a>总结</h2><p><strong>尽管Python采用了最经典的<code>(最土的)</code>的引用计数来作为自动内存管理的方案，但是Python采用了多种方式来弥补引用计数的不足，内存池的大量使用，标记–清除<code>(分代技术采用的去除循环引用的引用计数的方式)</code>垃圾收集技术都极大地完善了Python的内存管理<code>(包括申请、回收)</code>机制。尽管引用计数机制需要花费额外的开销来维护引用计数，但是现在这个年代，这点内存算个啥。而且引用计数也有好处，不然早就随着时代的前进而被扫进历史的垃圾堆里面了。首先引用计数真的很方便，很直观，对于很多对象引用计数能够直接解决，不需要什么复杂的操作；另外引用计数将垃圾回收的开销分摊在了整个运行时，这对于Python的响应是有好处的。</strong></p>
+<p><strong>当然内存管理和垃圾回收是一门给常精细和繁琐的技术，有兴趣的话各位可以自己大刀阔斧的冲进Python的源码中自由翱翔。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200919235159608-835280971.png" alt=""></p>
+<p>posted @ 2020-09-19 23:55  <a href="https://www.cnblogs.com/traditional/" target="_blank" rel="noopener">古明地盆</a>  阅读(378)  评论(4)  <a href="https://i.cnblogs.com/EditPosts.aspx?postid=13698244" target="_blank" rel="noopener">编辑</a>  <a href="https://www.cnblogs.com/traditional/p/13698244.html" target="_blank" rel="noopener">收藏</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-1025/" rel="prev" title="《深度剖析CPython解释器》29. 源码解密 map、filter、zip 底层实现，对比列表解析式 - 古明地盆 - 博客园">
+      <i class="fa fa-chevron-left"></i> 《深度剖析CPython解释器》29. 源码解密 map、filter、zip 底层实现，对比列表解析式 - 古明地盆 - 博客园
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-1027/" rel="next" title="《深度剖析CPython解释器》31. Python 和 C / C++ 联合编程 - 古明地盆 - 博客园">
+      《深度剖析CPython解释器》31. Python 和 C / C++ 联合编程 - 古明地盆 - 博客园 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#《深度剖析CPython解释器》28-Python内存管理与垃圾回收-第二部分-：源码解密Python中的垃圾回收机制-古明地盆-博客园"><span class="nav-number"></span> <span class="nav-text">《深度剖析CPython解释器》28. Python内存管理与垃圾回收(第二部分)：源码解密Python中的垃圾回收机制 - 古明地盆 - 博客园</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#《深度剖析CPython解释器》28-Python内存管理与垃圾回收-第二部分-：源码解密Python中的垃圾回收机制"><span class="nav-number"></span> <span class="nav-text">《深度剖析CPython解释器》28. Python内存管理与垃圾回收(第二部分)：源码解密Python中的垃圾回收机制</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#楔子"><span class="nav-number"></span> <span class="nav-text">楔子</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#引用计数"><span class="nav-number"></span> <span class="nav-text">引用计数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三色标记模型之标记–清除"><span class="nav-number"></span> <span class="nav-text">三色标记模型之标记–清除</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Python中的垃圾回收"><span class="nav-number"></span> <span class="nav-text">Python中的垃圾回收</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#可收集对象链表"><span class="nav-number">1.</span> <span class="nav-text">可收集对象链表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分代回收机制"><span class="nav-number">2.</span> <span class="nav-text">分代回收机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Python中的标记–清除"><span class="nav-number">3.</span> <span class="nav-text">Python中的标记–清除</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#寻找root-object集合"><span class="nav-number">3.1.</span> <span class="nav-text">寻找root object集合</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#垃圾标记"><span class="nav-number">3.2.</span> <span class="nav-text">垃圾标记</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#垃圾回收"><span class="nav-number">3.3.</span> <span class="nav-text">垃圾回收</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#python中的gc模块"><span class="nav-number"></span> <span class="nav-text">python中的gc模块</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结-1"><span class="nav-number"></span> <span class="nav-text">总结</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

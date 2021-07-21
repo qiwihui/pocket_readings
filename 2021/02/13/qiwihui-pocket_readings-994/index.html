@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="简单聊聊编程语言的哲学，以及关于 Rust 的一些想法 (1)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="简单聊聊编程语言的哲学，以及关于 Rust 的一些想法 (1)">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/02/13/qiwihui-pocket_readings-994/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="简单聊聊编程语言的哲学，以及关于 Rust 的一些想法 (1)">
+<meta property="article:published_time" content="2021-02-13T00:21:34.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.438Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/02/13/qiwihui-pocket_readings-994/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>简单聊聊编程语言的哲学，以及关于 Rust 的一些想法 (1) | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/02/13/qiwihui-pocket_readings-994/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          简单聊聊编程语言的哲学，以及关于 Rust 的一些想法 (1)
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-02-13 00:21:34" itemprop="dateCreated datePublished" datetime="2021-02-13T00:21:34+00:00">2021-02-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">简单聊聊编程语言的哲学，以及关于 Rust 的一些想法 (1)</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#24863;&#35273;&#36825;&#26679;&#19979;&#21435;&#30495;&#30340;&#19981;&#34892;&#65292;&#22914;&#26524;&#27599;&#27425;&#21160;&#31508;&#37117;&#26159;&#36215;&#30721;&#20116;&#21315;&#23383;&mdash;&mdash;&#24847;&#21619;&#30528;&#22909;&#20960;&#22825;&#30340;&#20840;&#22825;&#20505;&#26080;&#20241;&#30721;&#23383;&#12289;&#21344;&#29992;&#20102;&#25152;&#26377;&#30340;&#31354;&#38386;&#26102;&#38388;&#12289;&#23548;&#33268;&#38271;&#20037;&#30340;&#30524;&#30555;&#37240;&#30140;&#30340;&#35805;&#65292;&#24456;&#24555;&#23601;&#35201;&#20007;&#22833;&#26356;&#26032;&#21338;&#25991;&#30340;&#21160;&#21147;&#20102;&hellip;&hellip; &#128549;&#128549;&#128549;<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/3aZ57uN" target="_blank" rel="noopener">https://ift.tt/3aZ57uN</a> original site<br><br><br><br>February 13, 2021 at 07:36AM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/994#issuecomment-778525989" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>2/13/2021</strong></p>
+</blockquote>
+<h2 id="简单聊聊编程语言的哲学，以及关于-Rust-的一些想法-1-by-nagisakaworu17"><a href="#简单聊聊编程语言的哲学，以及关于-Rust-的一些想法-1-by-nagisakaworu17" class="headerlink" title="简单聊聊编程语言的哲学，以及关于 Rust 的一些想法 (1) by @nagisakaworu17"></a>简单聊聊编程语言的哲学，以及关于 Rust 的一些想法 (1) by @nagisakaworu17</h2><div><div><span>2021-02-12发表</span><span><a href="https://ray-eldath.me/categories/programming/" target="_blank" rel="noopener">programming</a></span><span>约8482字</span></div></div><h1>简单聊聊编程语言的哲学，以及关于 Rust 的一些想法 (1)</h1><div><blockquote><p>本文是一篇「小作品」。</p><p>草，写着写着发现越写越长，<strong>一点也不「小」嘛。</strong></p><p>感觉这样下去真的不行，如果每次动笔都是起码五千字——意味着好几天的全天候无休码字、占用了所有的空闲时间、导致长久的眼睛酸疼的话，很快就要丧失更新博文的动力了…… 😥😥😥</p><p>我应该<strong>真的</strong>尝试一下<strong>「小」</strong>作品的体例才是。</p></blockquote><p>我的长期TODO列表里已经躺着五六篇以“博文”开头的条目——原本想着寒假一周一篇很快就能写完，然而到现在也没动笔。爆肝填坑了一个星期，今天实在有点累，不大想打开 RustLion，于是把这篇坑了很久的文章写一写。</p><blockquote><p>在这几篇坑了这么久的文章中其实有一篇已经写了前半部分了，然而咕了太久后半部分要写什么都有点不大记得，于是只能前功尽弃…… 😥😥</p></blockquote><p>本文的主要内容是从<strong>我个人的经验</strong>出发，简单聊聊对于 Rust 的一些想法和体会。我会尽量避开诸如 “文档质量良好”、“很有特点” 这类宽泛的概括，而尽量将自己在使用 Rust 编程的过程中感受到的一些特别之处、尤其是和此前经历的不同之处拿来说说。我期望如此行文能使得本文对无论是 Rust 初学者、还是仍在观望的开发者甚至是 Rust 老手们都能带来一定启发。</p><p>本文将主要按这些体会主要关注的语言侧面组织，每一点之间的内容基本独立，我将尽量涉及从语言哲学到线程安全的实现细节等多个方面和层次的内容。</p><p>由于篇幅原因，本文将分截为两到三篇文章发出。其实原本不想写这么多……. 😥😥😥 以下是文章内容的粗略概要（很可能有变动）：</p><ol><li>编程语言的哲学</li><li>Rust: “be explicit”</li><li>复杂性<ol><li>“子语言”</li><li>并发和线程安全</li></ol></li><li>第一部分：主要引述来源</li><li>继承 V.S. 组合：另一种思维方式</li><li>Typeclass 和 mod</li><li>元编程和宏系统</li><li>结语：“language adopted to fill a niche”</li><li>第二部分：主要引述来源</li></ol><p>本文将包含以上概要的第一到三部分。其实原本真的真的不想写这么多……. 😥😥😥😥😥😥</p><p><span>&nbsp; Cover image by&nbsp;&nbsp;<a href="https://ray-eldath.me/programming/thoughts-on-rust-1/" target="_blank" rel="noopener">かざり</a> &nbsp;on&nbsp;&nbsp;<a href="https://ray-eldath.me/programming/thoughts-on-rust-1/" target="_blank" rel="noopener">Twitter</a>.</span></p><h2>编程语言的哲学</h2><p>一直以来我都认为，一门计算机语言的<strong>哲学</strong>对语言多个方面的特性都有着非常重要的影响，理解语言的设计哲学对理解语言<em>为何如此</em>有着重要的意义。比如，个人认为：</p><ul><li><p><strong>Java / JVM：打造大规模企业级程序的首选平台</strong></p><p>这一定程度上解释了 Java 选择较重的运行时（因而免除了手动内存管理的麻烦），并且为了在具有较重运行时的前提下同时达到企业级程序要求的 “处理大量数据时的性能开销仍然可以忍受”，Oracle 在 JVM JIT 以及GC的设计和实现上投入很大。Zing VM 拥有目前市面上性能最强的GC器之一（据<a href="https://www.zhihu.com/question/42353634/answer/94460053" target="_blank" rel="noopener">此处</a>，Zing VM 的 C4 可以在管理高达2TB堆内存、外加10TB堆外内存时仍然保持 5ms 以内的并发GC停顿），而新近出现的几个Hotspot GC 器（Shenandoah、ZGC）的工作表现同样相当不错（Grammerly 报告工作在生产环境的 Shenandoah 在 10k req/s 的 QPS 和 60GB 的堆内存下仍然具有 &lt;10ms 的GC停顿（hicuup），见<a href="http://clojure-goes-fast.com/blog/shenandoah-in-production/" target="_blank" rel="noopener">此处</a>）。另一方面，据 Mark Reinhold 所述，Hotspot JVM “目前70%-80%的工作都是在C2（第二级JIT）上”，大量研究表明经过深度JIT优化的字节码可以达到和原生代码同等、甚至更高的效率（GraalJS 是使用 Java 实现的 JavaScript 运行时，它工作在为高效执行跨多个语言的应用而特别设计的虚拟机 GraalVM 上，近期有报告指出深度优化后的 GraalJS 可达到<em>优于</em> V8 的执行效率（参见<a href="https://github.com/oracle/graaljs/issues/74" target="_blank" rel="noopener">此处</a>），这个结果还是蛮搞笑的……）。</p><p>重要的一点观察是，<em>通过较重的运行时，开发人员可以将注意力更好地集中在业务本身，而非各种内存管理策略带来的、通常是令人气馁的复杂性和安全问题。</em>据<a href="https://twitter.com/LeaKissner/status/1357018426494001152/photo/2" target="_blank" rel="noopener">此引文</a>，尽管业界已在大量静态分析和动态检查工具（如 <a href="http://cppcheck.sourceforge.net/" target="_blank" rel="noopener">Cppcheck</a>、<a href="https://valgrind.org/info/tools.html#memcheck" target="_blank" rel="noopener">Valgrind Memcheck</a> 等）上花费了数亿美元，并付出了同样艰苦的努力制定编程规范并培训程序员们，每年仍然有超过70%的软件漏洞（CVE）与内存安全问题有关。从这个角度上来说，<em>托管语言（managed language）</em>天生地比<em>非托管语言（unmanaged language）</em>更好地适合大多数的应用场景——在这些场景下，开发人员生产代码仅仅是为了解决常规的业务问题，有关代码优化、大内存管理等等细节，交由较重的运行时、进而转嫁给专门处理这些复杂方面的虚拟机专家们就好了吧。</p><p>在这个问题上，Rust 选择了一条独特的道路：它通过严格的编译规则和精心设计的标准库达成了通过编译器强制保证的内存安全性——如此既没有内存不安全的风险，又没有运行时的性能开销。然而，这样的设计加重了程序员的心智负担，并带来了主要的复杂度——对于编译器和编程人员皆是如此——和“比较陌生的方面”，而这样的复杂度和我们通常所说的 “复杂” （Scala 式的 “复杂”）之间存在一定区别，这点会在下文中展开来讲。</p></li></ul><ul><li><p><strong>Scala：用最少的特性，做最强的语言</strong></p><p>Scala 是一门编译到 JVM 字节码的多范式语言。在所有工业级编程语言中，Scala 以其惊人的复杂度和优雅程度而著称。个人认为，Scala 在考虑语言设计时的重要方面是更加重视特性之间的 “联动”：如果能通过<em>几个</em>更加基本的特性来实现<em>一个</em>需要的特性，Scala 会优先选择更好地支持这几个小特性，而不是为了某一个常见的编程 idiom “开近道” ——这样的语言设计有时能够获得非常好的“联动”效果，因为几个小特性各种各样的组合方式通常比几条近道能表达更多的东西，当然也要复杂得多。一个非常好的例子是 Scala 中的枚举：大多数语言中的枚举（如 Java、Kotlin、C# 等）都是作为一个特殊的语法（<code>enum class</code>）来实现，它由编译器负责展开；然而 Scala 通过两个更加基本的特性（类型别名和继承）实现了枚举这一特性，并未在语法层面提供任何特殊支持。相似的例子还有类型标识符由类型投影这一个<em>小特性</em>实现，而类型投影又和结构化类型发生“联动”最终产生了类型 lambda 这一堪称神奇的特性。</p><p>简单展示一下这个神奇的存在，通过 typeclass 范式为 Map 类型实现 map 函数：</p><table><tbody><tr><td><pre><span>1</span><br><span>2</span><br><span>3</span><br><span>4</span><br><span>5</span><br><span>6</span><br></pre></td><td><pre><span><span>implicit</span> <span><span>class</span> <span>MapFunctor</span>[<span>K</span>, <span>V1</span>](<span>mapV1: <span>Map</span>[<span>K</span>, <span>V1</span>]</span>)</span></span><br><span><span>    <span>extends</span> <span>Functor</span>[<span>V1</span>, ({type λ[α] </span>= <span>Map</span>[<span>K</span>, α]})#λ] {</span><br><span>        <span><span>def</span> <span>map</span></span>[<span>V2</span>](f: <span>V1</span> =&gt; <span>V2</span>): <span>Map</span>[<span>K</span>, <span>V2</span>] = mapV1 map {</span><br><span>            <span>case</span> (k, v) =&gt; (k, f(v))</span><br><span>        }</span><br><span>    }</span><br></pre></td></tr></tbody></table><p>看到那串 <code>λ</code>、<code>α</code> 了吗？<em>这，就是 Scala。</em></p><p>不过这串代码依然给我一种非常优雅的感觉。目前能让我感觉十分优雅的还是只有Scala（和 Ruby？）……</p><blockquote><p>一直没有机会拿来写点复杂项目啥的，其实感觉都要忘光了…… 哭哭</p><p>算了，等 Scala 3 用起来了再完全重学吧（（（（</p></blockquote></li></ul><ul><li><p><strong>Ruby：极致的脚本语言</strong></p><p>Ruby 的许多特性强烈地偏向对脚本语言的良好支持。在我看来几乎从任何一个可以想象的方面来说 Ruby 都要比 Python 更加合适作为脚本语言的<em>默认选择</em>…… 比如 Ruby 支持任意地方法覆写，你甚至可以覆写在 <code>Int</code> 中定义的 <code>+</code> 方法从而立刻把REPL给崩掉… 比如 Ruby 非常好地普及了守护（guard）的使用，从而使得大量的 idiom 有了 one-liner；比如这是一门动态类型语言，编译器只会阻止很少的事情；比如 Ruby 简洁的闭包语法（事实上 Rust 中的闭包语法正是沿袭自 Ruby）、do 语句以及对各种常用集合操作的良好支持，使得以闭包作为参数的标准库API基本可以替代循环；比如各种高度动态的语言特性和内省（introspect）机制。良好和高度动态的设计使得 Ruby 不仅适合编写各种 <em>dirty but works</em> 脚本，同样也适合工业的快速成型。</p><blockquote><p>希望 Python 早日凉透。（光速逃</p></blockquote></li></ul><h2>Rust: “be explicit”</h2><p>Rust 一点重要的设计考虑，在于 <strong>be explicit</strong>。或许是看到了 C++ 长期坚持在各种问题上走隐式优先的策略如今吃了太多苦头（比如隐式类型转换一向以来被视作是 “bug 的一大来源”，甚至还有 <code>std::string str = 12;</code> 这种毒瘤写法…… 而且似乎删除函数也没帮上什么忙（😒 ）于是 Rust 选择了要求程序员明确指明绝大部分<em>转换</em>的写法——即 <strong>“be explicit”</strong>。作为一门侧重在受限资源环境下尽量保持极低性能消耗的语言，Rust 要求对资源的创建必须显式声明。这一点首先以 Rust 中全局采用移动语义（move semantics）和严格的引用/借用检查器为基础，再通过标准库中的的一些 trait（Typeclass 式的）强制资源创建的显式声明。最为代表性的例子自然是 <code>to_owned</code>：</p><table><tbody><tr><td><pre><span>1</span><br><span>2</span><br></pre></td><td><pre><span><span>let</span> <span>str</span>: &amp;<span>str</span> = <span>"Hello"</span>;</span><br><span><span>let</span> <span>str</span>: <span>String</span> = <span>str</span>.to_owned();</span><br></pre></td></tr></tbody></table><p><code>str</code> 类型作为编码在二进制文件中的字符串，其类型显然应为这一串二进制字符串的一个 slice（即 <code>&amp;str</code>）。它不在堆上占据空间，而仅仅是一个指向文件中某一段的指针；自然而然，对一个指针执行<em>字符串拼接</em>是不可能的——于是在 Rust 中，连续地拼接字符串不仅语法繁琐，而且还需要对语言有一定的熟悉：</p><table><tbody><tr><td><pre><span>1</span><br><span>2</span><br><span>3</span><br><span>4</span><br><span>5</span><br><span>6</span><br></pre></td><td><pre><span><span>let</span> s1 = <span>"hello"</span>;</span><br><span><span>let</span> s2 = <span>" "</span>.to_owned();</span><br><span><span>let</span> s3 = <span>"world"</span>;</span><br><span>    </span><br><span><span>let</span> concat = s1.to_owned() + &amp;s2 + s3;</span><br><span><span>println!</span>(<span>"{} {} {} -&gt; {}"</span>, s1, &amp;s2, s3, concat);</span><br></pre></td></tr></tbody></table><p>Rust 要求在各种引用、分配内存时显式声明，这使得程序员更加<em>关心</em>引用的传递以及资源的消耗：以程序员的更高心智负担为代价，Rust 不断提醒着程序员注意资源分配，通过语法的冗长督促提醒程序员尽量减低资源使用。</p><p>Rust 同样具有一些程度的<em>隐式（implicit</em> ，注意不是 Scala 语境下的那个 implicit）：如通过 <code>Copy</code> trait 实现隐式的复制语义、解引用强制多态（deref coercions）等。Rust 谨慎控制了这些<em>隐式</em>的适用范围，前者仅适用于少数复制成本极低的内建类型（而如 <code>String</code> 一类有较高潜在复制成本的类型则需要通过 <code>Clone</code> trait 显式指定和调用；<code>Clone</code> 和 <code>Copy</code> 的分立是 Rust 在 <em>be explicit 哲学</em> 和 <em>语言易用性</em> 之间取得的良好折衷），后者则仅适用于函数和方法传参。</p><p>有时候，复杂的分配声明、引用和解引用转换会导致冗长难读的代码。Rust 通过一些标准库 trait 部分缓解了这一负担，并通过宏（macro）系统（下文会更深入地涉及）为一些常见范式提供了全兼容的写法，将这一负担转嫁到宏的实现中。比如，众所周知，大家都不喜欢用 <code>+</code> 做字符串拼接，*in Rust, we use <code>format!</code>*：</p><table><tbody><tr><td><pre><span>1</span><br><span>2</span><br><span>3</span><br><span>4</span><br><span>5</span><br><span>6</span><br></pre></td><td><pre><span><span>let</span> s1 = <span>"hello"</span>;</span><br><span><span>let</span> s2 = <span>" "</span>.to_owned();</span><br><span><span>let</span> s3 = <span>"world"</span>;</span><br><span>    </span><br><span><span>let</span> concat = <span>format!</span>(<span>"{}{}{}"</span>, s1, s2, s3);</span><br><span><span>println!</span>(<span>"{} {} {} -&gt; {}"</span>, s1, &amp;s2, s3, concat);</span><br></pre></td></tr></tbody></table><p>这一点哲学，是 Rust 的首创吗？我想不是。写到这里，我在想，是不是所有与ML系（或者说 Haskell 系？）语言的元素（如 Typeclass、ADT through datatype + pattern matching with exhaustiveness checking 等）有强烈关联的语言都更加倾向于 <em>be explicit</em>。Rust 如此；Haskell 如此；C++ 20 的一个失败的 concept 的设计草案（被称为 Indiana Concept）同样如此（我觉得这个草案被否决某种上是因为在一门本来鼓励<em>隐式</em>的语言中去推行 <em>be explicit</em> 只会导致如 <code>late_check</code> 这样明显权宜之计的简陋方案，即是说 Typeclass 式的哲学与 C++ 本身的哲学并不契合是导致 Indiana Concept 未能取得成功的重要原因）；SML 做得还要更绝，它甚至不允许对实数进行判等，因为这样的判等本身<em>隐含</em>了一种对精度的约省。</p><p>这样一簇语言设计思路为什么都走向了 <em>be explicit</em> 这一哲学？这一哲学是<strong>必然隐含</strong>在人们通常界定的 “ML味”（即：带类型推导和参数化多态（但没有子类型多态）的静态类型系统，即 Hindley-Milner 类型系统；<code>datatype</code> 支持的 ADT 以及模式匹配（pattern matching）和解构句法；一个模块<em>子语言</em>，它提供了巧妙的隐藏机制且某种程度上正是一种 Typeclass 范式的实现（关于这点可能会另写一篇文章简单说说），即人们常说的 <em>ML module system</em>）中的吗？还是说，这仅仅是同一帮人带着同样的思想和哲学反复参与到各种语言及语言草案的设计中？</p><blockquote><p>比如说，Dan Grossman 就说：<em>comparing real numbers with <code>==</code> is a really bad idea.</em></p><p>然而我其实觉得还好……</p><p>其实如果正确规定浮点数的判等（比如说，$a-b = \delta &lt; \epsilon ;=10^{-5}$）并在文档中广而告之这一默认行为，或者强制要求程序员在执行浮点数判等时必须指定 $\epsilon$（指定采用 “默认值” 也算指定），可能会是一个解决方案…</p><p>然而有没有人买账呢。:-(</p><p>其实老实说，在我个人的编码工作中是极少遇见浮点数的。或许根据众所周知的编程语言设计原则让那些罕见的操作（比如浮点数判等）<em>繁琐但精确</em>会不会是一个不错的选择？🤔</p></blockquote><h2>复杂性</h2><p>我想大家应该都会同意，Rust 是一门<em>复杂</em>的语言。但是 Ruaaast 的复杂性并不在于这一门语言<em>表达力多么惊人、程序员能够接触到多少新的特性、进而将此前多少无法简洁表达的抽象统统实现</em>，而是在于 Rust （出于各种权衡）引入的独特所有权和线程安全机制将大大挑战程序员以往的思维——或者说，Rust 带来的主要的复杂度和陌生之处，并不用于向程序员的工具箱中增添多少强力的工具（事实上，个人认为，很大程度上 Rust 的表达力并未显著超出ML系语言的一般水平，详见下文），而是用于解决<em>很多其它语言中并不存在</em>的问题。</p><p>Rust 具有复杂的类型系统。在 Rust 中，不仅值和引用（以及和引用的引用，引用的引用的引用，…）不是同一个类型，不符合生命周期约束的引用，同样不是同一个类型，不匹配的传参将会被编译器拒绝（生命周期 “匹配” 的规则，能不能看作是生命周期的 subtyping…？比如，<code>&amp;'static</code> 总能符合各种生命周期约束）。</p><h3>“子语言”</h3><p>借用知名PLT大V千里冰封在某次技术分享中的话语，那就是<strong>和绝大部分计算机语言一样，Rust 同样也是由很多门<em>子语言</em>组成的。</strong>简单列举一下，我们可以得到：</p><ul><li><strong>表达式子语言</strong>规定了表达式（<code>expr</code>）的<em>句法、类型检查规则和执行规则</em>（这三点其实是 Dan Grossman 在课程 <em>Programming Languages</em> 中提出的：<em>syntax, type-checking rules, evaluation</em>）。<br>重要的一点观察是，<em>很多语言都有表达式子语言</em>，或者说<em>没有语言没有表达式子语言</em>。对于子语言的拆解有重要的一些考虑，详见下文。</li></ul><ul><li><strong>模块（mod）子语言</strong>指明相对独立的命名空间相互暴露和引用的方式。众所周知，这在 Rust 中是通过 mod 的引用（<code>use</code>）来实现的。</li></ul><ul><li><p><strong>多态子语言</strong>（注意，此处的「多态」指 polymorphism，即 “参数化多态”、“子类型多态” 意义上的多态，而非 Java 语境下的那一种多态（对于 Java 语境下常被提及的多态，我想更多地应该是指<em>动态分发 dynamic dispatch</em>）…）为语言提供了一种表达力，它使得同一段代码能够应用于各种不同的类型。向这些类型施加限制（并转化为相对于这段代码而言的 “已知条件”）的方式、语法和规则，由这门子语言指定。C++ 中采用的<em>模板</em>，即所谓的 <em>特设多态 ad-hoc polymorphism</em>（Bjarne 本人似乎喜欢把这个叫做 <em>“泛型编程 generic programming”</em>，但为了避免和 Java 式的那种<em>泛型</em>混淆我们还是称多态好了（然而 “多态” 也容易和那种 Java 式的那种多态（实际上是 <em>动态分发 dynamic dispatch</em>）搞混嘛（（（（😒 所以最终结论是 Java 的广泛流行对各种术语的界定真是后患无穷（（（（ （光速逃🤯 ）、Rust 和 Java 存有一定近似（别打我）的<em>泛型</em>系统（尤其是在<em>约束</em>这一层次上）、ML系语言中的参数化多态（<code>'a</code>），皆属此项。</p><p>Rust 的<em>多态子语言</em>基本通过基于 trait 的<em>可加和 context bound</em> 施加限制（e.g. <code>T: Clone + Debug</code>），这在 Java 中可以通过基于 interface 的 bounded type paremeter 近似达成（e.g. <code>T extends A &amp; B</code>）。个人认为在这一层次上 Java、Scala、Kotlin、C# 一类的语言由于具有<em>子类型化（subtyping）</em>要更加复杂，它们需要处理诸如逆变和协变（还有<em>存在类型 existential type</em>）一类复杂的问题（并导致大量微妙的设计差异，比如 Java 的<em>定义处类型变异</em>和 Kotlin 的<em>声明处类型变异</em>，显然后者是更优解）甚至有时候还有数组协变这样的难搞历史包袱。</p><blockquote><p>其实这段有点扯淡…… 因为 Rust、Haskell、Scala 式的 Typeclass 原语允许一个新增的类型实现（分别通过 impl 块、<em>隐式转换 implicit conversion</em>、instance 块）某一个预先定义的 typeclass（虽然这些语言中一般都会 <em>孤儿规则 orphan rule</em> 限制这样的 “实现” 的适用范围），而以 Java 为代表的一类语言中的 interface 其实是不具有这种能力的。</p><blockquote><p>这其实是对著名的 <em>表达式问题 Expression Problem</em> 的解的探讨…… 某种程度上个人认为 typeclass 其实是对这个问题一个很好的解，关于这个问题以及不同语言（Haskell、Scala、Rust；C#、Kotlin；Ruby）的不同解法（Typeclass；扩展函数；mixin）有空在以后的博文中再聊. 😋</p></blockquote></blockquote><p>另一方面，Rust 有一些它需要关心的特殊问题。由于 Rust 中对象创建时的内存分配由编译器完成，Rust 引入了 marker trait <code>Sized</code>，它指明被标记的类型的大小在编译期可确定（这是程序能够通过编译的重要条件），并默认所有的类型（除非特殊声明）均是 <code>Sized</code> 的。</p><p>Rust 实现这一点的方式是，向语言中引入了新的语法 <code>unsafe auto trait</code>。当一个 marker trait 被声明为 auto 时，编译器会自动为所有类型实现该 marker trait ——除了预先指定的那些反例，如 <code>impl !Trait for Type</code>。综合来看，这一套语法要求编译器为反例<em>之外</em>的<em>所有</em>类型自动生成对某一 marker trait 的实现。</p><p>为了使一些 context bound 能够适用于<strong>非</strong> <code>Sized</code> 的类型，Rust 又引入了语法 <code>?Sized</code>。当它出现在一个 context bound 中（如 <code>T: ?Sized</code>）时，表明限制该类型（<code>T</code>）为 <em><code>Sized</code> 或非 <code>Sized</code></em> 的。（某种程度上 <code>?Sized</code> （而非 <code>T</code>）才表示 Rust 中的 “所有类型” ？）</p><p>下文将要提到的 <code>Send</code> 和 <code>Sync</code> 也是通过这样的方法实现的。</p><p><em>个人认为，问题在于</em>（花了超多时间和笔墨讲前面的这几点可却仅仅是个铺垫…… 超级累啊 😣😣 ），这一部分语言设计并不算好。表观的定性认识是，Rust 专为一些基本可以说是 <em>实现细节</em> 的东西专门提出了几条语法，并且将这几条语法的适用范围牢牢限制在它们之所以被发明出来的那一部分——即是说，这一部分语言设计，<em>几乎不可能</em>与语言的其它部分产生联动，而良好的特性联动无疑是语言设计上佳的重要标志。另一方面，出于类型系统完备性（soundness）等各种各样的考虑，这些 auto trait 在语言各个层面上的工作方式（比如，supertrait，模式匹配等）均和一般 trait 存在差异——这与良好语言设计的另一个标志，即 <em>“创造尽量少的特例”</em> 相悖。个人的认识是，这些 auto trait 是贯穿 Rust 语言的几个深“洞”，它们要求语言各处为它们制定独一无二的规则，并且将这些规则<em>牢牢限制</em>在它们本身。</p><p>除此以外，由于 <code>?Sized</code> 肩负着 “所有类型” （存疑？） 的职责，这一<em>极其局限</em>的语法在大量代码中均有出现（比如标准库、<code>tokio</code>、一些第三方集合库，等等）。将一个常见且重要的职责赋予一条怪异、适用性低、并不直观的语法，长久以来提高了初学者的理解负担（“依赖里头突然看到了个这个，它到底是什么意思啊？”），并使人们不断提出这样的问题：<em>为什么这三条语法不能广而推之？</em>于是我们看到有关 negative bounds 的语言设计提案（RFC）和讨论被不断提出，语言设计者们不厌其烦地解释为什么这是个坏主意，以及为何更加细致考虑的特性（如 specilization）才是正途。</p><blockquote><p>其实无论如何，<code>Sized</code> 都是一个只有 Rust 才会面临的特殊的难题——正如上文所述，这部分复杂度是为了解决一个其它语言中并不存在的问题。这部分设计，将原本就是泛型的意义强行嵌入到某一个 trait 中（“<code>T</code> 不就是所有类型吗？为什么还要造一个 <code>T: ?Sized</code> 呢？”），无论如何，这个问题难以优雅地解决。</p></blockquote></li><li><p><strong>生命周期子语言</strong>是 Rust 中极为特殊的一部分：同样，它也是为了解决其它语言中并不存在的问题。Rust 要求在 <em>结构体 struct</em>——注意，Rust 的<em>结构体</em> <strong>完全不是</strong> C / C++ 中的结构体——中出现的引用必须具有<em>生命周期标记</em>，语法借用了泛型中类型参数的语法：</p><table><tbody><tr><td><pre><span>1</span><br><span>2</span><br><span>3</span><br><span>4</span><br><span>5</span><br></pre></td><td><pre><span><span><span>struct</span> <span>BorrowedPoint</span></span>&lt;<span>'a</span>&gt; {</span><br><span>    name: &amp;<span>'a</span> <span>str</span>,</span><br><span>    x: &amp;<span>'a</span> <span>i32</span>,</span><br><span>    y: &amp;<span>'a</span> <span>i32</span>,</span><br><span>}</span><br></pre></td></tr></tbody></table><table><tbody><tr><td><pre><span>1</span><br><span>2</span><br><span>3</span><br></pre></td><td><pre><span><span><span>fn</span> <span>print_multi</span></span>&lt;<span>'a</span>, <span>'b</span>&gt;(x: &amp;<span>'a</span> <span>i32</span>, y: &amp;<span>'b</span> <span>i32</span>) {</span><br><span>    <span>println!</span>(<span>"`print_multi`: x is {}, y is {}"</span>, x, y);</span><br><span>}</span><br></pre></td></tr></tbody></table><p>尽管 Rust 已经实现了各种各样的生命周期推导规则和尽量复杂的生命周期分析（称作 <em>non-lexical lifetimes</em>），很多时候仍然需要程序员手动标明生命周期标记。对于结构体的生命周期标记尤其让人头疼：<em>带引用的结构体</em> 的生命周期标记是强制要求的，不能省略；而一个结构体上的标记会扩散到整个代码库中，即便对于能够自动推断得出的生命周期，也要使用生命周期标记省略语法 <code>BorrowedPoint&lt;'_&gt;</code> 注明。这使得相关的重构要更加复杂。</p><p>我仍旧相当惧怕在结构体中使用引用。很多时候，我并不能确切得出一个结构体<em>到底是否</em>适合包含引用的结论<strong>（这方面是否有一些指导原则和官方文档？）</strong>，而贸然执行重构得来的是大规模的编译错误、繁琐的修正，有时最终又发现并不适合使用引用——典型的情况是在跨越线程边界时。</p><p>在很多情况下（个人经验是以 <em>带引用的结构体</em> 为主）仍然需要手工标注生命周期，而这一点仍然、并持续带来显著的心智负担。</p><blockquote><p>自然要问的问题是，仅靠对程序的 <em>静态分析 static analysis</em>，我们能够将程序中每一个引用的生命周期分析到什么地步？即是说，Rust 的生命周期推导本身、以及类型系统和生命周期系统的配合，是否还有更加完善以更进一步降低程序员心智负担的可能？</p></blockquote><p>我仍然相当盼望不再强制带引用的结构体必须带生命周期标记的那一天。</p><p>除此以外，生命周期的<em>继承</em>机制（如：<code>'a : 'b</code>）和一些特殊生命周期（<code>&amp;'static</code> 和 <code>T: &amp;'static</code> ——注意，<strong>尽管两者语法极其相似，但语义却有重要差异</strong>，这是初学者容易犯的一个常见错误）的存在使这一部分的语言更加复杂和难以理解。</p><p>以上所有，在 Rust 的多种生命周期传递方式（函数/方法参数、结构体、闭包捕获等）各异的局限下，创造出多处特例，使得它的工作方式更加难以归纳和掌握。</p></li></ul><blockquote><p>可以看得出来，某种程度上本段对冰冰的 “子语言” 观点（不要打我）仅仅是作名词意义上的借用——和基于 PLT 研究风格的分析不同，本段的这种拆分与其说是在语言研究上有着什么启发性意义，不如说仅仅是将一门语言分块来说会更加方便而已。关于他的这部分观点的更多内容，详见文末 “主要引述来源”。</p></blockquote><h3>并发和线程安全</h3><p>我真的好累，眼睛还疼学校里还没有人喜欢我 😥😥😥，所以这个部分只能简单写写算了。</p><p>在一门没有运行时的语言里实现易用的并发是有挑战性的——特别是<em>线程安全</em>的并发。Rust 通过向标准库中引入几个设计精巧的 API —— <code>Sync</code>、<code>Send</code>、<code>Pin</code> 等——较好地解决了这个问题。Rust 一个重要的并发库 <a href="https://tokio.rs/" target="_blank" rel="noopener">tokio</a> 生态完整（包括基本<em>协程</em>支持、同步原语（<em>信号量 semaphore</em>、<em>通道 channel</em>）、流式并发、网络和网络包解析、结构化日志等等）、文档质量优异（事实上 tokio 的教程是我所了解过的开源项目中质量最高的之一 🤩），一定程度上简化了在 Rust 中实现线程安全并发的困难。</p><p>从一般工程实践上看，在 Rust 中编写良好的线程安全并发，需要了解的包括：</p><ul><li>一些基本的同步原语：<em>信号量 semaphore</em>、<em>通道 channel</em>、<em>互斥锁 <code>Mutex</code><em>、</em>读写锁 <code>RwLock</code></em> 等</li><li>一些 Rust 特有的、为保证线程安全而特别设计的 auto marker trait： <code>Sync</code> 和 <code>Send</code></li><li>一些 Rust 标准库 trait 和相关机制存在的必要性及用途：<code>Pin</code> / <code>Unpin</code>、<code>Box::pin</code>、<code>tokio::pin</code></li><li>特殊生命周期 <code>&amp;'static</code> 以及 <code>T: &amp;'static</code> 的含义（尤其是这两者<em>如何不同</em>）</li><li>以及一些智能指针（其存在的必要性和局限，横向的比较，性能开销等等）：<code>Box</code>、<code>Rc</code>、<code>Arc</code>、<code>RefCell</code></li></ul><blockquote><p>小问题：</p><table><tbody><tr><td><pre><span>1</span><br><span>2</span><br><span>3</span><br></pre></td><td><pre><span><span><span>type</span> <span>MessageStream</span></span> = StreamMap&lt;<span>String</span>, Pin&lt;<span>Box</span>&lt;<span>dyn</span> Stream&lt;Item=Arc&lt;PUBLISH&gt;&gt; + <span>Send</span>&gt;&gt;&gt;;</span><br><span><span><span>type</span> <span>Publishers</span></span> = <span>Box</span>&lt;<span>dyn</span> PublisherRepository + <span>Sync</span> + <span>Send</span>&gt;;</span><br><span><span><span>type</span> <span>SyncSessionManager</span></span> = RwLock&lt;SessionManager&gt;;</span><br></pre></td></tr></tbody></table><p><em>试解释以上类型别名中各个 API 出现之用途？</em></p></blockquote><p>除此以外，如果需要深入理解 Rust 并发的实现原理，还需要了解 <code>Futuer</code> / <code>Waker</code>、<code>Scheduler</code> 等。个人体会是并发库中各种并发操作的实现，由于 <code>Future</code> / <code>Waker</code> 范式本身固有的复杂性和理解难度以及惯用实现风格的原因，相关代码并不好读；这点在研究 <code>poll</code> 簇并发操作等方面时会带来一些困难。</p><p>在任何编程语言中实现线程安全的并发都需要细致的设计考虑和复杂的工程实现。Rust 社区呈现出如此完全的生态和易用程度，足以为开发人员和软件生产带来良好的体验，并为其它编程语言的设计带来重要启发。</p><h2>第一部分：主要引述来源</h2><p>以下简单列出本部分文章主要引述资料的来源。有一部分引文已在原文中以超链接形式给出，故在此处略去。</p><ul><li>《Scala 程序设计语言 (第二版)》；Dean Wampler, Alex Payne 著 王渊，陈明 译；人民邮电出版社，2016</li><li>Stroustrup, B. (2020). Thriving in a crowded and changing world: C++ 2006–2020. <em>Proceedings of the ACM on Programming Languages</em>, <em>4</em>(HOPL), 1-168.</li><li>rust-lang/rfcs#1210 - specialization <a href="https://github.com/rust-lang/rfcs/blob/master/text/1210-impl-specialization.md" target="_blank" rel="noopener">https://github.com/rust-lang/rfcs/blob/master/text/1210-impl-specialization.md</a></li><li>《当我们在谈论编程语言的时候我们在谈论什么》，千里冰冰 <a href="https://ice1000.org/plct/0" target="_blank" rel="noopener">https://ice1000.org/plct/0</a></li><li><a href="https://github.com/Ray-Eldath/Telesteller/blob/master/src/server.rs" target="_blank" rel="noopener">https://github.com/Ray-Eldath/Telesteller/blob/master/src/server.rs</a></li><li><em>Programming Languages, Part A</em>. Dan Grossman. <a href="https://www.coursera.org/learn/programming-languages" target="_blank" rel="noopener">https://www.coursera.org/learn/programming-languages</a></li><li><em>Programming Languages, Part C</em>. Dan Grossman. <a href="https://www.coursera.org/learn/programming-languages-part-c" target="_blank" rel="noopener">https://www.coursera.org/learn/programming-languages-part-c</a></li><li>MacQueen, D., Harper, R., &amp; Reppy, J. (2020). The history of Standard ML. <em>Proceedings of the ACM on Programming Languages</em>, <em>4</em>(HOPL), 1-100.</li></ul><p>本文就这么<strong>多</strong>。感觉其实没讲什么很有意思的东西。。。。然而我真是要累死了 😑😑</p><p>希望还有机会写完本文。祝大家新年 <strong>Ruaaaaaaaaa</strong>st 愉快！</p><p><em>&lt;全文完&gt;</em></p></div><div><div><p>简单聊聊编程语言的哲学，以及关于 Rust 的一些想法 (1)</p><p><a href="https://ray-eldath.me/programming/thoughts-on-rust-1/" target="_blank" rel="noopener">https://ray-eldath.me/programming/thoughts-on-rust-1/</a></p></div><div><div><div><div>作者<p>Ray Eldath</p></div></div><div><div>发布于<p>2021-02-12</p></div></div><div><div>更新于<p>2021-02-12</p></div></div><div><div>许可协议<p><a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener"></a></p></div></div></div></div></div><div><span>#</span><a href="https://ray-eldath.me/tags/Rust/" target="_blank" rel="noopener">Rust</a><a href="https://ray-eldath.me/tags/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/" target="_blank" rel="noopener">编程语言</a></div><div></div>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/12/qiwihui-pocket_readings-993/" rel="prev" title="创新者异闻录（1/7）——多旋翼无人机历史与大疆">
+      <i class="fa fa-chevron-left"></i> 创新者异闻录（1/7）——多旋翼无人机历史与大疆
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/13/qiwihui-pocket_readings-995/" rel="next" title="
+
+
+惊了，数据库原来还可以这样实现秒级扩容？ ">
+      
+
+
+惊了，数据库原来还可以这样实现秒级扩容？  <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#简单聊聊编程语言的哲学，以及关于-Rust-的一些想法-1-by-nagisakaworu17"><span class="nav-number"></span> <span class="nav-text">简单聊聊编程语言的哲学，以及关于 Rust 的一些想法 (1) by @nagisakaworu17</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#"><span class="nav-number"></span> <span class="nav-text">简单聊聊编程语言的哲学，以及关于 Rust 的一些想法 (1)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#"><span class="nav-number"></span> <span class="nav-text">编程语言的哲学</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#"><span class="nav-number"></span> <span class="nav-text">Rust: “be explicit”</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#"><span class="nav-number"></span> <span class="nav-text">复杂性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#"><span class="nav-number">1.</span> <span class="nav-text">“子语言”</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#"><span class="nav-number">2.</span> <span class="nav-text">并发和线程安全</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#"><span class="nav-number"></span> <span class="nav-text">第一部分：主要引述来源</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

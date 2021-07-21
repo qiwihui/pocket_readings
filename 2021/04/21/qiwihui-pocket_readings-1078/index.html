@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="SSL 指纹识别和绕过">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SSL 指纹识别和绕过">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/04/21/qiwihui-pocket_readings-1078/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="SSL 指纹识别和绕过">
+<meta property="og:image" content="https://i.loli.net/2021/04/18/ByxNragtR3qXKmU.png">
+<meta property="og:image" content="https://i.loli.net/2021/04/18/b2CQqe63MGXpuzf.png">
+<meta property="og:image" content="https://i.loli.net/2021/04/18/nzjr5AERTbxCchy.png">
+<meta property="og:image" content="https://i.loli.net/2021/04/18/peRodkDJPr8WsCE.png">
+<meta property="og:image" content="https://i.loli.net/2021/04/18/vnoILAQ51xPkFdY.png">
+<meta property="og:image" content="https://i.loli.net/2021/04/18/bpUPtHhm79rCs2f.png">
+<meta property="og:image" content="https://i.loli.net/2021/04/18/UbFOmfK4QSelPYH.png">
+<meta property="og:image" content="https://i.loli.net/2021/04/18/OWrIsabRYSx9EZc.png">
+<meta property="og:image" content="https://i.loli.net/2021/04/18/UhM9rkGIgRJ5cTY.png">
+<meta property="og:image" content="https://i.loli.net/2021/04/18/SQR1NPzBc74FlnT.png">
+<meta property="article:published_time" content="2021-04-21T04:21:04.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.426Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.loli.net/2021/04/18/ByxNragtR3qXKmU.png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/04/21/qiwihui-pocket_readings-1078/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>SSL 指纹识别和绕过 | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/04/21/qiwihui-pocket_readings-1078/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          SSL 指纹识别和绕过
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-04-21 04:21:04" itemprop="dateCreated datePublished" datetime="2021-04-21T04:21:04+00:00">2021-04-21</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">SSL 指纹识别和绕过</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#20043;&#21069;&#25630;&#26576;&#20010;&#32593;&#31449;&#21457;&#29616;&#20351;&#29992;&#19981;&#21516;&#23458;&#25143;&#31471;&#21457;&#36215;&#35831;&#27714;&#20250;&#26377;&#19981;&#21516;&#30340;&#21709;&#24212;&#32467;&#26524;&#65292;&#23601;&#24456;&#31070;&#22855; Python 403 Burp 200? &#20808;&#30475;&#20004;&#20010;&#19981;&#21516;&#23458;&#25143;&#31471;&#21457;&#36215;&#30340;&#35831;&#27714;&#32467;&#26524; Burp Python3 Requests &#21516;&#26679;&#30340;&#35831;&#27714;&#22797;&#21046;&#21040;python3&#20013;&#29992;requests&#21457;&#21253;:</p>
+<div data-spm="1998410538&lt;br&gt; &lt;br&gt; Tags: security&lt;br&gt; &lt;br&gt; via Pocket https://ift.tt/3v7r4Ap original site&lt;br&gt; &lt;br&gt; April 21, 2021 at 10:42AM"></div>
+
+
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1078#issuecomment-823765618" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>4/21/2021</strong></p>
+</blockquote>
+<h2 id="SSL-指纹识别和绕过-by-AresX"><a href="#SSL-指纹识别和绕过-by-AresX" class="headerlink" title="SSL 指纹识别和绕过 by AresX"></a>SSL 指纹识别和绕过 by AresX</h2><p>SSL Fingerprint and Bypass</p>
+<h1 id="SSL-Fingerprint-and-Bypass"><a href="#SSL-Fingerprint-and-Bypass" class="headerlink" title="SSL Fingerprint and Bypass"></a>SSL Fingerprint and Bypass</h1><p>之前搞某个网站发现使用不同客户端发起请求会有不同的响应结果，就很神奇</p>
+<h1 id="Python-403-Burp-200"><a href="#Python-403-Burp-200" class="headerlink" title="Python 403 Burp 200?"></a>Python 403 Burp 200?</h1><p>先看两个不同客户端发起的请求结果</p>
+<h2 id="Burp"><a href="#Burp" class="headerlink" title="Burp"></a>Burp</h2><p><img src="https://i.loli.net/2021/04/18/ByxNragtR3qXKmU.png" alt="image-20210417230416894"></p>
+<h2 id="Python3-Requests"><a href="#Python3-Requests" class="headerlink" title="Python3 Requests"></a>Python3 Requests</h2><p>同样的请求复制到python3中用requests发包:</p>
+<pre><code>&lt;body data-spm=&quot;7663354&quot;&gt;
+  &lt;div data-spm=&quot;1998410538&quot;&gt;
+    &lt;div class=&quot;header&quot;&gt;
+      &lt;div class=&quot;container&quot;&gt;
+        &lt;div class=&quot;message&quot;&gt;
+          很抱歉，由于您访问的URL有可能对网站造成安全威胁，您的访问被阻断。
+          &lt;div&gt;您的请求ID是: &lt;strong&gt;
+276aedd416186716424122798e3951&lt;/strong&gt;&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;main&quot;&gt;
+      &lt;div class=&quot;container&quot;&gt;</code></pre><p>一样的请求地址一样的参数一样的http header，burp发送的请求正常响应，python发送的被waf拦截，curl模拟请求也被拦截</p>
+<p>waf 是阿里云的waf，dig域名也能看出来 ，cname 解析到了<code>xxx.yundunwaf3.com</code></p>
+<p>多地ping发现并没有cdn，不是cdnwaf</p>
+<blockquote>
+<p>其实第一种解决方法已经出来了，直接ping域名获取真实ip，request直接请求ip地址，在Header中指定Host即可绕过waf的弱智拦截</p>
+</blockquote>
+<p>网上搜了一下相关内容</p>
+<p><img src="https://i.loli.net/2021/04/18/b2CQqe63MGXpuzf.png" alt="image-20210418010259647"></p>
+<p>本来以为是ua的问题，后来更换了ua发现并没有什么卵用</p>
+<p>问了问朋友，说python的tls握手有特征</p>
+<p>在网上搜了一下，发现确实有很多类似的问题</p>
+<ul>
+<li><a href="https://stackoverflow.com/questions/60407057/python-requests-being-fingerprinted" target="_blank" rel="noopener">https://stackoverflow.com/questions/60407057/python-requests-being-fingerprinted</a></li>
+<li><a href="https://stackoverflow.com/questions/64967706/python-requests-https-code-403-without-but-code-200-when-using-burpsuite" target="_blank" rel="noopener">https://stackoverflow.com/questions/64967706/python-requests-https-code-403-without-but-code-200-when-using-burpsuite</a></li>
+<li><a href="https://stackoverflow.com/questions/63343106/how-to-avoid-request-fingerprinted-in-python" target="_blank" rel="noopener">https://stackoverflow.com/questions/63343106/how-to-avoid-request-fingerprinted-in-python</a></li>
+</ul>
+<h1 id="不同客户端的ClientHello报文"><a href="#不同客户端的ClientHello报文" class="headerlink" title="不同客户端的ClientHello报文"></a>不同客户端的ClientHello报文</h1><p>掏出了安装完从来没用过的wireshark抓了几个不同客户端的请求包</p>
+<p>客户端发起https的请求第一步是向服务器发送tls握手请求，其中就包含了客户端的一些特征</p>
+<p>相关内容在tls协议报文中<code>Client Hello</code>的<code>Transport Layer Security</code>当中</p>
+<p><img src="https://i.loli.net/2021/04/18/nzjr5AERTbxCchy.png" alt="image-20210417235004781"></p>
+<p>抓了几个常用客户端的流量瞅瞅</p>
+<h2 id="CURL-ClientHello"><a href="#CURL-ClientHello" class="headerlink" title="CURL ClientHello"></a>CURL ClientHello</h2><pre><code>curl 7.76.0 (x86_64-apple-darwin19.6.0) libcurl/7.76.0 (SecureTransport) OpenSSL/1.1.1k zlib/1.2.11 brotli/1.0.9 zstd/1.4.9 libidn2/2.3.0 libssh2/1.9.0 nghttp2/1.43.0 librtmp/2.3
+
+TLSv1.2 Record Layer: Handshake Protocol: Client Hello
+    Content Type: Handshake (22)
+    Version: TLS 1.0 (0x0301)
+    Length: 512
+    Handshake Protocol: Client Hello
+        Handshake Type: Client Hello (1)
+        Length: 508
+        Version: TLS 1.2 (0x0303)
+        Random: b828dcc000f8561e4075538e80c600cfd74ae17371213a4cefd39888aaed48da
+            GMT Unix Time: Nov 28, 2067 14:01:36.000000000 CST
+            Random Bytes: 00f8561e4075538e80c600cfd74ae17371213a4cefd39888aaed48da
+        Session ID Length: 32
+        Session ID: c27bcf013c1e94fa502967ee1a1249b6aa73f381af1eff935e0fc05ee1e22764
+        Cipher Suites Length: 62
+        Cipher Suites (31 suites)
+            Cipher Suite: TLS_AES_256_GCM_SHA384 (0x1302)
+            Cipher Suite: TLS_CHACHA20_POLY1305_SHA256 (0x1303)
+            Cipher Suite: TLS_AES_128_GCM_SHA256 (0x1301)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 (0xc02c)
+            Cipher Suite: TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (0xc030)
+            Cipher Suite: TLS_DHE_RSA_WITH_AES_256_GCM_SHA384 (0x009f)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256 (0xcca9)
+            Cipher Suite: TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256 (0xcca8)
+            Cipher Suite: TLS_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256 (0xccaa)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 (0xc02b)
+            Cipher Suite: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 (0xc02f)
+            Cipher Suite: TLS_DHE_RSA_WITH_AES_128_GCM_SHA256 (0x009e)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384 (0xc024)
+            Cipher Suite: TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384 (0xc028)
+            Cipher Suite: TLS_DHE_RSA_WITH_AES_256_CBC_SHA256 (0x006b)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256 (0xc023)
+            Cipher Suite: TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256 (0xc027)
+            Cipher Suite: TLS_DHE_RSA_WITH_AES_128_CBC_SHA256 (0x0067)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA (0xc00a)
+            Cipher Suite: TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA (0xc014)
+            Cipher Suite: TLS_DHE_RSA_WITH_AES_256_CBC_SHA (0x0039)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA (0xc009)
+            Cipher Suite: TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA (0xc013)
+            Cipher Suite: TLS_DHE_RSA_WITH_AES_128_CBC_SHA (0x0033)
+            Cipher Suite: TLS_RSA_WITH_AES_256_GCM_SHA384 (0x009d)
+            Cipher Suite: TLS_RSA_WITH_AES_128_GCM_SHA256 (0x009c)
+            Cipher Suite: TLS_RSA_WITH_AES_256_CBC_SHA256 (0x003d)
+            Cipher Suite: TLS_RSA_WITH_AES_128_CBC_SHA256 (0x003c)
+            Cipher Suite: TLS_RSA_WITH_AES_256_CBC_SHA (0x0035)
+            Cipher Suite: TLS_RSA_WITH_AES_128_CBC_SHA (0x002f)
+            Cipher Suite: TLS_EMPTY_RENEGOTIATION_INFO_SCSV (0x00ff)
+        Compression Methods Length: 1
+        Compression Methods (1 method)
+            Compression Method: null (0)
+        Extensions Length: 373
+        Extension: server_name (len=22)
+            Type: server_name (0)
+            Length: 22
+            Server Name Indication extension
+                Server Name list length: 20
+                Server Name Type: host_name (0)
+                Server Name length: 17
+                Server Name: xxxx.xxxx.com
+        Extension: ec_point_formats (len=4)
+            Type: ec_point_formats (11)
+            Length: 4
+            EC point formats Length: 3
+            Elliptic curves point formats (3)
+                EC point format: uncompressed (0)
+                EC point format: ansiX962_compressed_prime (1)
+                EC point format: ansiX962_compressed_char2 (2)
+        Extension: supported_groups (len=12)
+            Type: supported_groups (10)
+            Length: 12
+            Supported Groups List Length: 10
+            Supported Groups (5 groups)
+        Extension: next_protocol_negotiation (len=0)
+            Type: next_protocol_negotiation (13172)
+            Length: 0
+        Extension: application_layer_protocol_negotiation (len=14)
+            Type: application_layer_protocol_negotiation (16)
+            Length: 14
+            ALPN Extension Length: 12
+            ALPN Protocol
+                ALPN string length: 2
+                ALPN Next Protocol: h2
+                ALPN string length: 8
+                ALPN Next Protocol: http/1.1
+        Extension: encrypt_then_mac (len=0)
+            Type: encrypt_then_mac (22)
+            Length: 0
+        Extension: extended_master_secret (len=0)
+            Type: extended_master_secret (23)
+            Length: 0
+        Extension: post_handshake_auth (len=0)
+            Type: post_handshake_auth (49)
+            Length: 0
+        Extension: signature_algorithms (len=48)
+            Type: signature_algorithms (13)
+            Length: 48
+            Signature Hash Algorithms Length: 46
+            Signature Hash Algorithms (23 algorithms)
+                Signature Algorithm: ecdsa_secp256r1_sha256 (0x0403)
+                    Signature Hash Algorithm Hash: SHA256 (4)
+                    Signature Hash Algorithm Signature: ECDSA (3)
+                Signature Algorithm: ecdsa_secp384r1_sha384 (0x0503)
+                    Signature Hash Algorithm Hash: SHA384 (5)
+                    Signature Hash Algorithm Signature: ECDSA (3)
+                Signature Algorithm: ecdsa_secp521r1_sha512 (0x0603)
+                    Signature Hash Algorithm Hash: SHA512 (6)
+                    Signature Hash Algorithm Signature: ECDSA (3)
+                Signature Algorithm: ed25519 (0x0807)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (7)
+                Signature Algorithm: ed448 (0x0808)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (8)
+                Signature Algorithm: rsa_pss_pss_sha256 (0x0809)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (9)
+                Signature Algorithm: rsa_pss_pss_sha384 (0x080a)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (10)
+                Signature Algorithm: rsa_pss_pss_sha512 (0x080b)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (11)
+                Signature Algorithm: rsa_pss_rsae_sha256 (0x0804)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (4)
+                Signature Algorithm: rsa_pss_rsae_sha384 (0x0805)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (5)
+                Signature Algorithm: rsa_pss_rsae_sha512 (0x0806)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (6)
+                Signature Algorithm: rsa_pkcs1_sha256 (0x0401)
+                    Signature Hash Algorithm Hash: SHA256 (4)
+                    Signature Hash Algorithm Signature: RSA (1)
+                Signature Algorithm: rsa_pkcs1_sha384 (0x0501)
+                    Signature Hash Algorithm Hash: SHA384 (5)
+                    Signature Hash Algorithm Signature: RSA (1)
+                Signature Algorithm: rsa_pkcs1_sha512 (0x0601)
+                    Signature Hash Algorithm Hash: SHA512 (6)
+                    Signature Hash Algorithm Signature: RSA (1)
+                Signature Algorithm: SHA224 ECDSA (0x0303)
+                    Signature Hash Algorithm Hash: SHA224 (3)
+                    Signature Hash Algorithm Signature: ECDSA (3)
+                Signature Algorithm: ecdsa_sha1 (0x0203)
+                    Signature Hash Algorithm Hash: SHA1 (2)
+                    Signature Hash Algorithm Signature: ECDSA (3)
+                Signature Algorithm: SHA224 RSA (0x0301)
+                    Signature Hash Algorithm Hash: SHA224 (3)
+                    Signature Hash Algorithm Signature: RSA (1)
+                Signature Algorithm: rsa_pkcs1_sha1 (0x0201)
+                    Signature Hash Algorithm Hash: SHA1 (2)
+                    Signature Hash Algorithm Signature: RSA (1)
+                Signature Algorithm: SHA224 DSA (0x0302)
+                    Signature Hash Algorithm Hash: SHA224 (3)
+                    Signature Hash Algorithm Signature: DSA (2)
+                Signature Algorithm: SHA1 DSA (0x0202)
+                    Signature Hash Algorithm Hash: SHA1 (2)
+                    Signature Hash Algorithm Signature: DSA (2)
+                Signature Algorithm: SHA256 DSA (0x0402)
+                    Signature Hash Algorithm Hash: SHA256 (4)
+                    Signature Hash Algorithm Signature: DSA (2)
+                Signature Algorithm: SHA384 DSA (0x0502)
+                    Signature Hash Algorithm Hash: SHA384 (5)
+                    Signature Hash Algorithm Signature: DSA (2)
+                Signature Algorithm: SHA512 DSA (0x0602)
+                    Signature Hash Algorithm Hash: SHA512 (6)
+                    Signature Hash Algorithm Signature: DSA (2)
+        Extension: supported_versions (len=9)
+            Type: supported_versions (43)
+            Length: 9
+            Supported Versions length: 8
+            Supported Version: TLS 1.3 (0x0304)
+            Supported Version: TLS 1.2 (0x0303)
+            Supported Version: TLS 1.1 (0x0302)
+            Supported Version: TLS 1.0 (0x0301)
+        Extension: psk_key_exchange_modes (len=2)
+            Type: psk_key_exchange_modes (45)
+            Length: 2
+            PSK Key Exchange Modes Length: 1
+            PSK Key Exchange Mode: PSK with (EC)DHE key establishment (psk_dhe_ke) (1)
+        Extension: key_share (len=38)
+            Type: key_share (51)
+            Length: 38
+            Key Share extension
+        Extension: padding (len=172)
+            Type: padding (21)
+            Length: 172
+            Padding Data: 000000000000000000000000000000000000000000000000000000000000000000000000…</code></pre><h2 id="Python3-Requests-1"><a href="#Python3-Requests-1" class="headerlink" title="Python3 Requests"></a>Python3 Requests</h2><pre><code>macOS 10.15.7
+requests          2.23.0
+OpenSSL 1.1.1f  31 Mar 2020
+
+TLSv1.2 Record Layer: Handshake Protocol: Client Hello
+    Content Type: Handshake (22)
+    Version: TLS 1.0 (0x0301)
+    Length: 338
+    Handshake Protocol: Client Hello
+        Handshake Type: Client Hello (1)
+        Length: 334
+        Version: TLS 1.2 (0x0303)
+        Random: ba70fc87a4c2f484780452456788606ce8c7143580264df3c3a29ae1d0b6b7a4
+            GMT Unix Time: Feb 13, 2069 15:40:55.000000000 CST
+            Random Bytes: a4c2f484780452456788606ce8c7143580264df3c3a29ae1d0b6b7a4
+        Session ID Length: 32
+        Session ID: b5aed6d7fa7c369cea55573184dfc73d096c53eca3a9702ce48ce1381e525ade
+        Cipher Suites Length: 86
+        Cipher Suites (43 suites)
+            Cipher Suite: TLS_AES_256_GCM_SHA384 (0x1302)
+            Cipher Suite: TLS_CHACHA20_POLY1305_SHA256 (0x1303)
+            Cipher Suite: TLS_AES_128_GCM_SHA256 (0x1301)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 (0xc02c)
+            Cipher Suite: TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (0xc030)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 (0xc02b)
+            Cipher Suite: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 (0xc02f)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256 (0xcca9)
+            Cipher Suite: TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256 (0xcca8)
+            Cipher Suite: TLS_DHE_RSA_WITH_AES_256_GCM_SHA384 (0x009f)
+            Cipher Suite: TLS_DHE_RSA_WITH_AES_128_GCM_SHA256 (0x009e)
+            Cipher Suite: TLS_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256 (0xccaa)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_AES_256_CCM_8 (0xc0af)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_AES_256_CCM (0xc0ad)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8 (0xc0ae)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_AES_128_CCM (0xc0ac)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384 (0xc024)
+            Cipher Suite: TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384 (0xc028)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256 (0xc023)
+            Cipher Suite: TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256 (0xc027)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA (0xc00a)
+            Cipher Suite: TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA (0xc014)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA (0xc009)
+            Cipher Suite: TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA (0xc013)
+            Cipher Suite: TLS_DHE_RSA_WITH_AES_256_CCM_8 (0xc0a3)
+            Cipher Suite: TLS_DHE_RSA_WITH_AES_256_CCM (0xc09f)
+            Cipher Suite: TLS_DHE_RSA_WITH_AES_128_CCM_8 (0xc0a2)
+            Cipher Suite: TLS_DHE_RSA_WITH_AES_128_CCM (0xc09e)
+            Cipher Suite: TLS_DHE_RSA_WITH_AES_256_CBC_SHA256 (0x006b)
+            Cipher Suite: TLS_DHE_RSA_WITH_AES_128_CBC_SHA256 (0x0067)
+            Cipher Suite: TLS_DHE_RSA_WITH_AES_256_CBC_SHA (0x0039)
+            Cipher Suite: TLS_DHE_RSA_WITH_AES_128_CBC_SHA (0x0033)
+            Cipher Suite: TLS_RSA_WITH_AES_256_GCM_SHA384 (0x009d)
+            Cipher Suite: TLS_RSA_WITH_AES_128_GCM_SHA256 (0x009c)
+            Cipher Suite: TLS_RSA_WITH_AES_256_CCM_8 (0xc0a1)
+            Cipher Suite: TLS_RSA_WITH_AES_256_CCM (0xc09d)
+            Cipher Suite: TLS_RSA_WITH_AES_128_CCM_8 (0xc0a0)
+            Cipher Suite: TLS_RSA_WITH_AES_128_CCM (0xc09c)
+            Cipher Suite: TLS_RSA_WITH_AES_256_CBC_SHA256 (0x003d)
+            Cipher Suite: TLS_RSA_WITH_AES_128_CBC_SHA256 (0x003c)
+            Cipher Suite: TLS_RSA_WITH_AES_256_CBC_SHA (0x0035)
+            Cipher Suite: TLS_RSA_WITH_AES_128_CBC_SHA (0x002f)
+            Cipher Suite: TLS_EMPTY_RENEGOTIATION_INFO_SCSV (0x00ff)
+        Compression Methods Length: 1
+        Compression Methods (1 method)
+            Compression Method: null (0)
+        Extensions Length: 175
+        Extension: server_name (len=22)
+            Type: server_name (0)
+            Length: 22
+            Server Name Indication extension
+                Server Name list length: 20
+                Server Name Type: host_name (0)
+                Server Name length: 17
+                Server Name: xxxx.xxxx.com
+        Extension: ec_point_formats (len=4)
+            Type: ec_point_formats (11)
+            Length: 4
+            EC point formats Length: 3
+            Elliptic curves point formats (3)
+                EC point format: uncompressed (0)
+                EC point format: ansiX962_compressed_prime (1)
+                EC point format: ansiX962_compressed_char2 (2)
+        Extension: supported_groups (len=12)
+            Type: supported_groups (10)
+            Length: 12
+            Supported Groups List Length: 10
+            Supported Groups (5 groups)
+        Extension: session_ticket (len=0)
+            Type: session_ticket (35)
+            Length: 0
+            Data (0 bytes)
+        Extension: encrypt_then_mac (len=0)
+            Type: encrypt_then_mac (22)
+            Length: 0
+        Extension: extended_master_secret (len=0)
+            Type: extended_master_secret (23)
+            Length: 0
+        Extension: signature_algorithms (len=48)
+            Type: signature_algorithms (13)
+            Length: 48
+            Signature Hash Algorithms Length: 46
+            Signature Hash Algorithms (23 algorithms)
+                Signature Algorithm: ecdsa_secp256r1_sha256 (0x0403)
+                    Signature Hash Algorithm Hash: SHA256 (4)
+                    Signature Hash Algorithm Signature: ECDSA (3)
+                Signature Algorithm: ecdsa_secp384r1_sha384 (0x0503)
+                    Signature Hash Algorithm Hash: SHA384 (5)
+                    Signature Hash Algorithm Signature: ECDSA (3)
+                Signature Algorithm: ecdsa_secp521r1_sha512 (0x0603)
+                    Signature Hash Algorithm Hash: SHA512 (6)
+                    Signature Hash Algorithm Signature: ECDSA (3)
+                Signature Algorithm: ed25519 (0x0807)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (7)
+                Signature Algorithm: ed448 (0x0808)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (8)
+                Signature Algorithm: rsa_pss_pss_sha256 (0x0809)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (9)
+                Signature Algorithm: rsa_pss_pss_sha384 (0x080a)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (10)
+                Signature Algorithm: rsa_pss_pss_sha512 (0x080b)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (11)
+                Signature Algorithm: rsa_pss_rsae_sha256 (0x0804)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (4)
+                Signature Algorithm: rsa_pss_rsae_sha384 (0x0805)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (5)
+                Signature Algorithm: rsa_pss_rsae_sha512 (0x0806)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (6)
+                Signature Algorithm: rsa_pkcs1_sha256 (0x0401)
+                    Signature Hash Algorithm Hash: SHA256 (4)
+                    Signature Hash Algorithm Signature: RSA (1)
+                Signature Algorithm: rsa_pkcs1_sha384 (0x0501)
+                    Signature Hash Algorithm Hash: SHA384 (5)
+                    Signature Hash Algorithm Signature: RSA (1)
+                Signature Algorithm: rsa_pkcs1_sha512 (0x0601)
+                    Signature Hash Algorithm Hash: SHA512 (6)
+                    Signature Hash Algorithm Signature: RSA (1)
+                Signature Algorithm: SHA224 ECDSA (0x0303)
+                    Signature Hash Algorithm Hash: SHA224 (3)
+                    Signature Hash Algorithm Signature: ECDSA (3)
+                Signature Algorithm: ecdsa_sha1 (0x0203)
+                    Signature Hash Algorithm Hash: SHA1 (2)
+                    Signature Hash Algorithm Signature: ECDSA (3)
+                Signature Algorithm: SHA224 RSA (0x0301)
+                    Signature Hash Algorithm Hash: SHA224 (3)
+                    Signature Hash Algorithm Signature: RSA (1)
+                Signature Algorithm: rsa_pkcs1_sha1 (0x0201)
+                    Signature Hash Algorithm Hash: SHA1 (2)
+                    Signature Hash Algorithm Signature: RSA (1)
+                Signature Algorithm: SHA224 DSA (0x0302)
+                    Signature Hash Algorithm Hash: SHA224 (3)
+                    Signature Hash Algorithm Signature: DSA (2)
+                Signature Algorithm: SHA1 DSA (0x0202)
+                    Signature Hash Algorithm Hash: SHA1 (2)
+                    Signature Hash Algorithm Signature: DSA (2)
+                Signature Algorithm: SHA256 DSA (0x0402)
+                    Signature Hash Algorithm Hash: SHA256 (4)
+                    Signature Hash Algorithm Signature: DSA (2)
+                Signature Algorithm: SHA384 DSA (0x0502)
+                    Signature Hash Algorithm Hash: SHA384 (5)
+                    Signature Hash Algorithm Signature: DSA (2)
+                Signature Algorithm: SHA512 DSA (0x0602)
+                    Signature Hash Algorithm Hash: SHA512 (6)
+                    Signature Hash Algorithm Signature: DSA (2)
+        Extension: supported_versions (len=9)
+            Type: supported_versions (43)
+            Length: 9
+            Supported Versions length: 8
+            Supported Version: TLS 1.3 (0x0304)
+            Supported Version: TLS 1.2 (0x0303)
+            Supported Version: TLS 1.1 (0x0302)
+            Supported Version: TLS 1.0 (0x0301)
+        Extension: psk_key_exchange_modes (len=2)
+            Type: psk_key_exchange_modes (45)
+            Length: 2
+            PSK Key Exchange Modes Length: 1
+            PSK Key Exchange Mode: PSK with (EC)DHE key establishment (psk_dhe_ke) (1)
+        Extension: key_share (len=38)
+            Type: key_share (51)
+            Length: 38
+            Key Share extension</code></pre><h2 id="Python3-aioHTTP"><a href="#Python3-aioHTTP" class="headerlink" title="Python3 aioHTTP"></a>Python3 aioHTTP</h2><pre><code>3.7.4.post0
+
+TLSv1.2 Record Layer: Handshake Protocol: Client Hello
+    Content Type: Handshake (22)
+    Version: TLS 1.0 (0x0301)
+    Length: 512
+    Handshake Protocol: Client Hello
+        Handshake Type: Client Hello (1)
+        Length: 508
+        Version: TLS 1.2 (0x0303)
+        Random: 950340b4f7c16cafa4080ff5144082923c907cdda2e2aefa624af1dd4347e765
+            GMT Unix Time: Mar 22, 2049 17:32:36.000000000 CST
+            Random Bytes: f7c16cafa4080ff5144082923c907cdda2e2aefa624af1dd4347e765
+        Session ID Length: 32
+        Session ID: 7f921fa357f4a39367e8540dc44c1eac925a8f44c506887c4b1e5e5815a013ec
+        Cipher Suites Length: 62
+        Cipher Suites (31 suites)
+            Cipher Suite: TLS_AES_256_GCM_SHA384 (0x1302)
+            Cipher Suite: TLS_CHACHA20_POLY1305_SHA256 (0x1303)
+            Cipher Suite: TLS_AES_128_GCM_SHA256 (0x1301)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 (0xc02c)
+            Cipher Suite: TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (0xc030)
+            Cipher Suite: TLS_DHE_RSA_WITH_AES_256_GCM_SHA384 (0x009f)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256 (0xcca9)
+            Cipher Suite: TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256 (0xcca8)
+            Cipher Suite: TLS_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256 (0xccaa)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 (0xc02b)
+            Cipher Suite: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 (0xc02f)
+            Cipher Suite: TLS_DHE_RSA_WITH_AES_128_GCM_SHA256 (0x009e)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384 (0xc024)
+            Cipher Suite: TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384 (0xc028)
+            Cipher Suite: TLS_DHE_RSA_WITH_AES_256_CBC_SHA256 (0x006b)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256 (0xc023)
+            Cipher Suite: TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256 (0xc027)
+            Cipher Suite: TLS_DHE_RSA_WITH_AES_128_CBC_SHA256 (0x0067)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA (0xc00a)
+            Cipher Suite: TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA (0xc014)
+            Cipher Suite: TLS_DHE_RSA_WITH_AES_256_CBC_SHA (0x0039)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA (0xc009)
+            Cipher Suite: TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA (0xc013)
+            Cipher Suite: TLS_DHE_RSA_WITH_AES_128_CBC_SHA (0x0033)
+            Cipher Suite: TLS_RSA_WITH_AES_256_GCM_SHA384 (0x009d)
+            Cipher Suite: TLS_RSA_WITH_AES_128_GCM_SHA256 (0x009c)
+            Cipher Suite: TLS_RSA_WITH_AES_256_CBC_SHA256 (0x003d)
+            Cipher Suite: TLS_RSA_WITH_AES_128_CBC_SHA256 (0x003c)
+            Cipher Suite: TLS_RSA_WITH_AES_256_CBC_SHA (0x0035)
+            Cipher Suite: TLS_RSA_WITH_AES_128_CBC_SHA (0x002f)
+            Cipher Suite: TLS_EMPTY_RENEGOTIATION_INFO_SCSV (0x00ff)
+        Compression Methods Length: 1
+        Compression Methods (1 method)
+            Compression Method: null (0)
+        Extensions Length: 373
+        Extension: server_name (len=22)
+            Type: server_name (0)
+            Length: 22
+            Server Name Indication extension
+                Server Name list length: 20
+                Server Name Type: host_name (0)
+                Server Name length: 17
+                Server Name: xxxx.xxxx.com
+        Extension: ec_point_formats (len=4)
+            Type: ec_point_formats (11)
+            Length: 4
+            EC point formats Length: 3
+            Elliptic curves point formats (3)
+                EC point format: uncompressed (0)
+                EC point format: ansiX962_compressed_prime (1)
+                EC point format: ansiX962_compressed_char2 (2)
+        Extension: supported_groups (len=12)
+            Type: supported_groups (10)
+            Length: 12
+            Supported Groups List Length: 10
+            Supported Groups (5 groups)
+        Extension: session_ticket (len=0)
+            Type: session_ticket (35)
+            Length: 0
+            Data (0 bytes)
+        Extension: encrypt_then_mac (len=0)
+            Type: encrypt_then_mac (22)
+            Length: 0
+        Extension: extended_master_secret (len=0)
+            Type: extended_master_secret (23)
+            Length: 0
+        Extension: signature_algorithms (len=48)
+            Type: signature_algorithms (13)
+            Length: 48
+            Signature Hash Algorithms Length: 46
+            Signature Hash Algorithms (23 algorithms)
+                Signature Algorithm: ecdsa_secp256r1_sha256 (0x0403)
+                    Signature Hash Algorithm Hash: SHA256 (4)
+                    Signature Hash Algorithm Signature: ECDSA (3)
+                Signature Algorithm: ecdsa_secp384r1_sha384 (0x0503)
+                    Signature Hash Algorithm Hash: SHA384 (5)
+                    Signature Hash Algorithm Signature: ECDSA (3)
+                Signature Algorithm: ecdsa_secp521r1_sha512 (0x0603)
+                    Signature Hash Algorithm Hash: SHA512 (6)
+                    Signature Hash Algorithm Signature: ECDSA (3)
+                Signature Algorithm: ed25519 (0x0807)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (7)
+                Signature Algorithm: ed448 (0x0808)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (8)
+                Signature Algorithm: rsa_pss_pss_sha256 (0x0809)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (9)
+                Signature Algorithm: rsa_pss_pss_sha384 (0x080a)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (10)
+                Signature Algorithm: rsa_pss_pss_sha512 (0x080b)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (11)
+                Signature Algorithm: rsa_pss_rsae_sha256 (0x0804)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (4)
+                Signature Algorithm: rsa_pss_rsae_sha384 (0x0805)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (5)
+                Signature Algorithm: rsa_pss_rsae_sha512 (0x0806)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (6)
+                Signature Algorithm: rsa_pkcs1_sha256 (0x0401)
+                    Signature Hash Algorithm Hash: SHA256 (4)
+                    Signature Hash Algorithm Signature: RSA (1)
+                Signature Algorithm: rsa_pkcs1_sha384 (0x0501)
+                    Signature Hash Algorithm Hash: SHA384 (5)
+                    Signature Hash Algorithm Signature: RSA (1)
+                Signature Algorithm: rsa_pkcs1_sha512 (0x0601)
+                    Signature Hash Algorithm Hash: SHA512 (6)
+                    Signature Hash Algorithm Signature: RSA (1)
+                Signature Algorithm: SHA224 ECDSA (0x0303)
+                    Signature Hash Algorithm Hash: SHA224 (3)
+                    Signature Hash Algorithm Signature: ECDSA (3)
+                Signature Algorithm: ecdsa_sha1 (0x0203)
+                    Signature Hash Algorithm Hash: SHA1 (2)
+                    Signature Hash Algorithm Signature: ECDSA (3)
+                Signature Algorithm: SHA224 RSA (0x0301)
+                    Signature Hash Algorithm Hash: SHA224 (3)
+                    Signature Hash Algorithm Signature: RSA (1)
+                Signature Algorithm: rsa_pkcs1_sha1 (0x0201)
+                    Signature Hash Algorithm Hash: SHA1 (2)
+                    Signature Hash Algorithm Signature: RSA (1)
+                Signature Algorithm: SHA224 DSA (0x0302)
+                    Signature Hash Algorithm Hash: SHA224 (3)
+                    Signature Hash Algorithm Signature: DSA (2)
+                Signature Algorithm: SHA1 DSA (0x0202)
+                    Signature Hash Algorithm Hash: SHA1 (2)
+                    Signature Hash Algorithm Signature: DSA (2)
+                Signature Algorithm: SHA256 DSA (0x0402)
+                    Signature Hash Algorithm Hash: SHA256 (4)
+                    Signature Hash Algorithm Signature: DSA (2)
+                Signature Algorithm: SHA384 DSA (0x0502)
+                    Signature Hash Algorithm Hash: SHA384 (5)
+                    Signature Hash Algorithm Signature: DSA (2)
+                Signature Algorithm: SHA512 DSA (0x0602)
+                    Signature Hash Algorithm Hash: SHA512 (6)
+                    Signature Hash Algorithm Signature: DSA (2)
+        Extension: supported_versions (len=9)
+            Type: supported_versions (43)
+            Length: 9
+            Supported Versions length: 8
+            Supported Version: TLS 1.3 (0x0304)
+            Supported Version: TLS 1.2 (0x0303)
+            Supported Version: TLS 1.1 (0x0302)
+            Supported Version: TLS 1.0 (0x0301)
+        Extension: psk_key_exchange_modes (len=2)
+            Type: psk_key_exchange_modes (45)
+            Length: 2
+            PSK Key Exchange Modes Length: 1
+            PSK Key Exchange Mode: PSK with (EC)DHE key establishment (psk_dhe_ke) (1)
+        Extension: key_share (len=38)
+            Type: key_share (51)
+            Length: 38
+            Key Share extension
+        Extension: padding (len=194)
+            Type: padding (21)
+            Length: 194
+            Padding Data: 000000000000000000000000000000000000000000000000000000000000000000000000…</code></pre><h2 id="Burp-Suite"><a href="#Burp-Suite" class="headerlink" title="Burp Suite"></a>Burp Suite</h2><pre><code>[Expert Info (Comment/Comment): Burp Suite v 2021.3.2
+jdk-11.0.5]
+
+TLSv1.2 Record Layer: Handshake Protocol: Client Hello
+    Content Type: Handshake (22)
+    Version: TLS 1.2 (0x0303)
+    Length: 466
+    Handshake Protocol: Client Hello
+        Handshake Type: Client Hello (1)
+        Length: 462
+        Version: TLS 1.2 (0x0303)
+        Random: 67c3b8bc51ef0e92822fc93228b970047447c83cf6f354393f99a114d9f13980
+            GMT Unix Time: Mar  2, 2025 09:47:40.000000000 CST
+            Random Bytes: 51ef0e92822fc93228b970047447c83cf6f354393f99a114d9f13980
+        Session ID Length: 32
+        Session ID: 1dd88665cef5c0afa05f4ab8ce2f861881c820c2fd5cf5ab76c3262e2534ec15
+        Cipher Suites Length: 104
+        Cipher Suites (52 suites)
+            Cipher Suite: TLS_AES_128_GCM_SHA256 (0x1301)
+            Cipher Suite: TLS_AES_256_GCM_SHA384 (0x1302)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 (0xc02c)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 (0xc02b)
+            Cipher Suite: TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (0xc030)
+            Cipher Suite: TLS_RSA_WITH_AES_256_GCM_SHA384 (0x009d)
+            Cipher Suite: TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384 (0xc02e)
+            Cipher Suite: TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384 (0xc032)
+            Cipher Suite: TLS_DHE_RSA_WITH_AES_256_GCM_SHA384 (0x009f)
+            Cipher Suite: TLS_DHE_DSS_WITH_AES_256_GCM_SHA384 (0x00a3)
+            Cipher Suite: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 (0xc02f)
+            Cipher Suite: TLS_RSA_WITH_AES_128_GCM_SHA256 (0x009c)
+            Cipher Suite: TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256 (0xc02d)
+            Cipher Suite: TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256 (0xc031)
+            Cipher Suite: TLS_DHE_RSA_WITH_AES_128_GCM_SHA256 (0x009e)
+            Cipher Suite: TLS_DHE_DSS_WITH_AES_128_GCM_SHA256 (0x00a2)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384 (0xc024)
+            Cipher Suite: TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384 (0xc028)
+            Cipher Suite: TLS_RSA_WITH_AES_256_CBC_SHA256 (0x003d)
+            Cipher Suite: TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384 (0xc026)
+            Cipher Suite: TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384 (0xc02a)
+            Cipher Suite: TLS_DHE_RSA_WITH_AES_256_CBC_SHA256 (0x006b)
+            Cipher Suite: TLS_DHE_DSS_WITH_AES_256_CBC_SHA256 (0x006a)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA (0xc00a)
+            Cipher Suite: TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA (0xc014)
+            Cipher Suite: TLS_RSA_WITH_AES_256_CBC_SHA (0x0035)
+            Cipher Suite: TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA (0xc005)
+            Cipher Suite: TLS_ECDH_RSA_WITH_AES_256_CBC_SHA (0xc00f)
+            Cipher Suite: TLS_DHE_RSA_WITH_AES_256_CBC_SHA (0x0039)
+            Cipher Suite: TLS_DHE_DSS_WITH_AES_256_CBC_SHA (0x0038)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256 (0xc023)
+            Cipher Suite: TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256 (0xc027)
+            Cipher Suite: TLS_RSA_WITH_AES_128_CBC_SHA256 (0x003c)
+            Cipher Suite: TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256 (0xc025)
+            Cipher Suite: TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256 (0xc029)
+            Cipher Suite: TLS_DHE_RSA_WITH_AES_128_CBC_SHA256 (0x0067)
+            Cipher Suite: TLS_DHE_DSS_WITH_AES_128_CBC_SHA256 (0x0040)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA (0xc009)
+            Cipher Suite: TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA (0xc013)
+            Cipher Suite: TLS_RSA_WITH_AES_128_CBC_SHA (0x002f)
+            Cipher Suite: TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA (0xc004)
+            Cipher Suite: TLS_ECDH_RSA_WITH_AES_128_CBC_SHA (0xc00e)
+            Cipher Suite: TLS_DHE_RSA_WITH_AES_128_CBC_SHA (0x0033)
+            Cipher Suite: TLS_DHE_DSS_WITH_AES_128_CBC_SHA (0x0032)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA (0xc008)
+            Cipher Suite: TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA (0xc012)
+            Cipher Suite: TLS_RSA_WITH_3DES_EDE_CBC_SHA (0x000a)
+            Cipher Suite: TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA (0xc003)
+            Cipher Suite: TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA (0xc00d)
+            Cipher Suite: TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA (0x0016)
+            Cipher Suite: TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA (0x0013)
+            Cipher Suite: TLS_EMPTY_RENEGOTIATION_INFO_SCSV (0x00ff)
+        Compression Methods Length: 1
+        Compression Methods (1 method)
+            Compression Method: null (0)
+        Extensions Length: 285
+        Extension: server_name (len=22)
+            Type: server_name (0)
+            Length: 22
+            Server Name Indication extension
+                Server Name list length: 20
+                Server Name Type: host_name (0)
+                Server Name length: 17
+                Server Name: xxxx.xxxx.com
+        Extension: status_request (len=5)
+            Type: status_request (5)
+            Length: 5
+            Certificate Status Type: OCSP (1)
+            Responder ID list Length: 0
+            Request Extensions Length: 0
+        Extension: supported_groups (len=18)
+            Type: supported_groups (10)
+            Length: 18
+            Supported Groups List Length: 16
+            Supported Groups (8 groups)
+        Extension: ec_point_formats (len=2)
+            Type: ec_point_formats (11)
+            Length: 2
+            EC point formats Length: 1
+            Elliptic curves point formats (1)
+                EC point format: uncompressed (0)
+        Extension: signature_algorithms (len=46)
+            Type: signature_algorithms (13)
+            Length: 46
+            Signature Hash Algorithms Length: 44
+            Signature Hash Algorithms (22 algorithms)
+                Signature Algorithm: ed25519 (0x0807)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (7)
+                Signature Algorithm: ed448 (0x0808)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (8)
+                Signature Algorithm: ecdsa_secp256r1_sha256 (0x0403)
+                    Signature Hash Algorithm Hash: SHA256 (4)
+                    Signature Hash Algorithm Signature: ECDSA (3)
+                Signature Algorithm: ecdsa_secp384r1_sha384 (0x0503)
+                    Signature Hash Algorithm Hash: SHA384 (5)
+                    Signature Hash Algorithm Signature: ECDSA (3)
+                Signature Algorithm: ecdsa_secp521r1_sha512 (0x0603)
+                    Signature Hash Algorithm Hash: SHA512 (6)
+                    Signature Hash Algorithm Signature: ECDSA (3)
+                Signature Algorithm: rsa_pss_rsae_sha256 (0x0804)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (4)
+                Signature Algorithm: rsa_pss_rsae_sha384 (0x0805)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (5)
+                Signature Algorithm: rsa_pss_rsae_sha512 (0x0806)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (6)
+                Signature Algorithm: rsa_pss_pss_sha256 (0x0809)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (9)
+                Signature Algorithm: rsa_pss_pss_sha384 (0x080a)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (10)
+                Signature Algorithm: rsa_pss_pss_sha512 (0x080b)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (11)
+                Signature Algorithm: rsa_pkcs1_sha256 (0x0401)
+                    Signature Hash Algorithm Hash: SHA256 (4)
+                    Signature Hash Algorithm Signature: RSA (1)
+                Signature Algorithm: rsa_pkcs1_sha384 (0x0501)
+                    Signature Hash Algorithm Hash: SHA384 (5)
+                    Signature Hash Algorithm Signature: RSA (1)
+                Signature Algorithm: rsa_pkcs1_sha512 (0x0601)
+                    Signature Hash Algorithm Hash: SHA512 (6)
+                    Signature Hash Algorithm Signature: RSA (1)
+                Signature Algorithm: SHA256 DSA (0x0402)
+                    Signature Hash Algorithm Hash: SHA256 (4)
+                    Signature Hash Algorithm Signature: DSA (2)
+                Signature Algorithm: SHA224 ECDSA (0x0303)
+                    Signature Hash Algorithm Hash: SHA224 (3)
+                    Signature Hash Algorithm Signature: ECDSA (3)
+                Signature Algorithm: SHA224 RSA (0x0301)
+                    Signature Hash Algorithm Hash: SHA224 (3)
+                    Signature Hash Algorithm Signature: RSA (1)
+                Signature Algorithm: SHA224 DSA (0x0302)
+                    Signature Hash Algorithm Hash: SHA224 (3)
+                    Signature Hash Algorithm Signature: DSA (2)
+                Signature Algorithm: ecdsa_sha1 (0x0203)
+                    Signature Hash Algorithm Hash: SHA1 (2)
+                    Signature Hash Algorithm Signature: ECDSA (3)
+                Signature Algorithm: rsa_pkcs1_sha1 (0x0201)
+                    Signature Hash Algorithm Hash: SHA1 (2)
+                    Signature Hash Algorithm Signature: RSA (1)
+                Signature Algorithm: SHA1 DSA (0x0202)
+                    Signature Hash Algorithm Hash: SHA1 (2)
+                    Signature Hash Algorithm Signature: DSA (2)
+                Signature Algorithm: MD5 RSA (0x0101)
+                    Signature Hash Algorithm Hash: MD5 (1)
+                    Signature Hash Algorithm Signature: RSA (1)
+        Extension: signature_algorithms_cert (len=46)
+            Type: signature_algorithms_cert (50)
+            Length: 46
+            Signature Hash Algorithms Length: 44
+            Signature Hash Algorithms (22 algorithms)
+                Signature Algorithm: ed25519 (0x0807)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (7)
+                Signature Algorithm: ed448 (0x0808)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (8)
+                Signature Algorithm: ecdsa_secp256r1_sha256 (0x0403)
+                    Signature Hash Algorithm Hash: SHA256 (4)
+                    Signature Hash Algorithm Signature: ECDSA (3)
+                Signature Algorithm: ecdsa_secp384r1_sha384 (0x0503)
+                    Signature Hash Algorithm Hash: SHA384 (5)
+                    Signature Hash Algorithm Signature: ECDSA (3)
+                Signature Algorithm: ecdsa_secp521r1_sha512 (0x0603)
+                    Signature Hash Algorithm Hash: SHA512 (6)
+                    Signature Hash Algorithm Signature: ECDSA (3)
+                Signature Algorithm: rsa_pss_rsae_sha256 (0x0804)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (4)
+                Signature Algorithm: rsa_pss_rsae_sha384 (0x0805)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (5)
+                Signature Algorithm: rsa_pss_rsae_sha512 (0x0806)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (6)
+                Signature Algorithm: rsa_pss_pss_sha256 (0x0809)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (9)
+                Signature Algorithm: rsa_pss_pss_sha384 (0x080a)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (10)
+                Signature Algorithm: rsa_pss_pss_sha512 (0x080b)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (11)
+                Signature Algorithm: rsa_pkcs1_sha256 (0x0401)
+                    Signature Hash Algorithm Hash: SHA256 (4)
+                    Signature Hash Algorithm Signature: RSA (1)
+                Signature Algorithm: rsa_pkcs1_sha384 (0x0501)
+                    Signature Hash Algorithm Hash: SHA384 (5)
+                    Signature Hash Algorithm Signature: RSA (1)
+                Signature Algorithm: rsa_pkcs1_sha512 (0x0601)
+                    Signature Hash Algorithm Hash: SHA512 (6)
+                    Signature Hash Algorithm Signature: RSA (1)
+                Signature Algorithm: SHA256 DSA (0x0402)
+                    Signature Hash Algorithm Hash: SHA256 (4)
+                    Signature Hash Algorithm Signature: DSA (2)
+                Signature Algorithm: SHA224 ECDSA (0x0303)
+                    Signature Hash Algorithm Hash: SHA224 (3)
+                    Signature Hash Algorithm Signature: ECDSA (3)
+                Signature Algorithm: SHA224 RSA (0x0301)
+                    Signature Hash Algorithm Hash: SHA224 (3)
+                    Signature Hash Algorithm Signature: RSA (1)
+                Signature Algorithm: SHA224 DSA (0x0302)
+                    Signature Hash Algorithm Hash: SHA224 (3)
+                    Signature Hash Algorithm Signature: DSA (2)
+                Signature Algorithm: ecdsa_sha1 (0x0203)
+                    Signature Hash Algorithm Hash: SHA1 (2)
+                    Signature Hash Algorithm Signature: ECDSA (3)
+                Signature Algorithm: rsa_pkcs1_sha1 (0x0201)
+                    Signature Hash Algorithm Hash: SHA1 (2)
+                    Signature Hash Algorithm Signature: RSA (1)
+                Signature Algorithm: SHA1 DSA (0x0202)
+                    Signature Hash Algorithm Hash: SHA1 (2)
+                    Signature Hash Algorithm Signature: DSA (2)
+                Signature Algorithm: MD5 RSA (0x0101)
+                    Signature Hash Algorithm Hash: MD5 (1)
+                    Signature Hash Algorithm Signature: RSA (1)
+        Extension: application_layer_protocol_negotiation (len=5)
+            Type: application_layer_protocol_negotiation (16)
+            Length: 5
+            ALPN Extension Length: 3
+            ALPN Protocol
+                ALPN string length: 2
+                ALPN Next Protocol: h2
+        Extension: status_request_v2 (len=9)
+            Type: status_request_v2 (17)
+            Length: 9
+            Certificate Status List Length: 7
+            Certificate Status Type: OCSP Multi (2)
+            Certificate Status Length: 4
+            Responder ID list Length: 0
+            Request Extensions Length: 0
+        Extension: extended_master_secret (len=0)
+            Type: extended_master_secret (23)
+            Length: 0
+        Extension: supported_versions (len=11)
+            Type: supported_versions (43)
+            Length: 11
+            Supported Versions length: 10
+            Supported Version: TLS 1.3 (0x0304)
+            Supported Version: TLS 1.2 (0x0303)
+            Supported Version: TLS 1.1 (0x0302)
+            Supported Version: TLS 1.0 (0x0301)
+            Supported Version: SSL 3.0 (0x0300)
+        Extension: psk_key_exchange_modes (len=2)
+            Type: psk_key_exchange_modes (45)
+            Length: 2
+            PSK Key Exchange Modes Length: 1
+            PSK Key Exchange Mode: PSK with (EC)DHE key establishment (psk_dhe_ke) (1)
+        Extension: key_share (len=71)
+            Type: key_share (51)
+            Length: 71
+            Key Share extension</code></pre><h2 id="Chrome"><a href="#Chrome" class="headerlink" title="Chrome"></a>Chrome</h2><pre><code>TLSv1.2 Record Layer: Handshake Protocol: Client Hello
+    Content Type: Handshake (22)
+    Version: TLS 1.0 (0x0301)
+    Length: 512
+    Handshake Protocol: Client Hello
+        Handshake Type: Client Hello (1)
+        Length: 508
+        Version: TLS 1.2 (0x0303)
+        Random: cda2b7713eda42ed5238959d5acbb8ffea6e9c7ae6bc541614761fc68ac1a7a0
+            GMT Unix Time: Apr 29, 2079 19:24:33.000000000 CST
+            Random Bytes: 3eda42ed5238959d5acbb8ffea6e9c7ae6bc541614761fc68ac1a7a0
+        Session ID Length: 32
+        Session ID: bfa5f956712d98ce593c9655df89762afed606a291145a70abbd12e17057376e
+        Cipher Suites Length: 32
+        Cipher Suites (16 suites)
+            Cipher Suite: Reserved (GREASE) (0xeaea)
+            Cipher Suite: TLS_AES_128_GCM_SHA256 (0x1301)
+            Cipher Suite: TLS_AES_256_GCM_SHA384 (0x1302)
+            Cipher Suite: TLS_CHACHA20_POLY1305_SHA256 (0x1303)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 (0xc02b)
+            Cipher Suite: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 (0xc02f)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 (0xc02c)
+            Cipher Suite: TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 (0xc030)
+            Cipher Suite: TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256 (0xcca9)
+            Cipher Suite: TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256 (0xcca8)
+            Cipher Suite: TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA (0xc013)
+            Cipher Suite: TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA (0xc014)
+            Cipher Suite: TLS_RSA_WITH_AES_128_GCM_SHA256 (0x009c)
+            Cipher Suite: TLS_RSA_WITH_AES_256_GCM_SHA384 (0x009d)
+            Cipher Suite: TLS_RSA_WITH_AES_128_CBC_SHA (0x002f)
+            Cipher Suite: TLS_RSA_WITH_AES_256_CBC_SHA (0x0035)
+        Compression Methods Length: 1
+        Compression Methods (1 method)
+            Compression Method: null (0)
+        Extensions Length: 403
+        Extension: Reserved (GREASE) (len=0)
+            Type: Reserved (GREASE) (27242)
+            Length: 0
+            Data: &lt;MISSING&gt;
+        Extension: server_name (len=22)
+            Type: server_name (0)
+            Length: 22
+            Server Name Indication extension
+                Server Name list length: 20
+                Server Name Type: host_name (0)
+                Server Name length: 17
+                Server Name: xxxx.xxxx.com
+        Extension: extended_master_secret (len=0)
+            Type: extended_master_secret (23)
+            Length: 0
+        Extension: renegotiation_info (len=1)
+            Type: renegotiation_info (65281)
+            Length: 1
+            Renegotiation Info extension
+                Renegotiation info extension length: 0
+        Extension: supported_groups (len=10)
+            Type: supported_groups (10)
+            Length: 10
+            Supported Groups List Length: 8
+            Supported Groups (4 groups)
+        Extension: ec_point_formats (len=2)
+            Type: ec_point_formats (11)
+            Length: 2
+            EC point formats Length: 1
+            Elliptic curves point formats (1)
+                EC point format: uncompressed (0)
+        Extension: session_ticket (len=0)
+            Type: session_ticket (35)
+            Length: 0
+            Data (0 bytes)
+        Extension: application_layer_protocol_negotiation (len=14)
+            Type: application_layer_protocol_negotiation (16)
+            Length: 14
+            ALPN Extension Length: 12
+            ALPN Protocol
+                ALPN string length: 2
+                ALPN Next Protocol: h2
+                ALPN string length: 8
+                ALPN Next Protocol: http/1.1
+        Extension: status_request (len=5)
+            Type: status_request (5)
+            Length: 5
+            Certificate Status Type: OCSP (1)
+            Responder ID list Length: 0
+            Request Extensions Length: 0
+        Extension: signature_algorithms (len=18)
+            Type: signature_algorithms (13)
+            Length: 18
+            Signature Hash Algorithms Length: 16
+            Signature Hash Algorithms (8 algorithms)
+                Signature Algorithm: ecdsa_secp256r1_sha256 (0x0403)
+                    Signature Hash Algorithm Hash: SHA256 (4)
+                    Signature Hash Algorithm Signature: ECDSA (3)
+                Signature Algorithm: rsa_pss_rsae_sha256 (0x0804)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (4)
+                Signature Algorithm: rsa_pkcs1_sha256 (0x0401)
+                    Signature Hash Algorithm Hash: SHA256 (4)
+                    Signature Hash Algorithm Signature: RSA (1)
+                Signature Algorithm: ecdsa_secp384r1_sha384 (0x0503)
+                    Signature Hash Algorithm Hash: SHA384 (5)
+                    Signature Hash Algorithm Signature: ECDSA (3)
+                Signature Algorithm: rsa_pss_rsae_sha384 (0x0805)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (5)
+                Signature Algorithm: rsa_pkcs1_sha384 (0x0501)
+                    Signature Hash Algorithm Hash: SHA384 (5)
+                    Signature Hash Algorithm Signature: RSA (1)
+                Signature Algorithm: rsa_pss_rsae_sha512 (0x0806)
+                    Signature Hash Algorithm Hash: Unknown (8)
+                    Signature Hash Algorithm Signature: Unknown (6)
+                Signature Algorithm: rsa_pkcs1_sha512 (0x0601)
+                    Signature Hash Algorithm Hash: SHA512 (6)
+                    Signature Hash Algorithm Signature: RSA (1)
+        Extension: signed_certificate_timestamp (len=0)
+            Type: signed_certificate_timestamp (18)
+            Length: 0
+        Extension: key_share (len=43)
+            Type: key_share (51)
+            Length: 43
+            Key Share extension
+        Extension: psk_key_exchange_modes (len=2)
+            Type: psk_key_exchange_modes (45)
+            Length: 2
+            PSK Key Exchange Modes Length: 1
+            PSK Key Exchange Mode: PSK with (EC)DHE key establishment (psk_dhe_ke) (1)
+        Extension: supported_versions (len=11)
+            Type: supported_versions (43)
+            Length: 11
+            Supported Versions length: 10
+            Supported Version: Unknown (0x4a4a)
+            Supported Version: TLS 1.3 (0x0304)
+            Supported Version: TLS 1.2 (0x0303)
+            Supported Version: TLS 1.1 (0x0302)
+            Supported Version: TLS 1.0 (0x0301)
+        Extension: compress_certificate (len=3)
+            Type: compress_certificate (27)
+            Length: 3
+            Algorithms Length: 2
+            Algorithm: brotli (2)
+        Extension: Reserved (GREASE) (len=1)
+            Type: Reserved (GREASE) (31354)
+            Length: 1
+            Data: 00
+        Extension: padding (len=203)
+            Type: padding (21)
+            Length: 203
+            Padding Data: 000000000000000000000000000000000000000000000000000000000000000000000000…</code></pre><p>对比一下burp和requests的Client Hello有什么区别</p>
+<p><img src="https://i.loli.net/2021/04/18/peRodkDJPr8WsCE.png" alt="image-20210417232659698"></p>
+<p><img src="https://i.loli.net/2021/04/18/vnoILAQ51xPkFdY.png" alt="image-20210418003345250"></p>
+<p><img src="https://i.loli.net/2021/04/18/bpUPtHhm79rCs2f.png" alt="image-20210418003434433"></p>
+<p>一些不同的点：</p>
+<p>Burp Suite</p>
+<p>Requests</p>
+<p>TLSv1.2 Record Layer: Handshake Protocol: Client Hello<br>Version: TLS 1.2 (0x0303)</p>
+<p>TLSv1.2 Record Layer: Handshake Protocol: Client Hello<br>Version: TLS 1.0 (0x0301)</p>
+<p>Length: 466</p>
+<p>Length: 338</p>
+<p>Cipher Suites Length: 104</p>
+<p>Cipher Suites Length: 86</p>
+<p>Cipher Suites (52 suites)</p>
+<p>Cipher Suites (43 suites)</p>
+<p>Cipher Suite: TLS_AES_128_GCM_SHA256 (0x1301)<br>Cipher Suite: TLS_AES_256_GCM_SHA384 (0x1302)<br>Cipher Suite: TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 (0xc02c)<br>…..</p>
+<p>Cipher Suite: TLS_AES_256_GCM_SHA384 (0x1302)<br>Cipher Suite: TLS_CHACHA20_POLY1305_SHA256 (0x1303)<br>Cipher Suite: TLS_AES_128_GCM_SHA256 (0x1301)<br>…..</p>
+<p>Extensions Length: 285</p>
+<p>Extensions Length: 175</p>
+<p>Extension: signature_algorithms (len=46)</p>
+<p>Extension: signature_algorithms (len=48)</p>
+<p>Extension: supported_versions (len=11)</p>
+<p>Extension: supported_versions (len=9)</p>
+<p>可以看到很多地方都存在差异，主要为支持的协议，length，支持的加密套件，加密套件的排列方式等</p>
+<p>多次请求可以发现相同的客户端发起请求，除了Random和Session ID之外其他内容是完全一样的</p>
+<p><img src="https://i.loli.net/2021/04/18/UbFOmfK4QSelPYH.png" alt="image-20210418004913296"></p>
+<p>所以这里面固定的内容其实就可以作为指纹来进行识别</p>
+<p>比如加密套件<code>13 02</code>-<code>00 ff</code>在tcp流当中就有固定的字节顺序</p>
+<p><img src="https://i.loli.net/2021/04/18/OWrIsabRYSx9EZc.png" alt="image-20210418005437823"></p>
+<h1 id="TLS-Fingerprint-识别原理"><a href="#TLS-Fingerprint-识别原理" class="headerlink" title="TLS Fingerprint 识别原理"></a>TLS Fingerprint 识别原理</h1><p><a href="https://idea.popcount.org/2012-06-17-ssl-fingerprinting-for-p0f/" target="_blank" rel="noopener">https://idea.popcount.org/2012-06-17-ssl-fingerprinting-for-p0f/</a></p>
+<p><a href="https://github.com/salesforce/ja3" target="_blank" rel="noopener">https://github.com/salesforce/ja3</a></p>
+<p>看了下ja3 的指纹计算规则：</p>
+<blockquote>
+<p>The field order is as follows:</p>
+<pre><code>SSLVersion,Cipher,SSLExtension,EllipticCurve,EllipticCurvePointFormat</code></pre><p>Example:</p>
+<pre><code>769,47-53-5-10-49161-49162-49171-49172-50-56-19-4,0-10-11,23-24-25,0</code></pre></blockquote>
+<p>把版本，加密套件，扩展等内容按顺序排列然后计算hash值，便可得到一个客户端的TLS FingerPrint，waf防护规则其实就是整理提取一些常见的非浏览器客户端requests，curl的指纹然后在客户端发起https请求时进行识别并拦截</p>
+<h1 id="Bypass"><a href="#Bypass" class="headerlink" title="Bypass"></a>Bypass</h1><blockquote>
+<p>除了TLS指纹，对User-Agent也是有对应拦截，如果使用带有UA特征的客户端那么UA也是需要更改的</p>
+</blockquote>
+<h2 id="1-访问ip指定host绕过waf"><a href="#1-访问ip指定host绕过waf" class="headerlink" title="1.访问ip指定host绕过waf"></a>1.访问ip指定host绕过waf</h2><p>上文提到过，套了阿里云waf的服务器cname解析到了yundunwaf3.com的域名，这种情况可以直接ping 域名获取真实ip，然后请求地址设置为真实ip 在 HTTP Header的Host字段中指定域名即可绕过waf的防护</p>
+<p>当然这种方式如果目标服务器开启了强制域名访问会失效</p>
+<h2 id="2-代理中转请求"><a href="#2-代理中转请求" class="headerlink" title="2.代理中转请求"></a>2.代理中转请求</h2><p>在本地启动代理服务器，如Burp Suite，发起http请求时指定代理服务器为burp的地址，让burp来进行TLS握手，算是一种曲线救国的方法</p>
+<pre><code>import requests
+proxies = {
+&apos;http&apos;: &apos;http://127.0.0.1:8080&apos;,
+&apos;https&apos;: &apos;http://127.0.0.1:8080&apos;
+}
+rsp=requests.get(url,proxies=proxies)</code></pre><p>当然这种方案需要找一个不会被拦截的客户端代理才可以，试了几个go写的代理如goproxy发现仍然被拦截</p>
+<h2 id="3-更换request工具库"><a href="#3-更换request工具库" class="headerlink" title="3.更换request工具库"></a>3.更换request工具库</h2><p>Requests其实是对urllib3的一个封装，那python有没有不用urllib的http request库呢？</p>
+<p>翻了翻aiohttp的源码发现貌似并没有用urllib3，抓包发现tls指纹和requests也有着明显的差异</p>
+<p>实际测试aiohttp确实没有被拦截</p>
+<h2 id="4-魔改requests"><a href="#4-魔改requests" class="headerlink" title="4.魔改requests"></a>4.魔改requests</h2><p>从根本上解决问题，debug跟踪到了几处可能可以修改TLS握手特征的代码</p>
+<p>举一个🌰</p>
+<p><code>/usr/local/lib/python3.9/site-packages/urllib3/util/ssl_.py</code></p>
+<pre><code>DEFAULT_CIPHERS = &quot;:&quot;.join(
+    [
+        &quot;ECDHE+AESGCM&quot;,
+        &quot;ECDHE+CHACHA20&quot;,
+        &quot;DHE+AESGCM&quot;,
+        &quot;DHE+CHACHA20&quot;,
+        &quot;ECDH+AESGCM&quot;,
+        &quot;DH+AESGCM&quot;,
+        &quot;ECDH+AES&quot;,
+        &quot;DH+AES&quot;,
+        &quot;RSA+AESGCM&quot;,
+        &quot;RSA+AES&quot;,
+        &quot;!aNULL&quot;,
+        &quot;!eNULL&quot;,
+        &quot;!MD5&quot;,
+        &quot;!DSS&quot;,
+    ]
+)</code></pre><p><code>DEFAULT_CIPHERS</code>中定义了一部分的加密套件，直接进行一个删除</p>
+<blockquote>
+<p>当然其他能改的地方还有很多</p>
+</blockquote>
+<p><img src="https://i.loli.net/2021/04/18/UhM9rkGIgRJ5cTY.png" alt="image-20210418013151683"></p>
+<p>成功绕过了阿里云的拦截</p>
+<p><img src="https://i.loli.net/2021/04/18/SQR1NPzBc74FlnT.png" alt="image-20210418012703824"></p>
+<p>原本内容:</p>
+<pre><code>Cipher Suites Length: 86
+Cipher Suites (43 suites)</code></pre><p>修改后的内容：</p>
+<pre><code>Cipher Suites Length: 80
+Cipher Suites (40 suites)</code></pre><p>加密套件的内容发生了变化，使得Finger Print和原本requests不一致</p>
+<p>理论上其他客户端也可以进行修改代码实现变更TLS指纹的操作，但是如java,go等编译型语言写的工具在没有源码的情况下修改会很麻烦</p>
+<h1 id="Other"><a href="#Other" class="headerlink" title="Other"></a>Other</h1><p>感觉是好多年前就被研究出来的技术了，一定程度上来说确实能防止一些特定语言和客户端的爬虫和扫描工具，尤其是脚本小子们，未来各家waf防火墙估计也会上对应的功能，虽然目前只在阿里云waf见过，目前其他家waf的防爬虫功能貌似就是没啥卵用的识别个User-Agent</p>
+<p>作为一个Scripting Kiddie日个站已经很不容易了,总搞这种影响体验的东西搞👴的心态真的好🐎？</p>
+<p>全版本burp的指纹麻烦加一加，大家都不用上班了，美滋滋（之前有几次发现某些站只要挂了burp就无法访问但是同事其他版本的burp屁事没有，现在想起来可能也是这个问题</p>
+<p>本博客采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank" rel="noopener">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议(CC BY-NC-SA 4.0) 发布.</a><br>转载请注明来自<a href="https://ares-x.com/" target="_blank" rel="noopener">Ares’X Blog</a></p>
+<p><em>Page View</em></p>
+<p><a href="https://ares-x.com/2021/04/18/SSL-%E6%8C%87%E7%BA%B9%E8%AF%86%E5%88%AB%E5%92%8C%E7%BB%95%E8%BF%87/" target="_blank" rel="noopener">Prev</a> <a href="https://ares-x.com/" target="_blank" rel="noopener">Home</a> <a href="https://ares-x.com/2021/04/14/HTB-You-know-0xDiablos/" target="_blank" rel="noopener">Next</a></p>
+<p>2021-04-18</p>
+<p><a href="https://ares-x.com/2021/04/18/SSL-%E6%8C%87%E7%BA%B9%E8%AF%86%E5%88%AB%E5%92%8C%E7%BB%95%E8%BF%87/" target="_blank" rel="noopener"></a></p>
+<ul>
+<li><a href="https://ares-x.com/categories/%E6%B8%97%E9%80%8F%E4%B8%8D%E6%B5%8B%E8%AF%95/" target="_blank" rel="noopener">渗透不测试27</a></li>
+</ul>
+<p><a href="https://ares-x.com/2021/04/18/SSL-%E6%8C%87%E7%BA%B9%E8%AF%86%E5%88%AB%E5%92%8C%E7%BB%95%E8%BF%87/" target="_blank" rel="noopener"></a></p>
+<ul>
+<li><a href="https://ares-x.com/tags/SSL/" target="_blank" rel="noopener">SSL1</a></li>
+<li><a href="https://ares-x.com/tags/TLS/" target="_blank" rel="noopener">TLS1</a></li>
+<li><a href="https://ares-x.com/tags/Bypass/" target="_blank" rel="noopener">Bypass1</a></li>
+</ul>
+<p><a href="https://ares-x.com/2021/04/18/SSL-%E6%8C%87%E7%BA%B9%E8%AF%86%E5%88%AB%E5%92%8C%E7%BB%95%E8%BF%87/" target="_blank" rel="noopener"></a></p>
+<p>Contents</p>
+<ol>
+<li><a href="https://ares-x.com/#SSL-Fingerprint-and-Bypass" target="_blank" rel="noopener">SSL Fingerprint and Bypass</a></li>
+<li><a href="https://ares-x.com/#Python-403-Burp-200" target="_blank" rel="noopener">Python 403 Burp 200?</a><ol>
+<li><a href="https://ares-x.com/#Burp" target="_blank" rel="noopener">Burp</a></li>
+<li><a href="https://ares-x.com/#Python3-Requests" target="_blank" rel="noopener">Python3 Requests</a></li>
+</ol>
+</li>
+<li><a href="https://ares-x.com/#%E4%B8%8D%E5%90%8C%E5%AE%A2%E6%88%B7%E7%AB%AF%E7%9A%84ClientHello%E6%8A%A5%E6%96%87" target="_blank" rel="noopener">不同客户端的ClientHello报文</a><ol>
+<li><a href="https://ares-x.com/#CURL-ClientHello" target="_blank" rel="noopener">CURL ClientHello</a></li>
+<li><a href="https://ares-x.com/#Python3-Requests-1" target="_blank" rel="noopener">Python3 Requests</a></li>
+<li><a href="https://ares-x.com/#Python3-aioHTTP" target="_blank" rel="noopener">Python3 aioHTTP</a></li>
+<li><a href="https://ares-x.com/#Burp-Suite" target="_blank" rel="noopener">Burp Suite</a></li>
+<li><a href="https://ares-x.com/#Chrome" target="_blank" rel="noopener">Chrome</a></li>
+</ol>
+</li>
+<li><a href="https://ares-x.com/#TLS-Fingerprint-%E8%AF%86%E5%88%AB%E5%8E%9F%E7%90%86" target="_blank" rel="noopener">TLS Fingerprint 识别原理</a></li>
+<li><a href="https://ares-x.com/#Bypass" target="_blank" rel="noopener">Bypass</a><ol>
+<li><a href="https://ares-x.com/#1-%E8%AE%BF%E9%97%AEip%E6%8C%87%E5%AE%9Ahost%E7%BB%95%E8%BF%87waf" target="_blank" rel="noopener">1.访问ip指定host绕过waf</a></li>
+<li><a href="https://ares-x.com/#2-%E4%BB%A3%E7%90%86%E4%B8%AD%E8%BD%AC%E8%AF%B7%E6%B1%82" target="_blank" rel="noopener">2.代理中转请求</a></li>
+<li><a href="https://ares-x.com/#3-%E6%9B%B4%E6%8D%A2request%E5%B7%A5%E5%85%B7%E5%BA%93" target="_blank" rel="noopener">3.更换request工具库</a></li>
+<li><a href="https://ares-x.com/#4-%E9%AD%94%E6%94%B9requests" target="_blank" rel="noopener">4.魔改requests</a></li>
+</ol>
+</li>
+<li><a href="https://ares-x.com/#Other" target="_blank" rel="noopener">Other</a></li>
+</ol>
+<hr>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/04/20/qiwihui-pocket_readings-1077/" rel="prev" title="
+
+
+给互联网人的反侦查手册 ">
+      <i class="fa fa-chevron-left"></i> 
+
+
+给互联网人的反侦查手册 
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/04/21/qiwihui-pocket_readings-1079/" rel="next" title="
+
+
+我们的第一次近源渗透 ">
+      
+
+
+我们的第一次近源渗透  <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SSL-指纹识别和绕过-by-AresX"><span class="nav-number"></span> <span class="nav-text">SSL 指纹识别和绕过 by AresX</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#SSL-Fingerprint-and-Bypass"><span class="nav-number"></span> <span class="nav-text">SSL Fingerprint and Bypass</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Python-403-Burp-200"><span class="nav-number"></span> <span class="nav-text">Python 403 Burp 200?</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Burp"><span class="nav-number"></span> <span class="nav-text">Burp</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Python3-Requests"><span class="nav-number"></span> <span class="nav-text">Python3 Requests</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#不同客户端的ClientHello报文"><span class="nav-number"></span> <span class="nav-text">不同客户端的ClientHello报文</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#CURL-ClientHello"><span class="nav-number"></span> <span class="nav-text">CURL ClientHello</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Python3-Requests-1"><span class="nav-number"></span> <span class="nav-text">Python3 Requests</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Python3-aioHTTP"><span class="nav-number"></span> <span class="nav-text">Python3 aioHTTP</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Burp-Suite"><span class="nav-number"></span> <span class="nav-text">Burp Suite</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Chrome"><span class="nav-number"></span> <span class="nav-text">Chrome</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#TLS-Fingerprint-识别原理"><span class="nav-number"></span> <span class="nav-text">TLS Fingerprint 识别原理</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Bypass"><span class="nav-number"></span> <span class="nav-text">Bypass</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-访问ip指定host绕过waf"><span class="nav-number"></span> <span class="nav-text">1.访问ip指定host绕过waf</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-代理中转请求"><span class="nav-number"></span> <span class="nav-text">2.代理中转请求</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-更换request工具库"><span class="nav-number"></span> <span class="nav-text">3.更换request工具库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-魔改requests"><span class="nav-number"></span> <span class="nav-text">4.魔改requests</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Other"><span class="nav-number"></span> <span class="nav-text">Other</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

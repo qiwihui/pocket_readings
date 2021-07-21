@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="数据库软件架构，到底要设计些什么（收藏）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="
+
+
+数据库软件架构，到底要设计些什么（收藏） ">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/07/16/qiwihui-pocket_readings-1155/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="数据库软件架构，到底要设计些什么（收藏）">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz/YrezxckhYOzbRcfS5SIbLMXktibZKEUDiaUiaPaJRzmaNftAkXQu3pVBjZELIMCicrXichu4BqNhZjFS5OHY5aof0dg/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz/YrezxckhYOzbRcfS5SIbLMXktibZKEUDia9VKZAyDpXM7T3OlvyMw5TP6kJPjDRr9Um7OTbpcEyeeT89gkDYoYHw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz/YrezxckhYOzbRcfS5SIbLMXktibZKEUDia9iaKKQDBE0ELYibLavZca2JcPDztQwP8IjhEoqK6ePEY1Qcicu2DacCeQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz/YrezxckhYOzbRcfS5SIbLMXktibZKEUDiaIEhiaLRzUyELVxR1tNNQoveb5FwdsIvAAZmbFAKJb8150cicLSA0iadww/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz/YrezxckhYOzbRcfS5SIbLMXktibZKEUDia9OibFcGx9ibaiaicHoPicvqFG14AgIjnJEgsiaib7PpB1TGd1Rib7nlgMLTn8Q/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz/YrezxckhYOzbRcfS5SIbLMXktibZKEUDiaYyPvCHYX5XZ1uW7MwY8hX5gSeaoMibQnVg5V3qmTFDVDuGwMZicS63lQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz/YrezxckhYOzbRcfS5SIbLMXktibZKEUDiaqMpxic77DTJvUp3W6g1PA6Vm1WuTDgwiasM0eKJDIVMYJx9LicQbRjpJQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz/YrezxckhYOzbRcfS5SIbLMXktibZKEUDiaLeBKuiczj6lDOfAzmXDDI4tTJVc4Gx2QYCKwvPW9FgtaqxB3xxictFhw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz/YrezxckhYOzbRcfS5SIbLMXktibZKEUDiacFsmjn3ytAvnDqV0ILbZT9TlKwtG9krGElkCyY7bv4T6HV7PYqkWMw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz/YrezxckhYOzbRcfS5SIbLMXktibZKEUDiazO3F8tgMQMstbbG3OuhIHS2QqDVzu2qjBPggpwxSkkX8luX9IXzaicQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz/YrezxckhYOzbRcfS5SIbLMXktibZKEUDia0sK1XT3feVuPOZDxPKzLia1mJZK0vlRvaYZ8ldWDdtp3ueFeWRsiaYOA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz/YrezxckhYOzbRcfS5SIbLMXktibZKEUDiav69icmT9DxUAlQuEwOfSu2TsHYoL3gww3c47mvoGYLicDky8Mic9oXkqw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz/YrezxckhYOzbRcfS5SIbLMXktibZKEUDiacFsmjn3ytAvnDqV0ILbZT9TlKwtG9krGElkCyY7bv4T6HV7PYqkWMw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/YqTTj5V6CHsgTy3w9Ifoocibk29fUZUVkLeQhjW7icXdibqXoKexec5tYmpI0WWKJH1ribGyoUibE12us1KVHWgLBxw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/YqTTj5V6CHtDwUsxn0iaaeXBdEA5JOKlRp0Lib2VrWkRia1eIQWz2ichzKgl9wNbIRAreNiabkbrWU14DLViaybA5ILA/640?wx_fmt=png">
+<meta property="article:published_time" content="2021-07-16T04:21:32.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.406Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://mmbiz.qpic.cn/mmbiz/YrezxckhYOzbRcfS5SIbLMXktibZKEUDiaUiaPaJRzmaNftAkXQu3pVBjZELIMCicrXichu4BqNhZjFS5OHY5aof0dg/640?wx_fmt=png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/07/16/qiwihui-pocket_readings-1155/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>
+
+
+数据库软件架构，到底要设计些什么（收藏）  | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/07/16/qiwihui-pocket_readings-1155/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+
+
+数据库软件架构，到底要设计些什么（收藏） 
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-07-16 04:21:32" itemprop="dateCreated datePublished" datetime="2021-07-16T04:21:32+00:00">2021-07-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">
+
+
+数据库软件架构，到底要设计些什么（收藏） </div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#24494;&#20449;&#21495; road5858 &#21151;&#33021;&#20171;&#32461; &#26550;&#26500;&#24072;&#20043;&#36335;&#65292;&#22362;&#25345;&#25776;&#20889;&#25509;&#22320;&#27668;&#30340;&#26550;&#26500;&#25991;&#31456; &#19968;&#12289;&#22522;&#26412;&#27010;&#24565; &#27010;&#24565;&#19968;&#65306;&#21333;&#24211; &#27010;&#24565;&#20108;&#65306;&#20998;&#29255;&#20998;&#29255;&#35299;&#20915;&ldquo;&#25968;&#25454;&#37327;&#22826;&#22823;&rdquo;&#36825;&#19968;&#38382;&#39064;&#65292;&#20063;&#23601;&#26159;&#36890;&#24120;&#35828;&#30340;&ldquo;&#27700;&#24179;&#20999;&#20998;&rdquo;&#12290;&#19968;&#26086;&#24341;&#20837;&#20998;&#29255;&#65292;&#21183;&#24517;&#38754;&#20020;&ldquo;&#25968;&#25454;&#36335;&#30001;&rdquo;&#30340;&#26032;&#38382;&#39064;&#65292;<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/3B7s8bl" target="_blank" rel="noopener">https://ift.tt/3B7s8bl</a> original site<br><br><br><br>July 16, 2021 at 11:34AM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1155#issuecomment-881165351" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>7/16/2021</strong></p>
+</blockquote>
+<h2 id="数据库软件架构，到底要设计些什么（收藏）-by-架构师之路"><a href="#数据库软件架构，到底要设计些什么（收藏）-by-架构师之路" class="headerlink" title="数据库软件架构，到底要设计些什么（收藏） by 架构师之路"></a>数据库软件架构，到底要设计些什么（收藏） by 架构师之路</h2><p><strong>2021-07-15</strong><br><strong>一、基本概念</strong></p>
+<p><strong>概念一：单库</strong></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz/YrezxckhYOzbRcfS5SIbLMXktibZKEUDiaUiaPaJRzmaNftAkXQu3pVBjZELIMCicrXichu4BqNhZjFS5OHY5aof0dg/640?wx_fmt=png" alt="">  </p>
+<p><strong>概念二：分片</strong></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz/YrezxckhYOzbRcfS5SIbLMXktibZKEUDia9VKZAyDpXM7T3OlvyMw5TP6kJPjDRr9Um7OTbpcEyeeT89gkDYoYHw/640?wx_fmt=png" alt=""><br>分片解决“数据量太大”这一问题，也就是通常说的“水平切分”。  </p>
+<p>一旦引入分片，势必面临“数据路由”的新问题，数据到底要访问哪个库。路由规则通常有3种方法：</p>
+<p><strong>（1）范围：**</strong>range**</p>
+<p>优点：简单，容易扩展。</p>
+<p>缺点：各库压力不均（新号段更活跃）。</p>
+<p><strong>（2）哈希：**</strong>hash**</p>
+<p>优点：简单，数据均衡，负载均匀。</p>
+<p>缺点：迁移麻烦（2库扩3库数据要迁移）。</p>
+<p><strong>（3）统一路由服务：**</strong>router-config-server**</p>
+<p>优点：灵活性强，业务与路由算法解耦。</p>
+<p>缺点：每次访问数据库前多一次查询。</p>
+<p>大部分互联网公司采用的方案二：哈希路由。</p>
+<p><strong>概念三：分组</strong></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz/YrezxckhYOzbRcfS5SIbLMXktibZKEUDia9iaKKQDBE0ELYibLavZca2JcPDztQwP8IjhEoqK6ePEY1Qcicu2DacCeQ/640?wx_fmt=png" alt=""><br>分组解决“可用性，性能提升”这一问题，分组通常通过主从复制的方式实现。</p>
+<p>互联网公司数据库实际软件架构是“既分片，又分组”：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz/YrezxckhYOzbRcfS5SIbLMXktibZKEUDiaIEhiaLRzUyELVxR1tNNQoveb5FwdsIvAAZmbFAKJb8150cicLSA0iadww/640?wx_fmt=png" alt="">  </p>
+<hr>
+<p>数据库软件架构，究竟设计些什么呢，至少要考虑以下四点：  </p>
+<ul>
+<li><p>如何保证数据可用性</p>
+</li>
+<li><p>如何提高数据库读性能（大部分应用读多写少，读会先成为瓶颈）</p>
+</li>
+<li><p>如何保证一致性</p>
+</li>
+<li><p>如何提高扩展性</p>
+</li>
+</ul>
+<hr>
+<p><strong>二、如何保证数据的可用性？</strong></p>
+<p>解决可用性问题的思路是：冗余。</p>
+<p>如何保证站点的可用性？冗余站点。</p>
+<p>如何保证服务的可用性？冗余服务。</p>
+<p>如何保证数据的可用性？冗余数据。</p>
+<p>数据的冗余，会带来一个副作用：一致性问题。</p>
+<p><strong>如何保证数据库“读”高可用？</strong></p>
+<p>冗余读库。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz/YrezxckhYOzbRcfS5SIbLMXktibZKEUDia9OibFcGx9ibaiaicHoPicvqFG14AgIjnJEgsiaib7PpB1TGd1Rib7nlgMLTn8Q/640?wx_fmt=png" alt="">  </p>
+<p><strong>冗余读库带来什么副作用？</strong></p>
+<p>读写有延时，数据可能不一致。</p>
+<p>上图是很多互联网公司mysql的架构，写仍然是单点，不能保证写高可用。</p>
+<p><strong>如何保证数据库“写”高可用？</strong></p>
+<p>冗余写库。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz/YrezxckhYOzbRcfS5SIbLMXktibZKEUDiaYyPvCHYX5XZ1uW7MwY8hX5gSeaoMibQnVg5V3qmTFDVDuGwMZicS63lQ/640?wx_fmt=png" alt=""><br>采用双主互备的方式，可以冗余写库。</p>
+<p><strong>冗余写库带来什么副作用？</strong></p>
+<p>双写同步，数据可能冲突（例如“自增id”同步冲突）。</p>
+<p>如何解决同步冲突，有两种常见解决方案：</p>
+<p>（1）两个写库使用不同的初始值，相同的步长来增加id：1写库的id为0,2,4,6…；2写库的id为1,3,5,7…；</p>
+<p>（2）不使用数据的id，业务层自己生成唯一的id，保证数据不冲突；</p>
+<p>阿里云的RDS服务号称<strong>写高可用，是如何实现的呢？</strong></p>
+<p>他们采用的就是类似于“双主同步”的方式（不再有从库了）。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz/YrezxckhYOzbRcfS5SIbLMXktibZKEUDiaqMpxic77DTJvUp3W6g1PA6Vm1WuTDgwiasM0eKJDIVMYJx9LicQbRjpJQ/640?wx_fmt=png" alt=""><br>仍是双主，但只有一个主提供读写服务，另一个主是“shadow-master”，只用来保证高可用，平时不提供服务。</p>
+<p>master挂了，shadow-master顶上，虚IP漂移，对业务层透明，不需要人工介入。</p>
+<p>这种方式的好处：</p>
+<p>（1）读写没有延时，无一致性问题；</p>
+<p>（2）读写高可用；</p>
+<p>不足是：</p>
+<p>（1）不能通过加从库的方式扩展读性能；</p>
+<p>（2）资源利用率为50%，一台冗余主没有提供服务；</p>
+<p><em>画外音：所以，高可用RDS还挺贵的。</em></p>
+<p><strong>三、如何扩展读性能？</strong>  </p>
+<p>提高读性能的方式大致有三种，第一种是<strong>增加索引</strong>。</p>
+<p>这种方式不展开，要提到的一点是，不同的库可以建立不同的索引。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz/YrezxckhYOzbRcfS5SIbLMXktibZKEUDiaLeBKuiczj6lDOfAzmXDDI4tTJVc4Gx2QYCKwvPW9FgtaqxB3xxictFhw/640?wx_fmt=png" alt=""><br>如上图：</p>
+<p>（1）写库不建立索引；</p>
+<p>（2）线上读库建立线上访问索引，例如uid；</p>
+<p>（3）线下读库建立线下访问索引，例如time；</p>
+<p>第二种扩充读性能的方式是，<strong>增加从库</strong>。</p>
+<p>这种方法大家用的比较多，存在两个缺点：</p>
+<p>（1）从库越多，同步越慢；</p>
+<p>（2）同步越慢，数据不一致窗口越大；</p>
+<p>第三种增加系统读性能的方式是，<strong>增加缓存</strong>。</p>
+<p>常见的缓存架构如下：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz/YrezxckhYOzbRcfS5SIbLMXktibZKEUDiacFsmjn3ytAvnDqV0ILbZT9TlKwtG9krGElkCyY7bv4T6HV7PYqkWMw/640?wx_fmt=png" alt=""><br>（1）上游是业务应用；</p>
+<p>（2）下游是主库，从库（读写分离），缓存；</p>
+<p>如果系统架构实施了服务化：</p>
+<p>（1）上游是业务应用；</p>
+<p>（2）中间是服务；</p>
+<p>（3）下游是主库，从库，缓存；</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz/YrezxckhYOzbRcfS5SIbLMXktibZKEUDiazO3F8tgMQMstbbG3OuhIHS2QqDVzu2qjBPggpwxSkkX8luX9IXzaicQ/640?wx_fmt=png" alt=""><br>业务层不直接面向db和cache，服务层屏蔽了底层db、cache的复杂性。</p>
+<p>不管采用主从的方式扩展读性能，还是缓存的方式扩展读性能，数据都要复制多份（主+从，db+cache），一定会引发一致性问题。  </p>
+<p><strong>四、如何保证一致性？</strong></p>
+<p>主从数据库的一致性，通常有两种解决方案：</p>
+<p><strong>（1）中间件</strong></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz/YrezxckhYOzbRcfS5SIbLMXktibZKEUDia0sK1XT3feVuPOZDxPKzLia1mJZK0vlRvaYZ8ldWDdtp3ueFeWRsiaYOA/640?wx_fmt=png" alt=""><br>如果某一个key有写操作，在不一致时间窗口内，中间件会将这个key的读操作也路由到主库上。</p>
+<p><strong>（2）强制读主</strong></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz/YrezxckhYOzbRcfS5SIbLMXktibZKEUDiav69icmT9DxUAlQuEwOfSu2TsHYoL3gww3c47mvoGYLicDky8Mic9oXkqw/640?wx_fmt=png" alt=""><br>“双主高可用”的架构，主从一致性的问题能够大大缓解。</p>
+<p>第二类不一致，是db与缓存间的不一致。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz/YrezxckhYOzbRcfS5SIbLMXktibZKEUDiacFsmjn3ytAvnDqV0ILbZT9TlKwtG9krGElkCyY7bv4T6HV7PYqkWMw/640?wx_fmt=png" alt="">  </p>
+<p>这一类不一致，之前聊过，本文不再展开。</p>
+<p>另外建议，所有允许cache miss的业务场景，缓存中的KEY都设置一个超时时间，这样即使出现不一致，有机会得到自修复。  </p>
+<p><strong>五、如何保障数据库的扩展性？</strong></p>
+<p>秒级成倍数据库扩容：</p>
+<p>《<a href="http://mp.weixin.qq.com/s?__biz=MjM5ODYxMDA5OQ==&mid=2651962231&idx=1&sn=1b51d042c243f0b3ce0b748ddbcff865&chksm=bd2d0eab8a5a87bdcbe7dd08fb4c969ad76fa0ea00b2c78645db8561fd2a78d813d7b8bef2ac&scene=21#wechat_redirect" target="_blank" rel="noopener">亿级数据DB秒级平滑扩容</a>》</p>
+<p>如果不是成倍扩容：</p>
+<p>《<a href="http://mp.weixin.qq.com/s?__biz=MjM5ODYxMDA5OQ==&mid=2651962270&idx=1&sn=3131888f29d0d137d02703a6dc91fa56&chksm=bd2d0e428a5a87547dfc6a0a292a7746ad50b74a078e29b4b8024633fa42db6ccc5f47435063&scene=21#wechat_redirect" target="_blank" rel="noopener">100亿数据平滑数据迁移,不影响服务</a>》</p>
+<p>也可能，是要对字段进行扩展：</p>
+<p>《<a href="http://mp.weixin.qq.com/s?__biz=MjM5ODYxMDA5OQ==&mid=2651962219&idx=1&sn=30545c7a9f46fa74a61cc09323a6a8c9&chksm=bd2d0eb78a5a87a1c16b1d10fbb688adb2848345b70fa2fbc161b3a566c7c3e02adaccd5981e&scene=21#wechat_redirect" target="_blank" rel="noopener">1万属性，100亿数据，架构设计？</a>》</p>
+<p>这些方案，都有相关文章展开写过，本文不再赘述。</p>
+<p><strong>数据库软件架构，到底要设计些什么？</strong>  </p>
+<ul>
+<li><p>可用性</p>
+</li>
+<li><p>读性能</p>
+</li>
+<li><p>一致性</p>
+</li>
+<li><p>扩展性</p>
+</li>
+</ul>
+<p>最后，<strong>前58集团技术委员会主席孙玄</strong>联手<strong>前58集团高级架构师陈东</strong>打造了一门课程<strong>**</strong>《3天挑战架构师级MySQL海量数据设计与实践》<strong>**，希望对大家有帮助</strong>。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/YqTTj5V6CHsgTy3w9Ifoocibk29fUZUVkLeQhjW7icXdibqXoKexec5tYmpI0WWKJH1ribGyoUibE12us1KVHWgLBxw/640?wx_fmt=png" alt=""></p>
+<p><strong>课题</strong>：架构师MySQL海量数据设计与实践  </p>
+<p><strong>时间</strong>：7.19-7.21 三天，20:00开始</p>
+<p><strong>费用</strong>：0.99（原价499，粉丝福利价 0.99）</p>
+<p><strong>名额</strong>：200名，先到先得</p>
+<p><strong>如何参加？</strong></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/YqTTj5V6CHtDwUsxn0iaaeXBdEA5JOKlRp0Lib2VrWkRia1eIQWz2ichzKgl9wNbIRAreNiabkbrWU14DLViaybA5ILA/640?wx_fmt=png" alt=""></p>
+<p>扫码报名，耐心等待顾问老师通过</p>
+<p>希望对大家的思维进阶有帮助。  </p>
+<p><strong>阅读原文</strong>，了解更多。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/07/13/qiwihui-pocket_readings-1154/" rel="prev" title="别让自己“墙”了自己 | 酷 壳 - CoolShell">
+      <i class="fa fa-chevron-left"></i> 别让自己“墙”了自己 | 酷 壳 - CoolShell
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/07/17/qiwihui-pocket_readings-1156/" rel="next" title="
+
+
+“财务自由”终极书单：从入门到终极 ">
+      
+
+
+“财务自由”终极书单：从入门到终极  <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据库软件架构，到底要设计些什么（收藏）-by-架构师之路"><span class="nav-number"></span> <span class="nav-text">数据库软件架构，到底要设计些什么（收藏） by 架构师之路</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

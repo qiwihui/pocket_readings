@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="《深度剖析CPython解释器》25. 解密Python中的多线程(第一部分)：初识GIL、以及多个线程之间的调度机制 - 古明地盆 - 博客园">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《深度剖析CPython解释器》25. 解密Python中的多线程(第一部分)：初识GIL、以及多个线程之间的调度机制 - 古明地盆 - 博客园">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1021/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="《深度剖析CPython解释器》25. 解密Python中的多线程(第一部分)：初识GIL、以及多个线程之间的调度机制 - 古明地盆 - 博客园">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200911012946105-410645391.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200911095341427-509369386.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200911013000410-924037153.png">
+<meta property="article:published_time" content="2021-02-16T14:17:24.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.430Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200911012946105-410645391.png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1021/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>《深度剖析CPython解释器》25. 解密Python中的多线程(第一部分)：初识GIL、以及多个线程之间的调度机制 - 古明地盆 - 博客园 | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1021/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          《深度剖析CPython解释器》25. 解密Python中的多线程(第一部分)：初识GIL、以及多个线程之间的调度机制 - 古明地盆 - 博客园
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-02-16 14:17:24" itemprop="dateCreated datePublished" datetime="2021-02-16T14:17:24+00:00">2021-02-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">《深度剖析CPython解释器》25. 解密Python中的多线程(第一部分)：初识GIL、以及多个线程之间的调度机制 - 古明地盆 - 博客园</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#36825;&#27425;&#25105;&#20204;&#26469;&#35828;&#19968;&#19979;Python&#20013;&#30340;&#22810;&#32447;&#31243;&#65292;&#22312;&#19978;&#31687;&#21338;&#23458;&#20013;&#25105;&#20204;&#35828;&#20102;Python&#30340;&#32447;&#31243;&#65292;&#25105;&#20204;&#35828;Python&#20013;&#30340;&#32447;&#31243;&#26159;&#23545;OS&#32447;&#31243;&#36827;&#34892;&#20102;&#19968;&#20010;&#23553;&#35013;&#65292;&#24182;&#25552;&#20379;&#20102;&#19968;&#20010;&#32447;&#31243;&#29366;&#24577;(PyThreadState)&#23545;&#35937;&#65292;&#26469;&#35760;&#24405;OS&#32447;&#31243;&#30340;&#19968;&#20123;&#29366;&#24577;&#20449;&#24687;&#12290;<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/3jVmwIN" target="_blank" rel="noopener">https://ift.tt/3jVmwIN</a> original site<br><br><br><br>February 16, 2021 at 10:15PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1021#issuecomment-789377945" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>3/3/2021</strong></p>
+</blockquote>
+<h2 id="《深度剖析CPython解释器》25-解密Python中的多线程-第一部分-：初识GIL、以及多个线程之间的调度机制-古明地盆-博客园"><a href="#《深度剖析CPython解释器》25-解密Python中的多线程-第一部分-：初识GIL、以及多个线程之间的调度机制-古明地盆-博客园" class="headerlink" title="《深度剖析CPython解释器》25. 解密Python中的多线程(第一部分)：初识GIL、以及多个线程之间的调度机制 - 古明地盆 - 博客园"></a>《深度剖析CPython解释器》25. 解密Python中的多线程(第一部分)：初识GIL、以及多个线程之间的调度机制 - 古明地盆 - 博客园</h2><h1 id="《深度剖析CPython解释器》25-解密Python中的多线程-第一部分-：初识GIL、以及多个线程之间的调度机制"><a href="#《深度剖析CPython解释器》25-解密Python中的多线程-第一部分-：初识GIL、以及多个线程之间的调度机制" class="headerlink" title="《深度剖析CPython解释器》25. 解密Python中的多线程(第一部分)：初识GIL、以及多个线程之间的调度机制"></a><a href="https://www.cnblogs.com/traditional/p/13649359.html" target="_blank" rel="noopener">《深度剖析CPython解释器》25. 解密Python中的多线程(第一部分)：初识GIL、以及多个线程之间的调度机制</a></h1><h2 id="楔子"><a href="#楔子" class="headerlink" title="楔子"></a>楔子</h2><p><strong>这次我们来说一下Python中的多线程，在上篇博客中我们说了Python的线程，我们说Python中的线程是对OS线程进行了一个封装，并提供了一个线程状态(PyThreadState)对象，来记录OS线程的一些状态信息。</strong></p>
+<p><strong>那什么是多线程呢？首先线程是操作系统调度cpu工作的最小单元，同理进程则是操作系统资源分配的最小单元，线程是需要依赖于进程的，并且每一个进程只少有一个线程，这个线程我们称之为主线程。而主线程则可以创建子线程，一个进程中如果有多个线程去工作，我们就称之为多线程。</strong></p>
+<p><strong>开发一个多线程应用程序是很常见的事情，很多语言都支持多线程，有的是原生支持，有的是通过库的支持。而Python毫无疑问也支持多线程，并且它是通过threading这个库的方式实现的。另外提到Python的多线程，会让人想到GIL<code>(global interpreter lock)</code>这个万恶之源，我们后面会详细介绍。目前我们知道Python中的多线程是不能利用多核的，因为Python虚拟机使用一个全局解释器锁<code>(GIL)</code>来控制线程对程序的执行，这个结果就使得无论你的cpu有多少核，但是同时被线程调度的cpu只有一个。不过底层是怎么做的呢？我们下面就来分析一下。</strong></p>
+<h2 id="GIL与线程调度"><a href="#GIL与线程调度" class="headerlink" title="GIL与线程调度"></a>GIL与线程调度</h2><p><strong>首先我们来分析一下为什么会有GIL这个东西存在？看两行代码：</strong></p>
+<pre><code>import dis
+
+dis.dis(&quot;del name&quot;)
+&quot;&quot;&quot;
+  1           0 DELETE_NAME              0 (name)
+              2 LOAD_CONST               0 (None)
+              4 RETURN_VALUE
+
+&quot;&quot;&quot;</code></pre><p><strong>当我们使用del删除一个变量的时候，对应的指令是DELETE_NAME，这个指令对应的源码中可以自己去查看。总之这条指令做的事情就是通过宏 <em>Py_DECREF</em> 减少一个对象的引用计数，并且判断减少之后其引用计数是否为0，如果为0就进行回收。伪代码如下：</strong></p>
+<pre><code>--obj-&gt;ob_refcnt
+if (obj -&gt; ob_refcnt == 0){
+    销毁obj
+}</code></pre><p><strong>所以总共是两步：第一步先将对象的引用计数减1；第二步判断引用计数是否为0，为0则进行销毁。那么问题来了，假设有两个线程A和B，内部都引用了全局变量obj，此时obj指向的对象的引用计数为2，然后让两个线程都执行del obj这行代码。</strong></p>
+<p><strong>其中A线程先执行，如果A线程在执行完<code>--obj-&gt;ob_refcnt</code>之后，会将对象的引用计数减一，但不幸的是这个时候调度机制将A挂起了，唤醒了B。而B也执行del obj，但是它比较幸运，将两步都一块执行完了。而由于之前A已经将引用计数减1，所以再减1之后会发现对象的引用计数为0，从而执行了对象的销毁动作，内存被释放。</strong></p>
+<p><strong>然后A又被唤醒了，此时开始执行第二个步骤，但由于<code>obj-&gt;ob_refcnt</code>已经被减少到0，所以条件满足，那么A依旧会对obj指向的对象进行释放，但是这个对象所占内存已经被释放了，所以obj此时就成了悬空指针。如果再对obj指向的对象进行释放，最终会引发什么结果，只有天知道。</strong></p>
+<p><strong>关键来了，所以Python引入了GIL，GIL是解释器层面上的一把超级大锁，它是字节码级别的互斥锁，作用就是：在同时一刻，只让一个线程执行字节码，并且保证每一条字节码在执行的时候都不会被打断。</strong></p>
+<p><strong>所以由于GIL的存在，会使得线程只有把当前的某条字节码指令执行完毕之后才有可能会发生调度。因此无论是A还是B，线程调度时，要么发生在DELETE_NAME这条指令执行之前，要么发生在DELETE_NAME这条指令执行完毕之后，但是不存在指令<code>(不仅是DELETE_NAME, 而是所有指令)</code>执行到一半的时候发生调度。</strong></p>
+<p><strong>因此GIL才被称之为是字节码级别的互斥锁，它是保护字节码指令只有在执行完毕之后才会发生线程调度。所以回到上面那个del obj这个例子中来，由于引入了GIL，所以就不存在我们之前说的：在A将引用计数减一之后，挂起A、唤醒B这一过程。因为A已经开始了DELETE_NAME这条指令的执行，所以在没执行完之前是不会发生线程调度的，至于为什么我们后面通过源码分析就知道了，总之此时就不会发生悬空指针的问题了。</strong></p>
+<blockquote>
+<p><strong>事实上，GIL在单核时代，其最初的目的就是为了解决引用计数的安全性问题，只不过Python的作者龟叔没想到多核会发展的这么快。</strong></p>
+</blockquote>
+<p><strong>那么，GIL是否会被移除呢？因为对于现在的多核cpu来说，Python的GIL无疑是进行了限制。</strong></p>
+<blockquote>
+<p><strong>关于能否移除GIL，从个人的角度来说不太可能，这都几十年了，能移除早就移除了。</strong></p>
+<p><strong>而且事实上，在Python诞生没多久，就有人发现了这一诡异之处，因为当时的程序猿发现使用多线程在计算上居然没有任何性能上的提升，反而还比单线程慢了一点。当时Python的官方人员直接回复：不要使用多线程，而是使用多进程。</strong></p>
+<p><strong>此时站在上帝视角的我们知道，因为GIL的存在使得同一时刻只有一个核被使用，所以对于纯计算的代码来说，理论上多线程和单线程是没有区别的。但是由于多线程涉及上下文的切换，会额外有一些开销，所以反而还慢一些。</strong></p>
+<p><strong>因此在得知GIL的存在之后，有两位勇士站了出来表示要移除GIL，当时Python处于1.5的版本，非常的古老了。当它们在去掉GIL的时候，发现多线程的效率相比之前确实提升了，但是单线程的效率只有原来的一半，这显然是不能接受的。因为把GIL去掉了，就意味着需要更细粒度的锁，这就会导致大量的加锁、解锁，而加锁、解锁对于操作系统来说是一个比较重量级的操作，所以GIL的移除是极其困难的。</strong></p>
+<p><strong>另外还有一个关键，就是当GIL被移除之后，会使得扩展模块的编写难度大大增加。像很多现有的C扩展，在很大程度上依赖GIL提供的解决方案，如果要移除GIL，就需要重新解决这些库的线程安全性问题。比如：我们熟知的numpy，numpy的速度之所以这么快，就是因为底层是C写的，外面套上了一层Python的接口。而其它的库，像pandas、scipy、sklearn都是基于numpy之上的，如果把GIL移除了，那么这些库就都不能用了。还有深度学习，深度学习对应的库：tensorflow、pytorch等框架所使用的底层算法也都不是Python编写的，而是C和C++，Python只是起到了一个包装器的作用。Python在深度学习领域很火，主要是它可以和C无缝结合，如果GIL被移除，那么这些框架也没法用了。</strong></p>
+<p><strong>还有Cython，Cython代码本质上也是翻译成C的代码，再编译成扩展模块给Python调用，本质上也是写扩展模块。所以我们可以看到，如果GIL被移除了，那么很多Python第三方库(包括上面提到的)可能就要重新洗牌了。</strong></p>
+<p><strong>因此在2020年的今天，生态如此成熟的Python，几乎是不可能摆脱GIL了。</strong></p>
+</blockquote>
+<p><strong>小插曲：我们说去GIL的老铁有两位，分别是<code>Greg Stein</code>和<code>Mark Hammond</code>，这个<code>Mark Hammond</code>估计很多人都见过，如果没见过，说明你Windows安装Python的时候不怎么关注。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200911012946105-410645391.png" alt=""></p>
+<p><strong>特别感谢 Mark Hammond，没有它这些年无偿分享的Windows专业技术，那么Python如今仍会运行在DOS上。</strong></p>
+<p><strong>图解GIL</strong></p>
+<p><strong>我们说Python启动一个线程，底层会启动一个C线程，最终启动一个操作系统的线程。所以还是那句话，Python中的线程实际上是封装了C的线程，进而封装了OS线程，一个Python线程对应一个OS线程。实际执行的肯定是OS线程，而OS线程Python解释器是没有权限控制的，它能控制的只是Python的线程。假设有4个Python线程，那么肯定对应4个OS线程，但是Python解释器每次只让一个Python线程去调用OS线程的执行，其它的线程只能干等着，只有当前的Python线程将GIL释放了，其它的某个线程在拿到GIL时，才可以调用相应的OS线程去执行。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200911095341427-509369386.png" alt=""></p>
+<p><strong>所以Python线程是调用C的线程、进而调用操作系统的OS线程，而每个线程在执行过程中Python解释器是控制不了的，因为Python的控制范围只有在解释器这一层，Python无权干预C的线程、更无权干预OS线程。</strong></p>
+<p><strong>但是注意：GIL并不是Python语言的特性，它是CPython解释器开发人员为了方便才加上去的，只不过我们大部分用的都是CPython解释器，所以很多人认为CPython和Python是等价的，但其实不是的。Python是一门语言，而CPython是对使用Python语言编写的源代码进行解释执行的一个解释器。而解释器不止CPython一种，还有JPython，JPython解释器就没有GIL。因此Python语言本身是和GIL无关的，只不过我们平时在说Python的GIL的时候，指的都是CPython解释器里面的GIL，这一点要注意。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200911013000410-924037153.png" alt=""></p>
+<p><strong>所以就类似于上图的结果，一个线程执行一会儿，另一个线程执行一会儿，至于线程怎么切换、什么时候切换，我们后面会说。</strong></p>
+<p><strong>因此我们知道，对于Python而言，解释执行字节码是Python的核心所在，所以Python通过GIL来互斥不同线程调用解释器执行字节码。如果一个线程想要执行，就必须拿到GIL，而一旦拿到GIL，其他线程就无法执行了，如果想执行，那么只能等GIL释放、被自己获取之后才可以执行。然而实际上，GIL保护的不仅仅是Python的解释器，同样还有python的C API，在C/C++和Python混合开发时，在涉及到原生线程和python线程相互合作时，也需要通过GIL进行互斥。</strong></p>
+<p><strong>有了GIL，在编写多线程代码的时候是不是就意味着不需要加锁了呢？</strong></p>
+<blockquote>
+<p><strong>答案显然不是的，因为GIL保护的是每条字节码不会被打断，而一行代码一般是对应多条字节码的，所以每行代码是可以被打断的。比如：a = a + 1这样一条语句，它是对应4条字节码：LOAD_NAME、LOAD_CONST、BINARY_ADD、STORE_NAME。</strong></p>
+<p><strong>假设此时a = 8，两个线程同时执行 a = a + 1，线程A执行的时候已经将a和1压入运行时栈，栈里面的a 显然是 8。但是还没有执行BINARY_ADD的时候，就被线程B执行了，此时B得到a显然还是8，因为线程A还没有对变量a做加法操作，然后B将这4条字节码全部执行完了，所以a应该是9。但是当线程A在执行的时候，会执行BINARY_ADD，不过注意：此时栈里面的a还是8，所以加完之后还是9。</strong></p>
+<p><strong>所以本来a应该是10，但是却是9，就是因为在执行的时候发生的线程调度。所以我们在编写多线程代码的时候还是需要加锁的，GIL只是保证每条字节码执行的时候不会被打断，但是一行代码往往对应多条字节码，所以我们会通过threading.Lock()再加上一把锁。这样即便发生了线程调度，但由于我们在Python的层面上又加了一把锁，所以别的线程依旧无法执行。</strong></p>
+</blockquote>
+<p><strong>Python会在什么情况下释放锁？</strong></p>
+<p><strong>关于GIL的释放Python有一个自己的调度机制：</strong></p>
+<ul>
+<li><strong>1. 当遇见io阻塞的时候会把锁释放，因为io阻塞是不耗费cpu的，所以此时虚拟机会把该线程的锁释放。</strong></li>
+<li><strong>2. 即便是耗费cpu的运算等等，也不会一直执行，会在执行一小段时间之后释放锁，为了保证其他线程都有机会执行，就类似于cpu的时间片轮转的方式。</strong></li>
+</ul>
+<p><strong>调度机制虽然简单，但是这背后还隐藏这两个问题：</strong></p>
+<ul>
+<li><code>在何时挂起线程，选择处于等待状态的下一个线程？</code></li>
+<li><code>在众多的处于等待状态的候选线程中，选择激活哪一个线程？</code></li>
+</ul>
+<p><strong>在Python的多线程机制中，这两个问题是分别由不同的层次解决的。对于何时进行线程调度问题，是由Python自身决定的。考虑一下操作系统是如何进行进程切换的，当一个进程运行了一段时间之后，发生了时钟中断，操作系统响应时钟，并开始进行进程的调度。同样，Python中也是模拟了这样的时钟中断，来激活线程的调度。我们知道Python解释字节码的原理就是按照指令的顺序一条一条执行，而Python内部维护着一个数值，这个数值就是Python内部的时钟。在Python2中如果一个线程执行的字节码指令数达到了这个值，那么会进行线程切换，并且这个值在Python3中仍然存在。</strong></p>
+<pre><code>import sys
+# 我们看到默认是执行100条字节码启动线程调度机制，进行切换
+# 这个方法python2、3中都存在
+print(sys.getcheckinterval())  # 100
+
+# 但是在python3中，我们更应该使用这个函数，表示线程切换的时间间隔。
+# 表示一个线程在执行0.005s之后进行切换
+print(sys.getswitchinterval())  # 0.005
+
+# 上面的方法我们都可以手动设置
+# 通过sys.setcheckinterval(N)和sys.setswitchinterval(N)设置即可</code></pre><p><strong>但是在Python3.8的时候，使用sys.getcheckinterval和sys.setcheckinterval会被警告，表示这两个方法已经废弃了。</strong></p>
+<p><strong>除了执行时间之外，还有就是我们之前说的遇见IO阻塞的时候会进行切换，所以多线程在IO密集型还是很有用处的，说实话如果IO都不会自动切换的话，那么我觉得Python的多线程才是真的没有用，至于为什么IO会切换我们后面说，总是现在我们知道Python会在什么时候进行线程切换了。那么下面的问题就是，Python在切换的时候会从等待的线程中选择哪一个呢？对于这个问题，Python则是借用了底层操作系统所提供的调度机制来决定下一个进入Python解释器的线程究竟是谁。</strong></p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p><strong>这一次我们说了一下Python中的GIL和线程调度，我们后面会介绍线程的创建以及GIL的源码分析。</strong></p>
+<p>posted @  2020-09-11 01:30  <a href="https://www.cnblogs.com/traditional/" target="_blank" rel="noopener">古明地盆</a>  阅读(220)  评论(0)  <a href="https://i.cnblogs.com/EditPosts.aspx?postid=13649359" target="_blank" rel="noopener">编辑</a>  <a href="https://www.cnblogs.com/traditional/p/13649359.html" target="_blank" rel="noopener">收藏</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-1022/" rel="prev" title="《深度剖析CPython解释器》26. 解密Python中的多线程(第二部分)：源码剖析Python线程的创建、销毁、调度，以及GIL的实现原理 - 古明地盆 - 博客园">
+      <i class="fa fa-chevron-left"></i> 《深度剖析CPython解释器》26. 解密Python中的多线程(第二部分)：源码剖析Python线程的创建、销毁、调度，以及GIL的实现原理 - 古明地盆 - 博客园
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-1023/" rel="next" title="《深度剖析CPython解释器》27. Python内存管理与垃圾回收(第一部分)：深度剖析Python内存管理架构、内存池的实现原理 - 古明地盆 - 博客园">
+      《深度剖析CPython解释器》27. Python内存管理与垃圾回收(第一部分)：深度剖析Python内存管理架构、内存池的实现原理 - 古明地盆 - 博客园 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#《深度剖析CPython解释器》25-解密Python中的多线程-第一部分-：初识GIL、以及多个线程之间的调度机制-古明地盆-博客园"><span class="nav-number"></span> <span class="nav-text">《深度剖析CPython解释器》25. 解密Python中的多线程(第一部分)：初识GIL、以及多个线程之间的调度机制 - 古明地盆 - 博客园</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#《深度剖析CPython解释器》25-解密Python中的多线程-第一部分-：初识GIL、以及多个线程之间的调度机制"><span class="nav-number"></span> <span class="nav-text">《深度剖析CPython解释器》25. 解密Python中的多线程(第一部分)：初识GIL、以及多个线程之间的调度机制</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#楔子"><span class="nav-number"></span> <span class="nav-text">楔子</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GIL与线程调度"><span class="nav-number"></span> <span class="nav-text">GIL与线程调度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#小结"><span class="nav-number"></span> <span class="nav-text">小结</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

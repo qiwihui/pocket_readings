@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="SQLite is not a toy database">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SQLite is not a toy database">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/03/26/qiwihui-pocket_readings-1054/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="SQLite is not a toy database">
+<meta property="article:published_time" content="2021-03-26T03:21:09.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.426Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/03/26/qiwihui-pocket_readings-1054/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>SQLite is not a toy database | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/03/26/qiwihui-pocket_readings-1054/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          SQLite is not a toy database
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-03-26 03:21:09" itemprop="dateCreated datePublished" datetime="2021-03-26T03:21:09+00:00">2021-03-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">SQLite is not a toy database</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Whether you are a developer, data analyst, QA engineer, DevOps person, or product manager - SQLite is a perfect tool for you. Here is why. The console is a killer SQLite feature for data analysis: more powerful than Excel and more simple than pandas.<br><br><br><br>Tags: engineering<br><br><br><br>via Pocket <a href="https://ift.tt/39eqyrS" target="_blank" rel="noopener">https://ift.tt/39eqyrS</a> original site<br><br><br><br>March 26, 2021 at 10:32AM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1054#issuecomment-807907647" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>3/26/2021</strong></p>
+</blockquote>
+<h2 id="SQLite-is-not-a-toy-database"><a href="#SQLite-is-not-a-toy-database" class="headerlink" title="SQLite is not a toy database"></a>SQLite is not a toy database</h2><p>Whether you are a developer, data analyst, QA engineer, DevOps person, or product manager - SQLite is a perfect tool for you. Here is why.</p>
+<p>A few well-known facts to get started:</p>
+<ul>
+<li>SQLite is the most common DBMS in the world, shipped with all popular operating systems.</li>
+<li>SQLite is serverless.</li>
+<li>For developers, SQLite is embedded directly into the app.</li>
+<li>For everyone else, there is a convenient database console (REPL), provided as a single file (sqlite3.exe on Windows, sqlite3 on Linux / macOS).</li>
+</ul>
+<h2 id="Console-import-and-export"><a href="#Console-import-and-export" class="headerlink" title="Console, import, and export"></a>Console, import, and export</h2><p>The console is a killer SQLite feature for data analysis: more powerful than Excel and more simple than <code>pandas</code>. One can import CSV data with a single command, the table is created automatically:</p>
+<pre><code>&gt; .import --csv city.csv city
+&gt; select count(*) from city;
+1117</code></pre><p>The console supports basic SQL features and shows query results in a nice ASCII-drawn table. Advanced SQL features are also supported, but more on that later.</p>
+<pre><code>select
+  century || &apos; century&apos; as dates,
+  count(*) as city_count
+from history
+group by century
+order by century desc;
+
+
+┌────────────┬────────────┐
+│   dates    │ city_count │
+├────────────┼────────────┤
+│ 21 century │ 1          │
+│ 20 century │ 263        │
+│ 19 century │ 189        │
+│ 18 century │ 191        │
+│ 17 century │ 137        │
+│ ...        │ ...        │
+└────────────┴────────────┘</code></pre><p>Data could be exported as SQL, CSV, JSON, even Markdown and HTML. Takes just a couple of commands:</p>
+<pre><code>.mode json
+.output city.json
+select city, foundation_year, timezone from city limit 10;
+.shell cat city.json
+
+
+[
+    { &quot;city&quot;: &quot;Amsterdam&quot;, &quot;foundation_year&quot;: 1300, &quot;timezone&quot;: &quot;UTC+1&quot; },
+    { &quot;city&quot;: &quot;Berlin&quot;, &quot;foundation_year&quot;: 1237, &quot;timezone&quot;: &quot;UTC+1&quot; },
+    { &quot;city&quot;: &quot;Helsinki&quot;, &quot;foundation_year&quot;: 1548, &quot;timezone&quot;: &quot;UTC+2&quot; },
+    { &quot;city&quot;: &quot;Monaco&quot;, &quot;foundation_year&quot;: 1215, &quot;timezone&quot;: &quot;UTC+1&quot; },
+    { &quot;city&quot;: &quot;Moscow&quot;, &quot;foundation_year&quot;: 1147, &quot;timezone&quot;: &quot;UTC+3&quot; },
+    { &quot;city&quot;: &quot;Reykjavik&quot;, &quot;foundation_year&quot;: 874, &quot;timezone&quot;: &quot;UTC&quot; },
+    { &quot;city&quot;: &quot;Sarajevo&quot;, &quot;foundation_year&quot;: 1461, &quot;timezone&quot;: &quot;UTC+1&quot; },
+    { &quot;city&quot;: &quot;Stockholm&quot;, &quot;foundation_year&quot;: 1252, &quot;timezone&quot;: &quot;UTC+1&quot; },
+    { &quot;city&quot;: &quot;Tallinn&quot;, &quot;foundation_year&quot;: 1219, &quot;timezone&quot;: &quot;UTC+2&quot; },
+    { &quot;city&quot;: &quot;Zagreb&quot;, &quot;foundation_year&quot;: 1094, &quot;timezone&quot;: &quot;UTC+1&quot; }
+]</code></pre><p>If you are more of a BI than a console person - popular data exploration tools like <a href="https://www.metabase.com/" target="_blank" rel="noopener">Metabase</a>, <a href="https://redash.io/" target="_blank" rel="noopener">Redash</a>, and <a href="https://superset.apache.org/" target="_blank" rel="noopener">Superset</a> all support SQLite.</p>
+<h2 id="Native-JSON"><a href="#Native-JSON" class="headerlink" title="Native JSON"></a>Native JSON</h2><p>There is nothing more convenient than SQLite for analyzing and transforming JSON. You can select data directly from a file as if it were a regular table. Or import data into the table and select from there.</p>
+<pre><code>select
+  json_extract(value, &apos;$.iso.code&apos;) as code,
+  json_extract(value, &apos;$.iso.number&apos;) as num,
+  json_extract(value, &apos;$.name&apos;) as name,
+  json_extract(value, &apos;$.units.major.name&apos;) as unit
+from
+  json_each(readfile(&apos;currency.sample.json&apos;))
+;
+
+
+┌──────┬─────┬─────────────────┬──────────┐
+│ code │ num │      name       │   unit   │
+├──────┼─────┼─────────────────┼──────────┤
+│ ARS  │ 032 │ Argentine peso  | peso     │
+│ CHF  │ 756 │ Swiss Franc     │ franc    │
+│ EUR  │ 978 │ Euro            │ euro     │
+│ GBP  │ 826 │ British Pound   │ pound    │
+│ INR  │ 356 │ Indian Rupee    │ rupee    │
+│ JPY  │ 392 │ Japanese yen    │ yen      │
+│ MAD  │ 504 │ Moroccan Dirham │ dirham   │
+│ RUR  │ 643 │ Russian Rouble  │ rouble   │
+│ SOS  │ 706 │ Somali Shilling │ shilling │
+│ USD  │ 840 │ US Dollar       │ dollar   │
+└──────┴─────┴─────────────────┴──────────┘</code></pre><p>Doesn’t matter how deep the JSON is - you can extract any nested object:</p>
+<pre><code>select
+  json_extract(value, &apos;$.id&apos;) as id,
+  json_extract(value, &apos;$.name&apos;) as name
+from
+  json_tree(readfile(&apos;industry.sample.json&apos;))
+where
+  path like &apos;$[%].industries&apos;
+;
+
+
+┌────────┬──────────────────────┐
+│   id   │         name         │
+├────────┼──────────────────────┤
+│ 7.538  │ Internet provider    │
+│ 7.539  │ IT consulting        │
+│ 7.540  │ Software development │
+│ 9.399  │ Mobile communication │
+│ 9.400  │ Fixed communication  │
+│ 9.401  │ Fiber-optics         │
+│ 43.641 │ Audit                │
+│ 43.646 │ Insurance            │
+│ 43.647 │ Bank                 │
+└────────┴──────────────────────┘</code></pre><h2 id="CTEs-and-set-operations"><a href="#CTEs-and-set-operations" class="headerlink" title="CTEs and set operations"></a>CTEs and set operations</h2><p>Of course, SQLite supports Common Table Expressions (<code>WITH</code> clause) and <code>JOIN</code>s, I won’t even give examples here. If the data is hierarchical (the table refers to itself through a column like <code>parent_id</code>) - <code>WITH RECURSIVE</code> will come in handy. Any hierarchy, no matter how deep, can be ‘unrolled’ with a single query.</p>
+<pre><code>with recursive tmp(id, name, level) as (
+  select id, name, 1 as level
+  from area
+  where parent_id is null
+
+  union all
+
+  select
+    area.id,
+    tmp.name || &apos;, &apos; || area.name as name,
+    tmp.level + 1 as level
+  from area
+    join tmp on area.parent_id = tmp.id
+)
+
+select * from tmp;
+
+
+┌──────┬──────────────────────────┬───────┐
+│  id  │           name           │ level │
+├──────┼──────────────────────────┼───────┤
+│ 93   │ US                       │ 1     │
+│ 768  │ US, Washington DC        │ 2     │
+│ 1833 │ US, Washington           │ 2     │
+│ 2987 │ US, Washington, Bellevue │ 3     │
+│ 3021 │ US, Washington, Everett  │ 3     │
+│ 3039 │ US, Washington, Kent     │ 3     │
+│ ...  │ ...                      │ ...   │
+└──────┴──────────────────────────┴───────┘</code></pre><p>Sets? No problem: <code>UNION</code>, <code>INTERSECT</code>, <code>EXCEPT</code> are at your service.</p>
+<pre><code>select employer_id
+from employer_area
+where area_id = 1
+
+except
+
+select employer_id
+from employer_area
+where area_id = 2;</code></pre><p>Calculate one column based on several others? Enter generated columns:</p>
+<pre><code>alter table vacancy
+add column salary_net integer as (
+  case when salary_gross = true then
+    round(salary_from/1.04)
+  else
+    salary_from
+  end
+);</code></pre><p>Generated columns can be queried in the same way as ‘normal’ ones:</p>
+<pre><code>select
+  substr(name, 1, 40) as name,
+  salary_net
+from vacancy
+where
+  salary_currency = &apos;JPY&apos;
+  and salary_net is not null
+limit 10;</code></pre><h2 id="Math-statistics"><a href="#Math-statistics" class="headerlink" title="Math statistics"></a>Math statistics</h2><p>Descriptive statistics? Easy: mean, median, percentiles, standard deviation, you name it. You’ll have to load an extension, but it’s also a single command (and a single file).</p>
+<pre><code>.load sqlite3-stats
+
+select
+  count(*) as book_count,
+  cast(avg(num_pages) as integer) as mean,
+  cast(median(num_pages) as integer) as median,
+  mode(num_pages) as mode,
+  percentile_90(num_pages) as p90,
+  percentile_95(num_pages) as p95,
+  percentile_99(num_pages) as p99
+from books;
+
+
+┌────────────┬──────┬────────┬──────┬─────┬─────┬──────┐
+│ book_count │ mean │ median │ mode │ p90 │ p95 │ p99  │
+├────────────┼──────┼────────┼──────┼─────┼─────┼──────┤
+│ 1483       │ 349  │ 295    │ 256  │ 640 │ 817 │ 1199 │
+└────────────┴──────┴────────┴──────┴─────┴─────┴──────┘</code></pre><blockquote>
+<p><strong>Note on extensions</strong>. SQLite is missing a lot of functions compared to other DBMSs like PostgreSQL. But they are easy to add, which is what people do - so it turns out quite a mess.</p>
+<p>Therefore, I decided to make a consistent set of extensions, divided by domain area and compiled for major operating systems. There are few of them there yet, but more are on their way:</p>
+<p><a href="https://github.com/nalgeon/sqlite-plus/" target="_blank" rel="noopener">sqlite-plus @  GitHub</a></p>
+</blockquote>
+<p>More fun with statistics. You can plot the data distribution right in the console. Look how cute it is:</p>
+<pre><code>with slots as (
+  select
+    num_pages/100 as slot,
+    count(*) as book_count
+  from books
+  group by slot
+),
+max as (
+  select max(book_count) as value
+  from slots
+)
+select
+  slot,
+  book_count,
+  printf(&apos;%.&apos; || (book_count * 30 / max.value) || &apos;c&apos;, &apos;*&apos;) as bar
+from slots, max
+order by slot;
+
+
+┌──────┬────────────┬────────────────────────────────┐
+│ slot │ book_count │              bar               │
+├──────┼────────────┼────────────────────────────────┤
+│ 0    │ 116        │ *********                      │
+│ 1    │ 254        │ ********************           │
+│ 2    │ 376        │ ****************************** │
+│ 3    │ 285        │ **********************         │
+│ 4    │ 184        │ **************                 │
+│ 5    │ 90         │ *******                        │
+│ 6    │ 54         │ ****                           │
+│ 7    │ 41         │ ***                            │
+│ 8    │ 31         │ **                             │
+│ 9    │ 15         │ *                              │
+│ 10   │ 11         │ *                              │
+│ 11   │ 12         │ *                              │
+│ 12   │ 2          │ *                              │
+└──────┴────────────┴────────────────────────────────┘</code></pre><h2 id="Performance"><a href="#Performance" class="headerlink" title="Performance"></a>Performance</h2><p>SQLite works with hundreds of millions of records just fine. Regular <code>INSERT</code>s show about 240K records per second on my laptop. And if you connect the CSV file as a virtual table (there is an extension for that) - inserts become 2 times faster.</p>
+<pre><code>.load sqlite3-vsv
+
+create virtual table temp.blocks_csv using vsv(
+    filename=&quot;ipblocks.csv&quot;,
+    schema=&quot;create table x(network text, geoname_id integer, registered_country_geoname_id integer, represented_country_geoname_id integer, is_anonymous_proxy integer, is_satellite_provider integer, postal_code text, latitude real, longitude real, accuracy_radius integer)&quot;,
+    columns=10,
+    header=on,
+    nulls=on
+);
+
+
+.timer on
+insert into blocks
+select * from blocks_csv;
+
+Run Time: real 5.176 user 4.716420 sys 0.403866
+
+
+select count(*) from blocks;
+3386629
+
+Run Time: real 0.095 user 0.021972 sys 0.063716</code></pre><p>There is a popular opinion among developers that SQLite is not suitable for the web, because it doesn’t support concurrent access. This is a myth. In the write-ahead log mode (available since long ago), there can be as many concurrent readers as you want. There can be only one concurrent writer, but often one is enough.</p>
+<p>SQLite is a perfect fit for small websites and applications. <a href="https://sqlite.org/" target="_blank" rel="noopener">sqlite.org</a> uses SQLite as a database, not bothering with optimization (≈200 requests per page). It handles 700K visits per month and serves pages faster than 95% of websites I’ve seen.</p>
+<h2 id="Documents-graphs-and-search"><a href="#Documents-graphs-and-search" class="headerlink" title="Documents, graphs, and search"></a>Documents, graphs, and search</h2><p>SQLite supports partial indexes and indexes on expressions, as ‘big’ DBMSs do. You can build indexes on generated columns and even turn SQLite into a document database. Just store raw JSON and build indexes on <code>json_extract()</code>-ed columns:</p>
+<pre><code>create table currency(
+  body text,
+  code text as (json_extract(body, &apos;$.code&apos;)),
+  name text as (json_extract(body, &apos;$.name&apos;))
+);
+
+create index currency_code_idx on currency(code);
+
+insert into currency
+select value
+from json_each(readfile(&apos;currency.sample.json&apos;));
+
+
+explain query plan
+select name from currency where code = &apos;EUR&apos;;
+
+QUERY PLAN
+`--SEARCH TABLE currency USING INDEX currency_code_idx (code=?)</code></pre><blockquote>
+<p>You can also use SQLite as a graph database. A bunch of complex <code>WITH RECURSIVE</code> will do the trick, or maybe you’ll prefer to add a bit of Python:</p>
+<p><a href="https://github.com/dpapathanasiou/simple-graph" target="_blank" rel="noopener">simple-graph @  GitHub</a></p>
+</blockquote>
+<p>Full-text search works out of the box:</p>
+<pre><code>create virtual table books_fts
+using fts5(title, author, publisher);
+
+insert into books_fts
+select title, author, publisher from books;
+
+select
+  author,
+  substr(title, 1, 30) as title,
+  substr(publisher, 1, 10) as publisher
+from books_fts
+where books_fts match &apos;ann&apos;
+limit 5;
+
+
+┌─────────────────────┬────────────────────────────────┬────────────┐
+│       author        │             title              │ publisher  │
+├─────────────────────┼────────────────────────────────┼────────────┤
+│ Ruby Ann Boxcar     │ Ruby Ann&apos;s Down Home Trailer P │ Citadel    │
+│ Ruby Ann Boxcar     │ Ruby Ann&apos;s Down Home Trailer P │ Citadel    │
+│ Lynne Ann DeSpelder │ The Last Dance: Encountering D │ McGraw-Hil │
+│ Daniel Defoe        │ Robinson Crusoe                │ Ann Arbor  │
+│ Ann Thwaite         │ Waiting for the Party: The Lif │ David R. G │
+└─────────────────────┴────────────────────────────────┴────────────┘</code></pre><p>Maybe you need an in-memory database for intermediate computations? Single line of python code:</p>
+<pre><code>db = sqlite3.connect(&quot;:memory:&quot;)</code></pre><p>You can even access it from multiple connections:</p>
+<pre><code>db = sqlite3.connect(&quot;file::memory:?cache=shared&quot;)</code></pre><h2 id="And-so-much-more"><a href="#And-so-much-more" class="headerlink" title="And so much more"></a>And so much more</h2><p>There are fancy window functions (just like in PostgreSQL). <code>UPSERT</code>, <code>UPDATE FROM</code>, and <code>generate_series()</code>. R-Tree indexes. Regular expressions, fuzzy-search, and geo. In terms of features, SQLite can compete with any ‘big’ DBMS.</p>
+<p>There is also great tooling around SQLite. I especially like <a href="https://datasette.io/" target="_blank" rel="noopener">Datasette</a> - an open-source tool for exploring and publishing SQLite datasets. And <a href="https://dbeaver.io/" target="_blank" rel="noopener">DBeaver</a> is an excellent open-source database IDE with the latest SQLite versions support.</p>
+<p>I hope this article will inspire you to try SQLite. Thanks for reading!</p>
+<p><em>Follow <a href="https://twitter.com/ohmypy" target="_blank" rel="noopener">@ ohmypy</a> on Twitter to keep up with new posts 🚀</em></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/03/26/qiwihui-pocket_readings-1053/" rel="prev" title="Run your own private CA & ACME server using step-ca">
+      <i class="fa fa-chevron-left"></i> Run your own private CA & ACME server using step-ca
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/03/26/qiwihui-pocket_readings-1055/" rel="next" title="深入理解分布式缓存设计">
+      深入理解分布式缓存设计 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SQLite-is-not-a-toy-database"><span class="nav-number"></span> <span class="nav-text">SQLite is not a toy database</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Console-import-and-export"><span class="nav-number"></span> <span class="nav-text">Console, import, and export</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Native-JSON"><span class="nav-number"></span> <span class="nav-text">Native JSON</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CTEs-and-set-operations"><span class="nav-number"></span> <span class="nav-text">CTEs and set operations</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Math-statistics"><span class="nav-number"></span> <span class="nav-text">Math statistics</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Performance"><span class="nav-number"></span> <span class="nav-text">Performance</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Documents-graphs-and-search"><span class="nav-number"></span> <span class="nav-text">Documents, graphs, and search</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#And-so-much-more"><span class="nav-number"></span> <span class="nav-text">And so much more</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

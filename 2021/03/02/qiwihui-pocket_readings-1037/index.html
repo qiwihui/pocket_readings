@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="拜托，面试别再问我TopK了！！！">
+<meta property="og:type" content="article">
+<meta property="og:title" content="
+
+
+拜托，面试别再问我TopK了！！！ ">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/03/02/qiwihui-pocket_readings-1037/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="拜托，面试别再问我TopK了！！！">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzzA7pbponFmibHaMYQ5Vkk9sq2dj1EBcJOILlsSEwEaaicRoxicVfmSya1Ka2TzTNa3yicBXuricq28Xg/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzzA7pbponFmibHaMYQ5Vkk9pNPrxictUYvjERicF7DnvaJ4SZHdjVCSXJE3WJlUIVQ9ujPiaSOicTYOmw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzzA7pbponFmibHaMYQ5Vkk9EkBEbuOR4lfCTZYn7oVPY70G2JHhGwanicvB4DkgicYjxdDSsT7M3KVQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzzA7pbponFmibHaMYQ5Vkk9fCKiazIwA0MaQMLhjr3NiavXDib6cSysEFlibGJg6uTZbUsXd3fy5NbCZA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzzA7pbponFmibHaMYQ5Vkk9xBxbWpznlYmMsItZ7Vd3B4MA0TzALhulicsNWrQ1icjaacibL19XOmicVg/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzzA7pbponFmibHaMYQ5Vkk9ic4TjkicnCpTAVJJqq4WgbE6tQhl5XORGiaJnZj3UboKBpUhTq1kad5Ng/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzzA7pbponFmibHaMYQ5Vkk9kb1JqQdt0av8kK59VvicibDNOrbIXsZicaHAFhk8u1A7BQW1aYIr84pQg/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/Ir1gRyhAx7udO2WibD2tcDg4rqPvjo7jhbqZ6SFJZIxBo6N8ZZDptOCp8rYrRlXh8LiaAatFLtJdaWukz7qMvbDQ/640?wx_fmt=jpeg">
+<meta property="article:published_time" content="2021-03-02T10:21:39.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.426Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzzA7pbponFmibHaMYQ5Vkk9sq2dj1EBcJOILlsSEwEaaicRoxicVfmSya1Ka2TzTNa3yicBXuricq28Xg/640?wx_fmt=png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/03/02/qiwihui-pocket_readings-1037/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>
+
+
+拜托，面试别再问我TopK了！！！  | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/03/02/qiwihui-pocket_readings-1037/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+
+
+拜托，面试别再问我TopK了！！！ 
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-03-02 10:21:39" itemprop="dateCreated datePublished" datetime="2021-03-02T10:21:39+00:00">2021-03-02</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">
+
+
+拜托，面试别再问我TopK了！！！ </div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#21069;&#35328;&#65306;&#26412;&#25991;&#23558;&#20171;&#32461;&#38543;&#26426;&#36873;&#25321;&#65292;&#20998;&#27835;&#27861;&#65292;&#20943;&#27835;&#27861;&#30340;&#24605;&#24819;&#65292;&#20197;&#21450;TopK&#38382;&#39064;&#20248;&#21270;&#30340;&#26469;&#40857;&#21435;&#33033;&#65292;&#21407;&#29702;&#19982;&#32454;&#33410;&#65292;&#20445;&#35777;&#26377;&#25910;&#33719;&#12290;<br><br><br><br>Tags: algorithm<br><br><br><br>via Pocket <a href="https://ift.tt/3qcMeKl" target="_blank" rel="noopener">https://ift.tt/3qcMeKl</a> original site<br><br><br><br>March 02, 2021 at 05:34PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1037#issuecomment-788798346" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>3/2/2021</strong></p>
+</blockquote>
+<h2 id="错误-TypeError-Only-absolute-URLs-are-supported"><a href="#错误-TypeError-Only-absolute-URLs-are-supported" class="headerlink" title="错误 TypeError: Only absolute URLs are supported"></a>错误 TypeError: Only absolute URLs are supported</h2><blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1037#issuecomment-789376289" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>3/3/2021</strong></p>
+</blockquote>
+<h2 id="拜托，面试别再问我TopK了！！！-by-架构师之路"><a href="#拜托，面试别再问我TopK了！！！-by-架构师之路" class="headerlink" title="拜托，面试别再问我TopK了！！！ by 架构师之路"></a>拜托，面试别再问我TopK了！！！ by 架构师之路</h2><p><strong>2018-09-20</strong></p>
+<blockquote>
+<p>前言：本文将介绍随机选择，分治法，减治法的思想，以及TopK问题优化的来龙去脉，原理与细节，保证有收获。</p>
+</blockquote>
+<p>面试中，TopK，是问得比较多的几个问题之一，到底有几种方法，这些方案里蕴含的优化思路究竟是怎么样的，今天和大家聊一聊。</p>
+<p><em>画外音：__除非校招，我在面试过程中从不问TopK这个问题，默认大家都知道。</em></p>
+<p><strong>问题描述</strong>：</p>
+<p>从arr[1, n]这n个数中，找出最大的k个数，这就是经典的TopK问题。</p>
+<p><strong>栗子</strong>：</p>
+<p>从arr[1, 12]={5,3,7,1,8,2,9,4,7,2,6,6} 这n=12个数中，找出最大的k=5个。</p>
+<p><strong>一、排序</strong></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzzA7pbponFmibHaMYQ5Vkk9sq2dj1EBcJOILlsSEwEaaicRoxicVfmSya1Ka2TzTNa3yicBXuricq28Xg/640?wx_fmt=png" alt=""></p>
+<p>排序是最容易想到的方法，将n个数排序之后，取出最大的k个，即为所得。</p>
+<p><strong>伪代码</strong>：</p>
+<p>sort(arr, 1, n);</p>
+<p>return arr[1, k];</p>
+<p><strong>时间复杂度</strong>：O(n*lg(n))  </p>
+<p><strong>分析</strong>：明明只需要TopK，却将全局都排序了，这也是这个方法复杂度非常高的原因。那能不能不全局排序，而只局部排序呢？这就引出了第二个优化方法。</p>
+<p><strong>二、局部排序</strong></p>
+<p>不再全局排序，只对最大的k个排序。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzzA7pbponFmibHaMYQ5Vkk9pNPrxictUYvjERicF7DnvaJ4SZHdjVCSXJE3WJlUIVQ9ujPiaSOicTYOmw/640?wx_fmt=png" alt=""></p>
+<p>冒泡是一个很常见的排序方法，每冒一个泡，找出最大值，冒k个泡，就得到TopK。</p>
+<p><strong>伪代码</strong>：</p>
+<p>for(i=1 to k){</p>
+<p> bubble_find_max(arr,i);</p>
+<p>}</p>
+<p>return arr[1, k];</p>
+<p><strong>时间复杂度</strong>：O(n*k)</p>
+<p><strong>分析</strong>：冒泡，将全局排序优化为了局部排序，非TopK的元素是不需要排序的，节省了计算资源。不少朋友会想到，需求是TopK，是不是这最大的k个元素也不需要排序呢？这就引出了第三个优化方法。</p>
+<p><strong>三、堆</strong></p>
+<p><strong>思路</strong>：只找到TopK，不排序TopK。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzzA7pbponFmibHaMYQ5Vkk9EkBEbuOR4lfCTZYn7oVPY70G2JHhGwanicvB4DkgicYjxdDSsT7M3KVQ/640?wx_fmt=png" alt=""></p>
+<p>先用前k个元素生成一个小顶堆，这个小顶堆用于存储，当前最大的k个元素。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzzA7pbponFmibHaMYQ5Vkk9fCKiazIwA0MaQMLhjr3NiavXDib6cSysEFlibGJg6uTZbUsXd3fy5NbCZA/640?wx_fmt=png" alt=""></p>
+<p>接着，从第k+1个元素开始扫描，和堆顶（堆中最小的元素）比较，如果被扫描的元素大于堆顶，则替换堆顶的元素，并调整堆，以保证堆内的k个元素，总是当前最大的k个元素。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzzA7pbponFmibHaMYQ5Vkk9xBxbWpznlYmMsItZ7Vd3B4MA0TzALhulicsNWrQ1icjaacibL19XOmicVg/640?wx_fmt=png" alt=""></p>
+<p>直到，扫描完所有n-k个元素，最终堆中的k个元素，就是猥琐求的TopK。</p>
+<p><strong>伪代码</strong>：</p>
+<p>heap[k] = make_heap(arr[1, k]);</p>
+<p>for(i=k+1 to n){</p>
+<p> adjust_heap(heep[k],arr[i]);</p>
+<p>}</p>
+<p>return heap[k];</p>
+<p><strong>时间复杂度</strong>：O(n*lg(k))</p>
+<p><em>画外音：n个元素扫一遍，假设运气很差，每次都入堆调整，调整时间复杂度为堆的高度，即lg(k)，故整体时间复杂度是n*lg(k)。</em></p>
+<p><strong>分析</strong>：堆，将冒泡的TopK排序优化为了TopK不排序，节省了计算资源。堆，是求TopK的经典算法，那还有没有更快的方案呢？</p>
+<p><strong>四、随机选择</strong></p>
+<p>随机选择算在是《算法导论》中一个经典的算法，其时间复杂度为O(n)，是一个线性复杂度的方法。</p>
+<p>这个方法并不是所有同学都知道，为了将算法讲透，先聊一些前序知识，一个所有程序员都应该烂熟于胸的经典算法：快速排序。</p>
+<p><em>画外音：</em></p>
+<p><em>（1）如果有朋友说，“不知道快速排序，也不妨碍我写业务代码呀”…额…</em></p>
+<p><em>（2）除非校招，我在面试过程中从不问快速排序，默认所有工程师都知道；</em></p>
+<p><strong>其伪代码是</strong>：</p>
+<p>void quick_sort(int[]arr, int low, inthigh){</p>
+<p> if(low== high) return;</p>
+<p> int i = partition(arr, low, high);</p>
+<p> quick_sort(arr, low, i-1);</p>
+<p> quick_sort(arr, i+1, high);</p>
+<p>}</p>
+<p>其核心算法思想是，分治法。</p>
+<p><strong>分治法</strong>（Divide&amp;Conquer），把一个大的问题，转化为若干个子问题（Divide），每个子问题“<strong>都</strong>”解决，大的问题便随之解决（Conquer）。这里的关键词是<strong>“都”</strong>。从伪代码里可以看到，快速排序递归时，先通过partition把数组分隔为两个部分，两个部分“都”要再次递归。</p>
+<p>分治法有一个特例，叫减治法。</p>
+<p><strong>减治法</strong>（Reduce&amp;Conquer），把一个大的问题，转化为若干个子问题（Reduce），这些子问题中“<strong>只</strong>”解决一个，大的问题便随之解决（Conquer）。这里的关键词是<strong>“只”</strong>。</p>
+<p><strong>二分查找binary_search</strong>，BS，是一个典型的运用减治法思想的算法，其伪代码是：</p>
+<p>int BS(int[]arr, int low, inthigh, int target){</p>
+<p> if(low&gt; high) return -1;</p>
+<p> mid= (low+high)/2;</p>
+<p> if(arr[mid]== target) return mid;</p>
+<p> if(arr[mid]&gt; target)</p>
+<p> return BS(arr, low, mid-1, target);</p>
+<p> else</p>
+<p> return BS(arr, mid+1, high, target);</p>
+<p>}</p>
+<p>从伪代码可以看到，二分查找，一个大的问题，可以用一个mid元素，分成左半区，右半区两个子问题。而左右两个子问题，只需要解决其中一个，递归一次，就能够解决二分查找全局的问题。</p>
+<p>通过分治法与减治法的描述，可以发现，分治法的复杂度一般来说是大于减治法的：</p>
+<p>快速排序：O(n*lg(n))</p>
+<p>二分查找：O(lg(n))</p>
+<p>话题收回来，<strong>快速排序</strong>的核心是：</p>
+<p>i = partition(arr, low, high);</p>
+<p><strong>这个partition是干嘛的呢？</strong></p>
+<p>顾名思义，partition会把整体分为两个部分。</p>
+<p>更具体的，会用数组arr中的一个元素（默认是第一个元素t=arr[low]）为划分依据，将数据arr[low, high]划分成左右两个子数组：</p>
+<ul>
+<li><p>左半部分，都比t大</p>
+</li>
+<li><p>右半部分，都比t小</p>
+</li>
+<li><p>中间位置i是划分元素</p>
+</li>
+</ul>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzzA7pbponFmibHaMYQ5Vkk9ic4TjkicnCpTAVJJqq4WgbE6tQhl5XORGiaJnZj3UboKBpUhTq1kad5Ng/640?wx_fmt=png" alt=""></p>
+<p>以上述TopK的数组为例，先用第一个元素t=arr[low]为划分依据，扫描一遍数组，把数组分成了两个半区：</p>
+<ul>
+<li><p>左半区比t大</p>
+</li>
+<li><p>右半区比t小</p>
+</li>
+<li><p>中间是t</p>
+</li>
+</ul>
+<p>partition返回的是t最终的位置i。</p>
+<p>很容易知道，partition的时间复杂度是O(n)。</p>
+<p><em>画外音：把整个数组扫一遍，比t大的放左边，比t小的放右边，最后t放在中间N[i]。</em></p>
+<p><strong>partition和TopK问题有什么关系呢？</strong></p>
+<p>TopK是希望求出arr[1,n]中最大的k个数，那如果找到了<strong>第k大</strong>的数，做一次partition，不就一次性找到最大的k个数了么？</p>
+<p><em>画外音：即partition后左半区的k个数。</em></p>
+<p>问题变成了arr[1, n]中找到第k大的数。</p>
+<p>再回过头来看看<strong>第一次</strong>partition，划分之后：</p>
+<p>i = partition(arr, 1, n);</p>
+<ul>
+<li><p>如果i大于k，则说明arr[i]左边的元素都大于k，于是只递归arr[1, i-1]里第k大的元素即可；</p>
+</li>
+<li><p>如果i小于k，则说明说明第k大的元素在arr[i]的右边，于是只递归arr[i+1, n]里第k-i大的元素即可；</p>
+</li>
+</ul>
+<p><em>画外音：这一段非常重要，多读几遍。</em></p>
+<p>这就是<strong>随机选择</strong>算法randomized_select，RS，其伪代码如下：</p>
+<p>int RS(arr, low, high, k){</p>
+<p> if(low== high) return arr[low];</p>
+<p> i= partition(arr, low, high);</p>
+<p> temp= i-low; //数组前半部分元素个数</p>
+<p> if(temp&gt;=k)</p>
+<p> return RS(arr, low, i-1, k); //求前半部分第k大</p>
+<p> else</p>
+<p> return RS(arr, i+1, high, k-i); //求后半部分第k-i大</p>
+<p>}</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzzA7pbponFmibHaMYQ5Vkk9kb1JqQdt0av8kK59VvicibDNOrbIXsZicaHAFhk8u1A7BQW1aYIr84pQg/640?wx_fmt=png" alt=""></p>
+<p>这是一个典型的减治算法，递归内的两个分支，最终只会执行一个，它的时间复杂度是O(n)。</p>
+<p>再次强调一下：</p>
+<ul>
+<li><p><strong>分治法</strong>，大问题分解为小问题，小问题都要递归各个分支，例如：快速排序</p>
+</li>
+<li><p><strong>减治法</strong>，大问题分解为小问题，小问题只要递归一个分支，例如：二分查找，随机选择</p>
+</li>
+</ul>
+<p>通过随机选择（randomized_select），找到arr[1, n]中第k大的数，再进行一次partition，就能得到TopK的结果。</p>
+<p><strong>五、总结</strong></p>
+<p>TopK，不难；其思路优化过程，不简单：</p>
+<ul>
+<li><p><strong>全局排序</strong>，O(n*lg(n))</p>
+</li>
+<li><p><strong>局部排序</strong>，只排序TopK个数，O(n*k)</p>
+</li>
+<li><p><strong>堆</strong>，TopK个数也不排序了，O(n*lg(k))</p>
+</li>
+<li><p>分治法，每个分支“都要”递归，例如：快速排序，O(n*lg(n))</p>
+</li>
+<li><p>减治法，“只要”递归一个分支，例如：二分查找O(lg(n))，随机选择O(n)</p>
+</li>
+<li><p>TopK的另一个解法：<strong>随机选择</strong>+partition</p>
+</li>
+</ul>
+<p>知其然，知其所以然。</p>
+<p>思路比结论重要。</p>
+<p>希望大家对TopK有新的认识，谢转。</p>
+<p><strong><img src="https://mmbiz.qpic.cn/mmbiz_jpg/Ir1gRyhAx7udO2WibD2tcDg4rqPvjo7jhbqZ6SFJZIxBo6N8ZZDptOCp8rYrRlXh8LiaAatFLtJdaWukz7qMvbDQ/640?wx_fmt=jpeg" alt=""></strong></p>
+<p><strong>架构师之路</strong>-分享可落地的架构文章</p>
+<p>相关推荐：</p>
+<p>《<a href="http://mp.weixin.qq.com/s?__biz=MjM5ODYxMDA5OQ==&mid=2651961486&idx=1&sn=b319a87f87797d5d662ab4715666657f&chksm=bd2d0d528a5a84446fb88da7590e6d4e5ad06cfebb5cb57a83cf75056007ba29515c85b9a24c&scene=21#wechat_redirect" target="_blank" rel="noopener">数据库索引底层，如何实现？</a>》<strong>B+树</strong></p>
+<p>《<a href="http://mp.weixin.qq.com/s?__biz=MjM5ODYxMDA5OQ==&mid=2651959895&idx=1&sn=de25ce2544c088ff9be0b93fd3ea4d15&chksm=bd2d078b8a5a8e9d5ae4339a683d3f980ff2994f3c10c4081c7bab7f0d77f37521de95e974bf&scene=21#wechat_redirect" target="_blank" rel="noopener">搜索引擎底层，如何实现？</a>》<strong>倒排索引</strong></p>
+<p>《<a href="http://mp.weixin.qq.com/s?__biz=MjM5ODYxMDA5OQ==&mid=2651959957&idx=1&sn=a82bb7e8203b20b2a0cb5fc95b7936a5&chksm=bd2d07498a5a8e5f9f8e7b5aeaa5bd8585a0ee4bf470956e7fd0a2b36d132eb46553265f4eaf&scene=21#wechat_redirect" target="_blank" rel="noopener">10W定时任务，如何实现？</a>》<strong>HWTimer</strong></p>
+<p><strong>挖坑</strong>：TopK，你以为这就是最快的解法？太小看架构师之路了，更快方案，且听下一期分解。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/03/01/qiwihui-pocket_readings-1036/" rel="prev" title="
+
+
+用AI「复活」逝者：「深度怀旧」项目火遍推特，我们也用民国老照片试了下 ">
+      <i class="fa fa-chevron-left"></i> 
+
+
+用AI「复活」逝者：「深度怀旧」项目火遍推特，我们也用民国老照片试了下 
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/03/04/qiwihui-pocket_readings-1039/" rel="next" title="
+
+
+拜托，面试别再问我表达式求值了！！！ ">
+      
+
+
+拜托，面试别再问我表达式求值了！！！  <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#错误-TypeError-Only-absolute-URLs-are-supported"><span class="nav-number"></span> <span class="nav-text">错误 TypeError: Only absolute URLs are supported</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#拜托，面试别再问我TopK了！！！-by-架构师之路"><span class="nav-number"></span> <span class="nav-text">拜托，面试别再问我TopK了！！！ by 架构师之路</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

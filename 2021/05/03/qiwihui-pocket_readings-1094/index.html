@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Hosting SQLite databases on Github Pages - (or any static file hoster) - phiresky&#39;s blog">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hosting SQLite databases on Github Pages - (or any static file hoster) - phiresky&#39;s blog">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/05/03/qiwihui-pocket_readings-1094/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="Hosting SQLite databases on Github Pages - (or any static file hoster) - phiresky&#39;s blog">
+<meta property="article:published_time" content="2021-05-03T00:21:28.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.426Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/05/03/qiwihui-pocket_readings-1094/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>Hosting SQLite databases on Github Pages - (or any static file hoster) - phiresky's blog | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/05/03/qiwihui-pocket_readings-1094/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Hosting SQLite databases on Github Pages - (or any static file hoster) - phiresky's blog
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-05-03 00:21:28" itemprop="dateCreated datePublished" datetime="2021-05-03T00:21:28+00:00">2021-05-03</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">Hosting SQLite databases on Github Pages - (or any static file hoster) - phiresky's blog</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>I was writing a tiny website to display statistics of how much sponsored content a Youtube creator has over time when I noticed that I often write a small tool as a website that queries some data from a database and then displays it in a graph, a table, or similar.<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/3ueAp9p" target="_blank" rel="noopener">https://ift.tt/3ueAp9p</a> original site<br><br><br><br>May 03, 2021 at 07:55AM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1094#issuecomment-830959211" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>5/3/2021</strong></p>
+</blockquote>
+<h2 id="Hosting-SQLite-databases-on-Github-Pages-or-any-static-file-hoster-phiresky’s-blog"><a href="#Hosting-SQLite-databases-on-Github-Pages-or-any-static-file-hoster-phiresky’s-blog" class="headerlink" title="Hosting SQLite databases on Github Pages - (or any static file hoster) - phiresky’s blog"></a>Hosting SQLite databases on Github Pages - (or any static file hoster) - phiresky’s blog</h2><p>(or any static file hoster)</p>
+<p>Apr 17, 2021</p>
+<p>I was writing <a href="https://phiresky.github.io/youtube-sponsorship-stats/?uploader=Adam+Ragusea" target="_blank" rel="noopener">a tiny website</a> to display statistics of how much sponsored content a Youtube creator has over time when I noticed that I often write a small tool as a website that queries some data from a database and then displays it in a graph, a table, or similar. But if you want to use a database, you either need to write a backend (which you then need to host and maintain forever) or download the whole dataset into the browser (which is not so great when the dataset is more than 10MB).</p>
+<p>In the past when I’ve used a backend server for these small side projects at some point some external API goes down or a key expires or I forget about the backend and stop paying for whatever VPS it was on. Then when I revisit it years later, I’m annoyed that it’s gone and curse myself for relying on an external service - or on myself caring over a longer period of time.</p>
+<p>Hosting a static website is much easier than a “real” server - there’s many free and reliable options (like GitHub, GitLab Pages, Netlify, etc), and it scales to basically infinity without any effort.</p>
+<p>So I wrote a tool to be able to use a real SQL database in a statically hosted website!</p>
+<p>Here’s a demo using the <a href="https://github.com/phiresky/world-development-indicators-sqlite/" target="_blank" rel="noopener">World Development Indicators dataset</a> - a dataset with 6 tables and over 8 million rows (670 MiByte total).</p>
+<pre><code>select country_code, long_name from wdi_country limit 3;</code></pre><p>As you can see, we can query the <code>wdi_country</code> table while fetching only 1kB of data!</p>
+<p>This is a full SQLite query engine. As such, we can use e.g. the <a href="https://www.sqlite.org/json1.html" target="_blank" rel="noopener">SQLite JSON functions</a>:</p>
+<pre><code>select json_extract(arr.value, &apos;$.foo.bar&apos;) as bar
+  from json_each(&apos;[{&quot;foo&quot;: {&quot;bar&quot;: 123}}, {&quot;foo&quot;: {&quot;bar&quot;: &quot;baz&quot;}}]&apos;) as arr</code></pre><p>We can also register JS functions so they can be called from within a query. Here’s an example with a <code>getFlag</code> function that gets the flag emoji for a country:</p>
+<pre><code>function getFlag(country_code) {
+  // just some unicode magic
+  return String.fromCodePoint(...Array.from(country_code||&quot;&quot;)
+    .map(c =&gt; 127397 + c.codePointAt()));
+}
+
+await db.create_function(&quot;get_flag&quot;, getFlag)
+return await db.query(`
+  select long_name, get_flag(&quot;2-alpha_code&quot;) as flag from wdi_country
+    where region is not null and currency_unit = &apos;Euro&apos;;
+`)</code></pre><p>Note that this website is 100% hosted on a static file hoster (GitHub Pages).</p>
+<p>So how do you use a database on a static file hoster? Firstly, SQLite (written in C) is compiled to WebAssembly. SQLite can be compiled with <a href="https://emscripten.org/" target="_blank" rel="noopener">emscripten</a> without any modifications, and the <a href="https://github.com/sql-js/sql.js/" target="_blank" rel="noopener">sql.js</a> library is a thin JS wrapper around the wasm code.</p>
+<p>sql.js only allows you to create and read from databases that are fully in memory though - so I implemented a virtual file system that fetches chunks of the database with HTTP Range requests when SQLite tries to read from the filesystem: <a href="https://github.com/phiresky/sql.js-httpvfs" target="_blank" rel="noopener">sql.js-httpvfs</a>. From SQLite’s perspective, it just looks like it’s living on a normal computer with an empty filesystem except for a file called <code>/wdi.sqlite3</code> that it can read from. Of course it can’t write to this file, but a read-only database is still very useful.</p>
+<p>Since fetching data via HTTP has a pretty large overhead, we need to fetch data in chunks and find some balance between the number of requests and the used bandwidth. Thankfully, SQLite already organizes its database in “pages” with a user-defined <a href="https://www.sqlite.org/pgszchng2016.html" target="_blank" rel="noopener">page size</a> (4 KiB by default). I’ve set the page size to 1 KiB for this database.</p>
+<p>Here’s an example of a simple index lookup query:</p>
+<pre><code>select indicator_code, long_definition from wdi_series where indicator_name
+    = &apos;Literacy rate, youth total (% of people ages 15-24)&apos;</code></pre><p>Run the above query and look at the page read log. SQLite does 7 page reads for that query.</p>
+<ul>
+<li>Three page reads are just some to get some schema information (these are already cached)</li>
+<li>Two page reads are the index lookup in the index <code>on wdi_series (indicator_name)</code></li>
+<li>Two page reads are on the <code>wdi_series</code> table data (the first to find the row value by primary key, the second to get the text data from an <a href="https://www.sqlite.org/fileformat2.html#ovflpgs" target="_blank" rel="noopener">overflow page</a>)</li>
+</ul>
+<p>Both the index as well as the table reads are B-Tree lookups.</p>
+<p>A more complex query: What are the countries with the lowest youth literacy rate, based on the newest data from after 2010?</p>
+<pre><code>with newest_datapoints as (
+  select country_code, indicator_code, max(year) as year from wdi_data
+  join wdi_series using (indicator_code)
+  where
+    indicator_name = &apos;Literacy rate, youth total (% of people ages 15-24)&apos;
+    and year &gt; 2010
+  group by country_code
+)
+select c.short_name as country, printf(&apos;%.1f %%&apos;, value) as &quot;Youth Literacy Rate&quot;
+from wdi_data
+  join wdi_country c using (country_code)
+  join newest_datapoints using (indicator_code, country_code, year)
+order by value asc limit 10</code></pre><p>The above query should do 10-20 GET requests, fetching a total of 130 - 270KiB, depending on if you ran the above demos as well. Note that it only has to do 20 requests and not 270 (as would be expected when fetching 270 KiB with 1 KiB at a time). That’s because I implemented a pre-fetching system that tries to detect access patterns through three separate virtual read heads and exponentially increases the request size for sequential reads. This means that index scans or table scans reading more than a few KiB of data will only cause a number of requests that is logarithmic in the total byte length of the scan. You can see the effect of this by looking at the “Access pattern” column in the page read log above.</p>
+<p>All of this only works well when we have indices in the database that match the queries well. For example, the index used in the above query is a <code>INDEX ON wdi_data (indicator_code, country_code, year, value)</code>. If that index did not include the value column, the SQLite engine would have to do another random access (unpredictable) read and thus HTTP request to retrieve the actual value for every data point. If the index was ordered <code>country_code, indicator_code, ...</code>, then we would be able to quickly get all indicators for a single country, but not all country values of a single indicator.</p>
+<p>We can also make use of the SQLite <a href="https://sqlite.org/fts5.html" target="_blank" rel="noopener">FTS</a> module so we can do a full-text search on the more text-heavy information in the database - in this case there are over 1000 human development indicators in the database with longer descriptions.</p>
+<pre><code>select * from indicator_search
+where indicator_search match &apos;educatio* femal*&apos;
+order by rank limit 10</code></pre><p>The total amount of data in the <code>indicator_search</code> FTS table is around 8 MByte. The above query should only fetch around 70 KiB. You can see how it is constructed <a href="https://github.com/phiresky/world-development-indicators-sqlite/blob/gh-pages/postproc.sh#L15" target="_blank" rel="noopener">here</a>.</p>
+<p>And finally, here’s a more complete demonstration of the usefulness of this system - here’s an interactive graph showing the development of a few countries over time, for any countries you want using any indicator from the dataset:</p>
+<p>Countries: Indicator:</p>
+<p>Individuals using the Internet (% of population)</p>
+<p>Extra information about this indicator</p>
+<p>Indicator Code</p>
+<p>IT.NET.USER.ZS</p>
+<p>Long definition</p>
+<p>Internet users are individuals who have used the Internet (from any location) in the last 3 months. The Internet can be used via a computer, mobile phone, personal digital assistant, games machine, digital TV etc.</p>
+<p>Statistical concept and methodology</p>
+<p>The Internet is a world-wide public computer network. It provides access to a number of communication services including the World Wide Web and carries email, news, entertainment and data files, irrespective of the device used (not assumed to be only via a computer - it may also be by mobile phone, PDA, games machine, digital TV etc.). Access can be via a fixed or mobile network. For additional/latest information on sources and country notes, please also refer to: <a href="https://www.itu.int/en/ITU-D/Statistics/Pages/stat/default.aspx" target="_blank" rel="noopener">https://www.itu.int/en/ITU-D/Statistics/Pages/stat/default.aspx</a></p>
+<p>Development relevance</p>
+<p>The digital and information revolution has changed the way the world learns, communicates, does business, and treats illnesses. New information and communications technologies (ICT) offer vast opportunities for progress in all walks of life in all countries - opportunities for economic growth, improved health, better service delivery, learning through distance education, and social and cultural advances. Today’s smartphones and tablets have computer power equivalent to that of yesterday’s computers and provide a similar range of functions. Device convergence is thus rendering the conventional definition obsolete. Comparable statistics on access, use, quality, and affordability of ICT are needed to formulate growth-enabling policies for the sector and to monitor and evaluate the sector’s impact on development. Although basic access data are available for many countries, in most developing countries little is known about who uses ICT; what they are used for (school, work, business, research, government); and how they affect people and businesses. The global Partnership on Measuring ICT for Development is helping to set standards, harmonize information and communications technology statistics, and build statistical capacity in developing countries. However, despite significant improvements in the developing world, the gap between the ICT haves and have-nots remains.</p>
+<p>Note that many indicators are only available for some countries, for example the indicator <em>“Women who believe a husband is justified in beating his wife when she burns the food”</em> is based on surveys only conducted in lower-developed countries.</p>
+<h2 id="Bonus-DOM-as-a-database"><a href="#Bonus-DOM-as-a-database" class="headerlink" title="Bonus: DOM as a database"></a>Bonus: DOM as a database</h2><p>Since we’re already running a database in our browser, why not use our browser as a database using a virtual table called <code>dom</code>?</p>
+<pre><code>select count(*) as number_of_demos from dom
+  where selector match &apos;.content div.sqlite-httpvfs-demo&apos;;
+select count(*) as sqlite_mentions from dom
+  where selector match &apos;.content p&apos; and textContent like &apos;%SQLite%&apos;;</code></pre><p>We can even insert elements directly into the DOM:</p>
+<pre><code>insert into dom (parent, tagName, textContent)
+    select &apos;ul#outtable1&apos;, &apos;li&apos;, short_name
+    from wdi_country where currency_unit = &apos;Euro&apos;</code></pre><p>Output:</p>
+<p>And update elements in the DOM:</p>
+<pre><code>update dom set textContent =
+  get_flag(&quot;2-alpha_code&quot;) || &apos; &apos; || textContent
+from wdi_country
+where selector match &apos;ul#outtable1 &gt; li&apos;
+  and textContent = wdi_country.short_name</code></pre><hr>
+<p>Of course, everything here is open source. The main implementation of the sqlite wrapper is in <a href="https://github.com/phiresky/sql.js-httpvfs" target="_blank" rel="noopener">sql.js-httpvfs</a>. The source code of this blog post is <a href="https://github.com/phiresky/blog/blob/master/posts/2021/hosting-sqlite-databases-on-github-pages.md" target="_blank" rel="noopener">a pandoc markdown file</a>, with the demos being a <a href="https://github.com/phiresky/blog/tree/master/client/sqlite-httpvfs" target="_blank" rel="noopener">custom “fenced code block” React component</a>.</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/04/28/qiwihui-pocket_readings-1091/" rel="prev" title="互联网时代的创作（下）：作品缺乏内在的对抗，更多是对外的讨好 - 少数派">
+      <i class="fa fa-chevron-left"></i> 互联网时代的创作（下）：作品缺乏内在的对抗，更多是对外的讨好 - 少数派
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/05/06/qiwihui-pocket_readings-1095/" rel="next" title="
+
+
+Rust 乱炖  |  Rust 让恶意软件也变强了 ">
+      
+
+
+Rust 乱炖  |  Rust 让恶意软件也变强了  <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Hosting-SQLite-databases-on-Github-Pages-or-any-static-file-hoster-phiresky’s-blog"><span class="nav-number"></span> <span class="nav-text">Hosting SQLite databases on Github Pages - (or any static file hoster) - phiresky’s blog</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Bonus-DOM-as-a-database"><span class="nav-number"></span> <span class="nav-text">Bonus: DOM as a database</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

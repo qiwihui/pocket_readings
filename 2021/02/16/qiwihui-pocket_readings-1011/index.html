@@ -1,0 +1,1613 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="《深度剖析CPython解释器》15. Python函数机制的深度解析(第二部分): 函数在底层是如何被调用的 - 古明地盆 - 博客园">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《深度剖析CPython解释器》15. Python函数机制的深度解析(第二部分): 函数在底层是如何被调用的 - 古明地盆 - 博客园">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1011/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="《深度剖析CPython解释器》15. Python函数机制的深度解析(第二部分): 函数在底层是如何被调用的 - 古明地盆 - 博客园">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200828230612755-992873571.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200828230620325-1367321592.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200828230635471-1010256465.png">
+<meta property="article:published_time" content="2021-02-16T14:17:18.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.434Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200828230612755-992873571.png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1011/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>《深度剖析CPython解释器》15. Python函数机制的深度解析(第二部分): 函数在底层是如何被调用的 - 古明地盆 - 博客园 | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1011/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          《深度剖析CPython解释器》15. Python函数机制的深度解析(第二部分): 函数在底层是如何被调用的 - 古明地盆 - 博客园
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-02-16 14:17:18" itemprop="dateCreated datePublished" datetime="2021-02-16T14:17:18+00:00">2021-02-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">《深度剖析CPython解释器》15. Python函数机制的深度解析(第二部分): 函数在底层是如何被调用的 - 古明地盆 - 博客园</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#26964;&#23376; &#22312;&#19978;&#19968;&#31687;&#21338;&#23458;&#20013;&#65292;&#25105;&#20204;&#35828;&#20102;Python&#20989;&#25968;&#30340;&#24213;&#23618;&#23454;&#29616;&#65292;&#24182;&#19988;&#36824;&#28436;&#31034;&#20102;&#22914;&#20309;&#33258;&#23450;&#20041;&#19968;&#20010;&#20989;&#25968;&#65292;&#34429;&#28982;&#36825;&#22312;&#24037;&#20316;&#20013;&#27809;&#26377;&#22826;&#22823;&#24847;&#20041;&#65292;&#20294;&#26159;&#21487;&#20197;&#35753;&#25105;&#20204;&#28145;&#21051;&#29702;&#35299;&#20989;&#25968;&#30340;&#34892;&#20026;&#12290;&#27492;&#22806;&#25105;&#20204;&#36824;&#20171;&#32461;&#20102;&#22914;&#20309;&#33719;&#21462;&#20989;&#25968;&#30340;&#21442;&#25968;&#65292;&#32780;&#36825;&#19968;&#27425;&#25105;&#20204;&#23601;&#26469;&#30475;&#30475;<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/2NaSPYu" target="_blank" rel="noopener">https://ift.tt/2NaSPYu</a> original site<br><br><br><br>February 16, 2021 at 10:13PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1011#issuecomment-792617773" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>3/8/2021</strong></p>
+</blockquote>
+<h2 id="《深度剖析CPython解释器》15-Python函数机制的深度解析-第二部分-函数在底层是如何被调用的-古明地盆-博客园"><a href="#《深度剖析CPython解释器》15-Python函数机制的深度解析-第二部分-函数在底层是如何被调用的-古明地盆-博客园" class="headerlink" title="《深度剖析CPython解释器》15. Python函数机制的深度解析(第二部分): 函数在底层是如何被调用的 - 古明地盆 - 博客园"></a>《深度剖析CPython解释器》15. Python函数机制的深度解析(第二部分): 函数在底层是如何被调用的 - 古明地盆 - 博客园</h2><h1 id="《深度剖析CPython解释器》15-Python函数机制的深度解析-第二部分-函数在底层是如何被调用的"><a href="#《深度剖析CPython解释器》15-Python函数机制的深度解析-第二部分-函数在底层是如何被调用的" class="headerlink" title="《深度剖析CPython解释器》15. Python函数机制的深度解析(第二部分): 函数在底层是如何被调用的"></a><a href="https://www.cnblogs.com/traditional/p/13580240.html" target="_blank" rel="noopener">《深度剖析CPython解释器》15. Python函数机制的深度解析(第二部分): 函数在底层是如何被调用的</a></h1><h2 id="楔子"><a href="#楔子" class="headerlink" title="楔子"></a>楔子</h2><p><strong>在上一篇博客中，我们说了Python函数的底层实现，并且还演示了如何自定义一个函数，虽然这在工作中没有太大意义，但是可以让我们深刻理解函数的行为。此外我们还介绍了如何获取函数的参数，而这一次我们就来看看函数如何调用的。</strong></p>
+<h2 id="函数的调用"><a href="#函数的调用" class="headerlink" title="函数的调用"></a>函数的调用</h2><pre><code>s = &quot;&quot;&quot;
+def foo():
+    a, b = 1, 2
+    return a + b
+
+foo()
+&quot;&quot;&quot;
+
+if __name__ == &apos;__main__&apos;:
+    import dis
+    dis.dis(compile(s, &quot;call_function&quot;, &quot;exec&quot;))</code></pre><p><strong>我们以一个非常简单的函数为例，看看它的字节码：</strong></p>
+<pre><code>  2           0 LOAD_CONST               0 (&lt;code object foo at 0x00000219BA3F1450, file &quot;call_function&quot;, line 2&gt;)
+              2 LOAD_CONST               1 (&apos;foo&apos;)
+              4 MAKE_FUNCTION            0
+              6 STORE_NAME               0 (foo)
+
+  6           8 LOAD_NAME                0 (foo)
+             10 CALL_FUNCTION            0
+             12 POP_TOP
+             14 LOAD_CONST               2 (None)
+             16 RETURN_VALUE
+
+Disassembly of &lt;code object foo at 0x00000219BA3F1450, file &quot;call_function&quot;, line 2&gt;:
+  3           0 LOAD_CONST               1 ((1, 2))
+              2 UNPACK_SEQUENCE          2
+              4 STORE_FAST               0 (a)
+              6 STORE_FAST               1 (b)
+
+  4           8 LOAD_FAST                0 (a)
+             10 LOAD_FAST                1 (b)
+             12 BINARY_ADD
+             14 RETURN_VALUE</code></pre><p><strong>还是那句话，模块有一个PyCodeObject对象，函数也有一个PyCodeObject对象，只不过后者是在前者的常量池当中。而且dis模块在显示字节码的时候，自动帮我们分开了，我们从上到下依次捋一遍。</strong></p>
+<ul>
+<li><code>0 LOAD_CONST 0 (&lt;code object......: 遇到def关键字知道这是一个函数, 所以会加载其对应的PyCodeObject对象</code></li>
+<li><code>2 LOAD_CONST 1 (&#39;foo&#39;): 加载函数名</code></li>
+<li><code>4 MAKE_FUNCTION 0: 通过MAKE_FUNCTION指令构造一个函数</code></li>
+<li><code>6 STORE_NAME 0 (foo): 将符号&quot;foo&quot;和上一步得到的函数绑定起来, 存储在local空间中, 这个local空间显然是模块的local空间、即global空间</code></li>
+<li><code>8 LOAD_NAME 0 (foo): 注意这一步是在调用的时候发生的, 将变量foo加载进来</code></li>
+<li><code>10 CALL_FUNCTION 0: 通过CALL_FUNCTION指令调用该函数(我们后面将要分析的重点), 后面的0表示参数个数</code></li>
+<li><code>12 POP_TOP: 将上一步函数的返回值从运行时栈的顶部弹出</code></li>
+<li><code>14 LOAD_CONST 2 (None): 加载返回值None</code></li>
+<li><code>16 RETURN_VALUE: 将返回值返回</code></li>
+</ul>
+<p><strong>模块对应的字节码就是上面那样，再来看看函数的，事实上对于现在的你来说已经很简单了。</strong></p>
+<ul>
+<li><code>0 LOAD_CONST 1 ((1, 2)): 从常量池中加载元组, 我们说对于列表而言是先将内部的元素一个一个加载进来、然后通过BUILD_LIST构建一个列表, 但是对于元组来说则可以直接加载, 原因就是元组内的元素指向对象的地址不可以变</code></li>
+<li><code>2 UNPACK_SEQUENCE 2: 解包</code></li>
+<li><code>4 STORE_FAST 0 (a): 将解包得到两个常量中的第一个常量赋值给a</code></li>
+<li><code>6 STORE_FAST 0 (B): 将解包得到两个常量中的第二个常量赋值给b</code></li>
+<li><code>8 LOAD_FAST 0 (a): 加载局部变量a</code></li>
+<li><code>10 LOAD_FAST 1 (b): 加载局部变量b</code></li>
+<li><code>12 BINARY_ADD: 执行加法运算</code></li>
+<li><code>14 RETURN_VALUE: 将返回值返回</code></li>
+</ul>
+<p><strong>所以从目前来看，这些字节码已经没什么难度了，但是我们看到调用函数是用过CALL_FUNCTION指令，那么这个指令都做了哪些事情呢？</strong></p>
+<pre><code>case TARGET(CALL_FUNCTION): {
+    PREDICTED(CALL_FUNCTION);
+    //sp: 运行时栈栈顶指针
+    //res: 函数的返回值, 一个PyObject *
+    PyObject **sp, *res;
+    //指向运行时栈的栈顶
+    sp = stack_pointer;
+    //调用函数, 将返回值赋值给res, tstate表示线程对象, &amp;sp显然是一个三级指针了, oparg表示指令的操作数
+    res = call_function(tstate, &amp;sp, oparg, NULL);
+    stack_pointer = sp;
+    PUSH(res);
+    if (res == NULL) {
+        goto error;
+    }
+    DISPATCH();
+}</code></pre><p><strong>然后重点是call_function函数，我们来看一下，同样位于 <em>ceval.c</em> 中。</strong></p>
+<pre><code>#define PyCFunction_Check(op) (Py_TYPE(op) == &amp;PyCFunction_Type)
+#define PyFunction_Check(op) (Py_TYPE(op) == &amp;PyFunction_Type)
+
+
+Py_LOCAL_INLINE(PyObject *) _Py_HOT_FUNCTION
+call_function(PyThreadState *tstate, PyObject ***pp_stack, Py_ssize_t oparg, PyObject *kwnames)
+{    
+    //获取PyFunctionObject对象，因为pp_stack是在CALL_FUNCTION指令中传入的栈顶指针
+    //传入的oparg是0，kwnames是NULL，这里的pfunc就是MAKE_FUNCTION中创建的PyFunctionObject对象
+    PyObject **pfunc = (*pp_stack) - oparg - 1;
+    //这里的func和pfunc是一样的
+    PyObject *func = *pfunc;
+    PyObject *x, *w;
+    //处理参数，对于我们当前的函数来说，这里的nkwargs和nargs都是0    
+    Py_ssize_t nkwargs = (kwnames == NULL) ? 0 : PyTuple_GET_SIZE(kwnames);
+    Py_ssize_t nargs = oparg - nkwargs;
+    //移动栈指针
+    PyObject **stack = (*pp_stack) - nargs - nkwargs;
+
+    //然后这里有两种执行方式, 我们后面会说, 但是我们看到将返回值赋值给了x
+    if (tstate-&gt;use_tracing) {
+        x = trace_call_function(tstate, func, stack, nargs, kwnames);
+    }
+    else {
+        x = _PyObject_Vectorcall(func, stack, nargs | PY_VECTORCALL_ARGUMENTS_OFFSET, kwnames);
+    }
+
+    assert((x != NULL) ^ (_PyErr_Occurred(tstate) != NULL));
+
+    //清空函数栈
+    while ((*pp_stack) &gt; pfunc) {
+        w = EXT_POP(*pp_stack);
+        Py_DECREF(w);
+    }
+
+    return x;
+}
+
+
+
+static PyObject *
+trace_call_function(PyThreadState *tstate,
+                    PyObject *func,
+                    PyObject **args, Py_ssize_t nargs,
+                    PyObject *kwnames)
+{
+    PyObject *x; //返回值
+    //调用_PyObject_Vectorcall, 将返回值设置给x
+    if (PyCFunction_Check(func)) {
+        C_TRACE(x, _PyObject_Vectorcall(func, args, nargs, kwnames));
+        return x;
+    }
+    //这里暂时先不用管, 这里是调用一个方法, 显然它是和类相关, 我们在介绍类的时候会说
+    else if (Py_TYPE(func) == &amp;PyMethodDescr_Type &amp;&amp; nargs &gt; 0) {
+        PyObject *self = args[0];
+        func = Py_TYPE(func)-&gt;tp_descr_get(func, self, (PyObject*)Py_TYPE(self));
+        if (func == NULL) {
+            return NULL;
+        }
+        C_TRACE(x, _PyObject_Vectorcall(func,
+                                        args+1, nargs-1,
+                                        kwnames));
+        Py_DECREF(func);
+        return x;
+    }
+    return _PyObject_Vectorcall(func, args, nargs | PY_VECTORCALL_ARGUMENTS_OFFSET, kwnames);
+}</code></pre><p><strong>然后会调用 <em>\</em>PyFunction_FastCallDict_ 函数：</strong></p>
+<pre><code>//Objects/call.c
+PyObject *
+_PyFunction_FastCallDict(PyObject *func, PyObject *const *args, Py_ssize_t nargs,
+                         PyObject *kwargs)
+{
+    PyCodeObject *co = (PyCodeObject *)PyFunction_GET_CODE(func); //获取PyCodeObject对象
+    PyObject *globals = PyFunction_GET_GLOBALS(func);//获取global名字空间
+    PyObject *argdefs = PyFunction_GET_DEFAULTS(func);//获取参数
+    PyObject *kwdefs, *closure, *name, *qualname; //一些其它属性
+    PyObject *kwtuple, **k;
+    PyObject **d;
+    Py_ssize_t nd, nk;
+    PyObject *result;
+
+    assert(func != NULL);
+    assert(nargs &gt;= 0);
+    assert(nargs == 0 || args != NULL);
+    assert(kwargs == NULL || PyDict_Check(kwargs));
+
+    //我们观察一下下面的return
+    //一个是function_code_fastcall，一个是最后的_PyEval_EvalCodeWithName
+    //从名字上能看出来function_code_fastcall是一个快分支, 它适用于没有参数函数
+    if (co-&gt;co_kwonlyargcount == 0 &amp;&amp;
+        (kwargs == NULL || PyDict_GET_SIZE(kwargs) == 0) &amp;&amp;
+        (co-&gt;co_flags &amp; ~PyCF_MASK) == (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE))
+    {
+        /* Fast paths */
+        if (argdefs == NULL &amp;&amp; co-&gt;co_argcount == nargs) {
+            //function_code_fastcall里面逻辑很简单
+            //直接抽走当前PyFunctionObject里面PyCodeObject和函数运行时的global命名空间等信息
+            //根据PyCodeObject对象直接为其创建一个PyFrameObject对象，然后PyEval_EvalFrameEx执行栈帧
+            //也就是真正的进入了函数调用，执行函数里面的代码
+            return function_code_fastcall(co, args, nargs, globals);
+        }
+        else if (nargs == 0 &amp;&amp; argdefs != NULL
+                 &amp;&amp; co-&gt;co_argcount == PyTuple_GET_SIZE(argdefs)) {
+            /* function called with no arguments, but all parameters have
+               a default value: use default values as arguments .*/
+            args = _PyTuple_ITEMS(argdefs);
+            return function_code_fastcall(co, args, PyTuple_GET_SIZE(argdefs),
+                                          globals);
+        }
+    }
+
+    //适用于有参数的情况
+    nk = (kwargs != NULL) ? PyDict_GET_SIZE(kwargs) : 0;
+    if (nk != 0) {
+        Py_ssize_t pos, i;
+        kwtuple = PyTuple_New(2 * nk);
+        if (kwtuple == NULL) {
+            return NULL;
+        }
+
+        k = _PyTuple_ITEMS(kwtuple);
+        pos = i = 0;
+        while (PyDict_Next(kwargs, &amp;pos, &amp;k[i], &amp;k[i+1])) {
+            Py_INCREF(k[i]);
+            Py_INCREF(k[i+1]);
+            i += 2;
+        }
+        assert(i / 2 == nk);
+    }
+    else {
+        kwtuple = NULL;
+        k = NULL;
+    }
+
+    //获取相关参数
+    kwdefs = PyFunction_GET_KW_DEFAULTS(func);
+    closure = PyFunction_GET_CLOSURE(func);
+    name = ((PyFunctionObject *)func) -&gt; func_name;
+    qualname = ((PyFunctionObject *)func) -&gt; func_qualname;
+
+    if (argdefs != NULL) {
+        d = _PyTuple_ITEMS(argdefs);
+        nd = PyTuple_GET_SIZE(argdefs);
+    }
+    else {
+        d = NULL;
+        nd = 0;
+    }
+
+    //如果有参数的话，现在会走这一步，逻辑会复杂一些，不过这些都是后话了
+    //但是显然最终也会经过PyEval_EvalFrameEx, 进而进入哪一个大大的for循环
+    result = _PyEval_EvalCodeWithName((PyObject*)co, globals, (PyObject *)NULL,
+                                      args, nargs,
+                                      k, k != NULL ? k + 1 : NULL, nk, 2,
+                                      d, nd, kwdefs,
+                                      closure, name, qualname);
+    Py_XDECREF(kwtuple);
+    return result;
+}</code></pre><p><img src="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200828230612755-992873571.png" alt=""></p>
+<p><strong>因此我们看到，总共有两条路径，分别针对无参和有参，但是最终殊途同归、都会走到PyEval_EvalFrameEx那里。然后虚拟机在新的栈帧中执行新的PyCodeObject，而这个PyCodeObject就是函数对应的PyCodeObject。</strong></p>
+<p><strong>但是到这里恐怕就有人有疑问了，我们之前说过PyFrameObject是根据PyCodeObject创建的，而PyFunctionObject也是根据PyCodeObject创建的，那么PyFrameObject和PyFunctionObject之间有啥关系呢？</strong></p>
+<blockquote>
+<p><strong>如果把PyCodeObject比喻成”妹子”的话，那么PyFunctionObject就是妹子的”备胎”，PyFrameObject就是妹子的”心上人”。其实PyEval_EvalFrameEx在栈帧中执行的时候，PyFunctionObject的影响就已经消失了，真正对栈帧产生影响的是PyFunctionObject里面的PyCodeObject对象和global名字空间。也就是说，最终是PyFrameObject对象和PyCodeObject对象两者如胶似漆，跟PyFunctionObject对象之间没有关系，所以PyFunctionObject辛苦一场，实际上是为别人做了嫁衣。PyFunctionObject主要是对PyCodeObject和global名字空间的一种打包和运输方式。</strong></p>
+</blockquote>
+<p><strong>另外我们这里提到了快速通道，那么函数是通过什么来判断是否可以进入快速通道呢？答案是通过函数参数的形式来决定是否可以进入快速通道，下面我们就来看看函数中参数的实现。</strong></p>
+<h2 id="函数参数的实现"><a href="#函数参数的实现" class="headerlink" title="函数参数的实现"></a>函数参数的实现</h2><p><strong>函数最大的特点就是可以传入参数，否则就只能单纯的封装，这样未免太无趣了。对于Python来说，参数会传什么对于函数来说是不知道的，函数体内部只是利用参数做一些事情，比如调用参数的get方法，但是到底能不能调用get方法，就取决于你给参数传的值到底是什么了。因此可以把参数看成是一个占位符，我们假设有这么个东西，直接把它当成已存在的变量或者常量去进行操作，然后调用的时候，将某个值传进去赋给相应的参数，然后参数对应着传入的具体的值将逻辑走一遍即可。</strong></p>
+<h3 id="参数类别"><a href="#参数类别" class="headerlink" title="参数类别"></a>参数类别</h3><p><strong>在Python中，调用函数时所传递的参数根据形式的不同可以分为四种类别：</strong></p>
+<pre><code>def foo(a, b):
+    pass</code></pre><ul>
+<li><strong>位置参数(positional argument)：</strong><code>foo(a, b), a和b通过位置参数传递</code></li>
+<li><strong>关键字参数(keyword argument)：</strong><code>foo(a=1, b=2), a和b通过关键字参数</code></li>
+<li><strong>扩展位置参数(excess positional argument)：</strong><code>foo(*args), args通过扩展位置参数传递</code></li>
+<li><strong>扩展关键字参数(excess keyword argument)</strong>：<code>foo(**kwargs), kwargs通过扩展位置参数传递</code></li>
+</ul>
+<p><strong>我们下面来看一下python的call_function是如何处理函数信息的：</strong></p>
+<pre><code>Py_LOCAL_INLINE(PyObject *) _Py_HOT_FUNCTION
+call_function(PyThreadState *tstate, PyObject ***pp_stack, Py_ssize_t oparg, PyObject *kwnames)
+{    
+    PyObject **pfunc = (*pp_stack) - oparg - 1;
+    PyObject *func = *pfunc;
+    PyObject *x, *w;
+    /*当python虚拟机在开始执行MAKE_FUNCTION指令时，会先获取一个指令参数oparg
+    oparg里面记录函数的参数个数信息，包括位置参数和关键字参数的个数。
+    虽然扩展位置参数和扩展关键字参数是更高级的用法，但是本质上也是由多个位置参数、多个关键字参数组成的。
+    这就意味着，虽然Python中存在四种参数，但是只要记录位置参数和关键字参数的个数，就能知道一共有多少个参数，进而知道一共需要多大的内存来维护参数。
+    */
+    //nkwargs就是关键字参数的个数，nargs是位置参数的个数 
+    Py_ssize_t nkwargs = (kwnames == NULL) ? 0 : PyTuple_GET_SIZE(kwnames);
+    Py_ssize_t nargs = oparg - nkwargs;
+    PyObject **stack = (*pp_stack) - nargs - nkwargs;</code></pre><p><strong>而且Python的每个指令都是两个字节，第一个字节存放指令序列本身，第二个字节存放参数个数，既然是一个字节，说明最多只允许有255个参数，不过这已经足够了。但是在Python3.8中，这个限制被打破了。</strong></p>
+<pre><code>[root@ iZ2ze3ik2oh85c6hanp0hmZ ~]# python3 1.py 
+Traceback (most recent call last):
+  File &quot;1.py&quot;, line 8, in &lt;module&gt;
+    print(exec(s))
+  File &quot;&lt;string&gt;&quot;, line 2
+SyntaxError: more than 255 arguments
+[root@ iZ2ze3ik2oh85c6hanp0hmZ ~]# </code></pre><p><strong>以我阿里云上的Python3.6为例，发现参数不能超过255个，但是在Python3.8的时候，即使有1000000个参数也是没问题的。所以Python3.8的源码变动是有些大的，3.6和3.7实际上是差不多的，虚拟机实现代码甚至和Python2也高度相似。但是在Python3.8，变动就有点大了。</strong></p>
+<p><strong>Python函数内部局部变量信息，可以通过co_nlocals和co_argcount来获取。从名字也能看出来这个不是PyFunctionObject里面的，而是PyCodeObject里面的。co_nlocals，我们之前说过，这是函数内部局部变量的个数，co_argcount是参数的个数。实际上，函数参数和函数局部变量是非常密切的，某种意义上函数参数就是一种函数局部变量，它们在内存中是连续放置的。当Python需要为函数申请局部变量的内存空间时，就需要通过co_nlocals知道局部变量的总数。不过既然如此，那还要co_argcount干什么呢？别急，看个例子</strong></p>
+<pre><code>def foo(a, b, c, d=1):
+    pass
+
+print(foo.__code__.co_argcount)  # 4
+print(foo.__code__.co_nlocals)  # 4
+
+
+def foo(a, b, c, d=1):
+    a = 1
+    b = 1
+
+print(foo.__code__.co_argcount)  # 4
+print(foo.__code__.co_nlocals)  # 4
+
+
+def foo(a, b, c, d=1):
+    aa = 1
+
+print(foo.__code__.co_argcount)  # 4
+print(foo.__code__.co_nlocals)  # 5</code></pre><p><strong>函数的参数也是一个局部变量，因此co_nlocals是参数的个数加上函数体中新创建的局部变量的个数。注意函数参数也是一个局部变量，比如参数有一个a，但是函数体里面的变量还是a，相当于重新赋值了，因此还是相当于一个参数。但是co_argcount则是存储记录参数的个数。因此一个很明显的结论：<code>对于任意一个函数，co_nlocals至少是大于等于co_argcount的</code>。</strong></p>
+<pre><code>def foo(a, b, c, d=1, *args, **kwargs):
+    pass
+
+
+print(foo.__code__.co_argcount)  # 4
+print(foo.__code__.co_nlocals)  # 6</code></pre><p><strong>另外我们看到，对于扩展位置参数、扩展关键字参数来说，co_argcount是不算在内的，因为你完全可以不传递，所以直接当成0来算。而对于co_nlocals来说，我们在函数体内部肯定是能拿到args和kwargs的，而这可以看成是两个参数。因此co_argcount是4，co_nlocals是6。其实所有的扩展位置参数是存在了一个PyTupleObject对象中的，所有的扩展关键字参数是存储在一个PyDictObject对象中的。而即使我们多传、或者不传，对于co_argcount和co_nlocals来说，都不会有任何改变了，因为这两者的值是在编译的时候就已经确定了的。</strong></p>
+<h3 id="位置参数的传递"><a href="#位置参数的传递" class="headerlink" title="位置参数的传递"></a>位置参数的传递</h3><p><strong>下面我们就来看看位置参数是如何传递的：</strong></p>
+<pre><code>s = f&quot;&quot;&quot;
+def f(name, age):
+    age = age + 5
+    print(name, age)
+
+age = 5
+f(&quot;satori&quot;, age)
+&quot;&quot;&quot;
+
+if __name__ == &apos;__main__&apos;:
+    import dis 
+    dis.dis(compile(s, &quot;call_function&quot;, &quot;exec&quot;))</code></pre><p><strong>字节码如下，我们来分析一下，当然基础的就一笔带过了。</strong></p>
+<pre><code>  2           0 LOAD_CONST               0 (&lt;code object f at 0x00000224C3941450, file &quot;call_function&quot;, line 2&gt;)
+              2 LOAD_CONST               1 (&apos;f&apos;)
+              4 MAKE_FUNCTION            0
+              6 STORE_NAME               0 (f)
+
+  6           8 LOAD_CONST               2 (5)
+             10 STORE_NAME               1 (age)
+
+  7          12 LOAD_NAME                0 (f)
+             14 LOAD_CONST               3 (&apos;satori&apos;)
+             16 LOAD_NAME                1 (age)
+             18 CALL_FUNCTION            2 //oparg是2, 表示调用的时候传递了两个参数
+             20 POP_TOP
+             22 LOAD_CONST               4 (None)
+             24 RETURN_VALUE
+
+Disassembly of &lt;code object f at 0x00000224C3941450, file &quot;call_function&quot;, line 2&gt;:
+  3           0 LOAD_FAST                1 (age) //此时age和对应的值已经存在函数的符号表和常量池当中了
+              2 LOAD_CONST               1 (5)  //加载常量5
+              4 BINARY_ADD
+              6 STORE_FAST               1 (age) //相加之后, 重新使用age保存
+
+  4           8 LOAD_GLOBAL              0 (print) //加载print
+             10 LOAD_FAST                0 (name) //加载局部变量name和age
+             12 LOAD_FAST                1 (age)
+             14 CALL_FUNCTION            2  //函数调用,显然是print, 参数是两个
+             16 POP_TOP
+             18 LOAD_CONST               0 (None)
+             20 RETURN_VALUE</code></pre><p><strong>字节码虽然解释完了， 但是最重要的还是没有说。<code>f(name, age)</code>，这里的name和age显然是外层定义的，但是外层定义的这两个变量是怎么传给函数f的。下面我们通过源码重新分析：</strong></p>
+<pre><code>7          12 LOAD_NAME                0 (f)
+           14 LOAD_CONST               3 (&apos;satori&apos;)
+           16 LOAD_NAME                1 (age)</code></pre><p><strong>我们注意到<code>CALL_FUNCTION</code>上面有三条指令，其实当这三条指令执行完毕之后，函数需要的参数已经被压入了运行时栈中。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200828230620325-1367321592.png" alt=""></p>
+<p><strong>通过 <em>\</em>PyFunction_FastCallDict_ 函数，然后执行function_code_fastcall。</strong></p>
+<pre><code>//Objects/call.c
+static PyObject* _Py_HOT_FUNCTION
+function_code_fastcall(PyCodeObject *co, PyObject *const *args, Py_ssize_t nargs,
+                       PyObject *globals)
+{
+    PyFrameObject *f; //栈帧对象
+    PyThreadState *tstate = _PyThreadState_GET(); //线程状态对象
+    PyObject **fastlocals; //f-&gt;localsplus, 后面会说
+    Py_ssize_t i;
+    PyObject *result;
+
+    assert(globals != NULL);
+    /* XXX Perhaps we should create a specialized
+       _PyFrame_New_NoTrack() that doesn&apos;t take locals, but does
+       take builtins without sanity checking them.
+       */
+    assert(tstate != NULL);
+    //创建与函数对应的PyFrameObject，我们看到参数是co，所以是根据字节码指令来创建的
+    //然后还有一个globals, 表示global名字空间, 所以我们看到最后实际上没有PyFunctionObject什么事, 它只是起到一个输送的作用
+    f = _PyFrame_New_NoTrack(tstate, co, globals, NULL);
+    if (f == NULL) {
+        return NULL;
+    }
+
+    fastlocals = f-&gt;f_localsplus;
+
+    for (i = 0; i &lt; nargs; i++) {
+        Py_INCREF(*args);
+        fastlocals[i] = *args++;
+    }
+    //关键：拷贝函数参数，从运行时栈到PyFrameObject.f_localsplus
+    result = PyEval_EvalFrameEx(f,0);
+
+    if (Py_REFCNT(f) &gt; 1) {
+        Py_DECREF(f);
+        _PyObject_GC_TRACK(f);
+    }
+    else {
+        ++tstate-&gt;recursion_depth;
+        Py_DECREF(f);
+        --tstate-&gt;recursion_depth;
+    }
+    return result;
+}</code></pre><p><strong>从源码中我们看到通过 <em>\</em>PyFrame_New_NoTrack_ 创建了函数f对应的PyFrameObject对象，参数是co对应的PyFunctionObject对象中保存的PyCodeObject对象。随后，Python虚拟机将参数逐个拷贝到新建的PyFrameObject对象的f_localsplus中。可在分析Python虚拟机框架时，我们知道，这个f_localsplus所指向的内存块里面也存储了Python虚拟机所使用的那个运行时栈。那么参数所占的内存和运行时栈所占的内存有什么关联呢？</strong></p>
+<pre><code>//frameobject.c
+
+//这个是_PyFrame_New_NoTrack，对外暴露的是PyFrame_New,但是本质上调用了这个
+PyFrameObject* _Py_HOT_FUNCTION
+_PyFrame_New_NoTrack(PyThreadState *tstate, PyCodeObject *code,
+                     PyObject *globals, PyObject *locals)
+{
+    PyFrameObject *back = tstate-&gt;frame;
+    PyFrameObject *f;
+    PyObject *builtins;
+    Py_ssize_t i;
+
+    //...
+    //...
+        Py_ssize_t extras, ncells, nfrees;
+        ncells = PyTuple_GET_SIZE(code-&gt;co_cellvars);
+        nfrees = PyTuple_GET_SIZE(code-&gt;co_freevars);
+        extras = code-&gt;co_stacksize + code-&gt;co_nlocals + ncells + nfrees;
+        if (free_list == NULL) {
+            //为f_localsplus申请内存空间, 大小为extras, 注意这个extras, 我们看到它实际上分为四个部分
+            //分别是: 运行时栈、局部变量、cell对象、free对象, 注意:但在内存中它们可不是这个顺序
+            f = PyObject_GC_NewVar(PyFrameObject, &amp;PyFrame_Type,
+            extras);
+            if (f == NULL) {
+                Py_DECREF(builtins);
+                return NULL;
+            }
+        }
+        else {
+            //...
+        }
+
+        f-&gt;f_code = code;
+        //获取局部变量的个数 + cell对象的个数 + free对象的个数
+        extras = code-&gt;co_nlocals + ncells + nfrees;
+        f-&gt;f_valuestack = f-&gt;f_localsplus + extras;
+        for (i=0; i&lt;extras; i++)
+            f-&gt;f_localsplus[i] = NULL;
+        f-&gt;f_locals = NULL;
+        f-&gt;f_trace = NULL;
+    }
+    //...
+    f-&gt;f_lasti = -1;
+    f-&gt;f_lineno = code-&gt;co_firstlineno;
+    f-&gt;f_iblock = 0;
+    f-&gt;f_executing = 0;
+    f-&gt;f_gen = NULL;
+    f-&gt;f_trace_opcodes = 0;
+    f-&gt;f_trace_lines = 1;
+
+    return f;
+}</code></pre><p><strong>前面提到，在函数对应的PyCodeObject对象的co_nlocals域中，包含着函数参数的个数，因为函数参数也是局部符号的一种。所以从f_localsplus开始，extras中一定有供函数参数使用的内存。或者说，函数的参数存放在运行时栈之前的那段内存中。</strong></p>
+<p><strong>另外从_PyFrame_New_NoTrack当中我们可以看到，在数组f_localsplus中存储函数参数的空间和运行时栈的空间在逻辑上是分离的，并不是共享同一片内存，尽管它们是连续的，但这两者是鸡犬相闻，但又泾渭分明、老死不相往来。</strong></p>
+<p><strong>在处理完参数之后，还没有进入PyEval_EvalFrameEx，所以此时运行时栈是空的。但是函数的参数已经位于f_localsplus中了。所以这时新建PyFrameObject对象的f_localsplus就是这样：</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200828230635471-1010256465.png" alt=""></p>
+<h3 id="位置参数的访问"><a href="#位置参数的访问" class="headerlink" title="位置参数的访问"></a>位置参数的访问</h3><p><strong>当参数拷贝的动作完成之后，就会进入新的PyEval_EvalFrameEx，开始真正的f的调用动作。</strong></p>
+<pre><code>3           0 LOAD_FAST                1 (age) 
+            2 LOAD_CONST               1 (5)  
+            4 BINARY_ADD
+            6 STORE_FAST               1 (age) </code></pre><p><strong>首先对参数的读写，肯定是通过<code>LOAD_FAST</code>,<code>LOAD_CONST</code>,<code>STORE_FAST</code>这几条指令集完成的。</strong></p>
+<pre><code>//ceval.c
+PyObject* _Py_HOT_FUNCTION
+_PyEval_EvalFrameDefault(PyFrameObject *f, int throwflag)
+{
+    ...
+    ...
+    fastlocals = f-&gt;f_localsplus;
+    ...
+}
+
+//一个宏, 这里的fastlocals显然就是f -&gt; localsplus
+#define GETLOCAL(i)     (fastlocals[i])
+
+        case TARGET(LOAD_FAST): {
+            //从fastlocals中获取索引为oparg的值
+            PyObject *value = GETLOCAL(oparg);
+            if (value == NULL) {
+                format_exc_check_arg(tstate, PyExc_UnboundLocalError,
+                                     UNBOUNDLOCAL_ERROR_MSG,
+                                     PyTuple_GetItem(co-&gt;co_varnames, oparg));
+                goto error;
+            }
+            Py_INCREF(value);
+            PUSH(value);
+            FAST_DISPATCH();
+        }
+
+
+        case TARGET(STORE_FAST): {
+            PREDICTED(STORE_FAST);
+            PyObject *value = POP(); //弹出元素
+            SETLOCAL(oparg, value);  //将索引为oparg的元素设置为value
+            FAST_DISPATCH();
+        }</code></pre><p><strong>所以我们发现，LOAD_FAST和STORE_FAST这一对指令是以f_localsplus这一片内存为操作目标的，指令<code>0 LOAD_FAST 1 (age)</code>的结果是将f_localsplus[1]对应的对象压入到运行时栈中。而在完成加法操作之后，又将结果通过STORE_FAST放入到f_localsplus[1]中，这样就实现了对a的更新，那么以后在print(a)的时候，得到的结果就是10了。</strong></p>
+<p><strong>现在关于Python的位置参数在函数调用时是如何传递的、在函数执行又是如何被访问的，已经真相大白了。在调用函数时，Python将函数参数的值从左至右依次压入到运行时栈中，而在call_function中通过调用 <em>\</em>PyFunction_FastCallDict_ ，进而调用function_code_fastcall，而在function_code_fastcall中，又将这些参数依次拷贝到和PyFrameObject对象的f_localsplus中。最终的效果就是，Python虚拟机将函数调用时使用的参数，从左至右依次地存放在新建的PyFrameObject对象的f_localsplus中。</strong></p>
+<p><strong>因此在访问函数参数时，python虚拟机并没有按照通常访问符号的做法，去查什么名字空间，而是直接通过一个索引<code>(偏移位置)</code>来访问f_localsplus中存储的符号对应的值，是的，f_localsplus存储的是符号<code>(变量名)</code>，并不是具体的值。因为我们说Python中的变量只是一个指针，至于值是否改变，则取决于对应的值是可变对象还是不可变对象，而不是像其他编程语言那样通过传值或者传指针来决定是否改变。因此这种通过索引<code>(偏移位置)</code>来访问参数的方式也正是位置参数的由来。</strong></p>
+<h3 id="默认参数"><a href="#默认参数" class="headerlink" title="默认参数"></a>默认参数</h3><p><strong>Python函数的一个特点就是支持默认参数，这是非常方便的，我们来看看实现机制。</strong></p>
+<pre><code>s = &quot;&quot;&quot;
+def foo(a=1, b=2):
+    print(a + b)
+
+foo()
+&quot;&quot;&quot;
+
+if __name__ == &apos;__main__&apos;:
+    import dis
+    dis.dis(compile(s, &quot;default&quot;, &quot;exec&quot;))
+
+
+  2           0 LOAD_CONST               5 ((1, 2))//我们看到在构造函数的时候就已经把默认值加载进来了
+              2 LOAD_CONST               2 (&lt;code object foo at 0x000002076ED83BE0, file &quot;default&quot;, line 2&gt;)
+              4 LOAD_CONST               3 (&apos;foo&apos;)
+              6 MAKE_FUNCTION            1 (defaults) 
+              8 STORE_NAME               0 (foo)
+
+  5          10 LOAD_NAME                0 (foo)
+             12 CALL_FUNCTION            0
+             14 POP_TOP
+             16 LOAD_CONST               4 (None)
+             18 RETURN_VALUE
+
+Disassembly of &lt;code object foo at 0x000002076ED83BE0, file &quot;default&quot;, line 2&gt;:
+  3           0 LOAD_GLOBAL              0 (print)
+              2 LOAD_FAST                0 (a)
+              4 LOAD_FAST                1 (b)
+              6 BINARY_ADD
+              8 CALL_FUNCTION            1
+             10 POP_TOP
+             12 LOAD_CONST               0 (None)
+             14 RETURN_VALUE</code></pre><p><strong>我们对比一下开始的没有默认参数的函数，会发现相比于无默认参数的函数，有默认参数的函数，除了load函数体对应的PyCodeObject、和foo这个符号之外，会先将默认参数的值给load进来，将这三者都压入运行时栈。但是我们发现这是默认参数是组合成一个元组的形式入栈的，而且我们再来观察一下<code>MAKE_FUNCTION</code>这个指令，我们发现后面的参数是1 (defaults)，之前的都是0，那么这个1是什么呢？而且又提示了我们一个defaults，我们知道PyFunctionObject对象有一个func_defaults，这两者之间有关系吗？那么带着这些疑问再来看看<code>MAKE_FUNCTION</code>指令。</strong></p>
+<pre><code>case TARGET(MAKE_FUNCTION): {
+    PyObject *qualname = POP();
+    PyObject *codeobj = POP();
+    PyFunctionObject *func = (PyFunctionObject *)
+        PyFunction_NewWithQualName(codeobj, f-&gt;f_globals, qualname);
+
+    Py_DECREF(codeobj);
+    Py_DECREF(qualname);
+    if (func == NULL) {
+        goto error;
+    }
+
+    if (oparg &amp; 0x08) {
+        assert(PyTuple_CheckExact(TOP()));
+        func -&gt;func_closure = POP();
+    }
+    if (oparg &amp; 0x04) {
+        assert(PyDict_CheckExact(TOP()));
+        func-&gt;func_annotations = POP();
+    }
+    if (oparg &amp; 0x02) {
+        assert(PyDict_CheckExact(TOP()));
+        func-&gt;func_kwdefaults = POP();
+    }
+
+    ////默认参数，我们发现确实是存储在func_defaults里面
+    if (oparg &amp; 0x01) {
+        assert(PyTuple_CheckExact(TOP()));
+        func-&gt;func_defaults = POP();
+    }
+
+    PUSH((PyObject *)func);
+    DISPATCH();
+}</code></pre><p><strong>通过以上命令我们很容易看出，<code>MAKE_FUNCTION</code>指令除了创建PyFunctionObject对象，并且还会处理参数的默认值。<code>MAKE_FUNCTION</code>指令参数表示当前运行时栈中是存在默认值的，但是默认值具体多少个通过参数是看不到的，因为默认值都会按照顺序塞到一个PyTupleObject对象里面，所以整体相当于是一个。然后会调用<code>PyFunction_SetDefaults</code>将该PyTupleObject对象设置为PyFunctionObject.func_defaults的值，在Python层面可以使用<code>__defaults__</code>访问。如此一来，函数参数的默认值也成为了PyFunctionObject对象的一部分，函数和其参数的默认值最终被Python虚拟机捆绑在了一起，它和PyCodeObject、global命名空间一样，也被塞进了PyFunctionObject这个大包袱。所以说PyFunctionObject这个嫁衣做的是很彻底的，工具人PyFunctionObject对象，给个赞。</strong></p>
+<pre><code>int
+PyFunction_SetDefaults(PyObject *op, PyObject *defaults)
+{
+    if (!PyFunction_Check(op)) {
+        PyErr_BadInternalCall();
+        return -1;
+    }
+    if (defaults == Py_None)
+        defaults = NULL;
+    else if (defaults &amp;&amp; PyTuple_Check(defaults)) {
+        Py_INCREF(defaults);
+    }
+    else {
+        PyErr_SetString(PyExc_SystemError, &quot;non-tuple default args&quot;);
+        return -1;
+    }
+    //将PyFunctionObject对象的func_defaults成员设置为defaults
+    Py_XSETREF(((PyFunctionObject *)op)-&gt;func_defaults, defaults);
+    return 0;
+}</code></pre><p><strong>我们还是以这个foo函数为例，看看不同的调用方式对应的底层实现：</strong></p>
+<pre><code>def foo(a=1, b=2):
+    print(a + b)</code></pre><p><strong>不传入参数，直接执行foo()</strong></p>
+<pre><code>PyObject *
+_PyFunction_FastCallDict(PyObject *func, PyObject *const *args, Py_ssize_t nargs,
+                         PyObject *kwargs)
+{    
+    //获取PyFunctionObject的PyCodeObject
+    PyCodeObject *co = (PyCodeObject *)PyFunction_GET_CODE(func);
+    //获取PyFunctionObject的global名字空间
+    PyObject *globals = PyFunction_GET_GLOBALS(func);
+    //获取PyFunctionObject的默认值
+    PyObject *argdefs = PyFunction_GET_DEFAULTS(func);
+    //一些额外属性
+    PyObject *kwdefs, *closure, *name, *qualname;
+    PyObject *kwtuple, **k;
+    PyObject **d;
+    Py_ssize_t nd, nk;
+    PyObject *result;
+
+    assert(func != NULL);
+    assert(nargs &gt;= 0);
+    assert(nargs == 0 || args != NULL);
+    assert(kwargs == NULL || PyDict_Check(kwargs));
+
+    //这里进行判断能否进入快速通道, 一个函数如果想进入快速通道必须要满足两个条件
+    //1. 函数定义的时候不可以有默认参数; 2. 函数调用时，必须都通过位置参数指定。
+    //所以这里检测co_kwonlyargcount和kwargs是否均为零
+    if (co-&gt;co_kwonlyargcount == 0 &amp;&amp;
+        (kwargs == NULL || PyDict_GET_SIZE(kwargs) == 0) &amp;&amp;
+        (co-&gt;co_flags &amp; ~PyCF_MASK) == (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE))
+    {
+        //然后继续检测: 这里的nargs是通过call_function函数传递的
+        //而这个nargs在call_function函数中是Py_ssize_t nargs = oparg - nkwargs;
+        //所以这里的nargs就是传递的参数个数减去通过关键字参数方式传递的参数个数
+        //而co_argcount是函数参数的总个数，所以一旦哪怕有一个参数使用了关键字参数的方式传递，都会造成两者不相等，从而无法进入快速通道
+        if (argdefs == NULL &amp;&amp; co-&gt;co_argcount == nargs) {
+            return function_code_fastcall(co, args, nargs, globals);
+        }
+
+
+        //但是这样的条件确实有点苛刻了，毕竟参数哪能没有默认值呢？所以Python还提供了一种进入快速通道的方式
+        //我们发现在有默认的前提下，如果还能满足nargs==0 &amp;&amp; co-&gt;co_argcount == PyTuple_GET_SIZE(argdefs)也能进入快速通道
+        //co-&gt;co_argcount == PyTuple_GET_SIZE(argdefs)是要求函数的参数个数必须等于默认参数的个数，也就是函数参数全是默认参数
+        //nargs==0则是需要传入的参数个数减去通过关键字参数传递的参数个数等于0，即要么不传参(都是用默认参数)、要么全部都通过关键字参数的方式传参。
+        //这种方式也可以进入快速通道
+        else if (nargs == 0 &amp;&amp; argdefs != NULL
+                 &amp;&amp; co-&gt;co_argcount == PyTuple_GET_SIZE(argdefs)) {
+            args = _PyTuple_ITEMS(argdefs);
+            return function_code_fastcall(co, args, PyTuple_GET_SIZE(argdefs),
+                                          globals);
+        }
+    }
+
+
+    //如果以上两点都无法满足的话，那么就没办法了，只能走常规方法了
+    //获取默认参数的信息
+    nk = (kwargs != NULL) ? PyDict_GET_SIZE(kwargs) : 0;
+    if (nk != 0) {
+        Py_ssize_t pos, i;
+
+        kwtuple = PyTuple_New(2 * nk);
+        if (kwtuple == NULL) {
+            return NULL;
+        }
+
+        k = _PyTuple_ITEMS(kwtuple);
+        pos = i = 0;
+        while (PyDict_Next(kwargs, &amp;pos, &amp;k[i], &amp;k[i+1])) {
+            Py_INCREF(k[i]);
+            Py_INCREF(k[i+1]);
+            i += 2;
+        }
+        assert(i / 2 == nk);
+    }
+    else {
+        kwtuple = NULL;
+        k = NULL;
+    }
+
+    //这里是获取函数的一些属性，默认关键字参数、闭包等等
+    kwdefs = PyFunction_GET_KW_DEFAULTS(func);
+    closure = PyFunction_GET_CLOSURE(func);
+    name = ((PyFunctionObject *)func) -&gt; func_name;
+    qualname = ((PyFunctionObject *)func) -&gt; func_qualname;
+
+    //获取默认参数的值的地址、以及默认参数的个数
+    if (argdefs != NULL) {
+        d = _PyTuple_ITEMS(argdefs);
+        nd = PyTuple_GET_SIZE(argdefs);
+    }
+    else {
+        d = NULL;
+        nd = 0;
+    }
+
+    //调用_PyEval_EvalCodeWithName, 传入函数的PyCodeObject对象以及参数信息
+    result = _PyEval_EvalCodeWithName((PyObject*)co, globals, (PyObject *)NULL,
+                                      args, nargs, 
+                                      k, k != NULL ? k + 1 : NULL, nk, 2,
+                                      d, nd, kwdefs,
+                                      closure, name, qualname);
+    Py_XDECREF(kwtuple);
+    return result;
+}</code></pre><p><strong><code>_PyEval_EvalCodeWithName</code>是一个非常重要的函数，在后面分析扩展位置参数和扩展关键字参数是还会遇到。</strong></p>
+<pre><code>PyObject *
+_PyEval_EvalCodeWithName(PyObject *_co, PyObject *globals, PyObject *locals,
+           PyObject *const *args, Py_ssize_t argcount,
+           PyObject *const *kwnames, PyObject *const *kwargs,
+           Py_ssize_t kwcount, int kwstep,
+           PyObject *const *defs, Py_ssize_t defcount,
+           PyObject *kwdefs, PyObject *closure,
+           PyObject *name, PyObject *qualname)
+{    
+    //PyCodeObject对象, 通过_PyFunction_FastCallDict中接收的func得到
+    PyCodeObject* co = (PyCodeObject*)_co;
+    //栈帧
+    PyFrameObject *f;
+    //返回值
+    PyObject *retval = NULL;
+    //f -&gt; localsplus, 和co -&gt; co_freevars, 这个co_freevars、以及co_freevars都是与闭包相关的
+    PyObject **fastlocals, **freevars;
+    PyObject *x, *u;
+    //参数总个数: 可以通过位置参数传递的参数个数  +  只能通过关键字参数传递的参数个数
+    const Py_ssize_t total_args = co-&gt;co_argcount + co-&gt;co_kwonlyargcount;
+    Py_ssize_t i, j, n;
+    PyObject *kwdict;
+
+    PyThreadState *tstate = _PyThreadState_GET();  //获取线程状态对象
+    assert(tstate != NULL);
+
+    if (globals == NULL) {
+        _PyErr_SetString(tstate, PyExc_SystemError,
+                         &quot;PyEval_EvalCodeEx: NULL globals&quot;);
+        return NULL;
+    }
+
+    //创建栈帧
+    f = _PyFrame_New_NoTrack(tstate, co, globals, locals);
+    if (f == NULL) {
+        return NULL;
+    }
+    fastlocals = f-&gt;f_localsplus;
+    freevars = f-&gt;f_localsplus + co-&gt;co_nlocals;
+
+    //还记得这个co_flags吗? 我们说它是用来判断参数的, 如果它和0x08进行&quot;与运算&quot;结果为真, 那么说明有**kwargs
+    //如果它和0x04进行&quot;与运算&quot;结果为真, 那么说明有*args
+    if (co-&gt;co_flags &amp; CO_VARKEYWORDS) {
+        kwdict = PyDict_New();
+        if (kwdict == NULL)
+            goto fail;
+        i = total_args;
+        if (co-&gt;co_flags &amp; CO_VARARGS) {
+            i++;
+        }
+        SETLOCAL(i, kwdict);
+    }
+    else {
+        kwdict = NULL;
+    }
+
+    //argcount是实际传来的位置参数的个数，co-&gt;co_argcount则是可以通过位置参数传递的参数个数
+    //如果argcount &gt; co-&gt;co_argcount，证明有扩展参数，否则没有    
+    if (argcount &gt; co-&gt;co_argcount) {
+        //所以这里的n等于co-&gt;co_argcount
+        n = co-&gt;co_argcount;
+    }
+    else {
+        //没有扩展位置参数, 那么调用者通过位置参数的方式传了几个、n就是几
+        n = argcount;
+    }
+
+
+    //然后我们仔细看一下这个n，假设我们定义了一个函数def foo(a, b, c=1,d=2, *args)
+    //如果argcount &gt; co-&gt;co_argcount, 说明我们传递的位置参数的个数超过了4个，但n是4
+    //但是如果我们只传递了两个，比如foo(&apos;a&apos;, &apos;b&apos;)，那么n显然为2
+    //下面就是将已经传递的参数的值依次设置到f_localsplus里面去，这里的j就是索引，x就是值。
+    for (j = 0; j &lt; n; j++) {
+        x = args[j];
+        Py_INCREF(x);
+        SETLOCAL(j, x);
+    }
+
+    //下面显然是扩展位置参数参数的逻辑，我们暂时先跳过，后面会说
+    if (co-&gt;co_flags &amp; CO_VARARGS) {
+        u = _PyTuple_FromArray(args + n, argcount - n);
+        if (u == NULL) {
+            goto fail;
+        }
+        SETLOCAL(total_args, u);
+    }
+
+    //关键字参数，同样后面说
+    kwcount *= kwstep;
+    for (i = 0; i &lt; kwcount; i += kwstep) {
+       //......
+
+    //这里会再进行检测，argcount &gt; co-&gt;co_argcount说明我们多传递了, 然后检测是否存在*args
+    //如果co-&gt;co_flags &amp; CO_VARARGS为False, 那么直接报错
+    if ((argcount &gt; co-&gt;co_argcount) &amp;&amp; !(co-&gt;co_flags &amp; CO_VARARGS)) {
+        too_many_positional(tstate, co, argcount, defcount, fastlocals);
+        goto fail;
+    }
+
+    //如果传入的参数个数比函数定义的参数的个数少，那么证明有默认参数。
+    //defcount表示设置了默认参数的个数
+    if (argcount &lt; co-&gt;co_argcount) {
+        //显然m = 参数总个数(不包括*args和**kwargs之外的所有形参的个数) - 默认参数的个数
+        Py_ssize_t m = co-&gt;co_argcount - defcount;
+        Py_ssize_t missing = 0;
+        //因此m就是需要传递的没有默认值的参数的总个数
+        for (i = argcount; i &lt; m; i++) {
+            //而i=argcount则是我们调用函数时传递的位置参数的总个数，很明显如果参数足够，那么 i &lt; m 是不会满足的
+            //比如一个函数接收6个参数，但是有两个是默认参数，因此这就意味着调用者通过位置参数的方式传递的话，需要至少传递4个，那么m就是4
+            //而如果我们也传递了四个，那么初始的i同样是 4
+            if (GETLOCAL(i) == NULL) {
+                //但如果我们只传递了两个，那么通过GETLOCAL从f -&gt; f_localsplus中就会获取不到值
+                //而一旦找不到，missing：缺少的参数个数就会+1
+                missing++;
+            }
+        }
+        //那么按照我们上面的逻辑，显然还有两个没传递，但是它们会使用默认值
+        //如果是只传递了3个参数, 那么显然还有3个参数没有传, 但默认值只有两个, 因此missing不为0
+        if (missing) {
+            //直接抛出异常
+            missing_arguments(tstate, co, missing, defcount, fastlocals);
+            goto fail;
+        }
+
+
+        //下面可能难理解，我们说这个m，是需要由调用者传递的参数个数
+        //而n是以位置参数的形式传递过来的参数的个数，如果比函数参数个数少，那么n就是传来的参数个数，如果比函数参数的个数大，那么n则是函数参数的个数。比如：
+        /*
+        def foo(a, b, c, d=1, e=2, f=3):
+            pass
+        这是一个有6个参数的函数，显然m是3，实际上函数定义好了，m就是一个不变的值了，就是没有默认参数的参数总个数
+        但是我们调用时可以是foo(1,2,3)，也就是只传递3个，那么这里的n就是3，
+        foo(1, 2, 3, 4, 5)，那么显然n=5，而m依旧是3
+        */        
+        if (n &gt; m)
+            //因此现在这里的逻辑就很好理解了，假设调用时foo(1, 2, 3, 4, 5)
+            //由于有3个是默认参数，那么调用只传递3个就可以了，但是这里传递了5个，前3个是必传的
+            //至于后面两个，则说明我不想使用默认值，我想重新传递，而使用默认值的只有最后一个
+            //所以这个i就是明明可以使用默认值、但却没有使用的参数的个数            
+            i = n - m;
+        else
+            //另外如果按照位置参数传递的话，程序能走到这一步，说明已经不存在少传的情况了
+            //因此这个n至少是&gt;=m的，因此如果n == m的话，那么i就是0
+            i = 0;
+        for (; i &lt; defcount; i++) {     
+            //默认参数的值一开始就已经被压入栈中，整体作为一个PyTupleObject对象，被设置到了func_defaults这个域中
+            //但是对于函数的参数来讲，肯定还要设置到f_localsplus里面去，并且它只能是在后面。
+            //因为默认参数的顺序要在非默认参数之后            
+            if (GETLOCAL(m+i) == NULL) {
+                //这里是把索引为i对应的值从func_defaults对应的PyTupleObject里面取出来
+                //这个i要么是n-m，要么是0。还按照之前的例子，函数接收6个参数，但是我们传了5个
+                //因此我们只需要将最后一个、也就是索引为2的元素拷贝到f_localsplus里面去即可。
+                //而n=5，m=3，显然i = 2
+                //那么如果我们传递了3个呢？
+                //显然i是0，因为此时n==m嘛，那么就意味着默认参数都使用默认值，既然这样，那就从头开始开始拷呗。
+                //同理传了4个参数，证明第一个默认参数的默认值是不需要的，那么就只需要再把后面两个拷过去就可以了
+                //那么显然要从索引为1的位置拷到结束，而此时n-m、也就是i，正好为1
+                //所以，n-m就是&quot;默认参数值组成的PyTupleObject对象中需要拷贝到f_localsplus中的第一个值的索引&quot;
+                //然后i &lt; defcount; i++，一直拷到结尾                             
+                PyObject *def = defs[i];
+                Py_INCREF(def);
+                //将值设置到f_localsplus里面，这里显然索引是m+i
+                //比如：def foo(a,b,c,d=1,e=2,f=3)
+                //foo(1, 2, 3, 4)，显然d不会使用默认值，那么只需要把后两个默认值拷给e和f即可
+                //显然e和f根据顺序在f_localsplus中对应索引为4、5
+                //m是3，i是n-m等于4-3等于1，所以m+i正好是4，
+                //f_localsplus: [1, 2, 3, 4]
+                //PyTupleObject:(1, 2, 3)
+                //因此PyTupleObject中索引为i的元素，拷贝到f_localsplus中正好是对应m+i的位置               
+                SETLOCAL(m+i, def);
+            }
+        }
+    }
+
+    //........
+    return retval;
+}</code></pre><p><strong>因此通过以上我们就知道了位置参数的默认值是怎么一回事了。</strong></p>
+<p><strong>传入一个关键字参数，执行foo(b=3)</strong></p>
+<p><strong>在对foo进行第二次调用的时候，我们指定了b=3，但是调用方式本质是一样的。在<code>CALL_FUNCTION</code>之前，python虚拟机将PyUnicodeObject对象b和PyLongObject对象3压入了运行时栈。</strong></p>
+<pre><code>PyObject *
+_PyEval_EvalCodeWithName(PyObject *_co, PyObject *globals, PyObject *locals,
+           PyObject *const *args, Py_ssize_t argcount,
+           PyObject *const *kwnames, PyObject *const *kwargs,
+           Py_ssize_t kwcount, int kwstep,
+           PyObject *const *defs, Py_ssize_t defcount,
+           PyObject *kwdefs, PyObject *closure,
+           PyObject *name, PyObject *qualname)
+{    
+    PyCodeObject* co = (PyCodeObject*)_co;
+    PyFrameObject *f;
+    //.......
+    f = _PyFrame_New_NoTrack(tstate, co, globals, locals);
+    //......
+    if (co-&gt;co_flags &amp; CO_VARKEYWORDS) {
+        //.......
+    }
+    else {
+        //.......
+    }
+
+    if (argcount &gt; co-&gt;co_argcount) {
+        n = co-&gt;co_argcount;
+    }
+    else {
+        n = argcount;
+    }
+    for (j = 0; j &lt; n; j++) {
+        //.......
+    }
+
+    if (co-&gt;co_flags &amp; CO_VARARGS) {
+        //......
+    }
+
+    /* 遍历关键字参数，确定函数的def语句中是否出现了关键字参数的名字 */
+    kwcount *= kwstep;
+    for (i = 0; i &lt; kwcount; i += kwstep) {
+        PyObject **co_varnames;  //符号表
+        PyObject *keyword = kwnames[i]; //获取参数名
+        PyObject *value = kwargs[i];  //获取参数值
+        Py_ssize_t j;
+
+        //显然参数必须是字符串, 所以在字典中你可以这么做: {**{1: &quot;a&quot;, 2: &quot;b&quot;}}
+        //但你不可以这么做: dict(**{1: &quot;a&quot;, 2: &quot;b&quot;})
+        if (keyword == NULL || !PyUnicode_Check(keyword)) {
+            _PyErr_Format(tstate, PyExc_TypeError,
+                          &quot;%U() keywords must be strings&quot;,
+                          co-&gt;co_name);
+            goto fail;
+        }
+
+        //这里的逻辑我们后面会详细说, 总之核心就是检测一个参数是否同时通过位置参数和关键字参数传递了, 也就是判断是否传递了两次
+        co_varnames = ((PyTupleObject *)(co-&gt;co_varnames))-&gt;ob_item;
+        //在函数的符号表中寻找关键字参数, 注意: 这里的j不是从0开始的, 而是从posonlyargcount开始
+        //因为在Python3.8中引入了/, 在/前面的参数只能通过位置参数传递
+        for (j = co-&gt;co_posonlyargcount; j &lt; total_args; j++) {
+            PyObject *name = co_varnames[j];
+            if (name == keyword) {
+                goto kw_found;
+            }
+        }
+
+        /* 逻辑和上面一样 */
+        for (j = co-&gt;co_posonlyargcount; j &lt; total_args; j++) {
+            PyObject *name = co_varnames[j];
+            int cmp = PyObject_RichCompareBool( keyword, name, Py_EQ);
+            if (cmp &gt; 0) {
+                goto kw_found;
+            }
+            else if (cmp &lt; 0) {
+                goto fail;
+            }
+        }
+
+        assert(j &gt;= total_args);
+        if (kwdict == NULL) {
+
+            //如果符号表中没有出现指定的符号, 那么表示出现了一个不需要的关键字参数(当然**kwargs后面说)
+            if (co-&gt;co_posonlyargcount
+                &amp;&amp; positional_only_passed_as_keyword(tstate, co,
+                                                     kwcount, kwnames))
+            {
+                goto fail;
+            }
+
+            _PyErr_Format(tstate, PyExc_TypeError,
+                          &quot;%U() got an unexpected keyword argument &apos;%S&apos;&quot;,
+                          co-&gt;co_name, keyword);
+            goto fail;
+        }
+
+        if (PyDict_SetItem(kwdict, keyword, value) == -1) {
+            goto fail;
+        }
+        continue;
+
+      kw_found:
+        if (GETLOCAL(j) != NULL) {
+            _PyErr_Format(tstate, PyExc_TypeError,
+                          &quot;%U() got multiple values for argument &apos;%S&apos;&quot;,
+                          co-&gt;co_name, keyword);
+            goto fail;
+        }
+        Py_INCREF(value);
+        SETLOCAL(j, value);
+    }
+
+    //.......
+    return retval;
+}</code></pre><p><strong>在编译时：Python会将函数的def语句中出现的符号都记录在符号表(co_varnames)里面。由于我们已经看到，在foo(b=3)的指令序列中，Python虚拟机在执行<code>CALL_FUNCTION</code>指令之前会将关键字参数的名字都压入到运行时栈，那么在<code>_PyEval_EvalCodeWithName</code>中就能利用运行时栈中保存的关键字参数的名字在Python编译时得到的co_varnames中进行查找。最妙的是，在co_varnames中定义的变量名的顺序是由规律的的。而且经过刚才的分析，我们也知道，在PyFrameObject对象的f_localsplus所维护的内存中，用于存储函数参数的内存也是按照相同规律排列的。所以在co_varnames中搜索到关键字参数的参数名时，我们可以直接根据所得到的序号信息直接设置f_localsplus中的内存，这就为默认参数设置了函数调用者希望的值。</strong></p>
+<p><strong>因此我们可以再举个简单例子，总结一下。def foo(a, b, c, d=1,e=2, f=3)，对于这样的一个函数。首先Python虚拟机知道调用者至少要给a、b、c传递参数。如果是foo(1)，那么1会传递给a，但是b和c是没有接受到值的，所以报错。但如果是foo(1, e=4, c=2, b=3)，还是老规矩1传递给a，发现依旧不够，这时候会把希望寄托于关键字参数上。并且我们说过f_localsplus维护的内存中存储的参数的顺序、co_varnames中参数的顺序都是一致的。所以关键字参数是不讲究顺序的，当找到了e=4，那么Python虚拟机通过co_varnames符号表，就知道把e设置为f_localsplus中索引为4的地方，c=2，设置为索引为2的地方，b=3，设置为索引为1的地方。那么当位置参数和关键字参数都是设置完毕之后，python虚拟机会检测需要传递的参数、也就是没有默认值的参数，调用者有没有全部传递。</strong></p>
+<blockquote>
+<p><strong>但是这里再插一句，我们说关键字参数设置具体设置在f_localsplus中的哪一个地方，是通过将关键字参数名代入到co_varnames符号表里面查找所得到的的，但是如果这个关键字参数的参数名不在co_varnames里面，怎么办？另外在我们讲位置参数的时候，如果传递的位置参数，比co_argcount还要多，怎么办？对，聪明如你，肯定知道了，就是我们下面要介绍扩展关键字、扩展位置参数。</strong></p>
+</blockquote>
+<h3 id="扩展位置参数和扩展关键字参数"><a href="#扩展位置参数和扩展关键字参数" class="headerlink" title="扩展位置参数和扩展关键字参数"></a>扩展位置参数和扩展关键字参数</h3><p><strong>之前我们看到了使用扩展位置参数和扩展关键字参数时指令参数个数的值，我们还是再看一遍吧。</strong></p>
+<pre><code>def foo(a, b, *args, **kwargs):
+    pass
+
+
+print(foo.__code__.co_nlocals)  # 4
+print(foo.__code__.co_argcount)  # 2</code></pre><p><strong>我们看到对于co_nlocals来说，它统计的是所有局部变量的个数，结果是4；但是对于co_argcount来说，统计的是不包括*args个**kwargs的所有参数的个数，因此结果是2。既然如此，那么也如我们之前所分析的，*args可以接收多个位置参数，但是最终这些参数都会放在args这个PyTupleObject对象里面；**kwargs可以接收多个关键字参数，但是这些关键字参数会组成一个PyDictObject对象，由kwargs指向。事实上也确实如此，即使不从源码的角度来分析，从Python的实际使用中我们也能得出这个结论。</strong></p>
+<pre><code>def foo(*args, **kwargs):
+    print(args)
+    print(kwargs)
+
+
+foo(1, 2, 3, a=1, b=2, c=3)
+&quot;&quot;&quot;
+(1, 2, 3)
+{&apos;a&apos;: 1, &apos;b&apos;: 2, &apos;c&apos;: 3}
+&quot;&quot;&quot;
+
+foo(*(1, 2, 3), **{&quot;a&quot;: 1, &quot;b&quot;: 2, &quot;c&quot;: 3})
+&quot;&quot;&quot;
+(1, 2, 3)
+{&apos;a&apos;: 1, &apos;b&apos;: 2, &apos;c&apos;: 3}
+&quot;&quot;&quot;</code></pre><p><strong>当然啦，在传递的时候如果对一个元组或者列表、甚至是字符串使用*，那么会将这个可迭代对象直接打散，相当于传递了多个位置参数。同理如果对一个字典使用**，那么相当于传递了多个关键字参数。</strong></p>
+<p><strong>下面我们就来看看扩展参数是如何实现的，首先还是进入到 <em>\</em>PyEval_EvalCodeWithName_ 这个函数里面来，当然这个函数应该很熟悉了，我们看看扩展参数的处理。</strong></p>
+<pre><code>PyObject *
+_PyEval_EvalCodeWithName(PyObject *_co, PyObject *globals, PyObject *locals,
+           //位置参数的相关信息
+           PyObject *const *args, Py_ssize_t argcount,
+           //关键字参数的相关信息                 
+           PyObject *const *kwnames, PyObject *const *kwargs,
+           Py_ssize_t kwcount, int kwstep, //关键字参数个数
+           PyObject *const *defs, Py_ssize_t defcount,
+           //默认值、闭包、函数名、全限定名等信息              
+           PyObject *kwdefs, PyObject *closure,
+           PyObject *name, PyObject *qualname)
+{
+    PyCodeObject* co = (PyCodeObject*)_co;//拿到PyFunctionObject的PyCodeObject
+    PyFrameObject *f;//声明一个PyFrameObject
+    PyObject *retval = NULL;
+    PyObject **fastlocals, **freevars;
+    PyObject *x, *u;
+    //获取总参数的个数
+    const Py_ssize_t total_args = co-&gt;co_argcount + co-&gt;co_kwonlyargcount;
+    Py_ssize_t i, j, n;
+    PyObject *kwdict;
+    //........
+    //创建一个栈帧
+    f = _PyFrame_New_NoTrack(tstate, co, globals, locals);
+    if (f == NULL) {
+        return NULL;
+    }
+
+    //函数的所有参数
+    fastlocals = f-&gt;f_localsplus;
+    //闭包
+    freevars = f-&gt;f_localsplus + co-&gt;co_nlocals;
+
+    //判断是否传递扩展关键字参数，CO_VARKEYWORDS和下面的CO_VARARGS都是标识符
+    //用于判断是否出现了扩展关键字参数和扩展位置参数
+    if (co-&gt;co_flags &amp; CO_VARKEYWORDS) {
+        //创建一个字典
+        kwdict = PyDict_New();
+        if (kwdict == NULL)
+            goto fail;
+        //i是参数总个数，假设值foo(a, b, c, *args, **kwargs)
+        i = total_args;
+        //如果还传递了扩展位置参数，那么i要加上1
+        //因为即使是扩展，关键字参数依旧要在位置参数后面
+        if (co-&gt;co_flags &amp; CO_VARARGS) {
+            i++;
+        }
+        //如果没有扩展位置参数，那么kwdict要处于索引为3的位置
+        //有扩展位置参数，那么kwdit处于索引为4的位置，这显然是合理的
+        //然后放到f_localsplus中        
+        SETLOCAL(i, kwdict);
+    }
+    else {
+        //如果没有的话，那么为NULL
+        kwdict = NULL;
+    }
+
+    /* 这里我们之前介绍了，是将位置参数拷贝到本地(显然这里不包含扩展位置参数) */
+    if (argcount &gt; co-&gt;co_argcount) {
+        n = co-&gt;co_argcount;
+    }
+    else {
+        n = argcount;
+    }
+    for (j = 0; j &lt; n; j++) {
+        x = args[j];
+        Py_INCREF(x);
+        SETLOCAL(j, x);
+    }
+
+    /* 关键来了，将多余的位置参数拷贝到*args里面去 */
+    if (co-&gt;co_flags &amp; CO_VARARGS) {
+        //申请一个argcount - n大小的元组
+        u = _PyTuple_FromArray(args + n, argcount - n);
+        if (u == NULL) {
+            goto fail;
+        }
+        //放到f -&gt; f_localsplus里面去
+        SETLOCAL(total_args, u);
+    }
+
+    //下面就是拷贝扩展关键字参数，但是我们发现这里是从两个数组中分别得到符号和值的信息的
+    //因此再结合最上面的变量声明，我们就明白了，我们传递的关键字参数并不是上来就设置到字典里面
+    //而是将符号和值各自存储在对应的数组里面，显然就是下面的kwnames和kwargs
+    //然后使用索引遍历，按照顺序依次取出，通过比较传递的关键字参数的符号是否已经出现在函数定义的参数中
+    //来判断传递的这个参数究竟是普通的关键字参数，还是扩展关键字参数
+    //比如:def foo(a, b, c, **kwargs)，那么foo(1, 2, c=3, d=4)
+    //那么显然关键字参数有两个c=3和d=4，那么c已经出现在了函数定义的参数中，所以c就是一个普通的关键字参数
+    //但是d没有，所有d同时也是扩展关键字参数，因此要设置到kwargs这个字典里面
+    kwcount *= kwstep;
+    //按照索引，依次遍历
+    for (i = 0; i &lt; kwcount; i += kwstep) {
+        PyObject **co_varnames; //符号表
+        PyObject *keyword = kwnames[i];//关键字参数的key
+        PyObject *value = kwargs[i];//关键字参数的value
+        Py_ssize_t j;
+
+        if (keyword == NULL || !PyUnicode_Check(keyword)) {
+            _PyErr_Format(tstate, PyExc_TypeError,
+                          &quot;%U() keywords must be strings&quot;,
+                          co-&gt;co_name);
+            goto fail;
+        }
+
+        //拿到符号表，得到所有的符号，这样就知道函数参数都有哪些
+        co_varnames = ((PyTupleObject *)(co-&gt;co_varnames))-&gt;ob_item;
+        //我们看到内部又是一层for循环
+        //首先外层循环是遍历所有的关键字参数，也就是我们传递的参数
+        //而内层循环则是遍历函数的除了仅限位置参数之外的所有参数
+        for (j = co-&gt;co_posonlyargcount; j &lt; total_args; j++) {
+            //将我们传来每一个关键字参数的符号都会和符号表中的所有符号进行比对
+            PyObject *name = co_varnames[j];
+            //如果相等，说明传递的是关键字参数，并不是扩展关键字参数
+            if (name == keyword) {
+                //然后kw_found这个label中, 会检测对应的参数有没有通过位置参数传递
+                //如果已经位置参数传递了, 那么显然一个参数被传递了两次
+                goto kw_found;
+            }
+        }
+
+        /* 逻辑和上面一样 */
+        for (j = co-&gt;co_posonlyargcount; j &lt; total_args; j++) {
+            PyObject *name = co_varnames[j];
+            int cmp = PyObject_RichCompareBool( keyword, name, Py_EQ);
+            if (cmp &gt; 0) {
+                goto kw_found;
+            }
+            else if (cmp &lt; 0) {
+                goto fail;
+            }
+        }
+
+        assert(j &gt;= total_args);
+        //走到这里，说明肯定传入了符号不在符号表co_varnames里面的关键字参数
+        //如果kwdict是NULL，证明根本函数根本没定义扩展参数，那么就直接报错了
+        if (kwdict == NULL) {
+
+            if (co-&gt;co_posonlyargcount
+                &amp;&amp; positional_only_passed_as_keyword(tstate, co,
+                                                     kwcount, kwnames))
+            {
+                goto fail;
+            }
+
+            _PyErr_Format(tstate, PyExc_TypeError,
+                          &quot;%U() got an unexpected keyword argument &apos;%S&apos;&quot;,
+                          co-&gt;co_name, keyword);
+            goto fail;
+        }
+
+        //这里将属于扩展关键字参数的keyword和value都设置到之前创建的字典里面去
+        //然后continue进入下一个关键字参数逻辑
+        if (PyDict_SetItem(kwdict, keyword, value) == -1) {
+            goto fail;
+        }
+        continue;
+
+      kw_found:
+        //之前我们说，如果不是扩展，而是普通关键字参数那么会走这一步
+        //获取对应的符号，但是发现不为NULL，说明已经通过位置参数传递了
+        if (GETLOCAL(j) != NULL) {
+            //那么这里就报出一个TypeError，表示某个参数接收了多个值
+            _PyErr_Format(tstate, PyExc_TypeError,
+                          &quot;%U() got multiple values for argument &apos;%S&apos;&quot;,
+                          co-&gt;co_name, keyword);
+            //比如说：def foo(a, b, c=1, d=2)
+            //如果这样传递的foo(1, 2, c=3)，那么肯定没问题
+            /*
+            因为开始会把位置参数拷贝到f_localsplus里面，所以此时f_localsplus是[a, b, NULL, NULL]
+            然后设置关键字参数的时候，此时的j对应索引为2，那么GETLOCAL(j)是NULL，所以不会报错
+            */
+            //但如果这样传递，foo(1, 2, 3, c=3)
+            //那么不好意思，此时f_localsplus则是[a, b, c, NULL],GETLOCAL(j)是c，不为NULL
+            //说明c这个位置已经有人传递了，那么关键字参数就不能传递了
+            //还是那句话f_localsplus存储的是符号，每一个符号都会对应相应的值，这些顺序都是一致的            
+            goto fail;
+        }
+        Py_INCREF(value);
+        SETLOCAL(j, value);
+    }
+
+    /* 这里检测位置参数是否多传递了 */
+    if ((argcount &gt; co-&gt;co_argcount) &amp;&amp; !(co-&gt;co_flags &amp; CO_VARARGS)) {
+        too_many_positional(tstate, co, argcount, defcount, fastlocals);
+        goto fail;
+    }
+
+    //......
+    return retval;
+}</code></pre><p><strong>Python在对参数进行处理的时候，机制还是很复杂的。我们知道Python在定义函数的时候，通过/可以使得/前面的参数必须通过位置参数传递，通过*可以使得*后面的参数必须通过位置参数传递，而我们在分析的时候是没有考虑这一点的。</strong></p>
+<blockquote>
+<p><strong>其实扩展关键字参数的传递机制和普通关键字参数的传递机制有很大的关系，我们之前分析函数参数的默认值机制已经看到了关键字参数的传递机制，这里我们再次看到了。对于关键字参数，不论是否扩展，都会把符号和值分别按照对应顺序放在两个数组里面。然后Python会按照索引的顺序，遍历存放符号的数组，对每一个符号都会和符号表co_varnames里面的符号逐个进行比对，发现在符号表中找不到我们传递的关键字参数的符号，那么就说明这是一个扩展关键字参数。然后就是我们在源码中看到的那样，如果函数定义了**kwargs，那么kwdict就不为空，会把扩展关键字参数直接设置进去，否则就报错了，提示接收到了一个不期待的关键字参数。</strong></p>
+<p><strong>而且Python虚拟机也确实把该PyDictObject对象<code>(kwargs)</code>放到了f_localsplus中，这个f_localsplus里面包含了所有的参数，不管是什么参数，都会在里面。但是kwargs一定是在最后面，至于*args理论上是没有顺序的，你是可以这么定义的:<code>def foo(a, *args, b)</code>，这样定义是完全没有问题的，只是此时的b就必须要通过关键字参数来传递了，因为如果不通过关键字参数的方式，那么无论多少个位置参数，都会止步于<code>*args</code>。之前也介绍过，假设只需要name,age, gender这三个参数，并且gender必须要通过关键字参数指定的话，那么就可以这么设计：<code>def foo(name, age, *, gender)</code>，我们看到连args都省去了，只保留一个<code>*</code>，这是因为我们定义了args也用不到，我们只是保证后面的gender必须通过关键字方式传递，所以只需要一个<code>*</code>就ok了。</strong></p>
+<p><strong>另外在Python3.8中，注意只有Python3.8开始才支持，可以强制使用位置参数，语法是通过<code>/</code>。</strong></p>
+<p><strong>当然访问传递过来的扩展位置参数和扩展关键字参数就通过args对应的PyTupleObject和kwargs对应的PyDictObject操作就可以了。</strong></p>
+</blockquote>
+<p><strong>此外，我们在分析参数的时候，一直是截取部分片段，没有从上到下整体分析，因此可以再对着源码自己看一遍。当然核心还是Python在处理函数参数时的机制，整体流程如下<code>(先不考虑/和*)</code>：</strong></p>
+<ul>
+<li><strong>1. 获取所有通过位置参数传递的个数，然后循环遍历将它们从运行时栈依次拷贝到 f_localsplus 指定的位置中；</strong></li>
+<li><strong>2. 计算出可以通过位置参数传递的参数个数，如果实际传递的位置参数个数大于可以通过位置参数传递个数，那么会检测是否存在 *args，如果存在，那么将多余的位置参数拷贝到一个元组中；不存在，则报错：TypeError: function() takes ‘m’ positional argument but ‘n’ were given，其中 n 大于 m，表示接收了多个位置参数；</strong></li>
+<li><strong>3. 如果实际传递的位置参数个数小于等于可以通过位置参数传递个数，那么程序继续往下执行，检测关键字参数，它是通过两个数组来实现的，参数名和值是分开存储的；</strong></li>
+<li><strong>4. 然后进行遍历，两层 for 循环，第一层 for 循环遍历存放关键字参数名的数组，第二层遍历符号表，会将传递参数名和符号表中的每一个符号进行比较；</strong></li>
+<li><strong>5. 如果指定了不在符号表中的参数名，那么会检测是否定义了 **kwargs，如果没有则报错：TypeError: function() got an unexpected keyword argument ‘xxx’，接收了一个不期望的参数 xxx；如果定义了 **kwargs，那么会设置在字典中；</strong></li>
+<li><strong>6. 如果参数名在符号表中存在，那么跳转到 kw_found 标签，然后获取该符号对应的 value，如果 value 不为 NULL，那么证明该参数已经通过位置参数传递了，会报错：TypeError: function() got multiple values for argument ‘xxx’，提示函数的参数 xxx 接收了多个值；</strong></li>
+<li><strong>7. 最终所有的参数都会存在 f_localsplus 中，然后检测是否存在对应的 value 为 NULL 的符号，如果存在，那么检测是否具有默认值，有则使用默认值，没有则报错：</strong></li>
+</ul>
+<p><strong>所以Python在处理参数的大致流程是上面那样的，具体细节层面也很好理解，只是要处理各种各样的情况，导致看起来让人有点头疼。当然Python中的生成器和异步生成器的逻辑也在这个函数里面，我们后续系列中会分析。</strong></p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p><strong>这一次我们分析了函数调用时候的场景，以及如何处理不同形式的参数，重点还是有一个整体性的认识。下一篇，我们将来分析闭包。</strong></p>
+<p>posted @  2020-08-28 23:07  <a href="https://www.cnblogs.com/traditional/" target="_blank" rel="noopener">古明地盆</a>  阅读(180)  评论(4)  <a href="https://i.cnblogs.com/EditPosts.aspx?postid=13580240" target="_blank" rel="noopener">编辑</a>  <a href="https://www.cnblogs.com/traditional/p/13580240.html" target="_blank" rel="noopener">收藏</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-1010/" rel="prev" title="《深度剖析CPython解释器》14. Python函数机制的深度解析(第一部分): 函数在底层的数据结构、以及它的创建方式 - 古明地盆 - 博客园">
+      <i class="fa fa-chevron-left"></i> 《深度剖析CPython解释器》14. Python函数机制的深度解析(第一部分): 函数在底层的数据结构、以及它的创建方式 - 古明地盆 - 博客园
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-1012/" rel="next" title="《深度剖析CPython解释器》16. Python函数机制的深度解析(第三部分): 闭包的底层实现以及调用 - 古明地盆 - 博客园">
+      《深度剖析CPython解释器》16. Python函数机制的深度解析(第三部分): 闭包的底层实现以及调用 - 古明地盆 - 博客园 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#《深度剖析CPython解释器》15-Python函数机制的深度解析-第二部分-函数在底层是如何被调用的-古明地盆-博客园"><span class="nav-number"></span> <span class="nav-text">《深度剖析CPython解释器》15. Python函数机制的深度解析(第二部分): 函数在底层是如何被调用的 - 古明地盆 - 博客园</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#《深度剖析CPython解释器》15-Python函数机制的深度解析-第二部分-函数在底层是如何被调用的"><span class="nav-number"></span> <span class="nav-text">《深度剖析CPython解释器》15. Python函数机制的深度解析(第二部分): 函数在底层是如何被调用的</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#楔子"><span class="nav-number"></span> <span class="nav-text">楔子</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#函数的调用"><span class="nav-number"></span> <span class="nav-text">函数的调用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#函数参数的实现"><span class="nav-number"></span> <span class="nav-text">函数参数的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#参数类别"><span class="nav-number">1.</span> <span class="nav-text">参数类别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#位置参数的传递"><span class="nav-number">2.</span> <span class="nav-text">位置参数的传递</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#位置参数的访问"><span class="nav-number">3.</span> <span class="nav-text">位置参数的访问</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#默认参数"><span class="nav-number">4.</span> <span class="nav-text">默认参数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#扩展位置参数和扩展关键字参数"><span class="nav-number">5.</span> <span class="nav-text">扩展位置参数和扩展关键字参数</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#小结"><span class="nav-number"></span> <span class="nav-text">小结</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

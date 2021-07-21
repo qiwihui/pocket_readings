@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Cacao: Building macOS (and iOS) Apps in Rust | Ryan McGrath">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cacao: Building macOS (and iOS) Apps in Rust | Ryan McGrath">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/06/11/qiwihui-pocket_readings-1128/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="Cacao: Building macOS (and iOS) Apps in Rust | Ryan McGrath">
+<meta property="og:image" content="https://rymc.io/img/cacao_calc.png">
+<meta property="og:image" content="https://rymc.io/img/cacao_ios.jpeg">
+<meta property="article:published_time" content="2021-06-11T03:21:54.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.418Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://rymc.io/img/cacao_calc.png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/06/11/qiwihui-pocket_readings-1128/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>Cacao: Building macOS (and iOS) Apps in Rust | Ryan McGrath | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/06/11/qiwihui-pocket_readings-1128/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Cacao: Building macOS (and iOS) Apps in Rust | Ryan McGrath
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-06-11 03:21:54" itemprop="dateCreated datePublished" datetime="2021-06-11T03:21:54+00:00">2021-06-11</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">Cacao: Building macOS (and iOS) Apps in Rust | Ryan McGrath</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Building native macOS apps outside the normal Apple ecosystem is sometimes a not-so-obvious task.<br><br><br><br>Tags: ios, rust<br><br><br><br>via Pocket <a href="https://ift.tt/3wg7nHo" target="_blank" rel="noopener">https://ift.tt/3wg7nHo</a> original site<br><br><br><br>June 11, 2021 at 11:17AM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1128#issuecomment-859233504" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>6/11/2021</strong></p>
+</blockquote>
+<h2 id="Cacao-Building-macOS-and-iOS-Apps-in-Rust-Ryan-McGrath-by-ryanmcgrath"><a href="#Cacao-Building-macOS-and-iOS-Apps-in-Rust-Ryan-McGrath-by-ryanmcgrath" class="headerlink" title="Cacao: Building macOS (and iOS) Apps in Rust | Ryan McGrath by @ryanmcgrath"></a>Cacao: Building macOS (and iOS) Apps in Rust | Ryan McGrath by @ryanmcgrath</h2><p>Building native macOS apps outside the normal Apple ecosystem is sometimes a not-so-obvious task. The shifting ecosystem of AppKit, Catalyst, and SwiftUI - coupled with documentation that’s sometimes non-existent, or spanning multiple operating system versions that each have their own nuance - makes it tricky to know just what you need to tie into.</p>
+<p>One language that I’ve felt hasn’t had a great solution to this yet is Rust. I’ve released an initial version of <a href="https://crates.io/crates/cacao" target="_blank" rel="noopener">Cacao</a>, which is my effort to enable building macOS (and iOS, see below) apps in Rust. This post showcases a bit of what Cacao is, how it works, and includes some opinions on GUI work sprinkled throughout.</p>
+<h2 id="History-Rust-and-Objective-C"><a href="#History-Rust-and-Objective-C" class="headerlink" title="History, Rust and Objective-C"></a>History, Rust and Objective-C</h2><p>I should clarify something before going any further. When I say that Rust hasn’t had a great solution to this yet, I mean that there hasn’t been an elegant way to build a macOS app in Rust. There is a litany of prior work though - some of which Cacao uses.</p>
+<ul>
+<li>The <a href="https://crates.io/crates/objc" target="_blank" rel="noopener">objc</a> crate by <a href="https://crates.io/users/SSheldon" target="_blank" rel="noopener">SSheldon</a> has been around for years now, and does a very good job of providing a way to bridge Rust with Objective-C. Cacao relies on this heavily for bridging with the Apple side of things.</li>
+<li><a href="https://www.bugsnag.com/blog/building-macos-apps-with-rust" target="_blank" rel="noopener">Delisa Mason wrote</a> about building macOS apps in Rust as far as back as 2016, and the <a href="https://github.com/kattrali/rust-mac-app-examples" target="_blank" rel="noopener">examples repository</a> still holds up.</li>
+<li>The <a href="https://crates.io/crates/core-foundation" target="_blank" rel="noopener">core-foundation</a> crate is often passed around as the “way” to build macOS apps in Rust. As far as I know, this was originally built to help Mozilla and Servo. It’s a good crate, but I feel it’s not as simple, and doesn’t expose certain patterns that help make a macOS app feel “right”.</li>
+<li><a href="https://crates.io/crates/fruity" target="_blank" rel="noopener">fruity</a> and <a href="https://crates.io/crates/objrs" target="_blank" rel="noopener">objrs</a> both attempt to offer better interop with the Objective-C side of things. Neither is used by Cacao, but I felt they’re worth mentioning as they both are decent reading anyway.</li>
+</ul>
+<p>Each of these are great works on their own, but none of them contribute to what I feel is a “native” macOS API style in Rust.</p>
+<h2 id="Feeling-Native"><a href="#Feeling-Native" class="headerlink" title="Feeling Native"></a>Feeling Native</h2><p>So, let’s define <em>native</em>.</p>
+<p>When you build a macOS app in the standard, conventional way (AppKit), your primary building block is your <em>Application Delegate</em>. This is effectively where you receive varying messages from the OS (notifications, lifecycle events), and then handle them accordingly. The above examples don’t provide a simple way to do this, and feel very procedural. Trying to go against the grain on macOS development often becomes annoying very quickly, and thus I define <em>native</em> as being able to replicate the intended pattern of development.</p>
+<p>Let’s look at a basic Swift macOS window example. Note that we’re doing this in a no-storyboards or interface-builder fashion, as that’s what Rust equivalent code will be doing; it’s entirely fair to say that this could be shorter if you’re the type to use Interface Builder.</p>
+<pre><code>import Cocoa
+import Foundation
+
+class AppDelegate: NSObject, NSApplicationDelegate {
+    var window: NSWindow?
+
+    func applicationDidFinishLaunching(_ aNotification: Notification) {
+        let frame = CGRect(
+            x: 10.0,
+            y: 10.0,
+            width: 400.0,
+            height: 400.0
+        )
+
+        let win = NSWindow(contentRect: frame, styleMask: [
+            .closable, .fullSizeContentView, .miniaturizable, .fullScreen, 
+            .resizable, .unifiedTitleAndToolbar
+        ], backing: .buffered, defer: true)
+
+        win.title = &quot;Hello world&quot;
+        win.makeKeyAndOrderFront(nil)
+        window = win
+    }
+}
+
+// Just for running the app without all the Xcode @ main items.
+let delegate = AppDelegate()
+NSApplication.shared.delegate = delegate
+_ = NSApplicationMain(CommandLine.argc, CommandLine.unsafeArgv)</code></pre><p>All things considered, that’s pretty succinct - even the Objective-C version wouldn’t be much longer! What I take note of here is specifically the <code>applicationDidFinishLaunching(_:)</code> method: this is a delegate method, and is a prime example of what I wanted in Rust. With Cacao, I feel like it gets fairly close:</p>
+<pre><code>use cacao::macos::{App, AppDelegate};
+use cacao::macos::window::Window;
+
+#[derive(Default)]
+struct BasicApp {
+    window: Option
+}
+
+impl AppDelegate for BasicApp {
+    fn did_finish_launching(&amp;self) {
+        let window = Window::default();
+        window.set_minimum_content_size(400., 400.);
+        window.set_title(&quot;Hello World!&quot;);
+        window.show();
+
+        self.window = Some(window);
+    }
+}
+
+fn main() {
+    App::new(&quot;com.hello.world&quot;, BasicApp::default()).run();
+}</code></pre><p>Here, we do roughly the same thing as our Swift example, albeit even more succinct due to being able to take advantage of <code>Default</code> in Rust. <code>App</code> wraps <code>NSApplication</code>, and marshals events and method calls over to the <code>AppDelegate</code> trait implementation. For macOS, most of the <code>NSApplicationDelegate</code> methods and events are supported - although I haven’t gotten around to wrapping <code>NSNotification</code> and passing it in to some methods. Pull requests welcome. :)</p>
+<p>From here, you could continue with Cacao, or defer to another framework of your choice and simply rely on Cacao for the “mac” pieces. In fact, each Cacao control exposes a public <code>objc</code> property, which you can lock on and message pass to directly. This enables usage of other Rust wrappers (e.g, Metal), so you’re not locked in to any one thing about Cacao.</p>
+<h2 id="On-Subclassing"><a href="#On-Subclassing" class="headerlink" title="On Subclassing"></a>On Subclassing</h2><p>Rust doesn’t have a concept of a <code>Class</code> built in to the language, instead favoring more of a composition-based approach with trait implementations. Many existing GUI models are subclass-heavy, though, and working with them can feel a bit odd from the Rust side. <a href="https://gtk-rs.org/docs/glib/subclass/index.html" target="_blank" rel="noopener">gtk-rs</a> provides some utilities for working with subclasses from the Rust side, but what if we could keep it composition-based?</p>
+<p>Cacao supports this, in a sense. Most widget types can be declared one of two ways: stock, in which you can call into it and set your properties, and treat it like a normal control - or delegated, where you can provide a struct that implements a trait for a given widget. For example, the <code>View</code> type could be constructed this way:</p>
+<pre><code>let view = View::default();
+// Customize your view</code></pre><p>This works fine - you could build up a tree from here and slap it wherever you want. If we did it as a delegate pattern, it’d look like this:</p>
+<pre><code>#[derive(Debug)]
+pub struct MyView {
+    handle: Option
+}
+
+impl ViewDelegate for MyView {
+    fn did_load(&amp;mut self, view: View) {
+        // Customize your view
+        self.handle = Some(view);
+    }
+
+    // You could implement further methods here for handling drop and drop, etc
+}
+
+// elsewhere...
+let view = View::with(MyView::default());</code></pre><p>Feels kind of familiar, right?</p>
+<p>A friend of mine once told me over beers: <em>“If you go more than one subclass deep, you’ve done something wrong”</em>. Over the years, I’ve come around to this point of view, and I feel this approach fits that mantra perfectly - it feels like a subclass, in that you have a place to localize the logic and control setup, implement event handlers, and so on - but you can’t go further into subclass hell.</p>
+<h2 id="The-State-of-Things"><a href="#The-State-of-Things" class="headerlink" title="The State of Things"></a>The State of Things</h2><p>As I’m writing this, Cacao is <code>0.2.0</code>. It <em>would</em> be <code>0.1.0</code>, but crates.io has a bit of a squatting issue, so <code>0.1.0</code> didn’t truly exist.</p>
+<p>It currently supports enough widgets on macOS to be usable. You can check out the <a href="https://rymc.io/blog/2021/cacao-rs-macos-ios-rust/" target="_blank" rel="noopener">examples</a> folder to see more.</p>
+<p><img src="https://rymc.io/img/cacao_calc.png" alt=""></p>
+<p>iOS support… it’s more of a demo, but there’s nothing really blocking controls from being ported other than the time investment.</p>
+<h2 id="Who’s-this-even-for…"><a href="#Who’s-this-even-for…" class="headerlink" title="Who’s this even for…?"></a>Who’s this even for…?</h2><p>I don’t expect that anybody would say to themselves “alright, time to write/rewrite macOS apps in Rust”. I would expect that Cacao would never be able to be as usable as the blessed layers and frameworks that can be found with Swift and Objective-C, and I don’t see the crossover between Apple-ecosystem developers and Rust-developers needing GUI tools to be massive.</p>
+<p>I do see Cacao being useful for some things, though:</p>
+<h3 id="Rust-based-Utilities"><a href="#Rust-based-Utilities" class="headerlink" title="Rust-based Utilities"></a>Rust-based Utilities</h3><p>I think it’s conceivable that there are Rust-based utilities (scripts, etc) that could be useful with a GUI, but bridging is (frankly) boring work, and frustrating when it goes wrong. Cacao is useful in this scenario as it enables building a native macOS GUI without having to leave the Rust ecosystem.</p>
+<h3 id="Cross-Platform-GUI-Framework"><a href="#Cross-Platform-GUI-Framework" class="headerlink" title="Cross-Platform GUI Framework"></a>Cross-Platform GUI Framework</h3><p>My dream for a Rust GUI framework is simple:</p>
+<ul>
+<li>Target only the big three (Windows, macOS, Gnome). Anything else can be community supported. <em>Maybe</em> iOS and/or Android, if the effort isn’t too signficant.</li>
+<li>Offering more than the basic controls makes the framework unmaintainable over time. Follow the web model and keep the kitchen sink barebones, even if it’s annoying. Long term maintainability &gt; a million widgets.</li>
+<li>Always expose a native hook on each control for the cases where someone knows what they want. AKA, get out of the way when asked.</li>
+<li>A declarative (non-JSX-ish) model. Basically, copy SwiftUI.</li>
+</ul>
+<p>I think some combination of <a href="https://crates.io/crates/winsafe" target="_blank" rel="noopener">winsafe</a>, <a href="https://crates.io/crates/gtk" target="_blank" rel="noopener">gtk-rs</a>, and <a href="https://crates.io/crates/cacao" target="_blank" rel="noopener">cacao</a> could achieve this. If it happens, I’m happy to repurpose <a href="https://github.com/ryanmcgrath/alchemy" target="_blank" rel="noopener">alchemy</a> for this and make it a community thing - it was my original attempt at building a Rust cross-platform GUI, until I was sidelined by life events.</p>
+<h2 id="On-iOS"><a href="#On-iOS" class="headerlink" title="On iOS"></a>On iOS</h2><p>A cool thing about Cacao is that the approach can work on iOS (and, presumably, tvOS) too. While support is currently very alpha in comparison to macOS, you are able to <a href="https://github.com/ryanmcgrath/cacao/tree/trunk/examples/ios-beta" target="_blank" rel="noopener">build a proper iOS app and run it</a>:</p>
+<p><img src="https://rymc.io/img/cacao_ios.jpeg" alt=""></p>
+<p>This implements the newer <code>UIScene</code> API, meaning you should have a modern app that works well across both iOS and iPad (and in particular supports the iPad multi-app capability).</p>
+<h2 id="Going-Forwards"><a href="#Going-Forwards" class="headerlink" title="Going Forwards"></a>Going Forwards</h2><p>Part of why I wanted to push out <code>0.2.0</code> is for community usage. I’m curious to see how people like it, whether it sees adoption, and so on. The documentation isn’t perfect by any means (I welcome pull requests on this, although I’ll continue to work on it as well), but I’m hopeful that feedback drives it forward.</p>
+<p>In the long (long) term, I think frameworks like this will fade into the background and become building blocks for something like a RustUI (akin to SwiftUI with AppKit/UIKit). This is fine, and I consider it a win if Cacao acts as a bridge between UI generations.</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/06/10/qiwihui-pocket_readings-1127/" rel="prev" title="NoSQL Databases: a Survey and Decision Guidance">
+      <i class="fa fa-chevron-left"></i> NoSQL Databases: a Survey and Decision Guidance
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/06/11/qiwihui-pocket_readings-1129/" rel="next" title="Phishing for AWS credentials via AWS SSO device code authentication">
+      Phishing for AWS credentials via AWS SSO device code authentication <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Cacao-Building-macOS-and-iOS-Apps-in-Rust-Ryan-McGrath-by-ryanmcgrath"><span class="nav-number"></span> <span class="nav-text">Cacao: Building macOS (and iOS) Apps in Rust | Ryan McGrath by @ryanmcgrath</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#History-Rust-and-Objective-C"><span class="nav-number"></span> <span class="nav-text">History, Rust and Objective-C</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Feeling-Native"><span class="nav-number"></span> <span class="nav-text">Feeling Native</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#On-Subclassing"><span class="nav-number"></span> <span class="nav-text">On Subclassing</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#The-State-of-Things"><span class="nav-number"></span> <span class="nav-text">The State of Things</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Who’s-this-even-for…"><span class="nav-number"></span> <span class="nav-text">Who’s this even for…?</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Rust-based-Utilities"><span class="nav-number">1.</span> <span class="nav-text">Rust-based Utilities</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Cross-Platform-GUI-Framework"><span class="nav-number">2.</span> <span class="nav-text">Cross-Platform GUI Framework</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#On-iOS"><span class="nav-number"></span> <span class="nav-text">On iOS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Going-Forwards"><span class="nav-number"></span> <span class="nav-text">Going Forwards</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

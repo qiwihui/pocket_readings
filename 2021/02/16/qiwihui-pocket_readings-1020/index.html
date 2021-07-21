@@ -1,0 +1,1619 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="《深度剖析CPython解释器》24. Python运行时环境的初始化、源码分析Python解释器在启动时都做了哪些事情？ - 古明地盆 - 博客园">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《深度剖析CPython解释器》24. Python运行时环境的初始化、源码分析Python解释器在启动时都做了哪些事情？ - 古明地盆 - 博客园">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1020/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="《深度剖析CPython解释器》24. Python运行时环境的初始化、源码分析Python解释器在启动时都做了哪些事情？ - 古明地盆 - 博客园">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200909213714167-397884335.png">
+<meta property="og:image" content="https://img2018.cnblogs.com/blog/1229382/201912/1229382-20191226190436915-1589229349.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200909213801726-2007195328.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200909213825050-2076588242.png">
+<meta property="article:published_time" content="2021-02-16T14:17:23.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.430Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200909213714167-397884335.png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1020/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>《深度剖析CPython解释器》24. Python运行时环境的初始化、源码分析Python解释器在启动时都做了哪些事情？ - 古明地盆 - 博客园 | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1020/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          《深度剖析CPython解释器》24. Python运行时环境的初始化、源码分析Python解释器在启动时都做了哪些事情？ - 古明地盆 - 博客园
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-02-16 14:17:23" itemprop="dateCreated datePublished" datetime="2021-02-16T14:17:23+00:00">2021-02-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">《深度剖析CPython解释器》24. Python运行时环境的初始化、源码分析Python解释器在启动时都做了哪些事情？ - 古明地盆 - 博客园</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>PyThreadState * PyThreadState_New(PyInterpreterState *interp) { //&#25105;&#20204;&#27880;&#24847;&#21040;&#36825;&#20010;&#20989;&#25968;&#25509;&#25910;&#19968;&#20010;PyInterpreterState //&#36825;&#20123;&#35828;&#26126;&#20102;&#32447;&#31243;&#26159;&#20381;&#36182;&#20110;&#36827;&#31243;&#30340;&#65292;&#22240;&#20026;&#38656;&#35201;&#36827;&#31243;&#20998;&#37197;&#36164;&#28304;&#65292;&#32780;&#19988;&#36825;&#20010;&#20989;&#25968;&#21448;&#35843;&#29992;&#20102;new_threadstate //&#38500;&#20102;&#20256;&#36882;PyInterpreterState&#20043;&#22806;&#65292;&#36824;&#20256;&#20102;<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/3ppqTxc" target="_blank" rel="noopener">https://ift.tt/3ppqTxc</a> original site<br><br><br><br>February 16, 2021 at 10:15PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1020#issuecomment-789377619" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>3/3/2021</strong></p>
+</blockquote>
+<h2 id="《深度剖析CPython解释器》24-Python运行时环境的初始化、源码分析Python解释器在启动时都做了哪些事情？-古明地盆-博客园"><a href="#《深度剖析CPython解释器》24-Python运行时环境的初始化、源码分析Python解释器在启动时都做了哪些事情？-古明地盆-博客园" class="headerlink" title="《深度剖析CPython解释器》24. Python运行时环境的初始化、源码分析Python解释器在启动时都做了哪些事情？ - 古明地盆 - 博客园"></a>《深度剖析CPython解释器》24. Python运行时环境的初始化、源码分析Python解释器在启动时都做了哪些事情？ - 古明地盆 - 博客园</h2><h1 id="《深度剖析CPython解释器》24-Python运行时环境的初始化、源码分析Python解释器在启动时都做了哪些事情？"><a href="#《深度剖析CPython解释器》24-Python运行时环境的初始化、源码分析Python解释器在启动时都做了哪些事情？" class="headerlink" title="《深度剖析CPython解释器》24. Python运行时环境的初始化、源码分析Python解释器在启动时都做了哪些事情？"></a><a href="https://www.cnblogs.com/traditional/p/13642194.html" target="_blank" rel="noopener">《深度剖析CPython解释器》24. Python运行时环境的初始化、源码分析Python解释器在启动时都做了哪些事情？</a></h1><h2 id="楔子"><a href="#楔子" class="headerlink" title="楔子"></a>楔子</h2><p><strong>我们之前分析了Python的核心–字节码、以及虚拟机的剖析工作，但这仅仅只是一部分，而其余的部分则被遮在了幕后。记得我们在分析虚拟机的时候，曾这么说过：</strong></p>
+<blockquote>
+<p><strong>当Python启动后，首先会进行 “运行时环境” 的初始化，而关于 “运行时环境” 的初始化是一个非常复杂的过程。并且 “运行时环境” 和 “执行环境” 是不同的， “运行时环境” 是一个全局的概念，而 “执行环境” 是一个栈帧。关于”运行时环境”我们后面将用单独的一章进行剖析，这里就假设初始化动作已经完成，我们已经站在了Python虚拟机的门槛外面，只需要轻轻推动一下第一张骨牌，整个执行过程就像多米诺骨牌一样，一环扣一环地展开。</strong></p>
+</blockquote>
+<p><strong>所以这次，我们将回到时间的起点，从Python的应用程序被执行开始，一步一步紧紧跟随Python的轨迹，完整地展示Python在启动之初的所有动作。当我们根据Python完成所有的初始化动作之后，也就能对Python执行引擎执行字节码指令时的整个运行环境了如执掌了。</strong></p>
+<h2 id="线程环境初始化"><a href="#线程环境初始化" class="headerlink" title="线程环境初始化"></a>线程环境初始化</h2><p><strong>我们知道线程是操作系统调度的最小单元，那么Python中的线程又是怎么样的呢？</strong></p>
+<h3 id="线程模型"><a href="#线程模型" class="headerlink" title="线程模型"></a>线程模型</h3><p><strong>我们之前介绍栈帧的时候说过，通过Python启动一个线程，那么底层会通过C来启动一个线程，然后启动操作系统的一个原生线程(OS线程)。所以Python中的线程实际上是对OS线程的一个封装，因此Python中的线程是货真价实的。</strong></p>
+<p><strong>然后Python还提供了一个PyThreadState(线程状态)对象，维护OS线程执行的状态信息，相当于是OS线程的一个抽象描述。虽然真正用来执行的线程及其状态肯定是由操作系统进行维护的，但是Python虚拟机在运行的时候总需要另外一些与线程相关的状态和信息，比如是否发生了异常等等，这些信息显然操作系统是没有办法提供的。而PyThreadState对象正是Python为OS线程准备的、在虚拟机层面保存其状态信息的对象，也就是线程状态对象。而在Python中，当前活动的OS线程对应的PyThreadState对象可以通过PyThreadState_GET获得，有了线程状态对象之后，就可以设置一些额外信息了。具体内容，我们后面会说。</strong></p>
+<p><strong>当然除了线程状态对象之外，还有进程状态对象，我们来看看两者在Python底层的定义是什么？它们位于 <em>Include/pystate.h</em> 中。</strong></p>
+<pre><code>typedef struct _is PyInterpreterState;
+typedef struct _ts PyThreadState;</code></pre><p><strong>里面的 <em>PyInterpreterState</em> 表示进程状态对象， <em>PyThreadState</em> 表示线程状态对象。但是我们看到它们都是typedef起得一个别名，而定义的结构体 <em>struct  _is</em> 位于 <em>Include/cpython/pystate.h</em> 中， <em>struct  _ts</em> 位于 _Include/internal/pycore_pystate.h_中。</strong></p>
+<p><strong>线程状态对象：</strong></p>
+<pre><code>struct _ts {
+    struct _ts *prev;  //多个线程状态对象也像链表一样串起来, 因为一个进程里面是可以包含多个线程的, prev指向上一个线程状态对象
+    struct _ts *next;  //指向下一个线程状态对象
+    PyInterpreterState *interp;  //进程状态对象, 标识对应的线程是属于哪一个进程的
+
+    struct _frame *frame; //栈帧对象, 模拟线程中函数的调用堆栈
+    int recursion_depth;  //递归深度
+    //.....
+    //.....
+    //....
+    uint64_t id; //线程id
+};</code></pre><p><strong>进程状态对象：</strong></p>
+<pre><code>struct _is {
+
+    struct _is *next; //当前进程的下一个进程
+    struct _ts *tstate_head; //进程环境中的线程状态对象的集合, 我们说线程状态对象会形成一个链表, 这里就是链表的头结点
+
+    int64_t id; //线程id
+     //....
+    PyObject *audit_hooks;
+};</code></pre><p><strong>我们说 <em>PyInterpreterState</em> 对象是对进程的模拟， <em>PyThreadState</em> 是对线程的模拟。我们之前分析虚拟机的时候说过其执行环境，如果再将运行时环境加进去的话。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200909213714167-397884335.png" alt=""></p>
+<h3 id="线程环境的初始化"><a href="#线程环境的初始化" class="headerlink" title="线程环境的初始化"></a>线程环境的初始化</h3><p><strong>在Python启动之后，初始化的动作是从 <em>Py_NewInterpreter</em> 函数开始的，然后这个函数调用了 <em>new_interpreter</em> 函数完成初始化，我们分析会先从 <em>new_interpreter</em> 函数开始，当然 <em>Py_NewInterpreter</em> 里面也做了一些工作，具体的后面会说。</strong></p>
+<p><strong>我们知道在Windows平台上，当执行一个可执行文件时，操作系统首先创建一个进程内核。同理在Python中亦是如此，会在 <em>new_interpreter</em> 中调用 <em>PyInterpreterState_New</em> 创建一个崭新的 <em>PyInterpreterState_对象。该函数位于 _Python/pystate.c</em> 中。</strong></p>
+<pre><code>PyInterpreterState *
+PyInterpreterState_New(void)
+{
+    //申请进程状态对象所需要的内存
+    PyInterpreterState *interp = PyMem_RawMalloc(sizeof(PyInterpreterState));
+    if (interp == NULL) {
+        return NULL;
+    }
+
+    //设置属性
+    //......
+    //......
+    return interp;
+}</code></pre><p><strong>关于进程状态对象我们不做过多解释，只需要知道Python解释器在启动时，会创建一个、或者多个 <em>PyInterpreterState</em> 对象，然后通过内部的next指针将多个 <em>PyInterpreterState</em> 串成一个链表结构。</strong></p>
+<p><strong>在调用 <em>PyInterpreterState_New</em> 成功创建 <em>PyInterpreterState_之后，会再接再厉，调用 _PyThreadState_New</em> 创建一个全新的进程状态对象，相关函数定义同样位于 <em>Python/pystate.c</em> 中。</strong></p>
+<pre><code>PyThreadState *
+PyThreadState_New(PyInterpreterState *interp)
+{
+    //我们注意到这个函数接收一个PyInterpreterState
+    //这些说明了线程是依赖于进程的，因为需要进程分配资源，而且这个函数又调用了new_threadstate
+    //除了传递PyInterpreterState之外，还传了一个1，想也不用想肯定是创建的线程数量
+    //这里创建1个，也就是主线程(main thread)
+    return new_threadstate(interp, 1);
+}
+
+
+static PyThreadState *
+new_threadstate(PyInterpreterState *interp, int init)
+{    
+    _PyRuntimeState *runtime = &amp;_PyRuntime;
+    //为线程状态对象申请内存
+    PyThreadState *tstate = (PyThreadState *)PyMem_RawMalloc(sizeof(PyThreadState));
+    if (tstate == NULL) {
+        return NULL;
+    }
+    //设置从线程中获取函数调用栈的操作
+    if (_PyThreadState_GetFrame == NULL) {
+        _PyThreadState_GetFrame = threadstate_getframe;
+    }
+
+    //设置该线程所在的进程
+    tstate-&gt;interp = interp;
+
+    //下面就是设置内部的成员属性
+    tstate-&gt;frame = NULL;  //栈帧
+    tstate-&gt;recursion_depth = 0; //递归深度
+    tstate-&gt;id = ++interp-&gt;tstate_next_unique_id;//线程id
+    //......
+    //......
+    //......
+    tstate-&gt;prev = NULL; //上一个线程状态对象
+    tstate-&gt;next = interp-&gt;tstate_head;//当前线程状态对象的next, 我们看到指向了线程状态对象链表的头结点, 说明是头插法
+    if (tstate-&gt;next)
+        //因为每个线程状态对象的prev指针都要指向它的上一个线程状态对象, 如果是头结点的话, 那么prev就指向NULL
+        //但由于新的线程状态对象在插入之后显然就变成了链表的头结点, 因此还需要将插入之间的头结点的prev指向新插入的线程状态对象
+        tstate-&gt;next-&gt;prev = tstate;
+    //将tstate_head设置为新的线程状态对象(链表的头结点)
+    interp-&gt;tstate_head = tstate;
+
+    //返回线程状态对象
+    return tstate;
+}</code></pre><p><strong>和 <em>PyInterpreterState_New</em> 相同，  <em>PyThreadState_New</em> 申请内存，创建 <em>PyThreadState</em> 对象，并且对其中每个成员进行初始化。而且其中的prev指针和next指针分别指向了上一个线程状态对象和下一个线程状态对象。而且也肯定会存在某一时刻，存在多个 <em>PyThreadState</em> 对象形成一个链表，那么什么时刻会发生这种情况呢？显然用鼻子想也知道这是在Python启动多线程(下一章分析)的时候。</strong></p>
+<blockquote>
+<p><strong>此外我们看到Python在插入线程状态对象的时候采用的是头插法。</strong></p>
+</blockquote>
+<p><strong>我们说Python设置了从线程中获取函数调用栈的操作，所谓函数调用栈就是我们前面章节说的PyFrameObject对象链表。而且在源码中，我们看到了 <em>PyThreadState</em> 关联了 <em>PyInterpreterState</em> ， <em>PyInterpreterState</em> 也关联了 <em>PyInterpreterState</em> 。到目前为止，仅有的两个对象建立起了联系。对应到Windows，或者说操作系统，我们说进程和线程建立了联系</strong></p>
+<p><strong>在 <em>PyInterpreterState</em> 和 <em>PyThreadState</em> 建立了联系之后，那么就很容易在 <em>PyInterpreterState</em> 和<em>PyThreadState</em> 之间穿梭。并且在Python运行时环境中，会有一个变量<code>(先买个关子)</code>一直维护着当前活动的线程，更准确的说是当前活动线程(OS线程)对应的 <em>PyThreadState</em> 对象。初始时，该变量为NULL。在Python启动之后创建了第一个 <em>PyThreadState</em> 之后，会用该 <em>PyThreadState</em> 对象调用 <em>PyThreadState_Swap</em> 函数来设置这个变量，函数位于 <em>Python/pystate.c</em> 中。</strong></p>
+<pre><code>PyThreadState *
+PyThreadState_Swap(PyThreadState *newts)
+{    
+    //调用了_PyThreadState_Swap, 里面传入了两个参数, 第一个我们后面说, 显然从名字上看我们知道这是个GIL相关的
+    //第二个参数就是创建的线程状态对象
+    return _PyThreadState_Swap(&amp;_PyRuntime.gilstate, newts);
+}
+
+
+PyThreadState *
+_PyThreadState_Swap(struct _gilstate_runtime_state *gilstate, PyThreadState *newts)
+{    
+    //这里是获取当前的线程状态对象, 并且保证线程的安全性
+    PyThreadState *oldts = _PyRuntimeGILState_GetThreadState(gilstate);
+    //将GIL交给newts
+    _PyRuntimeGILState_SetThreadState(gilstate, newts);
+    //....
+    return oldts;
+}
+
+//通过&amp;(gilstate)-&gt;tstate_current获取当前线程
+#define _PyRuntimeGILState_GetThreadState(gilstate) \
+    ((PyThreadState*)_Py_atomic_load_relaxed(&amp;(gilstate)-&gt;tstate_current))
+//将newts设置为当前线程, 可以理解为发生了线程的切换
+#define _PyRuntimeGILState_SetThreadState(gilstate, value) \
+    _Py_atomic_store_relaxed(&amp;(gilstate)-&gt;tstate_current, \
+                             (uintptr_t)(value))</code></pre><p><strong>然后我们看到这两个宏里面出现了 <em>\</em>Py_atomic_load_relaxed_ 、 <em>\</em>Py_atomic_store_relaxed_ 和 <em>&amp;(gilstate)-&gt;tstate_current</em> ，这些又是什么呢？还有到底哪个变量在维护这当前的活动线程对应的状态对象呢？其实那两个宏已经告诉你了。</strong></p>
+<pre><code>//Include/internal/pycore_pystate.h
+struct _gilstate_runtime_state {
+    //...
+    //宏里面出现的gilstate就是该结构体实例, tstate_current指的就是当前活动的OS线程对应的状态对象
+    //同时也是获取到GIL的Python线程
+    _Py_atomic_address tstate_current;
+    //...
+};
+
+
+//Include/internal/pycore_atomic.h
+#define _Py_atomic_load_relaxed(ATOMIC_VAL) \
+    _Py_atomic_load_explicit((ATOMIC_VAL), _Py_memory_order_relaxed)
+
+#define _Py_atomic_store_relaxed(ATOMIC_VAL, NEW_VAL) \
+    _Py_atomic_store_explicit((ATOMIC_VAL), (NEW_VAL), _Py_memory_order_relaxed)
+
+#define _Py_atomic_load_explicit(ATOMIC_VAL, ORDER) \
+    atomic_load_explicit(&amp;((ATOMIC_VAL)-&gt;_value), ORDER)
+
+#define _Py_atomic_store_explicit(ATOMIC_VAL, NEW_VAL, ORDER) \
+    atomic_store_explicit(&amp;((ATOMIC_VAL)-&gt;_value), NEW_VAL, ORDER)
+//_Py_atomic_load_relaxed用到了_Py_atomic_load_explicit, _Py_atomic_load_explicit用到了atomic_load_explicit
+//_Py_atomic_store_relaxed用到了_Py_atomic_store_explicit, _Py_atomic_store_explicit用到了atomic_store_explicit
+
+//而atomic_load_explicit和atomic_store_explicit是系统头文件stdatomic.h中定义的api，这是在系统的api中修改的，所以说是线程安全的</code></pre><p><strong>介绍完中间部分的内容，那么我们可以从头开始分析Python运行时的初始化了，我们说它是在 <em>new_interpreter</em> 函数中调用 <em>\</em>PyRuntime_Initialize_ 函数时开始的，函数位于 <em>Python/pylifecycle.c</em> 中。</strong></p>
+<pre><code>PyThreadState *
+Py_NewInterpreter(void)
+{    
+    //线程状态对象
+    PyThreadState *tstate = NULL;
+    //传入线程对象, 调用new_interpreter
+    PyStatus status = new_interpreter(&amp;tstate);
+    //异常检测
+    if (_PyStatus_EXCEPTION(status)) {
+        Py_ExitStatusException(status);
+    }
+    //返回线程状态对象, 显然不会返回一个NULL, 这就说明在new_interpreter中线程状态对象就已经被设置了
+    return tstate;
+}</code></pre><p><strong>另外里面出现了一个 <em>PyStatus_， 表示程序执行的状态， 会检测是否发生了异常，该结构体定义在 _Include/cpython/initconfig.h</em> 中。</strong></p>
+<pre><code>typedef struct {
+    enum {
+        _PyStatus_TYPE_OK=0,
+        _PyStatus_TYPE_ERROR=1,
+        _PyStatus_TYPE_EXIT=2
+    } _type;
+    const char *func;
+    const char *err_msg;
+    int exitcode;
+} PyStatus;</code></pre><p><strong>然后我们的重点是 _new_interpreter_函数，我们进程状态对象的创建就是在这个函数里面发生的，该函数位于_Python/pylifecycle.c_中。</strong></p>
+<pre><code>static PyStatus
+new_interpreter(PyThreadState **tstate_p)
+{
+    PyStatus status; //状态对象
+
+    //运行时初始化, 如果出现异常直接返回
+    status = _PyRuntime_Initialize();
+    if (_PyStatus_EXCEPTION(status)) {
+        return status;
+    }
+    //......
+    // 创建一个进程状态对象
+    PyInterpreterState *interp = PyInterpreterState_New();
+    //......
+    //根据进程状态对象创建一个线程状态对象, 维护对应OS线程的状态
+    PyThreadState *tstate = PyThreadState_New(interp);
+    //将GIL的控制权交给创建的线程
+    PyThreadState *save_tstate = PyThreadState_Swap(tstate);
+
+    //...
+}</code></pre><p><strong>Python在初始化运行时环境时，肯定也要对类型系统进行初始化等等，整体是一个非常庞大的过程。有兴趣的话，可以追根溯源对着源码阅读以下。</strong></p>
+<p><strong>到这里，我们对 <em>new_interpreter</em> 算是有了一个阶段性的成功，我们创建了代表进程和线程概念的 <em>PyInterpreterState</em> 和 <em>PyThreadState</em> 对象，并且在它们之间建立的联系。下面， <em>new_interpreter</em> 将进行入另一个环节，设置系统module。</strong></p>
+<h3 id="创建-builtins"><a href="#创建-builtins" class="headerlink" title="创建__builtins__"></a>创建__builtins__</h3><p><strong>在 <em>new_interpreter</em> 中当Python解释器创建了 <em>PyInterpreterState</em> 和 <em>PyThreadState</em> 对象之后，就会开始设置系统的__builtins__了。</strong></p>
+<pre><code>static PyStatus
+new_interpreter(PyThreadState **tstate_p)
+{
+    //....
+    //申请一个PyDictObject对象, 用于存储所有的module对象
+    //而我们说Python中的module对象都是存在sys.modules中的, 所以这里的modules指的就是Python中的sys.modules
+    PyObject *modules = PyDict_New();
+    if (modules == NULL) {
+        return _PyStatus_ERR(&quot;can&apos;t make modules dictionary&quot;);
+    }
+
+    //然后让interp -&gt; modules维护modules
+    //我们翻看到这个interp表示的时进程实例对象, 这说明什么? 显然是该进程内的多个线程共享同一个内置名字空间
+    interp-&gt;modules = modules;
+
+    //加载sys模块, 我们说所有的module对象都在sys.modules中
+    PyObject *sysmod = _PyImport_FindBuiltin(&quot;sys&quot;, modules);
+    if (sysmod != NULL) {
+        interp-&gt;sysdict = PyModule_GetDict(sysmod);
+        if (interp-&gt;sysdict == NULL) {
+            goto handle_error;
+        }
+        Py_INCREF(interp-&gt;sysdict);
+        PyDict_SetItemString(interp-&gt;sysdict, &quot;modules&quot;, modules);
+        if (_PySys_InitMain(runtime, interp) &lt; 0) {
+            return _PyStatus_ERR(&quot;can&apos;t finish initializing sys&quot;);
+        }
+    }
+
+    //加载内置模块, builtins是内置模块, 可以import builtins, 并且builtins.list等价于list
+    PyObject *bimod = _PyImport_FindBuiltin(&quot;builtins&quot;, modules);
+    if (bimod != NULL) {
+        interp-&gt;builtins = PyModule_GetDict(bimod);
+        if (interp-&gt;builtins == NULL)
+            goto handle_error;
+        Py_INCREF(interp-&gt;builtins);
+    }
+    //......
+}</code></pre><p><strong>整体还是比较清晰和直观的，另外我们说内置名字空间是由进程来维护的，因为进程就是用来为线程提供资源的。但是我们也能看出，这意味着一个进程内的多个线程共享同一个内置作用域，显然这是非常合理的，不可能每开启一个线程，就为其创建一个__builtins__。我们来从Python的角度证明这一点：</strong></p>
+<pre><code>import threading
+import builtins
+
+
+def foo1():
+    builtins.list, builtins.tuple = builtins.tuple, builtins.list
+
+
+def foo2():
+    print(f&quot;猜猜下面代码会输出什么：&quot;)
+    print(&quot;list:&quot;, list([1, 2, 3, 4, 5]))
+    print(&quot;tuple:&quot;, tuple([1, 2, 3, 4, 5]))
+
+
+f1 = threading.Thread(target=foo1)
+f1.start()
+f1.join()
+threading.Thread(target=foo2).start()
+&quot;&quot;&quot;
+猜猜下面代码会输出什么：
+list: (1, 2, 3, 4, 5)
+tuple: [1, 2, 3, 4, 5]
+&quot;&quot;&quot;</code></pre><p><strong>我们说所有的内建对象和内置函数都在内置名字空间里面，我们可以通过 import builtins获取、也可以直接通过__builtins__这个变量来获取。我们在foo1中把list和tuple互换了，而这个结果显然也影响到了foo2函数。这也说明了__builtins__是属于进程级别的，它是被多个线程共享的。所以是<code>interp -&gt; modules = modules</code>，当然这个modules是sys.modules，因为不止内置名字空间，所有的module对象都是被多个线程共享的。</strong></p>
+<p><strong>而对__builts__的初始化时在 <em>\</em>PyBuiltin_Init_ 函数中进行的，它位于 <em>Python/bltinmodule.c</em> 中。</strong></p>
+<pre><code>PyObject *
+_PyBuiltin_Init(void)
+{
+    PyObject *mod, *dict, *debug;
+
+    const PyConfig *config = &amp;_PyInterpreterState_GET_UNSAFE()-&gt;config;
+
+    if (PyType_Ready(&amp;PyFilter_Type) &lt; 0 ||
+        PyType_Ready(&amp;PyMap_Type) &lt; 0 ||
+        PyType_Ready(&amp;PyZip_Type) &lt; 0)
+        return NULL;
+
+    //创建并设置__builtins__ module
+    mod = _PyModule_CreateInitialized(&amp;builtinsmodule, PYTHON_API_VERSION);
+    if (mod == NULL)
+        return NULL;
+    //将所有python内建对象加入到__builtins__ module中
+    dict = PyModule_GetDict(mod);
+
+    //......
+    //老铁们，下面这些东西应该不陌生吧   
+    SETBUILTIN(&quot;None&quot;,                  Py_None);
+    SETBUILTIN(&quot;Ellipsis&quot;,              Py_Ellipsis);
+    SETBUILTIN(&quot;NotImplemented&quot;,        Py_NotImplemented);
+    SETBUILTIN(&quot;False&quot;,                 Py_False);
+    SETBUILTIN(&quot;True&quot;,                  Py_True);
+    SETBUILTIN(&quot;bool&quot;,                  &amp;PyBool_Type);
+    SETBUILTIN(&quot;memoryview&quot;,        &amp;PyMemoryView_Type);
+    SETBUILTIN(&quot;bytearray&quot;,             &amp;PyByteArray_Type);
+    SETBUILTIN(&quot;bytes&quot;,                 &amp;PyBytes_Type);
+    SETBUILTIN(&quot;classmethod&quot;,           &amp;PyClassMethod_Type);
+    SETBUILTIN(&quot;complex&quot;,               &amp;PyComplex_Type);
+    SETBUILTIN(&quot;dict&quot;,                  &amp;PyDict_Type);
+    SETBUILTIN(&quot;enumerate&quot;,             &amp;PyEnum_Type);
+    SETBUILTIN(&quot;filter&quot;,                &amp;PyFilter_Type);
+    SETBUILTIN(&quot;float&quot;,                 &amp;PyFloat_Type);
+    SETBUILTIN(&quot;frozenset&quot;,             &amp;PyFrozenSet_Type);
+    SETBUILTIN(&quot;property&quot;,              &amp;PyProperty_Type);
+    SETBUILTIN(&quot;int&quot;,                   &amp;PyLong_Type);
+    SETBUILTIN(&quot;list&quot;,                  &amp;PyList_Type);
+    SETBUILTIN(&quot;map&quot;,                   &amp;PyMap_Type);
+    SETBUILTIN(&quot;object&quot;,                &amp;PyBaseObject_Type);
+    SETBUILTIN(&quot;range&quot;,                 &amp;PyRange_Type);
+    SETBUILTIN(&quot;reversed&quot;,              &amp;PyReversed_Type);
+    SETBUILTIN(&quot;set&quot;,                   &amp;PySet_Type);
+    SETBUILTIN(&quot;slice&quot;,                 &amp;PySlice_Type);
+    SETBUILTIN(&quot;staticmethod&quot;,          &amp;PyStaticMethod_Type);
+    SETBUILTIN(&quot;str&quot;,                   &amp;PyUnicode_Type);
+    SETBUILTIN(&quot;super&quot;,                 &amp;PySuper_Type);
+    SETBUILTIN(&quot;tuple&quot;,                 &amp;PyTuple_Type);
+    SETBUILTIN(&quot;type&quot;,                  &amp;PyType_Type);
+    SETBUILTIN(&quot;zip&quot;,                   &amp;PyZip_Type);
+    debug = PyBool_FromLong(config-&gt;optimization_level == 0);
+    if (PyDict_SetItemString(dict, &quot;__debug__&quot;, debug) &lt; 0) {
+        Py_DECREF(debug);
+        return NULL;
+    }
+    Py_DECREF(debug);
+
+    return mod;
+#undef ADD_TO_ALL
+#undef SETBUILTIN
+}</code></pre><p><strong>整个 <em>\</em>PyBuiltin__Init_ 函数的功能就是设置好__builtins__ module，而这个过程是分为两步的。</strong></p>
+<ul>
+<li><code>通过_PyModule_CreateInitialized函数创建PyModuleObject对象，我们知道这是Python中模块对象的底层实现;</code></li>
+<li><code>设置module，将python中所有的内建对象都塞到__builtins__中</code></li>
+</ul>
+<p><strong>但是我们看到设置的东西似乎少了不少，比如dir、hasattr、setattr等等，这些明显也是内置的，但是它们到哪里去了。别急，我们刚才说创建__builtins__分为两步，第一步是创建PyModuleObject，而使用的函数就是 <em>\</em>PyModule_CreateInitialized_ ，而在这个函数里面就已经完成了大部分设置__builtins__的工作。该函数位于 <em>Object/moduleobject.c</em> 。</strong></p>
+<pre><code>PyObject *
+_PyModule_CreateInitialized(struct PyModuleDef* module, int module_api_version)
+{
+    const char* name;
+    PyModuleObject *m;
+
+    //初始化
+    if (!PyModuleDef_Init(module))
+        return NULL;
+    //拿到module的name，对于当前来说，这里显然是__builtins__
+    name = module-&gt;m_name;
+    //这里比较有意思，这是检测模块版本的，针对的是需要导入的py文件。
+    //我们说编译成PyCodeObject对象之后，会直接从当前目录的__pycache__里面导入
+    //而那里面都是pyc文件，介绍字节码的时候我们说，pyc文件的文件名是有Python解释器的版本号的
+    //这里就是比较版本是否一致，不一致则不导入pyc文件，而是会重新编译py文件    
+    if (!check_api_version(name, module_api_version)) {
+        return NULL;
+    }
+    if (module-&gt;m_slots) {
+        PyErr_Format(
+            PyExc_SystemError,
+            &quot;module %s: PyModule_Create is incompatible with m_slots&quot;, name);
+        return NULL;
+    }
+    //创建一个PyModuleObject 
+    if ((m = (PyModuleObject*)PyModule_New(name)) == NULL)
+        return NULL;
+
+    //.......
+    if (module-&gt;m_methods != NULL) {
+        //遍历methods中指定的module对象中应包含的操作集合
+        if (PyModule_AddFunctions((PyObject *) m, module-&gt;m_methods) != 0) {
+            Py_DECREF(m);
+            return NULL;
+        }
+    }
+    if (module-&gt;m_doc != NULL) {
+        //设置docstring
+        if (PyModule_SetDocString((PyObject *) m, module-&gt;m_doc) != 0) {
+            Py_DECREF(m);
+            return NULL;
+        }
+    }
+    m-&gt;md_def = module;
+    return (PyObject*)m;
+}</code></pre><p><strong>根据上面的代码我们可以得出如下信息：</strong></p>
+<ul>
+<li><code>1. name：module对象的名称，在这里就是__builtins__</code></li>
+<li><code>2. module_api_version：python内部使用的version值，用于比较</code></li>
+<li><code>3. PyModule_New：用于创建一个PyModuleObject对象</code></li>
+<li><code>4. methods：该module中所包含的函数的集合，在这里是builtin_methods</code></li>
+<li><code>5. PyModule_AddFunctions：设置methods中的函数操作</code></li>
+<li><code>6. PyModule_SetDocString：设置docstring</code></li>
+</ul>
+<h4 id="创建module对象"><a href="#创建module对象" class="headerlink" title="创建module对象"></a>创建module对象</h4><p><strong>我们说Python中的module对象在底层cpython中对应的结构体是PyModuleObject对象，我们来看看它长什么样子吧，定义在 <em>Objects/moduleobject.c</em> 中。</strong></p>
+<pre><code>typedef struct {
+    PyObject_HEAD  //头部信息
+    PyObject *md_dict;  //属性字典, 所有的属性和值都在里面
+    struct PyModuleDef *md_def;  //module对象包含的操作集合, 里面是一些结构体, 每个结构体包含一个函数的相关信息
+    //...
+    PyObject *md_name;  //模块名
+} PyModuleObject;</code></pre><p><strong>而这个对象我们知道是通过PyModule_New创建的。</strong></p>
+<pre><code>PyObject *
+PyModule_New(const char *name)
+{    
+    //module对象的name、PyModuleObject
+    PyObject *nameobj, *module;
+    nameobj = PyUnicode_FromString(name);
+    if (nameobj == NULL)
+        return NULL;
+    //根据创建PyModuleObject
+    module = PyModule_NewObject(nameobj);
+    Py_DECREF(nameobj);
+    return module;
+}
+
+
+PyObject *
+PyModule_NewObject(PyObject *name)
+{    
+    //创建一个module对象
+    PyModuleObject *m;
+    //申请空间
+    m = PyObject_GC_New(PyModuleObject, &amp;PyModule_Type);
+    if (m == NULL)
+        return NULL;
+    //设置相应属性, 初始化为NULL
+    m-&gt;md_def = NULL;
+    m-&gt;md_state = NULL;
+    m-&gt;md_weaklist = NULL;
+    m-&gt;md_name = NULL;
+    //属性字典
+    m-&gt;md_dict = PyDict_New();
+    //调用module_init_dict
+    if (module_init_dict(m, m-&gt;md_dict, name, NULL) != 0)
+        goto fail;
+    PyObject_GC_Track(m);
+    return (PyObject *)m;
+
+ fail:
+    Py_DECREF(m);
+    return NULL;
+}
+
+static int
+module_init_dict(PyModuleObject *mod, PyObject *md_dict,
+                 PyObject *name, PyObject *doc)
+{
+    _Py_IDENTIFIER(__name__);
+    _Py_IDENTIFIER(__doc__);
+    _Py_IDENTIFIER(__package__);
+    _Py_IDENTIFIER(__loader__);
+    _Py_IDENTIFIER(__spec__);
+
+    if (md_dict == NULL)
+        return -1;
+    if (doc == NULL)
+        doc = Py_None;
+    //模块的一些属性、__name__、__doc__等等
+    if (_PyDict_SetItemId(md_dict, &amp;PyId___name__, name) != 0)
+        return -1;
+    if (_PyDict_SetItemId(md_dict, &amp;PyId___doc__, doc) != 0)
+        return -1;
+    if (_PyDict_SetItemId(md_dict, &amp;PyId___package__, Py_None) != 0)
+        return -1;
+    if (_PyDict_SetItemId(md_dict, &amp;PyId___loader__, Py_None) != 0)
+        return -1;
+    if (_PyDict_SetItemId(md_dict, &amp;PyId___spec__, Py_None) != 0)
+        return -1;
+    if (PyUnicode_CheckExact(name)) {
+        Py_INCREF(name);
+        Py_XSETREF(mod-&gt;md_name, name);
+    }
+
+    return 0;
+}</code></pre><p><strong>这里虽然创建了一个module对象，但是这仅仅是一个空的module对象，却并没有包含相应的操作和数据。我们看到只设置了name和doc等属性。</strong></p>
+<h4 id="设置module对象"><a href="#设置module对象" class="headerlink" title="设置module对象"></a>设置module对象</h4><p><strong>在PyModule_New结束之后，程序继续执行 <em>\</em>PyModule_CreateInitialized_ 下面的代码，然后我们知道通过 <em>PyModule_AddFunctions</em> 完成了对__builtins__几乎全部属性的设置。这个设置的属性依赖于第二个参数methods，在这里为builtin_methods。然后会遍历builtin_methods，并处理每一项元素，我们还是来看看长什么样子。</strong></p>
+<pre><code>//Python/bltinmodule.c
+
+static PyMethodDef builtin_methods[] = {
+    {&quot;__build_class__&quot;, (PyCFunction)(void(*)(void))builtin___build_class__,
+     METH_FASTCALL | METH_KEYWORDS, build_class_doc},
+    {&quot;__import__&quot;,      (PyCFunction)(void(*)(void))builtin___import__, METH_VARARGS | METH_KEYWORDS, import_doc},
+    BUILTIN_ABS_METHODDEF
+    BUILTIN_ALL_METHODDEF
+    BUILTIN_ANY_METHODDEF
+    BUILTIN_ASCII_METHODDEF
+    BUILTIN_BIN_METHODDEF
+    {&quot;breakpoint&quot;,      (PyCFunction)(void(*)(void))builtin_breakpoint, METH_FASTCALL | METH_KEYWORDS, breakpoint_doc},
+    BUILTIN_CALLABLE_METHODDEF
+    BUILTIN_CHR_METHODDEF
+    BUILTIN_COMPILE_METHODDEF
+    BUILTIN_DELATTR_METHODDEF
+    {&quot;dir&quot;,             builtin_dir,        METH_VARARGS, dir_doc},
+    BUILTIN_DIVMOD_METHODDEF
+    BUILTIN_EVAL_METHODDEF
+    BUILTIN_EXEC_METHODDEF
+    BUILTIN_FORMAT_METHODDEF
+    {&quot;getattr&quot;,         (PyCFunction)(void(*)(void))builtin_getattr, METH_FASTCALL, getattr_doc},
+    BUILTIN_GLOBALS_METHODDEF
+    BUILTIN_HASATTR_METHODDEF
+    BUILTIN_HASH_METHODDEF
+    BUILTIN_HEX_METHODDEF
+    BUILTIN_ID_METHODDEF
+    BUILTIN_INPUT_METHODDEF
+    BUILTIN_ISINSTANCE_METHODDEF
+    BUILTIN_ISSUBCLASS_METHODDEF
+    {&quot;iter&quot;,            (PyCFunction)(void(*)(void))builtin_iter,       METH_FASTCALL, iter_doc},
+    BUILTIN_LEN_METHODDEF
+    BUILTIN_LOCALS_METHODDEF
+    {&quot;max&quot;,             (PyCFunction)(void(*)(void))builtin_max,        METH_VARARGS | METH_KEYWORDS, max_doc},
+    {&quot;min&quot;,             (PyCFunction)(void(*)(void))builtin_min,        METH_VARARGS | METH_KEYWORDS, min_doc},
+    {&quot;next&quot;,            (PyCFunction)(void(*)(void))builtin_next,       METH_FASTCALL, next_doc},
+    BUILTIN_OCT_METHODDEF
+    BUILTIN_ORD_METHODDEF
+    BUILTIN_POW_METHODDEF
+    {&quot;print&quot;,           (PyCFunction)(void(*)(void))builtin_print,      METH_FASTCALL | METH_KEYWORDS, print_doc},
+    BUILTIN_REPR_METHODDEF
+    BUILTIN_ROUND_METHODDEF
+    BUILTIN_SETATTR_METHODDEF
+    BUILTIN_SORTED_METHODDEF
+    BUILTIN_SUM_METHODDEF
+    {&quot;vars&quot;,            builtin_vars,       METH_VARARGS, vars_doc},
+    {NULL,              NULL},
+};</code></pre><p><strong>怎么样，是不是看到了玄机。</strong></p>
+<p><strong>总结一下就是：在 <em>Py_NewInterpreter</em> 中调用 <em>new_interpreter</em> 函数，然后在 <em>new_interpreter</em> 这个函数里面，通过 <em>PyInterpreterState_New</em> 创建 <em>PyInterpreterState</em> ，然后传递 <em>PyInterpreterState</em> 调用 <em>PyThreadState_New</em> 得到 <em>PyThreadState</em> 对象。</strong></p>
+<p><strong>接着就是执行各种初始化动作，然后在 <em>new_interpreter</em> 中调用 <em>\</em>PyBuiltin_Init_ 设置内建属性，在代码的最后会设置大量的内置属性<code>(函数、对象)</code>。但是有几个却不在里面，比如：dir、getattr等等。所以中间调用的 <em>\</em>PyModule_CreateInitialized_ 不仅仅是初始化一个module对象，还会在初始化之后将我们没有看到的一些属性设置进去，在 <em>\</em>PyModule_CreateInitialized_ 里面，先是使用 <em>PyModule_New</em> 创建一个PyModuleObject，在里面设置了name和doc等属性之后，再通过 <em>PyModule_AddFunctions</em> 设置methods，在这里面我们看到了dir、getattr等内置属性。当这些属性设置完之后，退回到 <em>\</em>PyBuiltin_Init_ 函数中，再设置剩余的大量属性。之后，__builtins__就完成了。</strong></p>
+<p><strong>另外 builtin_methods 是一个 PyMethodDef 类型的数组，里面是一个个的 PyMethodDef 结构体，而这个结构体定义在 <em>Include/methodobject.h</em> 中。</strong></p>
+<pre><code>struct PyMethodDef {
+    /* 内置的函数或者方法名 */
+    const char  *ml_name;   
+    /* 实现对应逻辑的C函数，但是需要转成PyCFunction类型，主要是为了更好的处理关键字参数 */
+    PyCFunction ml_meth;    
+
+    /* 参数类型 
+    #define METH_VARARGS  0x0001  扩展位置参数
+    #define METH_KEYWORDS 0x0002  扩展关键字参数
+    #define METH_NOARGS   0x0004  不需要参数
+    #define METH_O        0x0008  需要一个参数
+    #define METH_CLASS    0x0010  被classmethod装饰
+    #define METH_STATIC   0x0020  被staticmethod装饰   
+    */
+    int         ml_flags;   
+
+    //函数的__dic__
+    const char  *ml_doc; 
+};
+typedef struct PyMethodDef PyMethodDef;</code></pre><p><strong>对于这里面每一个 <em>PyMethodDef</em> ，<em>\</em>PyModule_CreateInitialized_ 都会基于它创建一个 <em>PyCFunctionObject</em> 对象， 这个对象Python对函数指针的包装， 当然里面好包含了其它信息。</strong></p>
+<pre><code>typedef struct {
+    PyObject_HEAD  //头部信息
+    PyMethodDef *m_ml;  //PyMethodDef
+    PyObject    *m_self;  //self参数
+    PyObject    *m_module;  //__module__属性
+    PyObject    *m_weakreflist;  //弱引用列表, 不讨论
+    vectorcallfunc vectorcall;
+} PyCFunctionObject;</code></pre><p><strong>而 <em>PyCFunctionObject</em> 对象则是通过 <em>PyCFunction_New</em> 完成的，该函数位于 <em>Objects/methodobject.c</em> 中。</strong></p>
+<pre><code>PyObject *
+PyCFunction_New(PyMethodDef *ml, PyObject *self)
+{
+    return PyCFunction_NewEx(ml, self, NULL);
+}
+
+
+PyObject *
+PyCFunction_NewEx(PyMethodDef *ml, PyObject *self, PyObject *module)
+{
+    vectorcallfunc vectorcall;
+    //判断参数类型
+    switch (ml-&gt;ml_flags &amp; (METH_VARARGS | METH_FASTCALL | METH_NOARGS | METH_O | METH_KEYWORDS))
+    {
+        case METH_VARARGS:
+        case METH_VARARGS | METH_KEYWORDS:
+            vectorcall = NULL;
+            break;
+        case METH_FASTCALL:
+            vectorcall = cfunction_vectorcall_FASTCALL;
+            break;
+        case METH_FASTCALL | METH_KEYWORDS:
+            vectorcall = cfunction_vectorcall_FASTCALL_KEYWORDS;
+            break;
+        case METH_NOARGS:
+            vectorcall = cfunction_vectorcall_NOARGS;
+            break;
+        case METH_O:
+            vectorcall = cfunction_vectorcall_O;
+            break;
+        default:
+            PyErr_Format(PyExc_SystemError,
+                         &quot;%s() method: bad call flags&quot;, ml-&gt;ml_name);
+            return NULL;
+    }
+
+    PyCFunctionObject *op;
+    //我们看到这里也采用了缓存池的策略
+    op = free_list;
+    if (op != NULL) {
+        free_list = (PyCFunctionObject *)(op-&gt;m_self);
+        (void)PyObject_INIT(op, &amp;PyCFunction_Type);
+        numfree--;
+    }
+    else {
+        //否则重新申请
+        op = PyObject_GC_New(PyCFunctionObject, &amp;PyCFunction_Type);
+        if (op == NULL)
+            return NULL;
+    }
+    //设置属性
+    op-&gt;m_weakreflist = NULL;
+    op-&gt;m_ml = ml;
+    Py_XINCREF(self);
+    op-&gt;m_self = self;
+    Py_XINCREF(module);
+    op-&gt;m_module = module;
+    op-&gt;vectorcall = vectorcall;
+    _PyObject_GC_TRACK(op);
+    return (PyObject *)op;
+}</code></pre><p><strong>在 <em>\</em>PyBuiltin__Init_ 之后，Python会把PyModuleObject对象中维护的那个PyDictObject对象抽取出来，将其赋值给 <em>interp -&gt; builtins</em> 。</strong></p>
+<pre><code>//moduleobject.c
+PyObject *
+PyModule_GetDict(PyObject *m)
+{
+    PyObject *d;
+    if (!PyModule_Check(m)) {
+        PyErr_BadInternalCall();
+        return NULL;
+    }
+    d = ((PyModuleObject *)m) -&gt; md_dict;
+    assert(d != NULL);
+    return d;
+}
+
+
+static PyStatus
+new_interpreter(PyThreadState **tstate_p)
+{
+    //......
+    PyObject *bimod = _PyImport_FindBuiltin(&quot;builtins&quot;, modules);
+    if (bimod != NULL) {
+        //通过PyModule_GetDict获取属性字典, 赋值给builtins
+        interp-&gt;builtins = PyModule_GetDict(bimod);
+        if (interp-&gt;builtins == NULL)
+            goto handle_error;
+        Py_INCREF(interp-&gt;builtins);
+    }
+    else if (PyErr_Occurred()) {
+        goto handle_error;
+    }
+    //......
+}</code></pre><p><strong>以后Python在需要访问__builtins__时，直接访问 <em>interp-&gt;builtins</em> 就可以了，不需要再到 <em>interp-&gt;modules</em> 里面去找了。因为对于内置函数、属性的使用在Python中会比较频繁，所以这种加速机制是很有效的。</strong></p>
+<h3 id="创建sys-module"><a href="#创建sys-module" class="headerlink" title="创建sys module"></a>创建sys module</h3><p><strong>Python在创建并设置了__builtins__之后，会照猫画虎，用同样的流程来设置sys module，并像设置 <em>interp-&gt;builtins</em> 一样设置 <em>interp-&gt;sysdict</em> 。</strong></p>
+<pre><code>//Python/pylifecycle.c
+static PyStatus
+new_interpreter(PyThreadState **tstate_p)
+{
+    //.......
+    PyObject *sysmod = _PyImport_FindBuiltin(&quot;sys&quot;, modules);
+    if (sysmod != NULL) {
+        interp-&gt;sysdict = PyModule_GetDict(sysmod);
+        if (interp-&gt;sysdict == NULL) {
+            goto handle_error;
+        }
+        Py_INCREF(interp-&gt;sysdict);
+        //设置
+        PyDict_SetItemString(interp-&gt;sysdict, &quot;modules&quot;, modules);
+        if (_PySys_InitMain(runtime, interp) &lt; 0) {
+            return _PyStatus_ERR(&quot;can&apos;t finish initializing sys&quot;);
+        }
+    }
+    //.......
+}</code></pre><p><strong>Python在创建了sys module之后，会在此module中设置一个Python搜索module时的默认路径集合。</strong></p>
+<pre><code>//Python/pylifecycle.c
+static PyStatus
+new_interpreter(PyThreadState **tstate_p)
+{
+    //.......
+    status = add_main_module(interp);
+    //.......
+}    
+
+
+static PyStatus
+add_main_module(PyInterpreterState *interp)
+{
+    PyObject *m, *d, *loader, *ann_dict;
+    //将__main__添加进sys.modules中
+    m = PyImport_AddModule(&quot;__main__&quot;);
+    if (m == NULL)
+        return _PyStatus_ERR(&quot;can&apos;t create __main__ module&quot;);
+
+    d = PyModule_GetDict(m);
+    ann_dict = PyDict_New();
+    if ((ann_dict == NULL) ||
+        (PyDict_SetItemString(d, &quot;__annotations__&quot;, ann_dict) &lt; 0)) {
+        return _PyStatus_ERR(&quot;Failed to initialize __main__.__annotations__&quot;);
+    }
+    Py_DECREF(ann_dict);
+
+    if (PyDict_GetItemString(d, &quot;__builtins__&quot;) == NULL) {
+        PyObject *bimod = PyImport_ImportModule(&quot;builtins&quot;);
+        if (bimod == NULL) {
+            return _PyStatus_ERR(&quot;Failed to retrieve builtins module&quot;);
+        }
+        if (PyDict_SetItemString(d, &quot;__builtins__&quot;, bimod) &lt; 0) {
+            return _PyStatus_ERR(&quot;Failed to initialize __main__.__builtins__&quot;);
+        }
+        Py_DECREF(bimod);
+    }
+    loader = PyDict_GetItemString(d, &quot;__loader__&quot;);
+    if (loader == NULL || loader == Py_None) {
+        PyObject *loader = PyObject_GetAttrString(interp-&gt;importlib,
+                                                  &quot;BuiltinImporter&quot;);
+        if (loader == NULL) {
+            return _PyStatus_ERR(&quot;Failed to retrieve BuiltinImporter&quot;);
+        }
+        if (PyDict_SetItemString(d, &quot;__loader__&quot;, loader) &lt; 0) {
+            return _PyStatus_ERR(&quot;Failed to initialize __main__.__loader__&quot;);
+        }
+        Py_DECREF(loader);
+    }
+    return _PyStatus_OK();
+}</code></pre><p><strong>根据我们使用Python的经验，我们知道最终Python肯定会创建一个PyListObject对象，也就是Python中的sys.path，里面包含了一组PyUnicodeObject，每一个PyUnicodeObject的内容就代表了一个搜索路径。但是这一步不是在这里完成的，至于是在哪里完成的，我们后面会说。</strong></p>
+<p><strong>另外，我们需要注意的是：在上面的逻辑中，解释器将__main__这个模块添加进去了，这个__main__估计不用我多说了。之前在 <em>PyModule_New</em> 中，创建一个PyModuleObject对象之后，会在其属性字典<code>(md_dict获取)</code>中插入一个名为”__name__“的key，value就是 “__main__“。但是对于当然模块来说，这个模块也可以叫做__main__。</strong></p>
+<pre><code>name = &quot;神楽七奈&quot;
+import __main__
+print(__main__.name)  # 神楽七奈
+
+import sys
+print(sys.modules[&quot;__main__&quot;] is __main__)  # True</code></pre><p><strong>我们发现这样也是可以导入的，因为这个__main__就是这个模块本身。</strong></p>
+<pre><code>static PyStatus
+add_main_module(PyInterpreterState *interp)
+{
+    PyObject *m, *d, *loader, *ann_dict;
+    //创建__main__ module，并将其插入到interp-&gt;modules中
+    m = PyImport_AddModule(&quot;__main__&quot;);
+    if (m == NULL)
+        return _PyStatus_ERR(&quot;can&apos;t create __main__ module&quot;);
+    //获取__main__的属性字典
+    d = PyModule_GetDict(m);
+
+    //获取interp-&gt;modules中的__builtins__ module
+    if (PyDict_GetItemString(d, &quot;__builtins__&quot;) == NULL) {
+        PyObject *bimod = PyImport_ImportModule(&quot;builtins&quot;);
+        if (bimod == NULL) {
+            return _PyStatus_ERR(&quot;Failed to retrieve builtins module&quot;);
+        }
+        //将(&quot;__builtins__&quot;, __builtins__)插入到__main__ module的dict中
+        if (PyDict_SetItemString(d, &quot;__builtins__&quot;, bimod) &lt; 0) {
+            return _PyStatus_ERR(&quot;Failed to initialize __main__.__builtins__&quot;);
+        }
+        Py_DECREF(bimod);
+    }
+
+    //......
+}</code></pre><p><strong>因此我们算是知道了，为什么python xxx.py执行的时候，__name__是__main__了，因为我们这里设置了。而Python沿着名字空间寻找的时候，最终会在__main__的local空间中发现__name__，且值为字符串”__main__“。但如果是以import的方式加载的，那么__name__则不是”__main__“，而是模块名,后面我们会继续说。</strong></p>
+<p><img src="https://img2018.cnblogs.com/blog/1229382/201912/1229382-20191226190436915-1589229349.png" alt="2.png"></p>
+<p><strong>其实这个__main__我们是再熟悉不过的了，当输入dir()的时候，就会显示__main__的内容。dir是可以不加参数的，如果不加参数，那么默认访问当前的py文件，也就是__main__。</strong></p>
+<pre><code>&gt;&gt;&gt; __name__
+&apos;__main__&apos;
+&gt;&gt;&gt;
+&gt;&gt;&gt; __builtins__.__name__
+&apos;builtins&apos;
+&gt;&gt;&gt;
+&gt;&gt;&gt; import numpy as np
+&gt;&gt;&gt; np.__name__
+&apos;numpy&apos;
+&gt;&gt;&gt;</code></pre><p><strong>所以说，访问模块就类似访问变量一样。modules里面存放了所有的(module name, PyModuleObject)，当我们调用np的时候，是会找到name为”numpy”的值，然后这个值里面也维护了一个字典，其中就有一个key为__name__的entry。</strong></p>
+<h3 id="设置site-specific的module的搜索路径"><a href="#设置site-specific的module的搜索路径" class="headerlink" title="设置site-specific的module的搜索路径"></a>设置site-specific的module的搜索路径</h3><p><strong>Python是一个非常开放的体系，它的强大来源于丰富的第三方库，这些库由外部的py文件来提供，当使用这些第三方库的时候，只需要简单的进行import即可。一般来说，这些第三方库都放在<code>/lib/site-packages</code>中，如果程序想使用这些库，直接把库放在这里面即可。</strong></p>
+<p><strong>但是到目前为止，我们好像也没看到python将site-packages路径设置到搜索路径里面去啊。其实在完成了__main__的创建之后，Python才腾出手来，收拾这个site-package。这个关键的动作在于Python的一个标准库：site.py。</strong></p>
+<p><strong>我们先来将Lib目录下的site.py删掉，然后导入一个第三方模块，看看会有什么后果。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200909213801726-2007195328.png" alt=""></p>
+<p><strong>因此我们发现，Python在初始化的过程中确实导入了site.py，所以才有了如下的输出。而这个site.py也正是Python能正确加载位于site-packages目录下第三方包的关键所在。我们可以猜测，应该就是这个site.py将site-packages目录加入到了前面的sys.path中，而这个动作是由 <em>init_import_size</em> 完成的。</strong></p>
+<pre><code>static PyStatus
+new_interpreter(PyThreadState **tstate_p)
+{
+    //......
+        if (config-&gt;site_import) {
+            status = init_import_size();
+            if (_PyStatus_EXCEPTION(status)) {
+                return status;
+            }
+        }
+    //......
+}
+
+
+static PyStatus
+init_import_size(void)
+{
+    PyObject *m;
+    m = PyImport_ImportModule(&quot;site&quot;);
+    if (m == NULL) {
+        //这里的报错信息是不是和上图中显示的一样呢？
+        return _PyStatus_ERR(&quot;Failed to import the site module&quot;);
+    }
+    Py_DECREF(m);
+    return _PyStatus_OK();
+}</code></pre><p><strong>在 <em>init_import_size</em> 中，只调用了 <em>PyImport_ImportModule</em> 函数，这个函数是Python中import机制的核心所在。PyImport_ImportModule(“numpy”)等价于python中的 import numpy 即可。</strong></p>
+<h2 id="激活python虚拟机"><a href="#激活python虚拟机" class="headerlink" title="激活python虚拟机"></a>激活python虚拟机</h2><p><strong>Python运行方式有两种，一种是在命令行中运行的交互式环境；另一种则是以python xxx.py方式运行脚本文件。尽管方式不同，但是却殊途同归，进入同一个字节码虚拟机。</strong></p>
+<p><strong>Python在 <em>Py_Initialize</em> 完成之后，最终会通过 <em>pymain_run_file</em> 调用 _PyRun_AnyFileExFlags_。</strong></p>
+<pre><code>//Modules/main.c
+static int
+pymain_run_file(PyConfig *config, PyCompilerFlags *cf)
+{    
+    //那么获取文件名
+    const wchar_t *filename = config-&gt;run_filename;
+    if (PySys_Audit(&quot;cpython.run_file&quot;, &quot;u&quot;, filename) &lt; 0) {
+        return pymain_exit_err_print();
+    }
+    //打开文件
+    FILE *fp = _Py_wfopen(filename, L&quot;rb&quot;);
+    //如果fp为NULL, 证明文件打开失败
+    if (fp == NULL) {
+        char *cfilename_buffer;
+        const char *cfilename;
+        int err = errno;
+        cfilename_buffer = _Py_EncodeLocaleRaw(filename, NULL);
+        if (cfilename_buffer != NULL)
+            cfilename = cfilename_buffer;
+        else
+            cfilename = &quot;&lt;unprintable file name&gt;&quot;;
+        fprintf(stderr, &quot;%ls: can&apos;t open file &apos;%s&apos;: [Errno %d] %s\n&quot;,
+                config-&gt;program_name, cfilename, err, strerror(err));
+        PyMem_RawFree(cfilename_buffer);
+        return 2;
+    }
+    //......
+    //调用PyRun_AnyFileExFlags
+    int run = PyRun_AnyFileExFlags(fp, filename_str, 1, cf);
+    Py_XDECREF(bytes);
+    return (run != 0);
+}
+
+
+//Python/pythonrun.c
+int
+PyRun_AnyFileExFlags(FILE *fp, const char *filename, int closeit,
+                     PyCompilerFlags *flags)
+{
+    if (filename == NULL)
+        filename = &quot;???&quot;;
+    //根据fp是否代表交互环境，对程序进行流程控制
+    if (Py_FdIsInteractive(fp, filename)) {
+        //如果是交互环境，那么调用PyRun_InteractiveLoopFlags
+        int err = PyRun_InteractiveLoopFlags(fp, filename, flags);
+        if (closeit)
+            fclose(fp);
+        return err;
+    }
+    else
+        //否则说明是一个普通的python脚本，执行PyRun_SimpleFileExFlags
+        return PyRun_SimpleFileExFlags(fp, filename, closeit, flags);
+}</code></pre><p><strong>我们看到交互式和py脚本式走的两条不同的路径，但是别着急，最终你会看到它们又会分久必合、走向同一条路径。</strong></p>
+<h3 id="交互式运行"><a href="#交互式运行" class="headerlink" title="交互式运行"></a>交互式运行</h3><p><strong>先来看看交互式运行时候的情形，不过在此之前先来看一下提示符。</strong></p>
+<pre><code>&gt;&gt;&gt; a = 1
+&gt;&gt;&gt; if a == 1:
+...     pass
+...
+&gt;&gt;&gt;
+&gt;&gt;&gt; import sys
+&gt;&gt;&gt; sys.ps1 = &quot;matsuri:&quot;
+matsuri:a = 1
+matsuri:a
+1
+matsuri:
+matsuri:sys.ps2 = &quot;fubuki:&quot;
+matsuri:if a == 1:
+fubuki:    pass
+fubuki:
+matsuri:</code></pre><p><strong>我们每输入一行，开头都是<code>&gt;&gt;&gt;</code>，这个是sys.ps1，而输入语句块的时候，没输入完的时候，那么显示<code>...</code>，这个是sys.ps2。如果修改了，那么就是我们自己定义的了。</strong></p>
+<pre><code>int
+PyRun_InteractiveLoopFlags(FILE *fp, const char *filename_str, PyCompilerFlags *flags)
+{
+    //....
+    //创建交互式提示符 
+    v = _PySys_GetObjectId(&amp;PyId_ps1);
+    if (v == NULL) {
+        _PySys_SetObjectId(&amp;PyId_ps1, v = PyUnicode_FromString(&quot;&gt;&gt;&gt; &quot;));
+        Py_XDECREF(v);
+    }
+    //同理这个也是一样
+    v = _PySys_GetObjectId(&amp;PyId_ps2);
+    if (v == NULL) {
+        _PySys_SetObjectId(&amp;PyId_ps2, v = PyUnicode_FromString(&quot;... &quot;));
+        Py_XDECREF(v);
+    }
+    err = 0;
+    do {
+        //这里就进入了交互式环境，我们看到每次都调用了PyRun_InteractiveOneObjectEx
+        //直到下面的ret != E_EOF不成立 停止循环，一般情况就是我们输入exit()图此处了
+        ret = PyRun_InteractiveOneObjectEx(fp, filename, flags);
+        if (ret == -1 &amp;&amp; PyErr_Occurred()) {
+            if (PyErr_ExceptionMatches(PyExc_MemoryError)) {
+                if (++nomem_count &gt; 16) {
+                    PyErr_Clear();
+                    err = -1;
+                    break;
+                }
+            } else {
+                nomem_count = 0;
+            }
+            PyErr_Print();
+            flush_io();
+        } else {
+            nomem_count = 0;
+        }
+    //......
+    } while (ret != E_EOF);
+    Py_DECREF(filename);
+    return err;
+}
+
+
+static int
+PyRun_InteractiveOneObjectEx(FILE *fp, PyObject *filename,
+                             PyCompilerFlags *flags)
+{
+    PyObject *m, *d, *v, *w, *oenc = NULL, *mod_name;
+    mod_ty mod;
+    PyArena *arena;
+    const char *ps1 = &quot;&quot;, *ps2 = &quot;&quot;, *enc = NULL;
+    int errcode = 0;
+    _Py_IDENTIFIER(encoding);
+    _Py_IDENTIFIER(__main__);
+
+    mod_name = _PyUnicode_FromId(&amp;PyId___main__); /* borrowed */
+    if (mod_name == NULL) {
+        return -1;
+    }
+
+    if (fp == stdin) {
+        //......
+    }
+    v = _PySys_GetObjectId(&amp;PyId_ps1);
+    if (v != NULL) {
+        //......
+    }
+    w = _PySys_GetObjectId(&amp;PyId_ps2);
+    if (w != NULL) {
+        //.....
+    }
+    //编译用户在交互式环境下输入的python语句
+    arena = PyArena_New();
+    if (arena == NULL) {
+        Py_XDECREF(v);
+        Py_XDECREF(w);
+        Py_XDECREF(oenc);
+        return -1;
+    }
+    //生成抽象语法树
+    mod = PyParser_ASTFromFileObject(fp, filename, enc,
+                                     Py_single_input, ps1, ps2,
+                                     flags, &amp;errcode, arena);
+    Py_XDECREF(v);
+    Py_XDECREF(w);
+    Py_XDECREF(oenc);
+    if (mod == NULL) {
+        PyArena_Free(arena);
+        if (errcode == E_EOF) {
+            PyErr_Clear();
+            return E_EOF;
+        }
+        return -1;
+    }
+    //获取&lt;module __main__&gt;中维护的dict
+    m = PyImport_AddModuleObject(mod_name);
+    if (m == NULL) {
+        PyArena_Free(arena);
+        return -1;
+    }
+    d = PyModule_GetDict(m);
+    //执行用户输入的python语句
+    v = run_mod(mod, filename, d, d, flags, arena);
+    PyArena_Free(arena);
+    if (v == NULL) {
+        return -1;
+    }
+    Py_DECREF(v);
+    flush_io();
+    return 0;
+}</code></pre><p><strong>我们发现在run_mod之前，python会将<code>__main__</code>中维护的PyDictObject对象取出，作为参数传递给run_mod，这个参数关系极为重要，实际上这里的参数d就将作为Python虚拟机开始执行时当前活动的frame对象的local名字空间和global名字空间。</strong></p>
+<h3 id="脚本文件运行方式"><a href="#脚本文件运行方式" class="headerlink" title="脚本文件运行方式"></a>脚本文件运行方式</h3><p><strong>接下来，我们看一看直接运行脚本文件的方式。</strong></p>
+<pre><code>//.include/compile.h
+#define Py_file_input 257
+
+
+//Python/pythonrun.c
+int
+PyRun_SimpleFileExFlags(FILE *fp, const char *filename, int closeit,
+                        PyCompilerFlags *flags)
+{
+    PyObject *m, *d, *v;
+    const char *ext;
+    int set_file_name = 0, ret = -1;
+    size_t len;
+    //__main__就是当前文件
+    m = PyImport_AddModule(&quot;__main__&quot;);
+    if (m == NULL)
+        return -1;
+    Py_INCREF(m);
+    //还记得这个d吗?当前活动的frame对象的local和global名字空间
+    d = PyModule_GetDict(m);
+    //在__main__中设置__file__属性
+    if (PyDict_GetItemString(d, &quot;__file__&quot;) == NULL) {
+        PyObject *f;
+        f = PyUnicode_DecodeFSDefault(filename);
+        if (f == NULL)
+            goto done;
+        if (PyDict_SetItemString(d, &quot;__file__&quot;, f) &lt; 0) {
+            Py_DECREF(f);
+            goto done;
+        }
+        if (PyDict_SetItemString(d, &quot;__cached__&quot;, Py_None) &lt; 0) {
+            Py_DECREF(f);
+            goto done;
+        }
+        set_file_name = 1;
+        Py_DECREF(f);
+    }
+    len = strlen(filename);
+    ext = filename + len - (len &gt; 4 ? 4 : 0);
+    //如果是pyc
+    if (maybe_pyc_file(fp, filename, ext, closeit)) {
+        FILE *pyc_fp;
+        //二进制模式打开
+        if (closeit)
+            fclose(fp);
+        if ((pyc_fp = _Py_fopen(filename, &quot;rb&quot;)) == NULL) {
+            fprintf(stderr, &quot;python: Can&apos;t reopen .pyc file\n&quot;);
+            goto done;
+        }
+
+        if (set_main_loader(d, filename, &quot;SourcelessFileLoader&quot;) &lt; 0) {
+            fprintf(stderr, &quot;python: failed to set __main__.__loader__\n&quot;);
+            ret = -1;
+            fclose(pyc_fp);
+            goto done;
+        }
+        v = run_pyc_file(pyc_fp, filename, d, d, flags);
+    } else {
+        if (strcmp(filename, &quot;&lt;stdin&gt;&quot;) != 0 &amp;&amp;
+            set_main_loader(d, filename, &quot;SourceFileLoader&quot;) &lt; 0) {
+            fprintf(stderr, &quot;python: failed to set __main__.__loader__\n&quot;);
+            ret = -1;
+            goto done;
+        }
+        //执行脚本文件
+        v = PyRun_FileExFlags(fp, filename, Py_file_input, d, d,
+                              closeit, flags);
+    }
+    //.......
+}
+
+
+PyObject *
+PyRun_FileExFlags(FILE *fp, const char *filename_str, int start, PyObject *globals,
+                  PyObject *locals, int closeit, PyCompilerFlags *flags)
+{
+    PyObject *ret = NULL;
+    //......
+    //编译
+    mod = PyParser_ASTFromFileObject(fp, filename, NULL, start, 0, 0,
+                                     flags, NULL, arena);
+    if (closeit)
+        fclose(fp);
+    if (mod == NULL) {
+        goto exit;
+    }
+    //执行, 依旧是调用了runmod
+    ret = run_mod(mod, filename, globals, locals, flags, arena);
+
+exit:
+    Py_XDECREF(filename);
+    if (arena != NULL)
+        PyArena_Free(arena);
+    return ret;
+}</code></pre><p><strong>很显然，脚本文件和交互式之间的执行流程是不同的，但是最终都进入了run_mod，而且同样也将与<code>__main__</code>中维护的PyDictObject对象作为local名字空间和global名字空间传入了run_mod。</strong></p>
+<h3 id="启动虚拟机"><a href="#启动虚拟机" class="headerlink" title="启动虚拟机"></a>启动虚拟机</h3><p><strong>是的你没有看错，下面才是启动虚拟机，之前做了那么工作都是前戏。</strong></p>
+<pre><code>static PyObject *
+run_mod(mod_ty mod, PyObject *filename, PyObject *globals, PyObject *locals,
+            PyCompilerFlags *flags, PyArena *arena)
+{
+    PyCodeObject *co;
+    PyObject *v;
+    //基于ast编译字节码指令序列，创建PyCodeObject对象
+    co = PyAST_CompileObject(mod, filename, flags, -1, arena);
+    if (co == NULL)
+        return NULL;
+
+    if (PySys_Audit(&quot;exec&quot;, &quot;O&quot;, co) &lt; 0) {
+        Py_DECREF(co);
+        return NULL;
+    }
+
+    //创建PyFrameObject，执行PyCodeObject对象中的字节码指令序列
+    v = run_eval_code_obj(co, globals, locals);
+    Py_DECREF(co);
+    return v;
+}</code></pre><p><strong>run_mod接手传来的ast，然后传到 <em>PyAST_CompileObject</em> 中，创建了一个我们已经非常熟悉的PyCodeObject对象。关于这个完整的编译过程，就又是另一个话题了，总之先是scanner进行词法分析、将源代码切分成一个个的token，然后parser在词法分析之后的结果之上进行语法分析、通过切分好的token生成抽象语法树(AST，abstract syntax tree)，然后将AST编译PyCodeObject对象，最后再由虚拟机执行。知道这么一个大致的流程即可，至于到底是怎么分词、怎么建立语法树的，这就又是一个难点了，个人觉得甚至比研究Python虚拟机还难。有兴趣的话可以去看Python源码中Parser目录，如果能把Python的分词、语法树的建立给了解清楚，那我觉得你完全可以手写一个正则表达式的引擎、以及各种模板语言。</strong></p>
+<p><strong>而接下来，Python已经做好一切工作，开始通过 <em>run_eval_code_obj</em> 着手唤醒字节码虚拟机。</strong></p>
+<pre><code>static PyObject *
+run_eval_code_obj(PyCodeObject *co, PyObject *globals, PyObject *locals)
+{
+    PyObject *v;
+    //......
+    v = PyEval_EvalCode((PyObject*)co, globals, locals);
+    if (!v &amp;&amp; PyErr_Occurred() == PyExc_KeyboardInterrupt) {
+        _Py_UnhandledKeyboardInterrupt = 1;
+    }
+    return v;
+}</code></pre><p><strong>函数中调用了 _PyEval_EvalCode_，根据前面介绍函数的时候，我们知道最终一定会走到 _PyEval_EvalFrameEx_。</strong></p>
+<p><strong>从操作系统创建进程，进程创建线程，线程设置builtins(包括设置<code>__name__</code>、内建对象、内置函数方法等等)、设置缓存池，然后各种初始化，设置搜索路径。最后分词、编译、激活虚拟机执行。而执行的这个过程就是曾经与我们朝夕相处的 <em>PyEval_EvalFrameEx</em> ，掌控Python世界中无数对象的生生灭灭。参数f就是PyFrameObject对象，我们曾经探索了很久，现在一下子就回到了当初。有种梦回<code>栈帧对象</code>的感觉。目前的话，Python的骨架我们已经看清了，虽然还有很多细节隐藏在幕后。至少神秘的面纱已经被撤掉了。</strong></p>
+<h3 id="名字空间"><a href="#名字空间" class="headerlink" title="名字空间"></a>名字空间</h3><p><strong>现在我们来看一下有趣的东西，看看在激活字节码虚拟机、创建 <em>PyFrameObject</em> 对象时，所设置的3个名字空间：local、global、builtin。</strong></p>
+<pre><code>//Objects/frameobject.c
+PyFrameObject*
+PyFrame_New(PyThreadState *tstate, PyCodeObject *code,
+            PyObject *globals, PyObject *locals)
+{
+    PyFrameObject *f = _PyFrame_New_NoTrack(tstate, code, globals, locals);
+    if (f)
+        _PyObject_GC_TRACK(f);
+    return f;
+}
+
+
+PyFrameObject* _Py_HOT_FUNCTION
+_PyFrame_New_NoTrack(PyThreadState *tstate, PyCodeObject *code,
+                     PyObject *globals, PyObject *locals)
+{
+    PyFrameObject *back = tstate-&gt;frame;
+    PyFrameObject *f;
+    PyObject *builtins;
+    Py_ssize_t i;
+
+    //设置builtin名字空间
+    if (back == NULL || back-&gt;f_globals != globals) {
+        //但是我们发现设置builtins，居然是从globals里面获取的
+        //带着这个疑问，看看下面更大的疑问        
+        builtins = _PyDict_GetItemIdWithError(globals, &amp;PyId___builtins__);
+        //......
+    }
+    else {
+        /* If we share the globals, we share the builtins.
+           Save a lookup and a call. */
+        builtins = back-&gt;f_builtins;
+        assert(builtins != NULL);
+        Py_INCREF(builtins);
+    }
+    //.......
+    //设置builtins
+    f-&gt;f_builtins = builtins;
+    //....
+    //设置globals
+    f-&gt;f_globals = globals;
+
+    if ((code-&gt;co_flags &amp; (CO_NEWLOCALS | CO_OPTIMIZED)) ==
+        (CO_NEWLOCALS | CO_OPTIMIZED))
+        ; /* f_locals = NULL; will be set by PyFrame_FastToLocals() */
+    else if (code-&gt;co_flags &amp; CO_NEWLOCALS) {
+        locals = PyDict_New();
+        if (locals == NULL) {
+            Py_DECREF(f);
+            return NULL;
+        }
+        f-&gt;f_locals = locals;
+    }
+    else {
+        if (locals == NULL)
+            //如果locals为NULL，那么等同于globals，显然这是针对模块来的
+            locals = globals;
+        Py_INCREF(locals);
+        f-&gt;f_locals = locals;
+    }
+
+    f-&gt;f_lasti = -1;
+    f-&gt;f_lineno = code-&gt;co_firstlineno;
+    f-&gt;f_iblock = 0;
+    f-&gt;f_executing = 0;
+    f-&gt;f_gen = NULL;
+    f-&gt;f_trace_opcodes = 0;
+    f-&gt;f_trace_lines = 1;
+
+    return f;
+}</code></pre><p><strong>我们说内置名字空间是从global名字空间里面获取的，我们用Python来演示一下。</strong></p>
+<pre><code># 代表了globals()里面存放了builtins
+print(globals()[&quot;__builtins__&quot;])  # &lt;module &apos;builtins&apos; (built-in)&gt;
+
+# 我们说builtins里面包含了所有的内置对象、函数等等，显然调用int是可以的
+print(globals()[&quot;__builtins__&quot;].int(&quot;123&quot;))  # 123
+
+# 但是,我居然能从builtins里面拿到globals
+# 不过也很好理解，因为globals是一个内置函数，肯定是在builtins里面
+print(globals()[&quot;__builtins__&quot;].globals)  # &lt;built-in function globals&gt;
+
+# 于是拿到了globals，继续调用，然后获取__builtins__，又拿到了builtins，而且我们是可以调用list的
+print(globals()[&quot;__builtins__&quot;].globals()[&quot;__builtins__&quot;].list(&quot;abcd&quot;))  # [&apos;a&apos;, &apos;b&apos;, &apos;c&apos;, &apos;d&apos;]</code></pre><p><strong>所以不管套娃多少次，都是可以的，因为它们都是指针。</strong></p>
+<p><strong>可以看到builtin和global空间里面都存储一个能够获取对方空间的一个函数指针， 所以这两者是并不冲突的。当然除此之外，还有一个<code>__name__</code>，注意我们之前说设置<code>__name__</code>只是builtins的<code>__name__</code>，并不是当前模块的。</strong></p>
+<pre><code># 我们看到，builtins里面获取的__name__居然不是__main__，而是builtins
+print(globals()[&quot;__builtins__&quot;].__name__)  # builtins
+
+# 首先按照local  global builtin的顺序查找是没问题的
+# 而对于模块来说，我们知道local空间为NULL的话，然后直接把global空间交给local空间了
+# 而local里面有__name__，就是__main__，所以__name__和builtins.__name__不是一个东西
+print(globals()[&quot;__name__&quot;])  # __main__
+# 初始化builtins的时候，那个__name__指的是builtins这个PyModuleObject的__name__
+# 而对于我们py文件这个模块来说，__name__是设置在global名字空间里面的
+
+# 如果将global空间或者local空间里面的__name__删掉，那么按照顺序就会寻找builtin里面的__name__，此时就会打印builtins了。
+globals().pop(&quot;__name__&quot;)
+print(__name__)  # builtins</code></pre><p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200909213825050-2076588242.png" alt=""></p>
+<p><strong>所以我们看到__name__这个属性是在启动之后动态设置的，如果执行的文件和该文件是同一个文件，那么__name__就会是__main__；如果不是同一个文件，证明这个文件是作为模块被导入进来的，那么此时它的__name__就是文件名。</strong></p>
+<p><strong>更多细节可以前往源码中查看，Python运行环境初始化还是比较复杂的。</strong></p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p><strong>这一次我们说了Python运行环境的初始化，或者说当Python启动的时候都做了哪些事情。可以看到，做的事情不是一般的多，真的准备了大量的工作。因为Python是动态语言，这就意味很多操作都要发生在运行时。</strong></p>
+<p>posted @  2020-09-09 21:39  <a href="https://www.cnblogs.com/traditional/" target="_blank" rel="noopener">古明地盆</a>  阅读(401)  评论(3)  <a href="https://i.cnblogs.com/EditPosts.aspx?postid=13642194" target="_blank" rel="noopener">编辑</a>  <a href="https://www.cnblogs.com/traditional/p/13642194.html" target="_blank" rel="noopener">收藏</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-1018/" rel="prev" title="《深度剖析CPython解释器》22. 解密Python中的生成器对象，从字节码的角度分析生成器的底层实现以及执行逻辑 - 古明地盆 - 博客园">
+      <i class="fa fa-chevron-left"></i> 《深度剖析CPython解释器》22. 解密Python中的生成器对象，从字节码的角度分析生成器的底层实现以及执行逻辑 - 古明地盆 - 博客园
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-1022/" rel="next" title="《深度剖析CPython解释器》26. 解密Python中的多线程(第二部分)：源码剖析Python线程的创建、销毁、调度，以及GIL的实现原理 - 古明地盆 - 博客园">
+      《深度剖析CPython解释器》26. 解密Python中的多线程(第二部分)：源码剖析Python线程的创建、销毁、调度，以及GIL的实现原理 - 古明地盆 - 博客园 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#《深度剖析CPython解释器》24-Python运行时环境的初始化、源码分析Python解释器在启动时都做了哪些事情？-古明地盆-博客园"><span class="nav-number"></span> <span class="nav-text">《深度剖析CPython解释器》24. Python运行时环境的初始化、源码分析Python解释器在启动时都做了哪些事情？ - 古明地盆 - 博客园</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#《深度剖析CPython解释器》24-Python运行时环境的初始化、源码分析Python解释器在启动时都做了哪些事情？"><span class="nav-number"></span> <span class="nav-text">《深度剖析CPython解释器》24. Python运行时环境的初始化、源码分析Python解释器在启动时都做了哪些事情？</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#楔子"><span class="nav-number"></span> <span class="nav-text">楔子</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#线程环境初始化"><span class="nav-number"></span> <span class="nav-text">线程环境初始化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#线程模型"><span class="nav-number">1.</span> <span class="nav-text">线程模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#线程环境的初始化"><span class="nav-number">2.</span> <span class="nav-text">线程环境的初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建-builtins"><span class="nav-number">3.</span> <span class="nav-text">创建__builtins__</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#创建module对象"><span class="nav-number">3.1.</span> <span class="nav-text">创建module对象</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#设置module对象"><span class="nav-number">3.2.</span> <span class="nav-text">设置module对象</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建sys-module"><span class="nav-number">4.</span> <span class="nav-text">创建sys module</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#设置site-specific的module的搜索路径"><span class="nav-number">5.</span> <span class="nav-text">设置site-specific的module的搜索路径</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#激活python虚拟机"><span class="nav-number"></span> <span class="nav-text">激活python虚拟机</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#交互式运行"><span class="nav-number">1.</span> <span class="nav-text">交互式运行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#脚本文件运行方式"><span class="nav-number">2.</span> <span class="nav-text">脚本文件运行方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#启动虚拟机"><span class="nav-number">3.</span> <span class="nav-text">启动虚拟机</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#名字空间"><span class="nav-number">4.</span> <span class="nav-text">名字空间</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#小结"><span class="nav-number"></span> <span class="nav-text">小结</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="《深度剖析CPython解释器》14. Python函数机制的深度解析(第一部分): 函数在底层的数据结构、以及它的创建方式 - 古明地盆 - 博客园">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《深度剖析CPython解释器》14. Python函数机制的深度解析(第一部分): 函数在底层的数据结构、以及它的创建方式 - 古明地盆 - 博客园">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1010/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="《深度剖析CPython解释器》14. Python函数机制的深度解析(第一部分): 函数在底层的数据结构、以及它的创建方式 - 古明地盆 - 博客园">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200822015055004-867736003.png">
+<meta property="article:published_time" content="2021-02-16T14:17:17.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.430Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200822015055004-867736003.png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1010/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>《深度剖析CPython解释器》14. Python函数机制的深度解析(第一部分): 函数在底层的数据结构、以及它的创建方式 - 古明地盆 - 博客园 | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1010/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          《深度剖析CPython解释器》14. Python函数机制的深度解析(第一部分): 函数在底层的数据结构、以及它的创建方式 - 古明地盆 - 博客园
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-02-16 14:17:17" itemprop="dateCreated datePublished" datetime="2021-02-16T14:17:17+00:00">2021-02-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">《深度剖析CPython解释器》14. Python函数机制的深度解析(第一部分): 函数在底层的数据结构、以及它的创建方式 - 古明地盆 - 博客园</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="27880-24847-22312-23450-20041-20989-25968-30340-26102-20505-21644-26368-22810-21482-33021-20986-29616-19968-27425-26174-28982-a-21644-b-24517-39035-36890-36807-20301-32622-21442-25968-20256-36882-c-21644-d-21487-20197-36890-36807-20301-32622-21442-25968-25110-32773-20851-38190-23383-21442-25968-20256-36882-e-21644-f-24517-39035-36890-36807-20851-38190-23383-21442-25968-20256-36882-def-f-a-b-c-d-args-e-f-kwargs-g-1-h-2-varnames-f-code"><a href="#27880-24847-22312-23450-20041-20989-25968-30340-26102-20505-21644-26368-22810-21482-33021-20986-29616-19968-27425-26174-28982-a-21644-b-24517-39035-36890-36807-20301-32622-21442-25968-20256-36882-c-21644-d-21487-20197-36890-36807-20301-32622-21442-25968-25110-32773-20851-38190-23383-21442-25968-20256-36882-e-21644-f-24517-39035-36890-36807-20851-38190-23383-21442-25968-20256-36882-def-f-a-b-c-d-args-e-f-kwargs-g-1-h-2-varnames-f-code" class="headerlink" title="&#27880;&#24847;: &#22312;&#23450;&#20041;&#20989;&#25968;&#30340;&#26102;&#20505;&#21644;*&#26368;&#22810;&#21482;&#33021;&#20986;&#29616;&#19968;&#27425; # &#26174;&#28982;a&#21644;b&#24517;&#39035;&#36890;&#36807;&#20301;&#32622;&#21442;&#25968;&#20256;&#36882; # c&#21644;d&#21487;&#20197;&#36890;&#36807;&#20301;&#32622;&#21442;&#25968;&#25110;&#32773;&#20851;&#38190;&#23383;&#21442;&#25968;&#20256;&#36882; # e&#21644;f&#24517;&#39035;&#36890;&#36807;&#20851;&#38190;&#23383;&#21442;&#25968;&#20256;&#36882; def f(a, b, /, c, d, args, e, f, *kwargs): g = 1 h = 2 varnames = f.code."></a>&#27880;&#24847;: &#22312;&#23450;&#20041;&#20989;&#25968;&#30340;&#26102;&#20505;<em>&#21644;*</em>&#26368;&#22810;&#21482;&#33021;&#20986;&#29616;&#19968;&#27425; # &#26174;&#28982;a&#21644;b&#24517;&#39035;&#36890;&#36807;&#20301;&#32622;&#21442;&#25968;&#20256;&#36882; # c&#21644;d&#21487;&#20197;&#36890;&#36807;&#20301;&#32622;&#21442;&#25968;&#25110;&#32773;&#20851;&#38190;&#23383;&#21442;&#25968;&#20256;&#36882; # e&#21644;f&#24517;&#39035;&#36890;&#36807;&#20851;&#38190;&#23383;&#21442;&#25968;&#20256;&#36882; def f(a, b, /, c, d, <em>args, e, f, *</em>kwargs): g = 1 h = 2 varnames = f.<strong>code</strong>.<br></h1><br>
+Tags:<br>
+<br>
+via Pocket https://ift.tt/3dhPotC original site<br>
+<br>
+February 16, 2021 at 10:13PM
+
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1010#issuecomment-792617771" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>3/8/2021</strong></p>
+</blockquote>
+<h2 id="《深度剖析CPython解释器》14-Python函数机制的深度解析-第一部分-函数在底层的数据结构、以及它的创建方式-古明地盆-博客园"><a href="#《深度剖析CPython解释器》14-Python函数机制的深度解析-第一部分-函数在底层的数据结构、以及它的创建方式-古明地盆-博客园" class="headerlink" title="《深度剖析CPython解释器》14. Python函数机制的深度解析(第一部分): 函数在底层的数据结构、以及它的创建方式 - 古明地盆 - 博客园"></a>《深度剖析CPython解释器》14. Python函数机制的深度解析(第一部分): 函数在底层的数据结构、以及它的创建方式 - 古明地盆 - 博客园</h2><h1 id="《深度剖析CPython解释器》14-Python函数机制的深度解析-第一部分-函数在底层的数据结构、以及它的创建方式"><a href="#《深度剖析CPython解释器》14-Python函数机制的深度解析-第一部分-函数在底层的数据结构、以及它的创建方式" class="headerlink" title="《深度剖析CPython解释器》14. Python函数机制的深度解析(第一部分): 函数在底层的数据结构、以及它的创建方式"></a><a href="https://www.cnblogs.com/traditional/p/13544103.html" target="_blank" rel="noopener">《深度剖析CPython解释器》14. Python函数机制的深度解析(第一部分): 函数在底层的数据结构、以及它的创建方式</a></h1><h2 id="楔子"><a href="#楔子" class="headerlink" title="楔子"></a>楔子</h2><p><strong>函数是任何一门编程语言都具备的基本元素，它可以将多个动作组合起来，一个函数代表了一系列的动作。当然我们之前说函数也是一个变量，该变量指向一个函数。而且在调用函数时会干什么来着，没错，要在运行时栈中创建栈帧，用于函数的执行。</strong></p>
+<p><strong>那么下面就来看看函数在C中是如何实现的，生得一副什么模样。</strong></p>
+<h2 id="PyFunctionObject对象"><a href="#PyFunctionObject对象" class="headerlink" title="PyFunctionObject对象"></a>PyFunctionObject对象</h2><p><strong>我们说过Python中一切皆对象，函数也不例外。在Python中，函数这种抽象机制是通过<code>PyFunctionObject</code>对象实现的，位于 <em>Include/funcobject.h</em> 中。</strong></p>
+<pre><code>typedef struct {
+    PyObject_HEAD               /* 头部信息, 不用多说 */
+    PyObject *func_code;        /* 函数的PyCodeObject对象, 因为函数就是根据该PyCodeObject对象创建的 */
+    PyObject *func_globals;     /* 函数的global名字空间 */
+    PyObject *func_defaults;    /* 函数参数的默认值, 一个元组或者空 */
+    PyObject *func_kwdefaults;  /* 只能通过关键字参数传递的&quot;参数&quot;和&quot;该参数的默认值&quot;, 一个字典或者空 */
+    PyObject *func_closure;     /* 获取闭包对象 */
+    PyObject *func_doc;         /* 函数的doc */
+    PyObject *func_name;        /* 函数名 */
+    PyObject *func_dict;        /* 属性字典, 一般为空 */
+    PyObject *func_weakreflist; /* 弱引用列表 */
+    PyObject *func_module;      /* 函数所在的模块 */
+    PyObject *func_annotations; /* 函数参数的注解, 一个字典或者空 */
+    PyObject *func_qualname;    /* 函数的全限定名, 我们后面会说它和func_name之间的区别 */
+    vectorcallfunc vectorcall;
+
+    /* Invariant:
+     *     func_closure contains the bindings for func_code-&gt;co_freevars, so
+     *     PyTuple_Size(func_closure) == PyCode_GetNumFree(func_code)
+     *     (func_closure may be NULL if PyCode_GetNumFree(func_code) == 0).
+     */
+} PyFunctionObject;</code></pre><p><strong>PyFunctionObject的这些成员都是以func开头的，比如：func_name，但是我们在Python中获取的时候直接通过__name__获取即可。</strong></p>
+<p><strong>func_code：函数的字节码</strong></p>
+<pre><code>def foo(a, b, c):
+    pass
+
+
+code = foo.__code__
+print(code)  # &lt;code object foo at 0x000001D250B9D3A0, file &quot;C:/Users/satori/Desktop/三无少女/2.py&quot;, line 1&gt;
+print(code.co_varnames)  # (&apos;a&apos;, &apos;b&apos;, &apos;c&apos;)</code></pre><p><strong>func_globals：global命名空间</strong></p>
+<pre><code>def foo(a, b, c):
+    pass
+
+
+name = &quot;夏色祭&quot;
+# __globals__其实就是外部的global名字空间
+print(foo.__globals__)  # {......, &apos;name&apos;: &apos;夏色祭&apos;}
+print(foo.__globals__ == globals())  # True</code></pre><p><strong>func_defaults：函数参数的默认值</strong></p>
+<pre><code>def foo(name=&quot;夏色祭&quot;, age=-1):
+    pass
+
+
+# 打印的是默认值
+print(foo.__defaults__)  # (&apos;夏色祭&apos;, -1)
+
+
+def bar(): 
+    pass
+
+# 没有默认值的话, __defaults__为None
+print(bar.__defaults__)  # None</code></pre><p><strong>func_kwdefaults：只能通过关键字参数传递的”参数”和”该参数的默认值”</strong></p>
+<pre><code>def foo(name=&quot;夏色祭&quot;, age=-1):
+    pass
+
+
+# 打印是为None的, 这是因为虽然有默认值, 但是它并不要求必须通过关键字的方式传递
+print(foo.__kwdefaults__)  # None
+
+
+# 如果在前面加上一个*, 表示后面的参数就必须通过关键字的方式传递
+# 因为如果不通过关键字的话, 那么无论多少个位置参数都会被*给吸收掉, 无论如何也不可能传递给name、age
+# 我们经常会看到*args, 这是因为我们需要函数调用时传递过来的值, 所以可以通过args以元组的形式来拿到这些值
+# 但是这里我们不需要, 我们只是希望后面的参数必须通过关键字参数传递, 因此前面写一个*即可
+# 当然写*args或者其他的也可以, 但是我们用不到, 所以写一个*即可
+def bar(*, name=&quot;夏色祭&quot;, age=-1):
+    pass
+
+
+# 此时就打印了默认值，因为这是只能通过kw(关键字)传递的参数的默认值
+print(bar.__kwdefaults__)  # {&apos;name&apos;: &apos;satori&apos;, &apos;age&apos;: 16}</code></pre><p><strong>func_closure：闭包对象</strong></p>
+<pre><code>def foo():
+    name = &quot;夏色祭&quot;
+    age = -1
+
+    def bar():
+        nonlocal name
+        nonlocal age
+
+    return bar
+
+
+# 查看的是闭包里面nonlocal的值
+# 这里有两个nonlocal，所以foo().__closure__是一个有两个元素的元组
+print(foo().__closure__)  # (&lt;cell at 0x000001FD1D3B02B0: int object at 0x00007FFDE559D660&gt;,
+                          # &lt;cell at 0x000001FD1D42E310: str object at 0x000001FD1D3DA090&gt;)
+
+print(foo().__closure__[0].cell_contents)  # -1
+print(foo().__closure__[1].cell_contents)  # 夏色祭
+
+# 注意：查看闭包属性我们使用的是内层函数，不是外层的foo</code></pre><p><strong>func_doc：函数的文档</strong></p>
+<pre><code>def foo(name, age):
+    &quot;&quot;&quot;
+    接收一个name和age，
+    返回一句话
+    my name is $name, age is $age
+    &quot;&quot;&quot;
+    return f&quot;my name is {name}, age is {age}&quot;
+
+
+print(foo.__doc__)
+&quot;&quot;&quot;
+
+    接收一个name和age，
+    返回一句话
+    my name is $name, age is $age
+
+&quot;&quot;&quot;</code></pre><p><strong>func_name：函数名</strong></p>
+<pre><code>def foo(name, age):
+    pass
+
+
+print(foo.__name__)  # foo</code></pre><p><strong>func_dict：属性字典</strong></p>
+<pre><code>def foo(name, age):
+    pass
+
+
+# 一般函数的属性字典都会空，属性字典基本上在类里面使用
+print(foo.__dict__)  # {}</code></pre><p><strong>func_weakreflist：弱引用列表</strong></p>
+<p><strong>Python无法获取这个属性，底层没有提供相应的接口。</strong></p>
+<p><strong>func_module：函数所在的模块</strong></p>
+<pre><code>def foo(name, age):
+    pass
+
+
+print(foo.__module__)  # __main__</code></pre><p><strong>func_annotations：注解</strong></p>
+<pre><code>def foo(name: str, age: int):
+    pass
+
+# Python3.5的时候新增的语法
+print(foo.__annotations__)  # {&apos;name&apos;: &lt;class &apos;str&apos;&gt;, &apos;age&apos;: &lt;class &apos;int&apos;&gt;}</code></pre><p><strong>func_qualname：全限定名</strong></p>
+<pre><code>def foo():
+    pass
+
+
+print(foo.__name__, foo.__qualname__)  # foo foo
+
+
+class A:
+
+    def foo(self):
+        pass
+
+
+print(A.foo.__name__, A.foo.__qualname__)  # foo A.foo</code></pre><p><strong>在PyFunctionObject的定义中，我们看到一个func_code成员，指向了一个PyCodeObject对象，我们说函数就是根据这个PyCodeObject对象创建的。因为我们知道一个PyCodeObject对象是对一段代码的静态表示，Python编译器在将源代码进行编译之后，对里面的每一个代码块<code>(code block)</code>都会生成一个、并且是唯一一个PyCodeObject对象，这个PyCodeObject对象中包含了这个代码块中的一些静态信息，也就是可以从源代码中看到的信息。</strong></p>
+<blockquote>
+<p><strong>比如：某个函数对应的code block中有一个 name = “夏色祭” 这样的表达式，那么符号”a”和对应的值1、以及它们之间的联系就是静态信息。这些信息会被静态存储起来，符号”a”会被存在符号表<code>co_varnames</code>中、值1会被存在常量池<code>co_consts</code>中、这两者之间是一个赋值，因此会有两条指令LOAD_CONSTS和STORE_FAST存在字节码指令序列<code>co_code</code>中。</strong></p>
+<p><strong>这些信息是编译的时候就可以得到的，因此PyCodeObject对象是编译时候的结果。</strong></p>
+</blockquote>
+<p><strong>但是PyFunctionObject对象是何时产生的呢？实际上PyFunctionObject对象是Python代码在运行时动态产生的，更准确的说，是在执行一个def语句的时候创建的。</strong></p>
+<blockquote>
+<p><strong>当Python虚拟机在当前栈帧中执行字节码时发现了def语句，那么就代表发现了新的PyCodeObject对象，因为它们是可以层层嵌套的。所以虚拟机会根据这个PyCodeObject对象创建对应的PyFunctionObject对象，然后将函数名和函数体对应的PyFunctionObject对象组成键值对放在当前的local空间中。</strong></p>
+<p><strong>显然在PyFunctionObject对象中，也会包含这些函数的静态信息，这些信息存储在func_code中，实际上，func_code一定会指向与函数对应的PyCodeObject对象。除此之外，PyFunctionObject对象中还包含了一些函数在执行时所必须的动态信息，即上下文信息。比如func_globals，就是函数在执行时关联的global作用域(globals)，说白了就是让你在局部变量找不到的时候能够找全局变量，可如果连global空间都没有的话，那即便想找也无从下手呀。而global作用域中的符号和值必须在运行时才能确定，所以这部分必须在运行时动态创建，无法存储在PyCodeObject中，所以要根据PyCodeObject对象创建PyFunctionObject对象，相当于一个封装。总之一切的目的，都是为了更好的执行字节码。</strong></p>
+</blockquote>
+<p><strong>我们举个栗子：</strong></p>
+<pre><code># 首先虚拟机从上到下执行字节码
+name = &quot;夏色祭&quot;
+age = -1
+
+
+# pia, 出现了一个def
+def foo():
+    pass
+
+
+# 那么知道源代码进入了一个新的作用域了, 这里遇到一个新的PyCodeObject对象了
+# 而通过def知道这是一个函数, 所以会进行封装, 将PyCodeObject对象封装成PyFunctionObject
+# 所以当执行完def语句之后, 一个函数就被创建了, 放在当前的local空间中, 当然对于模块来说: local空间也是global空间
+print(locals())  # {......, &apos;foo&apos;: &lt;function foo at 0x000001B299FAF3A0&gt;}
+
+
+# 函数的类型是&lt;class &apos;function&apos;&gt;, 当然这个类Python没有暴露给我们
+# 当我们调用函数foo的时候, 会从local空间中取出符号&quot;foo&quot;对应的PyFunctionObject对象
+# 然后根据这个PyFunctionObject对象创建PyFrameObject对象, 也就是为函数创建一个栈帧
+# 然后将执行权交给新创建的栈帧, 在新创建的栈帧中执行字节码</code></pre><h2 id="函数对象如何创建"><a href="#函数对象如何创建" class="headerlink" title="函数对象如何创建"></a>函数对象如何创建</h2><p><strong>我们现在已经看清了函数的模样，它在底层对应PyFunctionObject对象，并且它和PyCodeObject对象关系密切。那么Python底层又是如何完成PyCodeObject对象到PyFunctionObject对象之间的转变呢？想了解这其中的奥秘，就必须要从字节码入手。</strong></p>
+<pre><code>s = &quot;&quot;&quot;
+name = &quot;夏色祭&quot;
+def foo(a, b):
+    print(a, b)
+
+foo(1, 2)
+&quot;&quot;&quot;
+
+import dis
+dis.dis(compile(s, &quot;func&quot;, &quot;exec&quot;))
+
+
+  2           0 LOAD_CONST               0 (&apos;夏色祭&apos;)
+              2 STORE_NAME               0 (name)
+
+  3           4 LOAD_CONST               1 (&lt;code object foo at 0x000001EE0CBA72F0, file &quot;func&quot;, line 3&gt;)
+              6 LOAD_CONST               2 (&apos;foo&apos;)
+              8 MAKE_FUNCTION            0
+             10 STORE_NAME               1 (foo)
+
+  6          12 LOAD_NAME                1 (foo)
+             14 LOAD_CONST               3 (1)
+             16 LOAD_CONST               4 (2)
+             18 CALL_FUNCTION            2
+             20 POP_TOP
+             22 LOAD_CONST               5 (None)
+             24 RETURN_VALUE
+
+Disassembly of &lt;code object foo at 0x000001EE0CBA72F0, file &quot;func&quot;, line 3&gt;:
+  4           0 LOAD_GLOBAL              0 (print)
+              2 LOAD_FAST                0 (a)
+              4 LOAD_FAST                1 (b)
+              6 CALL_FUNCTION            2
+              8 POP_TOP
+             10 LOAD_CONST               0 (None)
+             12 RETURN_VALUE</code></pre><p><strong>显然这个代码中出现了两个PyCodeObject对象，一个对应整个py文件，另一个则是对应函数foo。</strong></p>
+<pre><code>s = &quot;&quot;&quot;
+name = &quot;夏色祭&quot;
+def foo(a, b):
+    print(a, b)
+
+foo(1, 2)
+&quot;&quot;&quot;
+
+# 把字符串当成是一个py文件来进行编译
+co = compile(s, &quot;func&quot;, &quot;exec&quot;)
+
+print(co.co_consts)  
+# (&apos;夏色祭&apos;, &lt;code object foo at 0x00000183F9101450, file &quot;func&quot;, line 3&gt;, &apos;foo&apos;, 1, 2, None)
+
+print(co.co_name)  # &lt;module&gt;
+print(co.co_consts[1].co_name)  # foo</code></pre><p><strong>可以看到，”函数foo对应的PyCodeObject对象”是”py文件对应的PyCodeObject对象”的常量池co_consts中的一个元素。因为在对py文件创建PyCodeObject对象的时候，发现了一个函数代码块foo，那么会对函数代码块foo继续创建一个PyCodeObject对象(每一个代码块都会对应一个PyCodeObject对象)，而函数foo对应的PyCodeObject对象则是py文件对应的PyCodeObject对象的co_consts常量池当中的一个元素。</strong></p>
+<blockquote>
+<p><strong>通过以上例子，我们发现PyCodeObject对象是嵌套的。之前我们我们说过，每一个code block<code>(函数、类等等)</code>都会对应一个PyCodeObject对象。现在我们又看到了，根据层级来分的话，”内层代码块对应的PyCodeObject对象”是”最近的外层代码块对应的PyCodeObject对象”的常量池co_consts中的一个元素。而最外层则是模块对应的PyCodeObject对象，因此这就意味着我们通过最外层的PyCodeObject对象可以找到所有的PyCodeObject对象，显然这是毋庸置疑的。而这里和栈帧也是对应的，栈帧我们说过也是层层嵌套的，而内层栈帧通过f_back可以找到外层、也就是调用者对应的栈帧，当然这里我们之前的章节已经说过了，这里再提一遍。</strong></p>
+</blockquote>
+<p><strong>这里再来重新看一下上面的字节码：</strong></p>
+<pre><code>  2           0 LOAD_CONST               0 (&apos;夏色祭&apos;)
+              2 STORE_NAME               0 (name)
+
+  3           4 LOAD_CONST               1 (&lt;code object foo at 0x000001EE0CBA72F0, file &quot;func&quot;, line 3&gt;)
+              6 LOAD_CONST               2 (&apos;foo&apos;)
+              8 MAKE_FUNCTION            0
+             10 STORE_NAME               1 (foo)
+
+  6          12 LOAD_NAME                1 (foo)
+             14 LOAD_CONST               3 (1)
+             16 LOAD_CONST               4 (2)
+             18 CALL_FUNCTION            2
+             20 POP_TOP
+             22 LOAD_CONST               5 (None)
+             24 RETURN_VALUE
+
+Disassembly of &lt;code object foo at 0x000001EE0CBA72F0, file &quot;func&quot;, line 3&gt;:
+  4           0 LOAD_GLOBAL              0 (print)
+              2 LOAD_FAST                0 (a)
+              4 LOAD_FAST                1 (b)
+              6 CALL_FUNCTION            2
+              8 POP_TOP
+             10 LOAD_CONST               0 (None)
+             12 RETURN_VALUE</code></pre><p><strong>显然dis模块自动帮我们分成了两部分，上面是模块的字节码，下面是函数的字节码。首先函数很简单我们就不看了，直接看模块的。</strong></p>
+<p><strong>首先开头的LOAD_CONST和STORE_NAME显然是 name = “夏色祭” 对应的指令。然后我们看<code>4 LOAD_CONST</code>，这条指令也是加载了一个常量，但这个常量是一个PyCodeObject对象；<code>6 LOAD_CONST</code>则是将字符串常量”foo”、即函数名加载了进来，然后通过MAKE_FUNCTION指令构建一个PyFunctionObject对象；然后<code>10 STORE_NAME</code>，让符号foo指向这个PyFunctionObject对象。再下面就是函数调用了，函数调用的具体细节我们之后会详细说。</strong></p>
+<p><strong>并且我们还看到一个有趣的现象，那就是源代码的行号。我们发现之前看到源代码的行号都是从上往下、依次增大的，这很好理解，毕竟一条一条解释嘛。但是这里却发生了变化，先执行了第6行，之后再执行第4行。如果是从Python层面的函数调用来理解的话，很容易一句话就解释了，因为函数只有在调用的时候才会执行。但是从字节码的角度来理解的话，我们发现函数的声明和实现是分离的，是在不同的PyCodeObject对象中。确实如此，虽然一个函数名和函数体是一个整体，但是Python虚拟机在实现这个函数的时候，却在物理上将它们分离开了，构建函数的字节码指令序列必须在模块对应的PyCodeObject对象中。</strong></p>
+<blockquote>
+<p><strong>我们之前说过，函数即变量。我们是可以把函数当成是普通的变量来处理的，函数名就相当于变量名，函数体就相当于是变量指向的值。而foo函数显然是在全局中定义的一个函数，那么foo是不是要出现在py文件对应的PyCodeObject对象的符号表co_names里面呢？foo对应的PyCodeObject对象是不是要出现在py文件对应的PyCodeObject对象的常量池co_consts里面呢？</strong></p>
+</blockquote>
+<p><strong>至此，函数的结构就已经非常清晰了。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200822015055004-867736003.png" alt=""></p>
+<p><strong>所以函数名和函数体是分离的，它们存在不同的PyCodeObject对象当中。分析完结构之后，我们的重点就在于那个MAKE_FUNCTION指令了，我们说当遇到<code>def foo(a, b)</code>的时候，在语法上将这是函数的声明语句，但是从虚拟机的角度来看这其实是函数对象的创建语句。所以下面我们就要分析一下这个指令，看看它到底是怎么将一个PyCodeObject对象变成一个PyFunctionObject对象的。</strong></p>
+<pre><code>case TARGET(MAKE_FUNCTION): {
+    PyObject *qualname = POP(); //弹出符号表中的函数名
+    PyObject *codeobj = POP();  //弹出对应的字节码对象
+    //创建PyFunctionObject对象, 接收三个参数, 首先第一个参数和第三个参数很好理解, 但重点是第二个参数
+    //首先f指的就是当前所在的栈帧, 对于我们目前这个里而言就是模块、或者py文件对应的栈帧
+    //然后将f_globals、也就是global名字空间传递了进去, 所以我们现在明白了为什么函数可以调用__globals__了
+    //当然也明白为什么函数可以在局部变量找不到的时候去找全局变量了
+    PyFunctionObject *func = (PyFunctionObject *)
+        PyFunction_NewWithQualName(codeobj, f-&gt;f_globals, qualname);
+
+    Py_DECREF(codeobj);
+    Py_DECREF(qualname);
+    if (func == NULL) {
+        goto error;
+    }
+
+    //下面是设置闭包、注解、参数默认值等属性
+    if (oparg &amp; 0x08) {
+        assert(PyTuple_CheckExact(TOP()));
+        func -&gt;func_closure = POP();
+    }
+    if (oparg &amp; 0x04) {
+        assert(PyDict_CheckExact(TOP()));
+        func-&gt;func_annotations = POP();
+    }
+    if (oparg &amp; 0x02) {
+        assert(PyDict_CheckExact(TOP()));
+        func-&gt;func_kwdefaults = POP();
+    }
+    if (oparg &amp; 0x01) {
+        assert(PyTuple_CheckExact(TOP()));
+        func-&gt;func_defaults = POP();
+    }
+
+    //将函数或者说函数对象压入运行时栈
+    PUSH((PyObject *)func);
+    DISPATCH();
+}</code></pre><p><strong>我们看到在MAKE FUNCTION之前，先进行了LOAD CONST，显然是将foo对应的字节码对象和符号foo压入到了栈中。所以在执行MAKE FUNCTION的时候，首先就是将这个字节码对象以及对应符号弹出栈，然后再加上当前PyFrameObject对象中维护的global名字空间f_globals对象，三者作为参数传入PyFunction_NewWithQualName函数中，从而构建出相应的PyFunctionObject对象。</strong></p>
+<p><strong>下面我们来看看PyFunction_NewWithQualName是如何构造出一个函数的，它位于 <em>Objects/funcobject.c</em> 中。</strong></p>
+<pre><code>PyObject *
+PyFunction_NewWithQualName(PyObject *code, PyObject *globals, PyObject *qualname)
+{    
+    //要返回的PyFunctionObject *, 这里先声明一下
+    PyFunctionObject *op;
+    //函数的doc、PyCodeObject的co_consts、函数所在的模块
+    PyObject *doc, *consts, *module;
+    static PyObject *__name__ = NULL;
+
+    if (__name__ == NULL) {
+        __name__ = PyUnicode_InternFromString(&quot;__name__&quot;);
+        if (__name__ == NULL)
+            return NULL;
+    }
+
+    //通过PyObject_GC_New为函数对象申请空间
+    op = PyObject_GC_New(PyFunctionObject, &amp;PyFunction_Type);
+    if (op == NULL)
+        return NULL;
+
+    //下面就是设置PyFunctionObject对象的成员属性了
+    op-&gt;func_weakreflist = NULL;
+    Py_INCREF(code);
+    op-&gt;func_code = code;
+    Py_INCREF(globals);
+    op-&gt;func_globals = globals;
+    op-&gt;func_name = ((PyCodeObject *)code)-&gt;co_name;
+    Py_INCREF(op-&gt;func_name);
+    op-&gt;func_defaults = NULL; /* No default arguments */
+    op-&gt;func_kwdefaults = NULL; /* No keyword only defaults */
+    op-&gt;func_closure = NULL;
+    op-&gt;vectorcall = _PyFunction_Vectorcall;
+
+    //通过PyCodeObject对象获取常量池
+    consts = ((PyCodeObject *)code)-&gt;co_consts;
+
+    //我们知道函数的doc其实就是一个字符串, 显然它也是常量池的一个常量, 并且是常量池的第一个元素
+    //否则的话它就是不能成为doc
+    if (PyTuple_Size(consts) &gt;= 1) {
+        //所以如果consts&gt;=1, 并且第一个元素是字符串, 那么它就是函数的doc
+        doc = PyTuple_GetItem(consts, 0);
+        if (!PyUnicode_Check(doc))
+            doc = Py_None;
+    }
+    else //否则doc就是None
+        doc = Py_None;
+    Py_INCREF(doc);
+    //下面也是设置PyFunctionObject对象的成员
+    op-&gt;func_doc = doc;
+
+    op-&gt;func_dict = NULL;
+    op-&gt;func_module = NULL;
+    op-&gt;func_annotations = NULL;
+
+    /* __module__: If module name is in globals, use it.
+       Otherwise, use None. */
+    module = PyDict_GetItemWithError(globals, __name__);
+    if (module) {
+        Py_INCREF(module);
+        op-&gt;func_module = module;
+    }
+    else if (PyErr_Occurred()) {
+        Py_DECREF(op);
+        return NULL;
+    }
+    if (qualname)
+        op-&gt;func_qualname = qualname;
+    else
+        op-&gt;func_qualname = op-&gt;func_name;
+    Py_INCREF(op-&gt;func_qualname);
+
+    _PyObject_GC_TRACK(op);
+    return (PyObject *)op;
+}</code></pre><p><strong>所以通过MAKE_FUNCTION我们便创建了PyFunctionObject对象，然后它会被压入栈中，再通过STORE_NAME将符号foo和PyFunctionObject对象组成一个entry，存储在当前栈帧的local名字空间中，当然也是global名字空间。只不过为了和函数保持统一，我们都说成local名字空间，只不过不同的作用域对应的local空间是不一样的。</strong></p>
+<p><strong>当然了我们说函数对象的类型是<code>&lt;class &#39;function&#39;&gt;</code>，但是这个类底层没有暴露给我们，但是我们依旧可以通过曲线救国的方式进行获取。</strong></p>
+<pre><code>def f():
+    pass
+
+print(type(f))  # &lt;class &apos;function&apos;&gt;
+# lambda匿名函数的类型也是&lt;class &apos;function&apos;&gt;
+print(type(lambda: None))  # &lt;class &apos;function&apos;&gt;</code></pre><p><strong>所以我们可以仿照底层的思路，通过<code>&lt;class &#39;function&#39;&gt;</code>来创建一个函数对象。</strong></p>
+<pre><code>gender = &quot;female&quot;
+
+
+def f(name, age):
+    return f&quot;name: {name}, age: {age}, gender: {gender}&quot;
+
+
+# 得到PyCodeObject对象
+code = f.__code__
+# 根据class function创建函数对象, 接收三个参数: PyCodeObject对象、名字空间、函数名
+new_f = type(f)(code, globals(), &quot;根据f创建的new_f&quot;)
+
+# 打印函数名
+print(new_f.__name__)  # 根据f创建的new_f
+
+# 调用函数
+print(new_f(&quot;夏色祭&quot;, -1))  # name: 夏色祭, age: -1, gender: female</code></pre><p><strong>是不是很神奇呢？另外我们说函数在访问gender指向的对象时，显然先从自身的符号表中找，如果没有那么回去找全局变量。这是因为，我们在创建函数的时候将global名字空间传进去了，如果我们不传递呢？</strong></p>
+<pre><code>gender = &quot;female&quot;
+
+
+def f(name, age):
+    return f&quot;name: {name}, age: {age}, gender: {gender}&quot;
+
+
+code = f.__code__
+try:
+    new_f = type(f)(code, None, &quot;根据f创建的new_f&quot;)
+except TypeError as e:
+    print(e)  # function() argument &apos;globals&apos; must be dict, not None
+# 这里告诉我们function的第二个参数globals必须是一个字典
+# 我们传递一个空字典
+new_f1 = type(f)(code, {}, &quot;根据f创建的new_f1&quot;)
+
+# 打印函数名
+print(new_f1.__name__)  # 根据f创建的new_f1
+
+# 调用函数
+try:
+    print(new_f1(&quot;夏色祭&quot;, -1))
+except NameError as e:
+    print(e)  # name &apos;gender&apos; is not defined
+
+# 我们看到告诉我们gender没有定义</code></pre><p><strong>因此现在我们又在Python的角度上理解了一遍，为什么Python中的函数能够在局部变量找不到的时候，去找全局变量，原因就在于构建函数的时候，将global名字空间交给了函数。使得函数可以在global空间进行变量查找，所以它才能够找到全局变量。而我们这里给了一个空字典，那么显然就找不到gender这个变量了。</strong></p>
+<pre><code>gender = &quot;female&quot;
+
+
+def f(name, age):
+    return f&quot;name: {name}, age: {age}, gender: {gender}&quot;
+
+
+code = f.__code__
+new_f = type(f)(code, {&quot;gender&quot;: &quot;萌妹子&quot;}, &quot;根据f创建的new_f&quot;)
+
+# 我们可以手动传递一个字典进去, 此时我们传递的字典对于函数来说就是global名字空间
+# 所以在函数内部找不到某个变量的时候, 就会去我们指定的名字空间中找
+print(new_f(&quot;夏色祭&quot;, -1))  # name: 夏色祭, age: -1, gender: 萌妹子
+# 所以此时的gender不再是外部的&quot;female&quot;, 而是我们指定的&quot;萌妹子&quot;</code></pre><p><strong>此外我们还可以为函数指定默认值：</strong></p>
+<pre><code>gender = &quot;female&quot;
+
+
+def f(name, age):
+    return f&quot;name: {name}, age: {age}, gender: {gender}&quot;
+
+
+code = f.__code__
+new_f = type(f)(code, {&quot;gender&quot;: &quot;屑女仆&quot;}, &quot;根据f创建的new_f&quot;)
+
+# 必须接收一个PyTupleObject对象
+new_f.__defaults__ = (&quot;神乐mea&quot;, 38)
+# 即使我们不传递参数, 也是完全可以的, 因为已经有默认值了
+print(new_f())  # name: 神乐mea, age: 38, gender: 屑女仆
+
+
+# 我们也可以指定部分默认参数
+new_f1 = type(f)(code, {&quot;gender&quot;: &quot;屑女仆&quot;}, &quot;根据f创建的new_f1&quot;)
+# 这里的在设置默认值的时候是从后往前设置的, 比如: (&quot;神乐mea&quot;, 38)
+# 是将38设置为age的默认值, &quot;神乐mea&quot;设置为name的默认值
+# 所以这里的(38,) , 会将38设置为age的默认值, 不是name
+# 那name怎么办? 如果没有对应的默认值了, 那么它就必须在函数调用的时候由我们显式的传递
+new_f1.__defaults__ = (38,)
+try:
+    new_f1()
+except TypeError as e:
+    print(e)  # f() missing 1 required positional argument: &apos;name&apos;
+
+print(new_f1(&quot;神楽めあ&quot;))  # name: 神楽めあ, age: 38, gender: 屑女仆
+
+&quot;&quot;&quot;
+但是问题来了, 为什么在设置默认值的时候要从后往前呢?
+首先如果默认值的个数和参数的个数正好匹配, 那么相安无事, 如果不匹配那么只能是默认值的个数小于参数个数
+如果是从后往前, 那么(38,)就意味着38设置为age的默认值, name就必须由我们在调用的时候传递
+但如果是从前往后, 那么(38,)就意味着38设置为name的默认值, age就必须由我们在调用的时候来传递
+
+但是问题来了, 如果38设置为name的默认值, 这会是什么情况? 显然等价于:
+def new_f1(name=38, age):
+    ......
+
+你认为这样的函数能够通过编译吗?显然是不行的, 因为默认参数必须在非默认参数的后面
+&quot;&quot;&quot;
+# 所以Python的这个做法是完全正确的, 必须要从后往前进行设置</code></pre><p><strong>当然，这种设置默认值的方式显然也可以使用于通过def定义的函数，因为我们上面的new_f、new_f1和f都是<code>&lt;class &#39;function&#39;&gt;</code>对象。</strong></p>
+<pre><code>gender = &quot;female&quot;
+
+
+def f(name, age):
+    return f&quot;name: {name}, age: {age}, gender: {gender}&quot;
+
+
+print(f.__defaults__)  # None
+
+# 设置默认值
+f.__defaults__ = (&quot;夏色祭&quot;, -1)
+
+# 如果你用的是pycharm, 那么会在f()这个位置给你做上标记, 提示你参数没有传递
+# 但我们知道由于使用__defaults__已经设置了默认值, 所以这里是不会报错的, 只不过pycharm没有检测到, 当然基本上所有的ide都无法做到这一点
+print(f())  # name: 夏色祭, age: -1, gender: female</code></pre><p><strong>另外我们说，默认值的个数一定要小于等于参数的个数，但如果大于呢？</strong></p>
+<pre><code>gender = &quot;female&quot;
+
+
+def f(name, age):
+    return f&quot;name: {name}, age: {age}, gender: {gender}&quot;
+
+
+print(f.__defaults__)  # None
+
+f.__defaults__ = (&quot;夏色祭&quot;, -1, &quot;神乐mea&quot;, 38)
+
+print(f())  # name: 神乐mea, age: 38, gender: female
+
+# 依旧从后往前, 38给age、&quot;神乐mea&quot;给name
+# 参数都有默认值了, 那么就结束了
+# 当然如果是__defaults__指向的元组先结束, 那么没有得到默认值的参数就必须由我们来传递了</code></pre><p><strong>想不到Python中的函数可以玩出这么多新花样，现在你是不是对函数有了一个更深刻的认识了呢？当然目前介绍的只是函数的一小部分内容，还有函数如何调用、位置参数和关键字参数如何解析、对于有默认值的参数如何在我们不传递的时候使用默认值以及在我们传递的时候使用我们传递的值、*args和**kwargs又如何解析、闭包怎么做到的、还有装饰器等等等等，这些我们接下来会单独用几篇博客详细说。</strong></p>
+<p><strong>因为放在一篇博客里面的话，字数至少要好几万，而我使用的Markdown编辑器typora在字数达到一万五的时候就会出现明显卡顿，要是一下子都写完的话，绝对卡到爆，而且越往后越卡，这对我而言也是个痛苦。而且函数的内容也比较多，我们就多用一些篇幅去介绍它吧。</strong></p>
+<h2 id="判断函数都有哪些参数"><a href="#判断函数都有哪些参数" class="headerlink" title="判断函数都有哪些参数"></a>判断函数都有哪些参数</h2><p><strong>最后我们再来看看我们如何检测一个函数有哪些参数，首先函数的局部变量<code>(包括参数)</code>在编译是就已经确定，会存在符号表co_varnames中。</strong></p>
+<pre><code># 注意: 在定义函数的时候*和**最多只能出现一次
+# 显然a和b必须通过位置参数传递
+# c和d可以通过位置参数或者关键字参数传递
+# e和f必须通过关键字参数传递
+def f(a, b, /, c, d, *args, e, f, **kwargs):
+    g = 1
+    h = 2
+
+
+varnames = f.__code__.co_varnames
+print(varnames)
+# (&apos;a&apos;, &apos;b&apos;, &apos;c&apos;, &apos;d&apos;, &apos;e&apos;, &apos;f&apos;, &apos;args&apos;, &apos;kwargs&apos;, &apos;g&apos;, &apos;h&apos;)
+
+&quot;&quot;&quot;
+首先co_varnames打印的符号表是有顺序的, 参数永远在函数内部定义的局部变量的前面
+g和h就是函数内部定义的局部变量, 所以它在所有的后面
+
+如果是参数的话, 那么*和**会位于最后面, 其它参数位置不变, 所以除了g和h, 最后面的就是args和kwargs
+&quot;&quot;&quot;
+
+# 接下来, 我们就可以进行判断了
+# 1. 寻找必须通过位置参数传递的参数
+posonlyargcount = f.__code__.co_posonlyargcount
+print(posonlyargcount)  # 2
+print(varnames[: posonlyargcount])  # (&apos;a&apos;, &apos;b&apos;)
+
+# 2. 寻找可以通过位置参数传递或者关键字参数传递的参数
+argcount = f.__code__.co_argcount
+print(argcount)  # 4
+print(varnames[: 4])  # (&apos;a&apos;, &apos;b&apos;, &apos;c&apos;, &apos;d&apos;)
+print(varnames[posonlyargcount: 4])  # (&apos;c&apos;, &apos;d&apos;)
+
+# 3. 寻找必须通过关键字参数传递的参数
+kwonlyargcount = f.__code__.co_kwonlyargcount
+print(kwonlyargcount)  # 2
+print(varnames[argcount: argcount + kwonlyargcount])  # (&apos;e&apos;, &apos;f&apos;)
+
+# 4. 寻找*args和**kwargs
+&quot;&quot;&quot;
+在介绍PyCodeObject对象的时候, 我们说里面有一个co_flags成员
+它是专门用来判断参数中是否有*args和**kwargs的
+&quot;&quot;&quot;
+flags = f.__code__.co_flags
+# 如果flags和4进行按位与之后为真, 那么就代表有*args, 否则没有
+# 如果flags和8进行按位与之后为真, 那么就代表有**kwargs, 否则没有
+step = argcount + kwonlyargcount
+if flags &amp; 0x04:
+    print(varnames[step])  # args
+    step += 1
+
+if flags &amp; 0x08:
+    print(varnames[step])  # kwargs
+
+# 虽然我们这里打印的是args和kwargs, 但主要取决定义的时候使用的名字
+# 如果定义的时候是*ARGS和**KWARGS, 那么这里就是ARGS和KWARGS, 只不过一般我们都叫做*args和**kwargs</code></pre><p><strong>如果我们定义的不是*args，只是一个*，那么它就不是参数了。</strong></p>
+<pre><code>def f(a, b, *, c):
+    pass
+
+
+# 我们看到此时只有a、b、c
+print(f.__code__.co_varnames)  # (&apos;a&apos;, &apos;b&apos;, &apos;c&apos;)
+
+print(f.__code__.co_flags &amp; 0x04)  # 0
+print(f.__code__.co_flags &amp; 0x08)  # 0
+# 显然此时也都为假</code></pre><h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p><strong>这一次我们简单的分析了一下函数在底层对应的数据结构，以及如何创建一个函数，并且还在Python的层面上做了一些小trick。最后我们也分析了如何通过PyCodeObject对象来检索Python中的参数，以及相关种类，当然标准库中的inspect模块也是这么做的。当然说白了，其实是我们模仿人家的思路做的。</strong></p>
+<p>posted @  2020-08-22 01:51  <a href="https://www.cnblogs.com/traditional/" target="_blank" rel="noopener">古明地盆</a>  阅读(206)  评论(0)  <a href="https://i.cnblogs.com/EditPosts.aspx?postid=13544103" target="_blank" rel="noopener">编辑</a>  <a href="https://www.cnblogs.com/traditional/p/13544103.html" target="_blank" rel="noopener">收藏</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-1009/" rel="prev" title="《深度剖析CPython解释器》13. 剖析Python的流程控制语句（if、for、while），以及异常捕获机制 - 古明地盆 - 博客园">
+      <i class="fa fa-chevron-left"></i> 《深度剖析CPython解释器》13. 剖析Python的流程控制语句（if、for、while），以及异常捕获机制 - 古明地盆 - 博客园
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-1011/" rel="next" title="《深度剖析CPython解释器》15. Python函数机制的深度解析(第二部分): 函数在底层是如何被调用的 - 古明地盆 - 博客园">
+      《深度剖析CPython解释器》15. Python函数机制的深度解析(第二部分): 函数在底层是如何被调用的 - 古明地盆 - 博客园 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#27880-24847-22312-23450-20041-20989-25968-30340-26102-20505-21644-26368-22810-21482-33021-20986-29616-19968-27425-26174-28982-a-21644-b-24517-39035-36890-36807-20301-32622-21442-25968-20256-36882-c-21644-d-21487-20197-36890-36807-20301-32622-21442-25968-25110-32773-20851-38190-23383-21442-25968-20256-36882-e-21644-f-24517-39035-36890-36807-20851-38190-23383-21442-25968-20256-36882-def-f-a-b-c-d-args-e-f-kwargs-g-1-h-2-varnames-f-code"><span class="nav-number">1.</span> <span class="nav-text">&amp;#27880;&amp;#24847;: &amp;#22312;&amp;#23450;&amp;#20041;&amp;#20989;&amp;#25968;&amp;#30340;&amp;#26102;&amp;#20505;&amp;#21644;*&amp;#26368;&amp;#22810;&amp;#21482;&amp;#33021;&amp;#20986;&amp;#29616;&amp;#19968;&amp;#27425; # &amp;#26174;&amp;#28982;a&amp;#21644;b&amp;#24517;&amp;#39035;&amp;#36890;&amp;#36807;&amp;#20301;&amp;#32622;&amp;#21442;&amp;#25968;&amp;#20256;&amp;#36882; # c&amp;#21644;d&amp;#21487;&amp;#20197;&amp;#36890;&amp;#36807;&amp;#20301;&amp;#32622;&amp;#21442;&amp;#25968;&amp;#25110;&amp;#32773;&amp;#20851;&amp;#38190;&amp;#23383;&amp;#21442;&amp;#25968;&amp;#20256;&amp;#36882; # e&amp;#21644;f&amp;#24517;&amp;#39035;&amp;#36890;&amp;#36807;&amp;#20851;&amp;#38190;&amp;#23383;&amp;#21442;&amp;#25968;&amp;#20256;&amp;#36882; def f(a, b, &#x2F;, c, d, args, e, f, *kwargs): g &#x3D; 1 h &#x3D; 2 varnames &#x3D; f.code.
+</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.0.1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#《深度剖析CPython解释器》14-Python函数机制的深度解析-第一部分-函数在底层的数据结构、以及它的创建方式-古明地盆-博客园"><span class="nav-number">1.1.</span> <span class="nav-text">《深度剖析CPython解释器》14. Python函数机制的深度解析(第一部分): 函数在底层的数据结构、以及它的创建方式 - 古明地盆 - 博客园</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#《深度剖析CPython解释器》14-Python函数机制的深度解析-第一部分-函数在底层的数据结构、以及它的创建方式"><span class="nav-number">2.</span> <span class="nav-text">《深度剖析CPython解释器》14. Python函数机制的深度解析(第一部分): 函数在底层的数据结构、以及它的创建方式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#楔子"><span class="nav-number">2.1.</span> <span class="nav-text">楔子</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PyFunctionObject对象"><span class="nav-number">2.2.</span> <span class="nav-text">PyFunctionObject对象</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#函数对象如何创建"><span class="nav-number">2.3.</span> <span class="nav-text">函数对象如何创建</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#判断函数都有哪些参数"><span class="nav-number">2.4.</span> <span class="nav-text">判断函数都有哪些参数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#小结"><span class="nav-number">2.5.</span> <span class="nav-text">小结</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

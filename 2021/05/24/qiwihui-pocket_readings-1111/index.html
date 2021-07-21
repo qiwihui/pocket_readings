@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Security headers quick reference">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Security headers quick reference">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/05/24/qiwihui-pocket_readings-1111/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="Security headers quick reference">
+<meta property="article:published_time" content="2021-05-24T13:21:30.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.406Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/05/24/qiwihui-pocket_readings-1111/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>Security headers quick reference | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/05/24/qiwihui-pocket_readings-1111/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Security headers quick reference
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-05-24 13:21:30" itemprop="dateCreated datePublished" datetime="2021-05-24T13:21:30+00:00">2021-05-24</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">Security headers quick reference</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Learn more about headers that can keep your site safe and quickly look up the most important details. This article lists the most important security headers you can use to protect your website.<br><br><br><br>Tags: security<br><br><br><br>via Pocket <a href="https://ift.tt/3fr0ewT" target="_blank" rel="noopener">https://ift.tt/3fr0ewT</a> original site<br><br><br><br>May 24, 2021 at 08:42PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1111#issuecomment-847038946" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>5/24/2021</strong></p>
+</blockquote>
+<h2 id="Security-headers-quick-reference"><a href="#Security-headers-quick-reference" class="headerlink" title="Security headers quick reference"></a>Security headers quick reference</h2><p>Learn more about headers that can keep your site safe and quickly look up the most important details.</p>
+<p>This article lists the most important security headers you can use to protect your website. Use it to understand web-based security features, learn how to implement them on your website, and as a reference for when you need a reminder.</p>
+<p>Security headers recommended for websites that handle sensitive user data:</p>
+<p><a href="https://web.dev/#csp" target="_blank" rel="noopener">Content Security Policy (CSP)</a></p>
+<p><a href="https://web.dev/#tt" target="_blank" rel="noopener">Trusted Types</a></p>
+<p>Security headers recommended for all websites:</p>
+<p><a href="https://web.dev/#xcto" target="_blank" rel="noopener">X-Content-Type-Options</a></p>
+<p><a href="https://web.dev/#xfo" target="_blank" rel="noopener">X-Frame-Options</a></p>
+<p><a href="https://web.dev/#corp" target="_blank" rel="noopener">Cross-Origin Resource Policy (CORP)</a></p>
+<p><a href="https://web.dev/#coop" target="_blank" rel="noopener">Cross-Origin Opener Policy (COOP)</a></p>
+<p><a href="https://web.dev/#hsts" target="_blank" rel="noopener">HTTP Strict Transport Security (HSTS)</a></p>
+<p>Security headers for websites with advanced capabilities:</p>
+<p><a href="https://web.dev/#cors" target="_blank" rel="noopener">Cross-Origin Resource Sharing (CORS)</a></p>
+<p><a href="https://web.dev/#coep" target="_blank" rel="noopener">Cross-Origin Embedder Policy (COEP)</a></p>
+<p>Before diving into security headers, learn about known threats on the web and why you’d want to use these security headers.</p>
+<p>Before diving into security headers, learn about known threats on the web and why you’d want to use these security headers.</p>
+<h3 id="Protect-your-site-from-injection-vulnerabilities"><a href="#Protect-your-site-from-injection-vulnerabilities" class="headerlink" title="Protect your site from injection vulnerabilities #"></a>Protect your site from injection vulnerabilities <a href="https://web.dev/#protect-your-site-from-injection-vulnerabilities" target="_blank" rel="noopener">#</a></h3><p>Injection vulnerabilities arise when untrusted data processed by your application can affect its behavior and, commonly, lead to the execution of attacker-controlled scripts. The most common vulnerability caused by injection bugs is <a href="https://portswigger.net/web-security/cross-site-scripting" target="_blank" rel="noopener">cross-site scripting</a> (XSS) in its various forms, including <a href="https://portswigger.net/web-security/cross-site-scripting/reflected" target="_blank" rel="noopener">reflected XSS</a>, <a href="https://portswigger.net/web-security/cross-site-scripting/stored" target="_blank" rel="noopener">stored XSS</a>, <a href="https://portswigger.net/web-security/cross-site-scripting/dom-based" target="_blank" rel="noopener">DOM-based XSS</a>, and other variants.</p>
+<p>An XSS vulnerability can typically give an attacker complete access to user data processed by the application and any other information hosted in the same <a href="https://web.dev/same-site-same-origin/#origin" target="_blank" rel="noopener">web origin</a>.</p>
+<p>Traditional defenses against injections include consistent use of autoescaping HTML template systems, avoiding the use of <a href="https://domgo.at/cxss/sinks" target="_blank" rel="noopener">dangerous JavaScript APIs</a>, and properly processing user data by hosting file uploads in a separate domain and sanitizing user-controlled HTML.</p>
+<ul>
+<li>Use <a href="https://web.dev/#csp" target="_blank" rel="noopener">Content Security Policy (CSP)</a> to control which scripts can be executed by your application to mitigate the risk of injections.</li>
+<li>Use <a href="https://web.dev/#tt" target="_blank" rel="noopener">Trusted Types</a> to enforce sanitization of data passed into dangerous JavaScript APIs.</li>
+<li>Use <a href="https://web.dev/#xcto" target="_blank" rel="noopener">X-Content-Type-Options</a> to prevent the browser from misinterpreting the MIME types of your website’s resources, which can lead to script execution.</li>
+</ul>
+<h3 id="Isolate-your-site-from-other-websites"><a href="#Isolate-your-site-from-other-websites" class="headerlink" title="Isolate your site from other websites #"></a>Isolate your site from other websites <a href="https://web.dev/#isolate-your-site-from-other-websites" target="_blank" rel="noopener">#</a></h3><p>The openness of the web allows websites to interact with each other in ways that can violate an application’s security expectations. This includes unexpectedly making authenticated requests or embedding data from another application in the attacker’s document, allowing the attacker to modify or read application data.</p>
+<p>Common vulnerabilities that undermine web isolation include <a href="https://portswigger.net/web-security/clickjacking" target="_blank" rel="noopener">clickjacking</a>, <a href="https://portswigger.net/web-security/csrf" target="_blank" rel="noopener">cross-site request forgery</a> (CSRF), <a href="https://www.scip.ch/en/?labs.20160414" target="_blank" rel="noopener">cross-site script inclusion</a> (XSSI), and various <a href="https://xsleaks.dev/" target="_blank" rel="noopener">cross-site leaks</a>.</p>
+<p><a href="https://www.w3.org/TR/post-spectre-webdev/" target="_blank" rel="noopener">Post-Spectre Web Development</a> is a great read if you are interested in these headers.</p>
+<h3 id="Build-a-powerful-website-securely"><a href="#Build-a-powerful-website-securely" class="headerlink" title="Build a powerful website securely #"></a>Build a powerful website securely <a href="https://web.dev/#build-a-powerful-website-securely" target="_blank" rel="noopener">#</a></h3><p><a href="https://ieeexplore.ieee.org/document/8835233" target="_blank" rel="noopener">Spectre</a> puts any data loaded into the same <a href="https://web.dev/why-coop-coep/" target="_blank" rel="noopener">browsing context group</a> potentially readable despite <a href="https://web.dev/same-origin-policy/" target="_blank" rel="noopener">same-origin policy</a>. Browsers restrict features that may possibly exploit the vulnerability behind a special environment called “<a href="https://web.dev/coop-coep/" target="_blank" rel="noopener">cross-origin isolation</a>“. With cross-origin isolation, you can use powerful features such as <code>SharedArrayBuffer</code>.</p>
+<h3 id="Encrypt-traffic-to-your-site"><a href="#Encrypt-traffic-to-your-site" class="headerlink" title="Encrypt traffic to your site #"></a>Encrypt traffic to your site <a href="https://web.dev/#encrypt-traffic-to-your-site" target="_blank" rel="noopener">#</a></h3><p>Encryption issues appear when an application does not fully encrypt data in transit, allowing eavesdropping attackers to learn about the user’s interactions with the application.</p>
+<p>Insufficient encryption can arise in the following cases: not using HTTPS, <a href="https://web.dev/what-is-mixed-content/" target="_blank" rel="noopener">mixed content</a>, setting cookies without the <a href="https://developer.mozilla.org/docs/Web/HTTP/Cookies#restrict_access_to_cookies" target="_blank" rel="noopener"><code>Secure</code> attribute</a> (or <a href="https://developer.mozilla.org/docs/Web/HTTP/Cookies#Cookie_prefixes" target="_blank" rel="noopener"><code>__Secure</code> prefix</a>), or <a href="https://blog.detectify.com/2018/04/26/cors-misconfigurations-explained/" target="_blank" rel="noopener">lax CORS validation logic</a>.</p>
+<h2 id="Content-Security-Policy-CSP"><a href="#Content-Security-Policy-CSP" class="headerlink" title="Content Security Policy (CSP) #"></a>Content Security Policy (CSP) <a href="https://web.dev/#csp" target="_blank" rel="noopener">#</a></h2><p><a href="https://www.google.com/about/appsecurity/learning/xss/" target="_blank" rel="noopener">Cross-Site Scripting (XSS)</a> is an attack where a vulnerability on a website allows a malicious script to be injected and executed.</p>
+<p><code>Content-Security-Policy</code> provides an added layer to mitigate XSS attacks by restricting which scripts can be executed by the page.</p>
+<p>It’s recommended that you enable strict CSP using one of the following approaches:</p>
+<ul>
+<li>If you render your HTML pages on the server, use <strong>a nonce-based strict CSP</strong>.</li>
+<li>If your HTML has to be served statically or cached, for example if it’s a single-page application, use <strong>a hash-based strict CSP</strong>.</li>
+</ul>
+<p>Example usage: A nonce-based CSP</p>
+<pre><code>Content-Security-Policy:  script-src &apos;nonce-{RANDOM1}&apos; &apos;strict-dynamic&apos; https: &apos;unsafe-inline&apos;;  object-src &apos;none&apos;;  base-uri &apos;none&apos;;</code></pre><h3 id="Recommended-usages"><a href="#Recommended-usages" class="headerlink" title="Recommended usages #"></a>Recommended usages <a href="https://web.dev/#recommended-usages" target="_blank" rel="noopener">#</a></h3><p>A CSP can be an <em>extra</em> protection against XSS attacks; you should still make sure to escape (and sanitize) user input.</p>
+<h4 id="1-Use-a-nonce-based-strict-CSP"><a href="#1-Use-a-nonce-based-strict-CSP" class="headerlink" title="1. Use a nonce-based strict CSP #"></a>1. Use a nonce-based strict CSP <a href="https://web.dev/#nonce-based-csp" target="_blank" rel="noopener">#</a></h4><p>If you render your HTML pages on the server, use <strong>a nonce-based strict CSP</strong>.</p>
+<p><strong>Caution</strong>:</p>
+<p>A nonce is a random number used only once. A nonce-based CSP is only secure if you can generate a different nonce for each response. If you can’t do this, use <a href="https://web.dev/#hash-based-csp" target="_blank" rel="noopener">a hash-based CSP</a> instead.</p>
+<p>Generate a new script nonce value for every request on the server side and set the following header:</p>
+<p>server configuration file</p>
+<pre><code>Content-Security-Policy:  script-src &apos;nonce-{RANDOM1}&apos; &apos;strict-dynamic&apos; https: &apos;unsafe-inline&apos;;  object-src &apos;none&apos;;  base-uri &apos;none&apos;;</code></pre><p>In HTML, in order to load the scripts, set the <code>nonce</code> attribute of all</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/05/24/qiwihui-pocket_readings-1110/" rel="prev" title="知乎日报 - 知乎">
+      <i class="fa fa-chevron-left"></i> 知乎日报 - 知乎
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/05/24/qiwihui-pocket_readings-1112/" rel="next" title="Domain Borrowing: 一种基于CDN的新型隐蔽通信方法">
+      Domain Borrowing: 一种基于CDN的新型隐蔽通信方法 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Security-headers-quick-reference"><span class="nav-number"></span> <span class="nav-text">Security headers quick reference</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Protect-your-site-from-injection-vulnerabilities"><span class="nav-number">1.</span> <span class="nav-text">Protect your site from injection vulnerabilities </span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Isolate-your-site-from-other-websites"><span class="nav-number">2.</span> <span class="nav-text">Isolate your site from other websites </span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Build-a-powerful-website-securely"><span class="nav-number">3.</span> <span class="nav-text">Build a powerful website securely </span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Encrypt-traffic-to-your-site"><span class="nav-number">4.</span> <span class="nav-text">Encrypt traffic to your site </span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Content-Security-Policy-CSP"><span class="nav-number"></span> <span class="nav-text">Content Security Policy (CSP) </span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Recommended-usages"><span class="nav-number">1.</span> <span class="nav-text">Recommended usages </span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-Use-a-nonce-based-strict-CSP"><span class="nav-number">1.1.</span> <span class="nav-text">1. Use a nonce-based strict CSP </span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

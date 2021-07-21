@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="一文读懂网管协议 -  SNMP，NETCONF，RESTCONF - 以终为始 - 博客园">
+<meta property="og:type" content="article">
+<meta property="og:title" content="一文读懂网管协议 -  SNMP，NETCONF，RESTCONF - 以终为始 - 博客园">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/03/26/qiwihui-pocket_readings-1052/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="一文读懂网管协议 -  SNMP，NETCONF，RESTCONF - 以终为始 - 博客园">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1861307/202102/1861307-20210222210735518-1221306337.jpg">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1861307/202102/1861307-20210222210753260-1558750223.jpg">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1861307/202102/1861307-20210222210813179-2039056232.jpg">
+<meta property="og:image" content="https://www.cnblogs.com/media/16088761172467/16120068927911.jpg">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1861307/202102/1861307-20210222210834925-565780461.jpg">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1861307/202102/1861307-20210222210852067-1262313725.jpg">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1861307/202102/1861307-20210222210904446-552172757.jpg">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1861307/202102/1861307-20210222210930470-515066102.jpg">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1861307/202102/1861307-20210222210946325-1563306962.jpg">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1861307/202102/1861307-20210222211001592-1596655565.jpg">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1861307/202102/1861307-20210222211020642-311677650.jpg">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1861307/202102/1861307-20210222211052995-2051697716.jpg">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1861307/202102/1861307-20210222211107008-1483195081.jpg">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1861307/202102/1861307-20210222211248990-461280776.jpg">
+<meta property="article:published_time" content="2021-03-26T02:21:30.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.426Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img2020.cnblogs.com/blog/1861307/202102/1861307-20210222210735518-1221306337.jpg">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/03/26/qiwihui-pocket_readings-1052/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>一文读懂网管协议 -  SNMP，NETCONF，RESTCONF - 以终为始 - 博客园 | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/03/26/qiwihui-pocket_readings-1052/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          一文读懂网管协议 -  SNMP，NETCONF，RESTCONF - 以终为始 - 博客园
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-03-26 02:21:30" itemprop="dateCreated datePublished" datetime="2021-03-26T02:21:30+00:00">2021-03-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">一文读懂网管协议 -  SNMP，NETCONF，RESTCONF - 以终为始 - 博客园</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#20171;&#32461;&#20256;&#32479; CLI &#37197;&#32622;&#32593;&#32476;&#35774;&#22791;&#23384;&#22312;&#30340;&#25361;&#25112;&#65292;&#32593;&#31649;&#21327;&#35758;&#20986;&#29616;&#30340;&#32972;&#26223; &#38543;&#30528; 5G &#30340;&#22823;&#28779;&#65292;SDN, NFV &#31561;&#27010;&#24565;&#34987;&#39057;&#32321;&#25552;&#21450;&#12290;&#24819;&#35201;&#26356;&#22909;&#30340;&#29702;&#35299;&#36825;&#20123;&#27010;&#24565;&#65292;&#32593;&#32476;&#21327;&#35758;&#33258;&#28982;&#26159;&#23545;&#24517;&#19981;&#32570;&#23569;&#30340;&#19968;&#29615;&#12290;<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/3lRFJfC" target="_blank" rel="noopener">https://ift.tt/3lRFJfC</a> original site<br><br><br><br>March 26, 2021 at 09:45AM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1052#issuecomment-807884878" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>3/26/2021</strong></p>
+</blockquote>
+<h2 id="一文读懂网管协议-SNMP，NETCONF，RESTCONF-以终为始-博客园"><a href="#一文读懂网管协议-SNMP，NETCONF，RESTCONF-以终为始-博客园" class="headerlink" title="一文读懂网管协议 -  SNMP，NETCONF，RESTCONF - 以终为始 - 博客园"></a>一文读懂网管协议 -  SNMP，NETCONF，RESTCONF - 以终为始 - 博客园</h2><h1 id="一文读懂网管协议-SNMP，NETCONF，RESTCONF"><a href="#一文读懂网管协议-SNMP，NETCONF，RESTCONF" class="headerlink" title="一文读懂网管协议 - SNMP，NETCONF，RESTCONF"></a><a href="https://www.cnblogs.com/michael9/p/14432935.html" target="_blank" rel="noopener">一文读懂网管协议 - SNMP，NETCONF，RESTCONF</a></h1><p>本文篇幅较长，主要涉及以下内容：</p>
+<ul>
+<li><p>介绍传统 CLI 配置网络设备存在的挑战，网管协议出现的背景</p>
+</li>
+<li><p>SNMP 原理，交互过程，以及 trade-off</p>
+</li>
+<li><p>NETCONF 架构，交互过程</p>
+</li>
+<li><p>RESTCONF 架构，和 NETCONF 的对比</p>
+</li>
+</ul>
+<p>随着 5G 的大火，SDN, NFV 等概念被频繁提及。想要更好的理解这些概念，网络协议自然是对必不缺少的一环。</p>
+<p>拿 SDN 来说，全称为 Software Defined Networking - 软件定义网络。从传统网络来说，整体采用分布式的架构，控制平面和转发平面都位于同一台设备上。在运维，以及灵活性上都有着不小的挑战。</p>
+<p>而 SDN 的出现，将控制平面和转发平面解耦，并将所有的设备统一管理起来，使得网络具有了可编程的能力，从面相服务的角度，根据业务需要，实时动态的调整设备的配置或状态，大大降低了管理难度。</p>
+<p>那么 NETCONF，RESTCONF 这样的协议又是起到怎样的作用呢？</p>
+<p>这就要从 SDN 架构说起，SDN 主要有三个角色，SDN 应用，SDN 控制，网络设备。</p>
+<p><img src="https://img2020.cnblogs.com/blog/1861307/202102/1861307-20210222210735518-1221306337.jpg" alt=""></p>
+<p>SDN 应用一般会通过 HTTP 的方式，调用 SDN 控制器暴露的接口，而 SDN 控制器，会通过 NETCONF，RESTCONF 类似的协议，与设备进行交互，进行业务的下发。</p>
+<p>可见，NETCONF 类似的协议起到和设备直接交互的作用。</p>
+<p>还有最近 DEVOPS 概念的流行，也强调从传统人工 CLI 配置，过度到自动化的网络配置。而 NETCONF 类似协议，就让这些自动化操作成为可能，比如现在的 ANSIBLE，Python 的各种类库。</p>
+<p>下面是网管协议的实际用例，可以看到涵盖的范围已经非常之广：</p>
+<p><img src="https://img2020.cnblogs.com/blog/1861307/202102/1861307-20210222210753260-1558750223.jpg" alt=""></p>
+<p>下面就从传统 CLI 面临的挑战开始，来详细了解下这些发挥着重要作用的协议。</p>
+<h2 id="传统命令操作带来的主要挑战"><a href="#传统命令操作带来的主要挑战" class="headerlink" title="传统命令操作带来的主要挑战"></a>传统命令操作带来的主要挑战</h2><p>采用传统 CLI 配置方式主要存在着如下的挑战：</p>
+<p><img src="https://img2020.cnblogs.com/blog/1861307/202102/1861307-20210222210813179-2039056232.jpg" alt=""></p>
+<p>在兼容性方面，若是网络工程师的话肯定深有体会。</p>
+<p>拿配置静态路由举例， Cisco 设备命令如下：</p>
+<pre><code>Router(config)#ip route 0.0.0.0 0.0.0.0 10.10.10.1 </code></pre><p>而对于华为和华三设备来说：</p>
+<pre><code>Router(config)#p route-static 0.0.0.0 0.0.0.0 10.10.10.1 </code></pre><p>有时不光是不同厂商之间的命令不同，甚至同一厂商不同型号之间的命令也不相同。</p>
+<p>比如思科针对不同的场景就区分了不同的网络软件系统：</p>
+<ul>
+<li>针对于企业的 IOS</li>
+<li>针对于运营商的 IOS-XR</li>
+<li>针对于数据中心的 NX-OS</li>
+<li>以及面向下一代的 IOS-XE，将数据层面和控制解耦，底层支持 Linux.</li>
+</ul>
+<p>而出错率这方面，更不必说，人工配置远没有机器配置的准确以及迅速。</p>
+<p>而且目前的网络在规模和需求上也和之前大不一样，比如在实时性上，作为运营商需要根据业务需求动态调整策略如 EVPN，L3VPN，L2TP。传统 CLI 手工配置根本无法满足，而无法做到维护管理。而现在的常用解决方案都是利用一些现成的 SDN Controller 进行实时调整如 Cisco 的 NSO.</p>
+<p>在数据采集方面，传统人工定时登上设备材料系统日志，分析情况，这更加无法适用。在故障响应上，数据采集，分析都存在先天的不足。比如收集效率低，数据的利用率延迟或不高。</p>
+<p>最后从商业成本的考虑，人工的维护方案也是较高的一笔输出。</p>
+<p>而且对于工程师而言，需要不断学习不同厂商的配置命令，学习成本很高，但意义不大。</p>
+<p>通常来说，网络工程师在开始一个项目前，会进行如下四个部分：</p>
+<ol>
+<li>了解用户的需求</li>
+<li>针对用户的需求，确定相应的具体方案。</li>
+<li>根据用户的方案，查找并学习对应设备的配置命令</li>
+<li>最后申请割接窗口，准备回滚方案并实施。</li>
+</ol>
+<p>在这里的第三步，其实就是一个比较耗时，但没多少意义的过程。因为在集中学习不同厂商的设备命令，但从业务考虑明明解决的都是同一个问题。</p>
+<p>在发现 CLI 管理设备的方式出现瓶颈后，并不是马上过度到现在流行的网络自动化配置方式，而是先推出了一个叫 <code>Simple Network Management Protocol</code> - SNMP 的应用层协议，甚至在当前的一些现网中，依然被使用。</p>
+<h2 id="SNMP"><a href="#SNMP" class="headerlink" title="SNMP"></a>SNMP</h2><p>SNMP 的出现，主要想解决两个问题：</p>
+<ol>
+<li>设备信息的采集</li>
+<li>使用 GUI 替代 CLI 的方式进行设备配置下发</li>
+</ol>
+<p>但由于其读多写少的特点，现被广泛用于设备信息的监控和采集。</p>
+<p>SNMP 目前共有三个版本：</p>
+<ul>
+<li>SNMP V1，第一个版本。在管理设备上，采用明文的方式，有 <code>read-only</code>, <code>read-write</code>, <code>trap</code> 三种和设备通信的方式。</li>
+<li>SNMP V2，主要改进了性能，安全性以及设备交流的方式。</li>
+<li>SNMP V3，主要优化了安全性，增加了一些更强的认证流程。</li>
+</ul>
+<h3 id="SNMP-原理"><a href="#SNMP-原理" class="headerlink" title="SNMP 原理"></a>SNMP 原理</h3><p>SNMP 整体架构上有些类似于 Client / Server，其主要的工作组件主要有三个：</p>
+<ul>
+<li><p>SNMP Manager：，主要用于管理网络中的多个设备，对其进行读和写的操作。类似于 Server.</p>
+</li>
+<li><p>SNMP Agent：运行在网络设备上，通常都需要手动开启。作为 SNMP 代理，在收到 SNMP Manager 发出请求后，对请求的内容进行解析，然后对设备进行配置，将配置的结果作为 Response 回复给 Manager.</p>
+</li>
+<li><p>SNMP MIB: MIB - Management Information Base 全称为信息管理库。可以将其理解成用于交互的一种数据模型，也就是交互的规则。MIB 同样存在于网络设备中。定义和描述了如何管理设备上的资源。Manager 和 Agent 之间的交流的信息就是 MIB 的内容。</p>
+</li>
+</ul>
+<p><img src="https://www.cnblogs.com/media/16088761172467/16120068927911.jpg" alt=""></p>
+<p>可以看到一个 Manager 可以管理网络中的多个设备。而每台设备上运行着 SNMP Agent 用于和 Manger信息交互，交流的内容需要符合 MIB 的规范。</p>
+<p>看到这，可能对 MIB 这个概念还是有些模糊。这样，我们先不从最后的结果来分析这个组件的作用，而是从设计的角度，来说一下推导下为什么要有 MIB 这个东西？</p>
+<p>这里想要实现的是通过 Manager 去管理网络上的 Agent（其实就是管理设备）。那么如何管理呢，比如 Manager 想要获取 Agent1 的 GigabitEthernet0/0/0/1 的 IP 地址。</p>
+<p>这时就需要在 Agent1 上先约定好一个内容，比如当 Agent 接收到 <code>1.1</code> 这个字符串时，就会将接口的信息返回给 Manager.</p>
+<p>之后如果 Manager 发送 <code>1.1</code> 就能获取到接口的信息了，但发送别的内容，Agent 是无法识别并工作的。MIB 本质就是这样，确定了如 <code>1.1</code> 这样的一组规则，去规范信息交互的访问方式。</p>
+<p>其实，这里的 <code>1.1</code> 就是 MIB 中的一个对象，在 MIB 中还以层级的方式存在着许多这样的对象，将网络的设备的资源抽象成形如 <code>1.1</code> 对象。通过这些对象，Manger 和 Agent 就可以实现很好的交流了。</p>
+<p>真正的 MIB 类似与下图，而这里形如 <code>1.3.6.1.1.1.2</code> 这样连接起来的字符串称为 ASN，其实就是对应了设备上的各种资源，Manager 和 Agent 也通过它们进行交流。</p>
+<p><img src="https://img2020.cnblogs.com/blog/1861307/202102/1861307-20210222210834925-565780461.jpg" alt=""></p>
+<h3 id="SNMP-操作"><a href="#SNMP-操作" class="headerlink" title="SNMP 操作"></a>SNMP 操作</h3><p>SNMP Manger 和 SNMP Agent 间的交互主要有三种类型：</p>
+<ul>
+<li>SNMP Get</li>
+<li>SNMP SET</li>
+<li>SNMP Notifications</li>
+</ul>
+<p>SNMP Get：主要是检索设备的信息，Get 一种有三种类型：</p>
+<ul>
+<li>GET - 从 SNMP agent 获取固定的对象。</li>
+<li>GETNEXT - 检索当前对象的后一个对象，由于 MIB 本身层级的树形结构，存在后继。</li>
+<li>GETBULK - 获取一组固定的对象。</li>
+</ul>
+<p>SNMP SET：主要是修改 MIB 中的对象，进而修改设备的配置。</p>
+<p>SBMP Notifications：是 SNMP 的主要特性，之前的 GET 和 SET 是属于拉的操作，而 SNMP 正好相反，类似于推的操作，可以由 agent 发起，将一些信息 push 到 SNMP Manager 上。类似于 Web Socket. 主要用于通知如认证失败，重启，断开连接等事件。</p>
+<p>Notifications 主要有两种形式：Traps 和 Informs. 两者间的不同主要在于可靠性，agent 在产生 Informs 给 Manager 后，如果发送失败，会重新发送。Manager 收到后，需要回复确认给 agent。</p>
+<p><img src="https://img2020.cnblogs.com/blog/1861307/202102/1861307-20210222210852067-1262313725.jpg" alt=""></p>
+<p>而 Traps 不同，无论消息发送是否成功，Manager 都不需要回复。</p>
+<p><img src="https://img2020.cnblogs.com/blog/1861307/202102/1861307-20210222210904446-552172757.jpg" alt=""></p>
+<h3 id="SNMP-缺点"><a href="#SNMP-缺点" class="headerlink" title="SNMP 缺点"></a>SNMP 缺点</h3><p>虽然 SNMP 的出现，在一定程度上解决了网络设备的管理问题。但面对现代大规模的网络来说，依然有着很多挑战：</p>
+<ol>
+<li>性能不足，在下发和读取配置时，采用依次读取，效率低。</li>
+<li>下发不足，支持写 MIB 的对象相对于读较少。</li>
+<li>不支持事务机制，在配置下发失败是，无法回滚。</li>
+<li>拓展性差，提供给外部的接口较少。</li>
+<li>模型兼容性差，MIB 库混乱，无法适配所有厂商，导致定义各种私有 MIB 库。</li>
+</ol>
+<p>面对这些问题，06 年由 IETF 领导并开发出了一个新的协议 - NETCONF，网络管理协议。和 SNMP 不同，NETCONF 基于 RPC 的方式，天生就能很好的支持事务回滚等操作，从而更好地处理复杂网络的各种需求。</p>
+<h2 id="NETCONF"><a href="#NETCONF" class="headerlink" title="NETCONF"></a>NETCONF</h2><p>NETCONF 协议提供了一种更简单的方式来管理（”查询，配置，修改，删除”）设备，就像数据库操作中的 DML. 同时开放了 API 接口，当想要对设备进行操作时，直接通过调用 API 进行。</p>
+<p>对于支持 NETCONF 的设备来说，至少能开启一个或多个 session。并且在每个 session 中应用的配置更改，都可以被全局的 session 监听到。这就让一个或多个 Manager(Client) 操作同一个设备（agent）成为了可能。</p>
+<p>相比 SNMP 而言，有着如下的优势：</p>
+<ol>
+<li>基于 RPC，增加了事务支持</li>
+<li>优化查询功能，增加过滤查询方式</li>
+<li>拓展性强，在其协议内部分为 4 层，各层之间相互独立</li>
+<li>更好的将配置和状态数据解耦，并区分状态数据（candidate, running, startup）</li>
+<li>易使用，结合提供的 API，实现可编程性的网络操作</li>
+<li>安全性更好，在传输层可选用 SSH，TLS 协议等。</li>
+</ol>
+<p>NETCONF 采用 C/S 的架构，通过 RPC 在 client 和 server 间交流。client 可以是 Python 脚本或应用。server 一般指的是网络设备，在具体实现上有三个组件：</p>
+<ol>
+<li><p>NETCONF agent：运行在网络设备上，用于接收和处理 RPC 请求。还可主动将一些告警事件通知客户端。</p>
+</li>
+<li><p>NETCONF 客户端：利用 NETCONF 协议对网络设备进行管理以及接收 agent 发出的告警通知。</p>
+</li>
+<li><p>datastore：在 NETCONF 中，区分了多个不同类型的 datastore, 这些 datastore 保存着不同状态下的设备信息。</p>
+</li>
+</ol>
+<p>关于 datastore 可以将其理解成一个可以获取和存储信息的概念。在具体实现上，可以是文件，数据库，内存等等。</p>
+<p>在 NETCONF 中常用到三类 datastore：</p>
+<ul>
+<li><p>startup configuration datastore: 保存了设备启动时，加载的配置信息。</p>
+</li>
+<li><p>candidate configuration datastore: 保存了想要运行的配置信息，修改该数据库时，并不会影响设备的真实配置。</p>
+</li>
+<li><p>running configuration datastore: 保存了当前设备上正在生效的配置，修改时会影响真实的设备。</p>
+</li>
+</ul>
+<p>此外提到 datastore 就必须要提到一种数据模型语言 —— YANG，datestore 中就是以 YANG 的形式来约束配置的数据。</p>
+<p>YANG 的出现结合上 NETCONF 和 RESTCONF 这样的协议，为自动化，可编程化的网络提供了强大的支持。YANG 的本质和之前 SNMP 中 MIB ASN 一样，作用都是以一种方式来约束数据，关于 YANG 之后会写一篇文章单独介绍。</p>
+<h3 id="NETCONF-协议架构"><a href="#NETCONF-协议架构" class="headerlink" title="NETCONF 协议架构"></a>NETCONF 协议架构</h3><p><img src="https://img2020.cnblogs.com/blog/1861307/202102/1861307-20210222210930470-515066102.jpg" alt=""></p>
+<p>NETCONF 分为 4 层，各层之间项目独立。</p>
+<ol>
+<li>内容层：</li>
+</ol>
+<p>这一层包含了以 XML 或 JSON 格式的配置数据，也就是想对设备进行管理的具体内容。（由 XSD 或者 YANG 约束生成）</p>
+<ol>
+<li>操作层：</li>
+</ol>
+<p>定义了 Client 和 Server 交互时的一系列操作方法，用于获取或修改配置数据。</p>
+<p><img src="https://img2020.cnblogs.com/blog/1861307/202102/1861307-20210222210946325-1563306962.jpg" alt=""></p>
+<ol>
+<li>消息层：</li>
+</ol>
+<p>为编码数据时，提供了一种 RPC 和通知的机制：</p>
+<pre><code>* RPC invocations(&lt;rpc&gt; messages)  
+* RPC results(&lt;rpc-reply&gt; messages)
+* event notifications(&lt;notification&gt; messages)</code></pre><ol>
+<li>传输层：</li>
+</ol>
+<p>NETCONF 使用 SSH 或 TLS 协议，保证数据在 Client 和 Server 传输的安全性。</p>
+<h3 id="NETCONF-交互"><a href="#NETCONF-交互" class="headerlink" title="NETCONF 交互"></a>NETCONF 交互</h3><p><img src="https://img2020.cnblogs.com/blog/1861307/202102/1861307-20210222211001592-1596655565.jpg" alt=""></p>
+<p>对于 Manager 和 Agent 来说，Session 建立会经历如下的过程：</p>
+<ol>
+<li>Manager 请求 NETCONF 中 SSH 子系统建立连接。</li>
+<li>Agent 回复 Hello 消息，包含本身支持的特性和能力。</li>
+<li>Manager 告知 Agent 自己所支持的特性和能力。</li>
+<li>Manager 开始发送 RPC 操作请求。</li>
+<li>Agent 回复 RPC 请求操作结果。</li>
+</ol>
+<p>具体看下 NETCONF 中消息的报文结构，以修改接口配置举例：</p>
+<p><img src="https://img2020.cnblogs.com/blog/1861307/202102/1861307-20210222211020642-311677650.jpg" alt=""></p>
+<p>Manager 请求变更接口配置：</p>
+<pre><code> &lt;rpc message-id=&quot;101&quot; xmlns=&quot;urn:ietf:params:xml:ns:netconf:base:1.0&quot;&gt;
+       &lt;edit-config&gt;
+         &lt;target&gt;
+           &lt;running/&gt;
+         &lt;/target&gt;
+         &lt;config&gt;
+           &lt;top xmlns=&quot;http://example.com/schema/1.2/config&quot;&gt;
+             &lt;interface&gt;
+               &lt;name&gt;Ethernet0/0&lt;/name&gt;
+               &lt;mtu&gt;1500&lt;/mtu&gt;
+             &lt;/interface&gt;
+           &lt;/top&gt;
+         &lt;/config&gt;
+       &lt;/edit-config&gt;
+&lt;/rpc&gt;</code></pre><p>Agent 回复结果：</p>
+<pre><code>&lt;rpc-reply message-id=&quot;101 xmlns=&quot;urn:ietf:params:xml:ns:netconf:base:1.0&quot;&gt;
+      &lt;ok/&gt;
+&lt;/rpc-reply&gt;</code></pre><p>首先可以看到，NETCONF 使用 XML 作为数据传输的格式。</p>
+<p>第一行的 <code>&lt;rpc&gt;</code> 标签，表明该请求是 RPC 请求，<code>message-id</code> 属性由 client/manager 确定。Agent 在回复结果时，会带上 <code>message-id</code>，用于表示该操作的结果。</p>
+<p><code>urn:ietf:</code> 属性表示 XML 中的命令空间。 <code>base：1.0</code> 表示当前 NETCONF 的版本。</p>
+<p>第二行 <code>&lt;edit-config&gt;</code> 指定执行 RPC 操作的内容为修改配置。</p>
+<p>之后 <code>&lt;config&gt;</code> 中包裹的内容就是，想要下发的配置内容，修改 mtu 为 1500.</p>
+<p>但这里还有一个疑问，在说到 NETCONF 时，总提到一种叫 YANG 的语言，那么它们之间的关系是什么？</p>
+<p>在组装修改设备配置 Payload 时，这里也没有用到 YANG ？</p>
+<p>其实，YANG 早已用到了。为什么 <code>&lt;interface&gt;</code> 中可以包含 <code>&lt;name&gt;</code> 和 <code>&lt;mtu&gt;</code> 属性。而不是把 <code>mtu</code> 放在和 <code>&lt;interface&gt;</code> 同级。</p>
+<p><strong>原因就在于上面的格式，都是按照 YANG 的约束而来。</strong></p>
+<p>在设备中，存在着许多的 YANG Module，这些 Module 都是由 YANG 语言编写的文件。当 <code>agent</code> 接收到 RPC 请求时，会通过 YANG Module 来校验发来的数据，格式是否合法。</p>
+<p><strong>简单来说，可以把 YANG 理解成一份约束文件，里面规定着传来参数的格式，是数组，对象还是其他格式。</strong></p>
+<p>至于说为什么 YANG 文件能约束 XML 的文件格式，原因在于 YANG 和 XML 之间是可以相互转换的，甚至 YANG 还可以转换成 JSON. 在之后的 RESTCONF 中会提到这一点。</p>
+<p>到目前为止，对 NETCONF 已经有了一个大体认识：</p>
+<p>NETCONF 的出现是为了弥补像 SNMP 这些协议的不足。更好的满足现在网络的需要，在易用性，拓展性等等方面都做出了进一步优化，从而更方便，高效的管理网络。</p>
+<p>究其本质，NETCONF 是由多个协议组装而成。数据的产生及校验通过 YANG，数据的格式是 XML. 接口的调用通过 RPC，数据的传输通过 SSH.</p>
+<h3 id="NETCONF-操作"><a href="#NETCONF-操作" class="headerlink" title="NETCONF 操作"></a>NETCONF 操作</h3><p>Server 端：打开设备 NETCONF</p>
+<pre><code>#  打开 netconf 
+netconf-yang
+
+# 查看 netconf 进程
+show platform software yang-management</code></pre><p>Client 端：测试设备 NETCONF</p>
+<pre><code>ssh admin@ IP -p 830 -s netconf</code></pre><p>关于 NETCONF 具体实现编程化操作，可以参见 <a href="https://www.cnblogs.com/michael9/p/14432935.html" target="_blank" rel="noopener">YANG</a> 这篇。</p>
+<h2 id="RESTCONF"><a href="#RESTCONF" class="headerlink" title="RESTCONF"></a>RESTCONF</h2><p>在谈起 RESTCONF 前，想必刚接触这个概念的人都会有这样一个疑问 RESTCONF 和 REST 到底有没有关系？</p>
+<p>再回答这个问题前，先来回忆一下什么是 REST，以及 REST 出现的背景。</p>
+<p>REST - Representational State Transfer，全称为表现层状态转化，是建立在 HTTP 基础上，对其进行规范的一种架构风格要求。</p>
+<blockquote>
+<p>注意，REST 是一种设计的风格，而不是标准。</p>
+</blockquote>
+<p>其认为，网络中的实体都是以资源的方式存在，但资源却存在着多种表现形式，取决于使用者的需要。比如一个用户的信息，可以用 XML, JSON, 甚至是 txt 等多种方式表现出来。将不同的网络资源转换成不同的表现形式，就是其表现层的体现。</p>
+<p>而状态转移来说，由于 HTTP 本身是无状态的协议，所以资源的状态全都保存在服务端。当对服务端的资源进行操作时，必然存在数据状态的改变。</p>
+<p>但由于状态的改变基于表现层，所以称为表现层状态转移。</p>
+<p>在具体实现上，URI 定义了访问资源的具体路径，而 HTTP 中 Header 的 <code>Content-Type</code> 和 <code>Accept</code> 决定了了表现层的形式。</p>
+<p>HTTP 中的 CURD 动作（Create，Put，Get，Delete，patch..）去改变服务端的资源状态。</p>
+<p>比如查询书店具有的图书：</p>
+<pre><code>GET http://www.store.com/products</code></pre><p>通过 REST 的方式，更合理的实现 WEB 服务之间的交互。</p>
+<p>这时再看 RESTCONF，就很好理解了。RESTCONF 是通过 REST 来实现对网络设备管理的协议。其本质和 NETCONF 很像，使用 YANG 进行数据的定义和约束，使用 HTTP 进行交互。使用 NETCONF 中 datastore 的概念，进行信息的储存。</p>
+<h3 id="RESTCONF-架构"><a href="#RESTCONF-架构" class="headerlink" title="RESTCONF 架构"></a>RESTCONF 架构</h3><p><img src="https://img2020.cnblogs.com/blog/1861307/202102/1861307-20210222211052995-2051697716.jpg" alt=""></p>
+<p>图中很好的表示了 RESTCONF 协议组成，很形象的指出 RESTCONF = NETCONF / YANG + HTTP(s).</p>
+<p>如果拿之前的 <a href="https://www.cnblogs.com/michael9/p/14432935.html" target="_blank" rel="noopener">NETCONF 协议架构</a>作为对比，RESTCONF 就是将：</p>
+<ul>
+<li>内容层，同样由 YANG 约束生成。</li>
+<li>RPC 消息层和操作层，换成了 HTTP 的操作层。</li>
+<li>将 SSH 构成的传输层，换成了 HTTP（s）的传输方式。</li>
+</ul>
+<h3 id="RESTCONF-VS-NETCONF-交互"><a href="#RESTCONF-VS-NETCONF-交互" class="headerlink" title="RESTCONF VS NETCONF 交互"></a>RESTCONF VS NETCONF 交互</h3><p><img src="https://img2020.cnblogs.com/blog/1861307/202102/1861307-20210222211107008-1483195081.jpg" alt=""></p>
+<p>图中很好的对比了 RESTCONF 和 NETCONF 的交互过程，都是采用了 C/S 架构，在具体组件上：</p>
+<p>NETCONF</p>
+<p>RESTCONF</p>
+<p>客户端</p>
+<p>NETCONF client</p>
+<p>HTTP Client</p>
+<p>配置格式由谁约定</p>
+<p>YANG module / XSD</p>
+<p>YANG module</p>
+<p>发送内容格式</p>
+<p>XML</p>
+<p>XML/JSON</p>
+<p>交互方式</p>
+<p>RPC</p>
+<p>HTTP</p>
+<p>传输协议</p>
+<p>SSH</p>
+<p>HTTP(s)</p>
+<p>服务端</p>
+<p>NETCONF server</p>
+<p>HTTP server</p>
+<p>对于操作来说，将 RPC 操作换成了 HTTP 操作：</p>
+<p><img src="https://img2020.cnblogs.com/blog/1861307/202102/1861307-20210222211248990-461280776.jpg" alt=""></p>
+<h3 id="RESTCONF-操作"><a href="#RESTCONF-操作" class="headerlink" title="RESTCONF 操作"></a>RESTCONF 操作</h3><p>Server 端：打开设备 RESTCONF</p>
+<pre><code>#  打开 RESTCONF 
+restconf-yang
+
+# 查看 RESTCONF 进程
+show platform software yang-management</code></pre><p>Client 端：</p>
+<p>由于已经采用了 REST 风格，可以利用 POSTMAN 等等 HTTP 客户端进行测试。</p>
+<p>关于 RESTCONF 具体实现编程化操作和其 URL 的使用是非常重要的一部分，但由于其依赖 YANG 这个概念，这个后面会单独提到，可以参见 <a href="https://www.cnblogs.com/michael9/p/14432935.html" target="_blank" rel="noopener">YANG</a> 这篇。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>这篇文章，耗时很久，查阅了大量资料，完成后真的如释重负一般。</p>
+<p>当然对网管协议也有了进一步的理解。</p>
+<p>下面做一个简单的总结：</p>
+<p>传统 CLI 配置方式，已经无法满足当代网络可编程化的需要，而且在兼容性，易用性，正确率存在着诸多问题，进而网管协议应运而生。</p>
+<p>SNMP 作为推出的第一代协议，在一定程度上解决了设备管理的问题。但由于其读多写少的特点，以及在兼容性，效率，以及缺乏事务性的不足，在现网中，一般用其作为设备配置采集或监控的工具。</p>
+<p>为了更好的满足网络的需要，第二代协议 NETCONF 出现，由于 NETCONF 天生 RPC 支持事务的特点，再加上 YANG 解决了多厂商命令兼容性的问题，现被广泛使用在各种网管平台，SDN 控制器中。</p>
+<p>随后 HTTP REST 风格的普及，IETF 又推出了 RESTCONF 协议，将 NETCONF 和 HTTP 整合在一起，以更为流行的方式，实现对设备的管理。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/snmp/configuration/xe-16/snmp-xe-16-book/nm-snmp-cfg-snmp-support.html#GUID-633FA74F-DA24-419F-B0AC-3CD0D3FD8384" target="_blank" rel="noopener">SNMP 介绍</a></p>
+<hr>
+<p><a href="https://en.wikipedia.org/wiki/NETCONF" target="_blank" rel="noopener">NETCONF - wiki</a></p>
+<p><a href="https://tools.ietf.org/html/rfc6241" target="_blank" rel="noopener">RFC6241 - NETCONF</a></p>
+<p><a href="https://tools.ietf.org/id/draft-ietf-netmod-revised-datastores-08.html" target="_blank" rel="noopener">NETCONF datestore</a></p>
+<p>[通过 NETCONF 实现网络自动化](<a href="https://medium.com/@" target="_blank" rel="noopener">https://medium.com/@</a> k.okasha/network-automation-and-the-rise-of-netconf-e96cc33fe28)</p>
+<hr>
+<p><a href="http://www.ruanyifeng.com/blog/2011/09/restful.html" target="_blank" rel="noopener">REST 介绍</a></p>
+<p><a href="https://tools.ietf.org/html/rfc8040" target="_blank" rel="noopener">RESTCONF - RFC8040</a></p>
+<p><a href="https://www.ciscolive.com/c/dam/r/ciscolive/emea/docs/2018/pdf/LTRCRT-2700.pdf" target="_blank" rel="noopener">基于Model驱动的自动化网络</a></p>
+<p><a href="https://www.ciscolive.com/c/dam/r/ciscolive/apjc/docs/2016/pdf/DEVNET-1081.pdf" target="_blank" rel="noopener">RESTCONF 介绍</a></p>
+<p><a href="https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst4500/XE3-9-0E/15-25E/configuration/guide/xe-390-configuration/prgrmblty.html" target="_blank" rel="noopener">CISCO 可编程化网络</a></p>
+<hr>
+<p><a href="https://time.geekbang.org/column/article/210059" target="_blank" rel="noopener">SDN 和 NFV 的关系</a></p>
+<p>posted @  2021-02-22 21:13  <a href="https://www.cnblogs.com/michael9/" target="_blank" rel="noopener">以终为始</a>  阅读(292)  评论(0)  <a href="https://i.cnblogs.com/EditPosts.aspx?postid=14432935" target="_blank" rel="noopener">编辑</a>  <a href="https://www.cnblogs.com/michael9/p/14432935.html" target="_blank" rel="noopener">收藏</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/03/25/qiwihui-pocket_readings-1051/" rel="prev" title="
+
+
+设计稿（UI视图）自动生成代码方案的探索 ">
+      <i class="fa fa-chevron-left"></i> 
+
+
+设计稿（UI视图）自动生成代码方案的探索 
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/03/26/qiwihui-pocket_readings-1053/" rel="next" title="Run your own private CA & ACME server using step-ca">
+      Run your own private CA & ACME server using step-ca <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#一文读懂网管协议-SNMP，NETCONF，RESTCONF-以终为始-博客园"><span class="nav-number"></span> <span class="nav-text">一文读懂网管协议 -  SNMP，NETCONF，RESTCONF - 以终为始 - 博客园</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#一文读懂网管协议-SNMP，NETCONF，RESTCONF"><span class="nav-number"></span> <span class="nav-text">一文读懂网管协议 - SNMP，NETCONF，RESTCONF</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#传统命令操作带来的主要挑战"><span class="nav-number"></span> <span class="nav-text">传统命令操作带来的主要挑战</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SNMP"><span class="nav-number"></span> <span class="nav-text">SNMP</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#SNMP-原理"><span class="nav-number">1.</span> <span class="nav-text">SNMP 原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SNMP-操作"><span class="nav-number">2.</span> <span class="nav-text">SNMP 操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SNMP-缺点"><span class="nav-number">3.</span> <span class="nav-text">SNMP 缺点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#NETCONF"><span class="nav-number"></span> <span class="nav-text">NETCONF</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#NETCONF-协议架构"><span class="nav-number">1.</span> <span class="nav-text">NETCONF 协议架构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NETCONF-交互"><span class="nav-number">2.</span> <span class="nav-text">NETCONF 交互</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NETCONF-操作"><span class="nav-number">3.</span> <span class="nav-text">NETCONF 操作</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RESTCONF"><span class="nav-number"></span> <span class="nav-text">RESTCONF</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#RESTCONF-架构"><span class="nav-number">1.</span> <span class="nav-text">RESTCONF 架构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RESTCONF-VS-NETCONF-交互"><span class="nav-number">2.</span> <span class="nav-text">RESTCONF VS NETCONF 交互</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RESTCONF-操作"><span class="nav-number">3.</span> <span class="nav-text">RESTCONF 操作</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number"></span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-number"></span> <span class="nav-text">参考</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

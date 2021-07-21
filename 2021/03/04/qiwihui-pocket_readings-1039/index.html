@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="拜托，面试别再问我表达式求值了！！！">
+<meta property="og:type" content="article">
+<meta property="og:title" content="
+
+
+拜托，面试别再问我表达式求值了！！！ ">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/03/04/qiwihui-pocket_readings-1039/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="拜托，面试别再问我表达式求值了！！！">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/YrezxckhYOzL5sVNHOfQThxA4U6qFQfbf4hjwIuawJsTichF6xTa1IaYFd3Ue7s1KLJjIBQKWV1kVn3wQcsYicug/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzL5sVNHOfQThxA4U6qFQfbvPjMUxm1M4Au9HYNMSgRicPEIjXqDed1MhZAmj7CGDpbiaOWh9Sduhng/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzL5sVNHOfQThxA4U6qFQfbNvkHAQwKTjVWJhaZnQh1w6Bo59SiaQrOia19UEIsHvn7hB6CqgQq2apw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzL5sVNHOfQThxA4U6qFQfbvMvwg4sicgK86nKoPmYVGPC0rYbibuFqdJVibTicLGPSeLGAmmSNZGCEHw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzL5sVNHOfQThxA4U6qFQfbKDDPZvtncN4IlGkKkI9Xorly5jV20N1dBKmickySEfXebB4sO4mDCQg/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzL5sVNHOfQThxA4U6qFQfbAGRw4PTCN7IX7eiasS3QTAibhictSV7ILvRYsicuZic9BUI5uPb0cpb8wibQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzL5sVNHOfQThxA4U6qFQfbQLI7txyUL3gWX9uPlErdspNHbTPjk7OqpZ6hNLIqomCVV7J1PoL7xQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzL5sVNHOfQThxA4U6qFQfbhJDqUuZCaVbZl0h8tpyvjrGFQqGlXic47GiaoFPlI90pEs4GEyF40EqA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzL5sVNHOfQThxA4U6qFQfblictnLlOnuaQc7pZibVibDrXZKbhicBXabOALKJ8l4FPM25MF59V2we9Sg/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzL5sVNHOfQThxA4U6qFQfbqpAT9I1l9Magexp05YINVGD4UiaxxDSZrQU8hVMuloOdWWuicicuSoBMA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzL5sVNHOfQThxA4U6qFQfbzBya6upBepXhYQAK5JicCQqMBkFS3YkfZ2wcJ04fDcrmfg41hahC4lw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzL5sVNHOfQThxA4U6qFQfbeLOoT68ibl3FVTzxYKa9qRZPJ1rNKia92iccc8icibw6FLgmPiad27eVEW1Q/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/Ir1gRyhAx7udO2WibD2tcDg4rqPvjo7jhbqZ6SFJZIxBo6N8ZZDptOCp8rYrRlXh8LiaAatFLtJdaWukz7qMvbDQ/640?wx_fmt=jpeg">
+<meta property="article:published_time" content="2021-03-04T10:21:30.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.422Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/YrezxckhYOzL5sVNHOfQThxA4U6qFQfbf4hjwIuawJsTichF6xTa1IaYFd3Ue7s1KLJjIBQKWV1kVn3wQcsYicug/640?wx_fmt=jpeg">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/03/04/qiwihui-pocket_readings-1039/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>
+
+
+拜托，面试别再问我表达式求值了！！！  | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/03/04/qiwihui-pocket_readings-1039/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+
+
+拜托，面试别再问我表达式求值了！！！ 
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-03-04 10:21:30" itemprop="dateCreated datePublished" datetime="2021-03-04T10:21:30+00:00">2021-03-04</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">
+
+
+拜托，面试别再问我表达式求值了！！！ </div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#19978;&#21608;&#38754;&#35797;&#19968;&#20010;&#20505;&#36873;&#20154;&#65292;&#38382;&#20102;&#19968;&#20010;&#25968;&#25454;&#32467;&#26500;&#19982;&#31639;&#27861;&#30340;&#38382;&#39064;&#65292;&#12290; &#26412;&#26469;&#20197;&#20026;&#26159;&#36865;&#20998;&#39064;&#65292;&#20505;&#36873;&#20154;&#31455;&#19968;&#26102;&#35821;&#22622;&#12290;<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/3uVMilB" target="_blank" rel="noopener">https://ift.tt/3uVMilB</a> original site<br><br><br><br>March 04, 2021 at 05:44PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1039#issuecomment-790505372" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>3/4/2021</strong></p>
+</blockquote>
+<h2 id="拜托，面试别再问我表达式求值了！！！-by-架构师之路"><a href="#拜托，面试别再问我表达式求值了！！！-by-架构师之路" class="headerlink" title="拜托，面试别再问我表达式求值了！！！ by 架构师之路"></a>拜托，面试别再问我表达式求值了！！！ by 架构师之路</h2><p><strong>2019-04-13</strong><br>上周面试一个候选人，问了一个数据结构与算法的问题，<strong>表达式求值</strong>。</p>
+<p>题目大概是这样的：</p>
+<p><strong>输入</strong>长度为n的字符串，例如：1+2+3*4*5</p>
+<p><strong>输出</strong>表达式的值，即：63</p>
+<p>我暗示的问：应该用什么数据结构？</p>
+<p>候选人回答：栈。</p>
+<p><em>画外音：__算是答对。</em></p>
+<p>问：时间复杂度呢？</p>
+<p>回答：O(n^2)</p>
+<p><em>画外音：__额，应该不需要两个for循环吧。</em></p>
+<p>我接着提示：应该先计算哪一步？</p>
+<p>候选人回答：先计算3*4。</p>
+<p><em>画外音：__额，难道是乘除大于加减？</em></p>
+<p><em>实际应该先计算1+2，说明候选人对“表达式求值”并没有搞透。</em></p>
+<p>怎么用栈来实现呢？</p>
+<p>候选人：…</p>
+<p>本来以为是送分题，候选人竟一时语塞。</p>
+<p>为了广大面试的同学不再在这一题上送命，今天花几分钟把这个问题讲透彻。</p>
+<p><em>画外音：__希望没有帮面试官增加题库。</em></p>
+<p>“表达式求值”问题，两个核心关键点：</p>
+<p>（1）<strong>双栈</strong>，一个操作数栈，一个运算符栈；</p>
+<p>（2）<strong>运算符优先级</strong>，栈顶运算符，和，即将入栈的运算符的优先级比较：</p>
+<ul>
+<li><p>如果栈顶的运算符<strong>优先级低</strong>，新运算符直接入栈</p>
+</li>
+<li><p>如果栈顶的运算符<strong>优先级高</strong>，先出栈计算，新运算符再入栈</p>
+</li>
+</ul>
+<p>仍以1+2+3*4*5举例，看是如何利用上述两个关键点实施计算的。</p>
+<p>首先，这个例子只有+和*两个运算符，所以它的运算符表是：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/YrezxckhYOzL5sVNHOfQThxA4U6qFQfbf4hjwIuawJsTichF6xTa1IaYFd3Ue7s1KLJjIBQKWV1kVn3wQcsYicug/640?wx_fmt=jpeg" alt=""></p>
+<p>这里的含义是：</p>
+<p>（1）如果栈顶是+，即将入栈的是+，栈顶优先级高，需要先计算，再入栈；</p>
+<p>（2）如果栈顶是+，即将入栈的是*，栈顶优先级低，直接入栈；</p>
+<p>（3）如果栈顶是*，即将入栈的是+，栈顶优先级高，需要先计算，再入栈；</p>
+<p>（4）如果栈顶是*，即将入栈的是*，栈顶优先级高，需要先计算，再入栈；</p>
+<p><em>画外音：__运算符有+-*/()~^&amp;都没问题，如果共有n个运算符，会有一个n*n的优先级表。</em></p>
+<p>有了运算符表，一切就好办了。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzL5sVNHOfQThxA4U6qFQfbvPjMUxm1M4Au9HYNMSgRicPEIjXqDed1MhZAmj7CGDpbiaOWh9Sduhng/640?wx_fmt=png" alt=""></p>
+<p>一开始，初始化好输入的字符串，以及操作数栈，运算符栈。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzL5sVNHOfQThxA4U6qFQfbNvkHAQwKTjVWJhaZnQh1w6Bo59SiaQrOia19UEIsHvn7hB6CqgQq2apw/640?wx_fmt=png" alt=""></p>
+<p>一步步，扫描字符串，操作数一个个入栈，运算符也入栈。</p>
+<p><em>画外音：__如果有“789”这样的多个字符的多位数，要先转化为数字789，这个过程很容易。</em></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzL5sVNHOfQThxA4U6qFQfbvMvwg4sicgK86nKoPmYVGPC0rYbibuFqdJVibTicLGPSeLGAmmSNZGCEHw/640?wx_fmt=png" alt=""></p>
+<p>下一个操作符要入栈时，需要先比较优先级。</p>
+<p>栈内的优先级高，必须先计算，才能入栈。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzL5sVNHOfQThxA4U6qFQfbKDDPZvtncN4IlGkKkI9Xorly5jV20N1dBKmickySEfXebB4sO4mDCQg/640?wx_fmt=png" alt=""></p>
+<p>计算的过程为：</p>
+<p>（1）操作数出栈，作为num2；</p>
+<p>（2）操作数出栈，作为num1；</p>
+<p>（3）运算符出栈，作为op；</p>
+<p>（4）计算出结果；</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzL5sVNHOfQThxA4U6qFQfbAGRw4PTCN7IX7eiasS3QTAibhictSV7ILvRYsicuZic9BUI5uPb0cpb8wibQ/640?wx_fmt=png" alt=""></p>
+<p>（5）结果入操作数栈；</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzL5sVNHOfQThxA4U6qFQfbQLI7txyUL3gWX9uPlErdspNHbTPjk7OqpZ6hNLIqomCVV7J1PoL7xQ/640?wx_fmt=png" alt=""></p>
+<p>接下来，运算符和操作数才能继续入栈。下一个操作符要入栈时，继续比较与栈顶的优先级。</p>
+<p>栈内的优先级低，可以直接入栈。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzL5sVNHOfQThxA4U6qFQfbhJDqUuZCaVbZl0h8tpyvjrGFQqGlXic47GiaoFPlI90pEs4GEyF40EqA/640?wx_fmt=png" alt=""></p>
+<p>字符串继续移动。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzL5sVNHOfQThxA4U6qFQfblictnLlOnuaQc7pZibVibDrXZKbhicBXabOALKJ8l4FPM25MF59V2we9Sg/640?wx_fmt=png" alt=""></p>
+<p>又要比较优先级了。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzL5sVNHOfQThxA4U6qFQfbqpAT9I1l9Magexp05YINVGD4UiaxxDSZrQU8hVMuloOdWWuicicuSoBMA/640?wx_fmt=png" alt=""></p>
+<p>栈内的优先级高，还是先计算（3*4=12），再入栈。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzL5sVNHOfQThxA4U6qFQfbzBya6upBepXhYQAK5JicCQqMBkFS3YkfZ2wcJ04fDcrmfg41hahC4lw/640?wx_fmt=png" alt=""></p>
+<p>不断入栈，直到字符串扫描完毕。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/YrezxckhYOzL5sVNHOfQThxA4U6qFQfbeLOoT68ibl3FVTzxYKa9qRZPJ1rNKia92iccc8icibw6FLgmPiad27eVEW1Q/640?wx_fmt=png" alt=""></p>
+<p>不断出栈，直到得到最终结果3+60=63，算法完成。</p>
+<p><strong>总结</strong></p>
+<p>“表达式求值”问题，两个核心关键点：</p>
+<p>（1）<strong>双栈</strong>，一个操作数栈，一个运算符栈；</p>
+<p>（2）<strong>运算符优先级</strong>，栈顶运算符，和，即将入栈的运算符的优先级比较：</p>
+<ul>
+<li><p>如果栈顶的运算符<strong>优先级低</strong>，新运算符直接入栈</p>
+</li>
+<li><p>如果栈顶的运算符<strong>优先级高</strong>，先出栈计算，新运算符再入栈</p>
+</li>
+</ul>
+<p>这个方法的时间复杂度为O(n)，整个字符串只需要扫描一遍。</p>
+<p>思路比结论重要，学到了吗？</p>
+<p><strong><img src="https://mmbiz.qpic.cn/mmbiz_jpg/Ir1gRyhAx7udO2WibD2tcDg4rqPvjo7jhbqZ6SFJZIxBo6N8ZZDptOCp8rYrRlXh8LiaAatFLtJdaWukz7qMvbDQ/640?wx_fmt=jpeg" alt=""></strong></p>
+<p><strong>**架构师之路</strong>-分享技术思路**  </p>
+<p>相关文章：</p>
+<p>《<a href="http://mp.weixin.qq.com/s?__biz=MjM5ODYxMDA5OQ==&mid=2651961961&idx=1&sn=dbb9c041bd2210ba91374715ce91eefe&chksm=bd2d0fb58a5a86a3c96a6a0ba9330e123d8039f2477654593af0a4088362ee4c9aaab287f911&scene=21#wechat_redirect" target="_blank" rel="noopener">拜托，面试别问我系列，15篇</a>》</p>
+<p><strong>作业题</strong>：字符串“789”怎么转化为数字789？</p>
+<p><em>画外音：别说是atoi。</em></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/03/02/qiwihui-pocket_readings-1037/" rel="prev" title="
+
+
+拜托，面试别再问我TopK了！！！ ">
+      <i class="fa fa-chevron-left"></i> 
+
+
+拜托，面试别再问我TopK了！！！ 
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/03/06/qiwihui-pocket_readings-1040/" rel="next" title="
+
+
+阿里巴巴的东南亚战事：另一次拼多多式的奇袭 ">
+      
+
+
+阿里巴巴的东南亚战事：另一次拼多多式的奇袭  <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#拜托，面试别再问我表达式求值了！！！-by-架构师之路"><span class="nav-number"></span> <span class="nav-text">拜托，面试别再问我表达式求值了！！！ by 架构师之路</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

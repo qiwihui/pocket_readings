@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="透过 Rust 探索系统的本原：RAII">
+<meta property="og:type" content="article">
+<meta property="og:title" content="
+
+
+透过 Rust 探索系统的本原：RAII ">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/04/20/qiwihui-pocket_readings-1075/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="透过 Rust 探索系统的本原：RAII">
+<meta property="article:published_time" content="2021-04-20T00:21:37.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.418Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/04/20/qiwihui-pocket_readings-1075/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>
+
+
+透过 Rust 探索系统的本原：RAII  | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/04/20/qiwihui-pocket_readings-1075/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+
+
+透过 Rust 探索系统的本原：RAII 
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-04-20 00:21:37" itemprop="dateCreated datePublished" datetime="2021-04-20T00:21:37+00:00">2021-04-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">
+
+
+透过 Rust 探索系统的本原：RAII </div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#24494;&#20449;&#21495; programmer_life &#21151;&#33021;&#20171;&#32461; &#21313;&#24180;&#28459;&#28459;&#31243;&#24207;&#20154;&#29983;&#65292;&#25171;&#36807;&#21508;&#31181;&#26434;&#65292;&#20063;&#20570;&#36807;&#35753;&#25105;&#39556;&#20658;&#30340;&#36719;&#20214;&#65307;&#31649;&#29702;&#36807;&#25968;&#21313;&#20154;&#30340;&#22242;&#38431;&#65292;&#36824;&#24102;&#39046;&#19968;&#29677;&#20804;&#24351;&#22992;&#22969;&#21019;&#36807;&#19994;&#65292;&#30446;&#21069;&#22312;&#30789;&#35895;&#19968;&#23478;&#21019;&#19994;&#20844;&#21496;&#25285;&#20219; VP&#12290;&#20851;&#27880;&#31243;&#24207;&#20154;&#29983;&#65292;&#20102;&#35299;&#31243;&#24207;&#29503;&#65292;&#23398;&#20570;&#31243;&#24207;&#29503;&#65292;&#20570;&#22909;&#31243;&#24207;<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/3xcBnFk" target="_blank" rel="noopener">https://ift.tt/3xcBnFk</a> original site<br><br><br><br>April 20, 2021 at 08:12AM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1075#issuecomment-822878194" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>4/20/2021</strong></p>
+</blockquote>
+<h2 id="透过-Rust-探索系统的本原：RAII-by-程序人生"><a href="#透过-Rust-探索系统的本原：RAII-by-程序人生" class="headerlink" title="透过 Rust 探索系统的本原：RAII by 程序人生"></a>透过 Rust 探索系统的本原：RAII by 程序人生</h2><p><strong>2021-04-19</strong><br>RAII - Resource Acquisition Is Initialization[1] 是个听起来高深莫测不知所云，但实际理解起来并不困难的概念。我们在理解一个新的解决方案的时候，先深入了解它面临的问题，再看之前的解决方案（prior work），然后再看它是怎么解决同样的问题，最后比较优劣。这大概是做研究的通识，也是我们从本原去真正理解事物的最佳途径。</p>
+<p>如果要找计算机历史上最离谱的缩略词，RAII 一定会榜上有名，从嘴里吐出这个词却不做额外解释，除了用于居高临下地吓唬初学者，似乎别无他用。Resource Acquisition Is Initialization，中文翻译为「资源获取即初始化」，无论中英文，都很难让人明白它的真实含义。但这里有个词值得我们警觉：资源。</p>
+<p>这里的资源，是指文件，锁，套接字等由操作系统提供给应用程序的，数量有限的东西。虽然内存往往也是操作系统提供的一种资源，但它的处理和上述其它资源还是有许多不同。</p>
+<p>在我的上一篇文章《<a href="http://mp.weixin.qq.com/s?__biz=MzA3NDM0ODQwMw==&mid=2649828932&idx=1&sn=4a580c729ec39823d9d53ec65734ed3d&chksm=8704ac58b073254e46dfa3e40d9c2ff3323b248410d04d95642a040fa444ac658fc4c7fb026d&scene=21#wechat_redirect" target="_blank" rel="noopener">透过 Rust 探索系统的本原：编程语言</a>》里，我提到了 Rust 是如何通过把问题回归到「一个值（value）在上下文中被安全访问的基本规则」，从而解决了内存安全的问题。</p>
+<p>虽然很多语言也可以通过其他手段解决内存安全的问题，比如使用 GC 来在运行时对内存的使用做引用计数，如果一个 socket 对象的引用计数为零，GC 会把 socket 对象对应的内存清除，但如果 socket 本身没有被显式 close，这个 socket 资源就会被泄露。很多 Java 工程师会遇到系统运行一段时间便累计了大量 <code>CLOSE_WAIT</code> 的 socket，最终会吃光进程的文件句柄，抛出 too many files 异常的问题[2]。所以，如果你没有在各种可能的路径中妥善地关闭 socket，那么，即便使用一个内存安全的系统，依然有资源泄露的可能。</p>
+<p>所以，虽然同为资源，内存和其它操作系统提供的资源，对于程序员来说，其处理方式是非常不同的。你即便不用担心内存资源的释放，但却要妥善地释放锁，关闭 socket，关闭文件等等。</p>
+<p>有没有可能让资源的处理方式和内存的处理方式统一起来？这就是 RAII 要解决的问题。统一的方式其实很直观，就是让资源和资源对应的对象的生命周期保持一致，具体来说：</p>
+<ul>
+<li>对象的初始化会导致资源的初始化</li>
+</ul>
+<ul>
+<li>对象的释放会导致资源的释放</li>
+</ul>
+<p>这里有两重保障：对象创建成功一定意味着资源获取成功；而对象释放成功则资源一定得到释放。所以使用 RAII 的话，我们只需要保证内存安全（没有内存泄漏），就能够保证资源安全（没有资源泄露）。</p>
+<p>从这里我们可以看到 RAII 是一个多么奇怪的名字 —— 它字面上只包含了上面的第一层功能（对象的初始化会导致资源的初始化），直接忽略了第二层功能，而被忽略的第二层功能其实是 RAII 真正需要保障的。</p>
+<p>RAII 是一种资源释放的思路，这种思路被应用在各种语言之中（尽管具体采用的方法不同），比如：</p>
+<ul>
+<li>在 Python 中，我们可以使用 <code>with</code> 来确保资源在退出某个 scope 时一定会被释放</li>
+</ul>
+<ul>
+<li>在 Golang 中，我们可以使用 <code>defer</code> 让资源获取的代码和资源释放的代码尽可能靠近，这样让程序容易理解。</li>
+</ul>
+<ul>
+<li>在 Rust 中，RAII 的思维被深深地嵌入到语言之中：所有权模型保证了当前 scope 所拥有的对象在退出 scope 时必然会被释放，而 <code>Drop</code> trait 保证了释放时，其相关的操作系统资源也得到释放。</li>
+</ul>
+<p>我们以 Mutex Lock 为例，看看 Non-RAII 代码和 RAII 代码的区别：</p>
+<pre><code>fn bad() {</code></pre><p>这段代码是典型的 Non-RAII 代码（也是很多语言处理资源的通用方式），调用者需要显式地释放锁。然而在整个过程中，可能出现错误，可能抛出异常，所以，释放锁的代码很可能没有执行，导致锁资源泄露。这是很多死锁问题出现的一大原因。</p>
+<p>而支持 RAII 的代码：</p>
+<pre><code>fn good(m: Arc&lt;Mutex&lt;Protected&gt;&gt;) {</code></pre><p>在这里例子里，<code>lock()</code> 使用 RAII 实现，在获取这个锁的时候，它初始化了一个 <code>MutexGuard</code> 结构，这个结构里包含了对 <code>Mutex</code> 的引用，在做 <code>DerefMut</code> 时，可以访问到 <code>Mutex</code> 内部数据的可变引用，因而可以对数据进行修改。同时，<code>MutexGuard</code> 实现了 <code>Drop</code> ，里面处理了锁的释放，这样，当前的函数（scope）执行完退出时，锁就自动被释放了。</p>
+<h2 id="为什么-RAII-没有被普遍实现？"><a href="#为什么-RAII-没有被普遍实现？" class="headerlink" title="为什么 RAII 没有被普遍实现？"></a>为什么 RAII 没有被普遍实现？</h2><p>通过上文的介绍，我们可以看到 RAII 极大地解放了开发者，使其不必关心资源的释放，所写的代码反而比进行资源释放的代码更加安全可靠。为什么这种实践没有成为一种更加广泛的实践呢？似乎目前只有 C++ 在有限的场合使用，而实现地比较透彻的只有 Rust？</p>
+<p>这还是因为 Rust 的所有权模型从本质上规范了一个值可以被安全使用和安全释放的场景，而这种规范对资源来说也是完美契合的。这就好比麦克斯韦把电磁光统一在一个框架之下，Rust 也把内存和其它资源统一成一种行为。</p>
+<p>我们还是拿 Java 这种使用 GC 的语言来比较（不好意思 Java 我不是针对你）。如果你在堆上创建了一个文件资源，如果使用 RAII，意味着堆上的文件对象被释放的时候，这个文件资源也该关闭（<code>file.close()</code>），这么做是最安全也是最合理的。然而，因为堆上的对象什么时候被释放是不可知的，就算所有引用都不存在，GC 已经将其 mark 成可回收，回收线程什么时候被调度，依旧是无法保证的，就像薛定谔的猫。所以 Java 建议你资源用完了就要立刻关闭，于是你不得不殚精竭虑地照顾好每一个 try catch，每一次提前返回，以便 <code>finally</code> 你总是可以把资源关闭；你还得小心地处理资源的传递，传来传去，到处引用的资源，何时关闭可不是一件容易说清楚的事情。那么，既然你接受了「资源用完就立即关闭」的设定，你便不能在 <code>finalize</code> 里做关闭文件的事情，因为这将会导致资源的重复释放。这就是为什么 Java 无法做 RAII，或者 Python，golang 这些语言无法做 RAII 的原因。这也是为什么 Pythong 发展出了 <code>with</code>，golang 发展出 <code>defer</code> 来确保同一个 scope 下创建的资源，可以自动（正常）释放。不过，这些都是于小处的补丁，他们并不能完全解决 RAII 要解决的问题。</p>
+<p>在 Rust 里，如果你在堆上创建一个文件资源，根据所有权模型，堆上的内存必然会有一个栈上的 owner（所有者），不管这个 owner 是单一 owner（如 Box），还是引用计数的 owner（如 Arc），也不管他们如何移动（move），被各种引用，Rust 只需关心 owner 离开 scope（对于 Arc 来说，最后一个 Arc 的 owner 离开 scope），此时 <code>Drop</code> 会被调用，从而释放堆上的内存和资源，简单直观。而所有这一切的决策，都在编译时完成，运行时只不过是按部就班执行编译出来的代码而已。</p>
+<h2 id="贤者时刻"><a href="#贤者时刻" class="headerlink" title="贤者时刻"></a>贤者时刻</h2><p>和所有权模型一样，RAII 也是一种大道至简的处理问题的思路。相对于「使用完资源后，在所有可能的地方都妥善释放之以避免资源泄露」这种「头疼医头脚疼医脚」的方法，当我们重新考虑资源的生命周期，为其添加约束，限制住资源和对应的内存对象相同的生命期之后，一切变得简单而可控。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>[1] RAII: <a href="https://en.wikipedia.org/wiki/Resource\_acquisition\_is\_initialization" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Resource\_acquisition\_is\_initialization</a></p>
+<p>[2] Socket leak in Java app: <a href="http://www.javamonamour.org/2019/09/sockets-leak-case-study.html" target="_blank" rel="noopener">http://www.javamonamour.org/2019/09/sockets-leak-case-study.html</a></p>
+<p>[3] Socket leak in golang: <a href="https://www.reddit.com/r/golang/comments/b3adpq/nethttp\_transport\_leaking\_established\_connections/" target="_blank" rel="noopener">https://www.reddit.com/r/golang/comments/b3adpq/nethttp\_transport\_leaking\_established\_connections/</a></p>
+<p>感谢你读到这里，上次有同学问我做的 Rust training slides 在那里能找到，可以去 github: tyrchen/rust-training，或者戳「阅读原文」访问。因为直接部署到 github pages，所以不能正常访问的同学，你懂的。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/04/19/qiwihui-pocket_readings-1074/" rel="prev" title="白话：区块链“稳定币挖矿”是什么">
+      <i class="fa fa-chevron-left"></i> 白话：区块链“稳定币挖矿”是什么
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/04/20/qiwihui-pocket_readings-1076/" rel="next" title="死前100件事 （完结）">
+      死前100件事 （完结） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#透过-Rust-探索系统的本原：RAII-by-程序人生"><span class="nav-number"></span> <span class="nav-text">透过 Rust 探索系统的本原：RAII by 程序人生</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#为什么-RAII-没有被普遍实现？"><span class="nav-number"></span> <span class="nav-text">为什么 RAII 没有被普遍实现？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#贤者时刻"><span class="nav-number"></span> <span class="nav-text">贤者时刻</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-number"></span> <span class="nav-text">参考资料</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

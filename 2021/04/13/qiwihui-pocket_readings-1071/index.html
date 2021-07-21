@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="【技术分享】赏金$35000的GitHub漏洞：攻破GitHub私有页面">
+<meta property="og:type" content="article">
+<meta property="og:title" content="
+
+
+【技术分享】赏金$35000的GitHub漏洞：攻破GitHub私有页面 ">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/04/13/qiwihui-pocket_readings-1071/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="【技术分享】赏金$35000的GitHub漏洞：攻破GitHub私有页面">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9tXBvVd5SGjBBkOHYEQrW9VuPdKYicFx25mgugUj407sobCO2tHj1LRPQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9tN5ssEjdiavcIL6aoqKAWnESUYBn0GjjmDYCTGGHp3GD6H6e6zLHicySA/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9t1NoibC4lEZJ8qySCibLt6uyCIiabc6gDZ324O40eLHxgDax8XwjPdhu9g/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9toRSSXFXWCPZ5Nib5zibHXLuicDxuuMQ2ZEID3E9UEjkZ3AM7EjBds4kxQ/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9tJxibT07YoYMWKljeclP7nA9FxMv9L1BF2uqsXbhDRlQODQuNwekqwcw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9t7xHqBvLfRhwHw3fzUhOVIp51B4JnyjthibeDOgUkxTyJ77Y4tzA2eBA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9tz5Rxs16ysnL3v7XXBPDoGfGJVZLWWEwguKibOJHk4Tybuic4nf9rqL7A/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9tAObJD4pFqlwx9ScNQSbqhupkHBYkmkRryuR3SIRiceXJEAxFsv2r0YA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9tNyklNQtKORbNqiahZcgARuEN4NhaJKOQv0NLvNusuUYQdwQmhMU1npA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9tnsYibg5OhKajsGeL6un8cyBnvG62ZkySccLSRCyPaBXEoI9RtNP2RAw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9ticqhYdRTgOAVoKCgorLUsE0S2V44bUDK2EAEA3fJQMfyIiaqom01odkA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9t1R6NjrpUqhrXjhiceHDZIib0eKfSc7eoPcR8QVJuUDbchBpc9RDc7bRA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9tXqqhjOoAQ6NibrrtjtYYzqyH7JAKpsq7Y54UZTDAbJHMcFmSugpg18A/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9tO8h6ibqGNuFxKce4MktqHqMjQUDPu2geBueGyCOqNicBQXV7nF822sfw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9tYq5BdhYjMhosSZaNVPxoImslHESP2UqqXhq6pnxUaWp6bibcmKDGjxQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9tyia4bcdibtpnOE913VOHnDaGxL5elz7enxmD3BpVH3SJ9HQDIibf8nA9Q/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9t02T5zicCwfEicF0Tvqw38RmKD7KnC2WDwKicxkqXtDSReibNYibW3iaW0eEA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6OLwHohYU7UjX5anusw3ZzxxUKM0Ert9iaakSvib40glppuwsWytjDfiaFx1T25gsIWL5c8c7kicamxw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_gif/Ok4fxxCpBb5ZMeq0JBK8AOH3CVMApDrPvnibHjxDDT1mY2ic8ABv6zWUDq0VxcQ128rL7lxiaQrE1oTmjqInO89xA/640?wx_fmt=gif">
+<meta property="article:published_time" content="2021-04-13T11:21:02.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.422Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9tXBvVd5SGjBBkOHYEQrW9VuPdKYicFx25mgugUj407sobCO2tHj1LRPQ/640?wx_fmt=png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/04/13/qiwihui-pocket_readings-1071/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>
+
+
+【技术分享】赏金$35000的GitHub漏洞：攻破GitHub私有页面  | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/04/13/qiwihui-pocket_readings-1071/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+
+
+【技术分享】赏金$35000的GitHub漏洞：攻破GitHub私有页面 
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-04-13 11:21:02" itemprop="dateCreated datePublished" datetime="2021-04-13T11:21:02+00:00">2021-04-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">
+
+
+【技术分享】赏金$35000的GitHub漏洞：攻破GitHub私有页面 </div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#24494;&#20449;&#21495; anquanbobao &#21151;&#33021;&#20171;&#32461; &#25171;&#30772;&#40657;&#31665; &#23458;&#35828;&#23433;&#20840; 0x00&#21069;&#35328;&#36825;&#20010;&#28431;&#27934;&#26159;&#25105;&#21644;@ginkoid&#21512;&#20316;&#21457;&#29616;&#30340;&#65292;&#21516;&#26102;&#20063;&#26159;&#25105;&#22312;HackerOne&#19978;&#33719;&#24471;&#30340;&#31532;&#19968;&#31508;&#28431;&#27934;&#36175;&#37329;&#65288;35,000&#32654;&#20803;&#65289;&#65292;&#20063;&#26159;&#36804;&#20170;&#20026;&#27490;&#25105;&#20174;HackerOne&#33719;&#24471;&#30340;&#26368;&#39640;&#36175;&#37329;&#65292;&#25105;&#30456;&#20449;&#20063;&#21487;&#33021;&#26159;GitHub&#36804;&#20170;&#20026;&#27490;&#25903;<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/2Q2oufY" target="_blank" rel="noopener">https://ift.tt/2Q2oufY</a> original site<br><br><br><br>April 13, 2021 at 06:36PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1071#issuecomment-818659012" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>4/13/2021</strong></p>
+</blockquote>
+<h2 id="【技术分享】赏金-35000的GitHub漏洞：攻破GitHub私有页面-by-安全客"><a href="#【技术分享】赏金-35000的GitHub漏洞：攻破GitHub私有页面-by-安全客" class="headerlink" title="【技术分享】赏金$35000的GitHub漏洞：攻破GitHub私有页面 by 安全客"></a>【技术分享】赏金$35000的GitHub漏洞：攻破GitHub私有页面 by 安全客</h2><p><strong>2021-04-13</strong><br><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9tXBvVd5SGjBBkOHYEQrW9VuPdKYicFx25mgugUj407sobCO2tHj1LRPQ/640?wx_fmt=png" alt=""></p>
+<p>0x00前言</p>
+<p>这个漏洞是我和@ ginkoid合作发现的，同时也是我在HackerOne上获得的第一笔漏洞赏金（35,000美元），也是迄今为止我从HackerOne获得的最高赏金，我相信也可能是GitHub迄今为止支付的最高赏金。</p>
+<p>由于新冠疫情，高三线上学习课程之余，我将更多精力放在漏洞挖掘上。这个漏洞是作为GitHub私有页面的赏金项目中的一部分被提交的，这笔巨额赏金还有包括其他两个CTF奖金：</p>
+<p>$10000 : 在无需用户交互的条件下读取 “flag.private-org.github.io “上的flag。如果从<code>private-org</code>之外的账户读取flag，则额外奖励5k美元</p>
+<p>$5000 : 在有用户交互的条件下读取<code>flag.private-org.github.io</code>上的flag</p>
+<p>在这篇文章中，我将详细说明挖掘思路。</p>
+<p>0x01认证流程</p>
+<p>由于GitHub 私有页面是单独在域<code>github.io</code>上托管，<code>github.com</code>认证cookie不会被发送到私有页面服务器上。因此，如果不与<code>github.com</code>进行额外的整合，私有页面认证就无法确定用户的身份。因此，GitHub创建了一个自定义的身份验证流程，这期间就可能引入错误。在提交漏洞报告时，GitHub私有页面的认证流程如下：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9tN5ssEjdiavcIL6aoqKAWnESUYBn0GjjmDYCTGGHp3GD6H6e6zLHicySA/640?wx_fmt=jpeg" alt=""></p>
+<p>在访问私有页面时，服务器会检查是否存在<code>__Host-gh_pages_token</code>cookie，如果该cookie不存在或设置错误，私有页面服务器将重定向到<code>https://github.com/login</code>。这个初始重定向会设置一个“nonce”存储在<code>__Host-gh_pages_session</code>的cookie中。需要注意的是，这个cookie使用了__Host- cookie前缀，作为一种额外的防御措施，理论上可以防止JavaScript对非主机式父域进行设置。</p>
+<p><code>/login</code>将重定向到<code>/pages/auth?nonce=&amp;page_id=&amp;path=</code>。这个端点会生成一个临时的认证cookie，并将其传递给<code>token</code>参数中的<code>https://pages-auth.github.com/redirect</code>，<code>nonce</code>、<code>page_id</code>和<code>path</code>也同样被转发。</p>
+<p><code>/redirect</code>只转发到<code>https://repo.org.github.io/__/auth</code>。最后一个端点设置了<code>repo.org.github.io</code>域的认证cookie、<code>__Host-gh_pages_token</code>和<code>__Host-gh_pages_id</code>，也会根据之前设置的<code>__Host-gh_pages_session</code>验证<code>nonce</code>。</p>
+<p>在整个认证流程中，原始请求路径和页面ID等信息分别存储在查询参数<code>path</code>和<code>page_id</code>中，“nonce” 也会通过<code>nonce</code>参数传递。</p>
+<p>0x02漏洞挖掘思路</p>
+<h3 id="CRLF"><a href="#CRLF" class="headerlink" title="CRLF"></a><strong>CRLF</strong></h3><p>第一个漏洞是在<code>https://repo.org.github.io/__/auth</code>的<code>page_id</code>参数中注入CRLF。在对认证流程研究的过程中，我注意到<code>page_id</code>的解析似乎忽略了空格，同时还将参数直接解析到<code>Set-Cookie</code>头中。</p>
+<p>举个例子，如果传递<code>page_id=12345%20</code>：</p>
+<pre><code>Set-Cookie: __Host-gh_pages_id=13212257 ; Secure; HttpOnly; path=/</code></pre><p>伪代码逻辑如下：</p>
+<pre><code>page_id = query.page_id</code></pre><p>这里，<code>page_id</code>被转换为一个整数，并直接解析到 <code>Set-Cookie</code>头中。问题是我们不能直接解析任何文本。虽然有一个经典的CRLF注入，但放置任何非空格字符都会导致整数解析中断。我们可以通过发送<code>page_id=12345%0d%0a%0d%0a</code>来打破认证流程，但没有任何直接影响，除了以下这个响应：</p>
+<pre><code>; Secure; HttpOnly; path=/</code></pre><p>因为<code>Location:</code>头被附加在<code>Set-Cookie</code>头之后，响应会将把<code>Location</code>排除到已发送的HTTP头之外。即使是302重定向，也会忽略<code>Location</code>头并解析正文内容。</p>
+<h3 id="更进一步"><a href="#更进一步" class="headerlink" title="更进一步"></a>更进一步</h3><p>翻看了一下GitHub企业版源码（提供了访问源码的权限），我怀疑私有页面服务器为openresty nginx，可能它存在空字节的问题？</p>
+<p>当我们附加一个空字节，就会导致整数解析结束。换句话说，我们可以使用这样的有效payload：</p>
+<pre><code>&quot;?page_id=&quot; + encodeURIComponent(&quot;\r\n\r\n\x00&lt;script&gt;alert(origin)&lt;/script&gt;&quot;)</code></pre><p>这里，我们获得一个XSS漏洞：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9t1NoibC4lEZJ8qySCibLt6uyCIiabc6gDZ324O40eLHxgDax8XwjPdhu9g/640?wx_fmt=jpeg" alt=""></p>
+<p>这里需要注意的是，如果头中有一个空字节，响应就会被拒绝，因此，空字节必须出现在正文的开头，这意味着我们不能进行请求头注入攻击。</p>
+<p>至此，我们已经实现了在私有页面域上执行任意的JavaScript，但还需要一种绕过nonce的方法。虽然<code>page_id</code>和<code>path</code>参数已知，但“nonce”阻止我们用污染的<code>page_id</code>向受害者发送认证流程。</p>
+<h3 id="绕过Nonce"><a href="#绕过Nonce" class="headerlink" title="绕过Nonce"></a><strong>绕过Nonce</strong></h3><p>通过观察发现，同一组织中的同级私有页面可以互相设置cookie，这是因为<code>*.github.io</code>不在公共后缀列表中。因此，在<code>private-org.github.io</code>上设置的cookie会传到<code>private-page.private-org.github.io</code>上。因此，如果我们绕过<code>__Host-</code>前缀保护，就能获得”nonce”绕过，因为另一个同级页面中设置一个假的“nonce”，会被传递下去。幸运的是，这个前缀并不是在所有的浏览器上都被强制执行：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9toRSSXFXWCPZ5Nib5zibHXLuicDxuuMQ2ZEID3E9UEjkZ3AM7EjBds4kxQ/640?wx_fmt=jpeg" alt=""></p>
+<p>从上图可以看出只有 IE会受到这种绕过的影响，这显然威胁程度不够高。那攻击“nonce”本身呢? 它似乎是安全生成的，而密码学并不是我的强项，也没有办法绕过加密。</p>
+<p>于是我调整思路，通过阅读RFCs，我发现了一个有趣的想法——Cookie进行标准化？具体来说，应该如何处理cookie的大写，<code>__HOST-</code>和<code>__Host-</code>一样吗？在浏览器上，很容易确认它们的处理方式是不同的。</p>
+<pre><code>document.cookie = &quot;__HOST-Test=1&quot;; // works</code></pre><p>可见，GitHub私有页面服务器在解析Cookie时忽略了大写，这样前缀绕过得以实现! 于是，可以使用一个简单的POC来达成完整的XSS!</p>
+<pre><code>&lt;script&gt;</code></pre><p>这个漏洞就足以获得 $5000 的奖金，但我还想更深一步挖掘。</p>
+<h3 id="缓存中毒"><a href="#缓存中毒" class="headerlink" title="缓存中毒"></a>缓存中毒</h3><p><code>/__/auth?</code>端点上的响应仅缓存已解析的整数<code>page_id</code>，这本身在技术上是无害的，因为该端点设置的令牌仅限于私人页面，没有其他权限，但如果以后包含其他权限的token，这就可能引发潜在的安全问题。</p>
+<p>这种缓存行为升级攻击的威胁提供了一个途径。因为缓存已解析的整数值，一个带有XSS的缓存中毒可能会影响没有与恶意payload交互的其他用户，演示视频地址：<a href="https://robertchen.cc/blog/gh-xss/cache-xss.mp4" target="_blank" rel="noopener">https://robertchen.cc/blog/gh-xss/cache-xss.mp4</a></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9tJxibT07YoYMWKljeclP7nA9FxMv9L1BF2uqsXbhDRlQODQuNwekqwcw/640?wx_fmt=png" alt=""></p>
+<p>如果，攻击者控制了<code>unprivileged.org.github.io</code>，并想获得<code>privileged.org.github.io</code>的访问权，他可以首先污染<code>unprivileged.org.github.io</code>的认证流，使得XSS payload被缓存。当特权用户访问<code>unprivileged.org.github.io</code>时，就会在<code>unprivileged.org.github.io</code>域上遭遇XSS攻击。由于可以在共享的父域<code>org.github.io</code>上设置cookie，攻击者现在可以对<code>privileged.org.github.io</code>进行攻击。这将允许对私有页面拥有读权限的攻击者永久破坏该页面的身份验证流。</p>
+<p>0x03公有–私有页面</p>
+<p>为了获得15000美元的奖金，我们需要从一个不在组织中的用户账户执行这次攻击。我们可以利用另一个看似不相关的错误配置，进入 “Public-Private 页面”。私有页面中可能存在的错误配置使得公共存储库也有自己的 “私有”页面。这些 “私有”页面虽然经过正常的认证周期，但对每个人都是公开的。如果一个组织有这样的“公有——私有页面”，任何拥有GitHub账户的用户都对其用有 “读权限”。</p>
+<p>例如，当一个私有页面存储库被改成公共的时候，这种情况情况就会发生。这种场景是合理的，因为一个组织最初可能会创建一个私有版本库和相应的私有页面。后来，该组织可能会决定对项目进行开源，将存储库状态改为公开。这是一个例子，演示视频地址：<a href="https://robertchen.cc/blog/gh-xss/public-private.mp4" target="_blank" rel="noopener">https://robertchen.cc/blog/gh-xss/public-private.mp4</a></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9t7xHqBvLfRhwHw3fzUhOVIp51B4JnyjthibeDOgUkxTyJ77Y4tzA2eBA/640?wx_fmt=png" alt=""></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9tz5Rxs16ysnL3v7XXBPDoGfGJVZLWWEwguKibOJHk4Tybuic4nf9rqL7A/640?wx_fmt=png" alt=""></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9tAObJD4pFqlwx9ScNQSbqhupkHBYkmkRryuR3SIRiceXJEAxFsv2r0YA/640?wx_fmt=png" alt=""></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9tNyklNQtKORbNqiahZcgARuEN4NhaJKOQv0NLvNusuUYQdwQmhMU1npA/640?wx_fmt=png" alt=""></p>
+<p>结合上述情况，一个无权限的外部用户可以利用 “公有——私有页面”为中转，从而损害内部私有页面的认证流。</p>
+<p>将上面的攻击思路整合，就能形成一个好棒的POC，它展示了外部攻击者如何利用内部员工中转攻破其他私有页面，演示视频地址：<a href="https://robertchen.cc/blog/gh-xss/pivot.mp4" target="_blank" rel="noopener">https://robertchen.cc/blog/gh-xss/pivot.mp4</a></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9tnsYibg5OhKajsGeL6un8cyBnvG62ZkySccLSRCyPaBXEoI9RtNP2RAw/640?wx_fmt=png" alt=""></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9ticqhYdRTgOAVoKCgorLUsE0S2V44bUDK2EAEA3fJQMfyIiaqom01odkA/640?wx_fmt=png" alt=""></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9t1R6NjrpUqhrXjhiceHDZIib0eKfSc7eoPcR8QVJuUDbchBpc9RDc7bRA/640?wx_fmt=png" alt=""></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9tXqqhjOoAQ6NibrrtjtYYzqyH7JAKpsq7Y54UZTDAbJHMcFmSugpg18A/640?wx_fmt=png" alt=""></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9tO8h6ibqGNuFxKce4MktqHqMjQUDPu2geBueGyCOqNicBQXV7nF822sfw/640?wx_fmt=png" alt=""></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9tYq5BdhYjMhosSZaNVPxoImslHESP2UqqXhq6pnxUaWp6bibcmKDGjxQ/640?wx_fmt=png" alt=""></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9tyia4bcdibtpnOE913VOHnDaGxL5elz7enxmD3BpVH3SJ9HQDIibf8nA9Q/640?wx_fmt=png" alt=""></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6PQGNpcb6ERlDtsJvu1q9t02T5zicCwfEicF0Tvqw38RmKD7KnC2WDwKicxkqXtDSReibNYibW3iaW0eEA/640?wx_fmt=png" alt=""></p>
+<p>后续的持久性可以可能通过AppCache或其他技术来实现。</p>
+<p>0x04尾声</p>
+<p>总结来说，这样的漏洞真是万里挑一，许多组件必须以正确的方式排列，最终能影响到GitHub的所有用户，真是太酷了。最后，这个漏洞的严重程度被评为“高危”，漏洞赏金 $20000，加上前面的CTF奖金，共获得 $35000 的巨额奖励。</p>
+<p>时间线：<br>2020.05.21 – 在HackerOne上向GitHub私有漏洞赏金项目提交报告<br>2020.06.20 – GitHub 修复漏洞并支付漏洞赏金<br>2021.04.03 – 该漏洞的细节被本文披露</p>
+<p><strong>译文声明</strong>  </p>
+<p>译文仅供参考，具体内容表达以原文为准。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6OLwHohYU7UjX5anusw3ZzxxUKM0Ert9iaakSvib40glppuwsWytjDfiaFx1T25gsIWL5c8c7kicamxw/640?wx_fmt=png" alt="" title="虚线阴影分割线">  </p>
+<p>- End -  </p>
+<p>精彩推荐</p>
+<p><a href="http://mp.weixin.qq.com/s?__biz=MzA5ODA0NDE2MA==&mid=2649743573&idx=1&sn=b66c5a70de1fe7db1f1ff429efa64f91&chksm=888cd0babffb59ac4c8c372c0b6ed5001a3de2b60f5a228880ffa8640973e1256ac09356a37d&scene=21#wechat_redirect" target="_blank" rel="noopener">【技术分享】etcd未授权访问的风险及修复方案详解</a>  </p>
+<p><a href="http://mp.weixin.qq.com/s?__biz=MzA5ODA0NDE2MA==&mid=2649743526&idx=1&sn=02fab4db3b28aaeb58fa6a52fc63256a&chksm=888cd0c9bffb59df91a823514e926bb68de23395f166de520bc95b66e7b86a2fb4e35345946d&scene=21#wechat_redirect" target="_blank" rel="noopener">5亿+用户数据遭泄，Facebook归因网络爬虫可还行？</a>  </p>
+<p><a href="http://mp.weixin.qq.com/s?__biz=MzA5ODA0NDE2MA==&mid=2649743514&idx=1&sn=84b67b4bd93ad1d90c230e1f59b652c0&chksm=888cd0f5bffb59e32713387e83395ce77fb300d4e5ce568036aaff00f5a7a36cf09fe3256849&scene=21#wechat_redirect" target="_blank" rel="noopener">【技术分享】六问MySQL？你敢来挑战吗？</a>  </p>
+<p><a href="http://mp.weixin.qq.com/s?__biz=MzA5ODA0NDE2MA==&mid=2649743264&idx=1&sn=869259ede6379883bc843f8428b483e0&chksm=888cefcfbffb66d90c621d5b4b944067655fce2e80c3c802f2c38557dfeb793de8d3bd71e231&scene=21#wechat_redirect" target="_blank" rel="noopener">【技术分享】Win10下一个有意思的驱动引起可能性的拒绝服务攻击</a></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_gif/Ok4fxxCpBb5ZMeq0JBK8AOH3CVMApDrPvnibHjxDDT1mY2ic8ABv6zWUDq0VxcQ128rL7lxiaQrE1oTmjqInO89xA/640?wx_fmt=gif" alt="">  </p>
+<hr>
+<p><strong>戳“阅读原文”查看更多内容</strong></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/04/13/qiwihui-pocket_readings-1070/" rel="prev" title="说说离职员工的期权">
+      <i class="fa fa-chevron-left"></i> 说说离职员工的期权
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/04/19/qiwihui-pocket_readings-1074/" rel="next" title="白话：区块链“稳定币挖矿”是什么">
+      白话：区块链“稳定币挖矿”是什么 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#【技术分享】赏金-35000的GitHub漏洞：攻破GitHub私有页面-by-安全客"><span class="nav-number"></span> <span class="nav-text">【技术分享】赏金$35000的GitHub漏洞：攻破GitHub私有页面 by 安全客</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#CRLF"><span class="nav-number">1.</span> <span class="nav-text">CRLF</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#更进一步"><span class="nav-number">2.</span> <span class="nav-text">更进一步</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#绕过Nonce"><span class="nav-number">3.</span> <span class="nav-text">绕过Nonce</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#缓存中毒"><span class="nav-number">4.</span> <span class="nav-text">缓存中毒</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

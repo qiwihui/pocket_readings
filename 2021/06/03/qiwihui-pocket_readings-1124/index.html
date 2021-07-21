@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="一文带你重新审视CAP理论与分布式系统设计 - 分布式 - dbaplus社群：围绕Data、Blockchain、AiOps的企业级专业社群。技术大咖、原创干货，每天精品原创文章推送，每周线上技术分享，每月线下技术沙龙。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="一文带你重新审视CAP理论与分布式系统设计 - 分布式 - dbaplus社群：围绕Data、Blockchain、AiOps的企业级专业社群。技术大咖、原创干货，每天精品原创文章推送，每周线上技术分享，每月线下技术沙龙。">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/06/03/qiwihui-pocket_readings-1124/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="一文带你重新审视CAP理论与分布式系统设计 - 分布式 - dbaplus社群：围绕Data、Blockchain、AiOps的企业级专业社群。技术大咖、原创干货，每天精品原创文章推送，每周线上技术分享，每月线下技术沙龙。">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131061835320.png">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062001954.jpg">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131063528669.jpg">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131063540488.jpg">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062012868.jpg">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062022370.jpg">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131063717226.jpg">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062044407.png">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062054504.png">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062105296.png">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062115651.png">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062125852.png">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062137238.png">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062159470.jpg">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062212827.jpg">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062226767.jpg">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062241195.jpg">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062254660.jpg">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062312511.jpg">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062327493.jpg">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062340494.jpg">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062353839.png">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062406654.jpg">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062419592.jpg">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062430818.jpg">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062454475.png">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062504946.jpg">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062518660.jpg">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062535682.png">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062550496.png">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062602417.png">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062615541.png">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062654159.jpg">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062707461.png">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062744751.png">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062759269.jpg">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062809361.jpg">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062820502.jpg">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062829210.jpg">
+<meta property="og:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131062842746.jpg">
+<meta property="article:published_time" content="2021-06-03T08:21:09.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.406Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://dbaplus.cn/uploadfile/2018/0131/20180131061835320.png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/06/03/qiwihui-pocket_readings-1124/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>一文带你重新审视CAP理论与分布式系统设计 - 分布式 - dbaplus社群：围绕Data、Blockchain、AiOps的企业级专业社群。技术大咖、原创干货，每天精品原创文章推送，每周线上技术分享，每月线下技术沙龙。 | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/06/03/qiwihui-pocket_readings-1124/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          一文带你重新审视CAP理论与分布式系统设计 - 分布式 - dbaplus社群：围绕Data、Blockchain、AiOps的企业级专业社群。技术大咖、原创干货，每天精品原创文章推送，每周线上技术分享，每月线下技术沙龙。
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-06-03 08:21:09" itemprop="dateCreated datePublished" datetime="2021-06-03T08:21:09+00:00">2021-06-03</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">一文带你重新审视CAP理论与分布式系统设计 - 分布式 - dbaplus社群：围绕Data、Blockchain、AiOps的企业级专业社群。技术大咖、原创干货，每天精品原创文章推送，每周线上技术分享，每月线下技术沙龙。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#22312;&#29616;&#20195;&#20998;&#24067;&#24335;&#31995;&#32479;&#20013;&#65292;&#33410;&#28857;&#25968;&#30446;&#26159;&#24040;&#22823;&#30340;&#12290;&#22312;CAP&#29702;&#35770;&#30340;&#33539;&#22260;&#20869;&#65292;Michael Stonebraker&#26029;&#35328;&#20998;&#21306;&#24517;&#28982;&#20250;&#21457;&#29983;&#65292;&#24182;&#19988;&#31995;&#32479;&#20869;&#21457;&#29983;&#33410;&#28857;&#22833;&#36133;&#30340;&#26426;&#20250;&#38543;&#30528;&#33410;&#28857;&#25968;&#30340;&#22686;&#21152;&#32780;&#21576;&#25351;&#25968;&#32423;&#22686;&#21152;&#65306;<br><br><br><br>Tags: engineering<br><br><br><br>via Pocket <a href="https://ift.tt/3uNUiUa" target="_blank" rel="noopener">https://ift.tt/3uNUiUa</a> original site<br><br><br><br>June 03, 2021 at 03:41PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1124#issuecomment-853683265" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>6/3/2021</strong></p>
+</blockquote>
+<h2 id="一文带你重新审视CAP理论与分布式系统设计-分布式-dbaplus社群：围绕Data、Blockchain、AiOps的企业级专业社群。技术大咖、原创干货，每天精品原创文章推送，每周线上技术分享，每月线下技术沙龙。"><a href="#一文带你重新审视CAP理论与分布式系统设计-分布式-dbaplus社群：围绕Data、Blockchain、AiOps的企业级专业社群。技术大咖、原创干货，每天精品原创文章推送，每周线上技术分享，每月线下技术沙龙。" class="headerlink" title="一文带你重新审视CAP理论与分布式系统设计 - 分布式 - dbaplus社群：围绕Data、Blockchain、AiOps的企业级专业社群。技术大咖、原创干货，每天精品原创文章推送，每周线上技术分享，每月线下技术沙龙。"></a>一文带你重新审视CAP理论与分布式系统设计 - 分布式 - dbaplus社群：围绕Data、Blockchain、AiOps的企业级专业社群。技术大咖、原创干货，每天精品原创文章推送，每周线上技术分享，每月线下技术沙龙。</h2><p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131061835320.png" alt=""></p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062001954.jpg" alt=""></p>
+<p><strong>一、引言</strong></p>
+<p>在现代分布式系统中，节点数目是巨大的。在CAP理论的范围内，Michael Stonebraker断言分区必然会发生，并且系统内发生节点失败的机会随着节点数的增加而呈指数级增加：</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131063528669.jpg" alt=""></p>
+<p>基于这样的事实，很多人会问：</p>
+<ul>
+<li>如果发生分区（故障），系统会牺牲什么？一致性还是可用性？</li>
+</ul>
+<p>对于这个问题，我有几个反问：</p>
+<ul>
+<li><p>发生分区这个假设在多大概率上会成立？哪些因素会造成分区？</p>
+</li>
+<li><p>如果发生分区，一致性如何定义？应用需要什么样的一致性？</p>
+</li>
+<li><p>如果发生分区，可用性如何定义？应用需要什么样的可用性？</p>
+</li>
+<li><p>如果不发生分区，一致性和可用性又该如何取舍？</p>
+</li>
+</ul>
+<p><strong>二、全球规模分布式系统</strong></p>
+<p>分布式系统是指联网的计算机通过消息传递来协调行为的系统。在这样的系统中，机器之间并发执行，独立故障，并且没有全局状态和全局锁。</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131063540488.jpg" alt=""></p>
+<p>随着互联网公司的全球化，为了保证服务质量和响应速度，各大互联网公司（Google、Amzon、Facebook、Alibaba等）纷纷在全球建立数据中心，部署服务和放置数据。为了提高可用性、响应速度以及满足容灾等需求，这些系统都采用了复制技术。这就带来了服务和数据状态的全球范围内的数据复制和一致性问题。</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062012868.jpg" alt=""></p>
+<p>类似这样的系统有：Dynamo、PNUTS、Cassandra、Megastore、Mesa、Walter、COPS、Spanner、Gemini等。</p>
+<p><strong>三、分布式系统设计的两大原则</strong></p>
+<p>分布式系统设计的原则有很多，这里介绍两个基础性的原则。</p>
+<h2 id="1、通过复制来提高可用性"><a href="#1、通过复制来提高可用性" class="headerlink" title="1、通过复制来提高可用性"></a>1、通过复制来提高可用性</h2><p>通过复制来提高可用性，这是分布式系统设计的首要原则。从复制类型来看，复制可以分为主动复制和被动复制。</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062022370.jpg" alt=""></p>
+<p>在主动复制中，每个客户端请求都由所有服务器处理。主动复制首先由Leslie Lamport以“状态机复制”命名。这要求由服务器托管的进程是确定性的。</p>
+<p>确定性意味着，给定相同的初始状态和请求序列，所有过程将产生相同的响应序列，并且最终处于相同的最终状态。为了使所有的服务器接收到相同的操作序列，一般都使用原子广播协议。原子广播协议保证所有服务器都接收到消息或没有消息，并且它们都以相同的顺序接收消息。</p>
+<p>主动复制的主要缺点是实际上大多数真实世界的服务器都是非确定性的。</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131063717226.jpg" alt=""></p>
+<p>在<strong>被动复制</strong>中，只有一个服务器（称为主服务器）处理客户机请求。处理请求后，主服务器更新其它（备份）服务器上的状态，并将响应发送回客户端。如果主服务器发生故障，则其中一台备份服务器就会接管它。被动复制可以用于非确定性过程。被动复制与主动复制相比的主要缺点是在失败的情况下，客户端的响应会被延迟。</p>
+<p>从进程与系统交互角度来看，复制分为同步复制和异步复制。</p>
+<p><strong>同步复制</strong> - 通过原子写入操作来保证“零数据丢失”，即完全写入。在本地和远程副本存储的确认之前，写入不被认为是完整的。</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062044407.png" alt=""></p>
+<p><strong>异步复制</strong> - 本地存储确认后，写入即被认为是完整的。远程存储已更新，但可能滞后很小。系统性能会因异步复制而大大提高。但在丢失本地存储的情况下，远程存储不能保证具有当前的数据副本，并且最近的数据可能会丢失。</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062054504.png" alt=""></p>
+<p>关于复制技术，目前有三大模型：事务复制、Paxos复制和虚拟同步。事务复制、Paxos复制讨论的已经比较多，虚拟同步则较少看到有产品采用。</p>
+<p>虚拟同步定义了一个动态的自组织进程组，这个进程组本身可以看作是一个复制变量，那么这个变量需要特定应用中保持一致。虚拟同步常用的场景是订阅发布和DHT中相邻节点的成员关系。虚拟同步和Paxos协议的区别在于不同的层次：Paxos协议可以用来保证虚拟同步的进程组视图一致。事务复制和Paxos复制的区别在于：事务复制满足ACID语义，有明确的BEGIN/COMMIT/ABORT接口；Paxos复制内部可能使用弱一致性的传言协议，并可以呈现外部的一致性。Paxos复制没有保证提供ACID语义和BEGIN/COMMIT/ABORT接口。</p>
+<p><a href="https://en.wikipedia.org/wiki/Virtual\_synchrony" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Virtual\_synchrony</a></p>
+<p><a href="https://en.wikipedia.org/wiki/Replication\_(computing)" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Replication\_(computing)</a></p>
+<p>个人认为复制的分类方式可根据节点组织关系分为以下三种：Master/Slave复制、Paxos复制和链式复制。这里不赘述。</p>
+<p>关于复制副本的数量，通常我们讨论的都是3个副本，已经满足容灾和高可用的需要。但在Chubby、F1和Aurora中，为了更高的可用性，都采用了5或6个副本。结合同步复制、异步复制以及链式复制，可以实现混合复制类型的系统，即5个副本中部分是实时同步，其它副本可以采用链式复制的方式，或者Paxos多数原则的方式，实现异步复制。异步复制的副本可以作为快照读取的副本和OLAP的副本。</p>
+<h2 id="2、使用CAP理论指导分布式系统设计"><a href="#2、使用CAP理论指导分布式系统设计" class="headerlink" title="2、使用CAP理论指导分布式系统设计"></a>2、使用CAP理论指导分布式系统设计</h2><p>复制技术是产生一致性问题的根源。由此带来了分布式系统设计的第二个原则。</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062105296.png" alt=""></p>
+<p>对于Internet这样的全球规模的分布式系统，一直以来讨论最多的是AP和CP系统。</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062115651.png" alt=""></p>
+<p>CP系统是牺牲可用性的系统。复制同步的协议一般使用严格的法定数协议 (Paxos、Raft、ZAB)或者2PC协议。CP类型的系统有MongoDB、HBase、 Zookeeper等。</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062125852.png" alt=""></p>
+<p>AP系统是牺牲一致性的系统。复制同步的协议一般使用非严格的法定数协议。AP类型的系统有 Couch DB、Cassandra、Amazon Dynamo等。</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062137238.png" alt=""></p>
+<p>那么有没有CA系统？如何实现CA系统？本文将尝试解答这个问题。</p>
+<p><strong>四、重新理解CAP</strong></p>
+<h2 id="1、CAP三者并不对等：P是基础，CA之间tradeoff"><a href="#1、CAP三者并不对等：P是基础，CA之间tradeoff" class="headerlink" title="1、CAP三者并不对等：P是基础，CA之间tradeoff"></a>1、CAP三者并不对等：P是基础，CA之间tradeoff</h2><p>在全球广域地理分布环境下（全球规模的分布式系统），网络分区是一个自然的事实，甚至有人认为是必然的。</p>
+<p>在这样的情况下，有两种声音：</p>
+<ul>
+<li><p>因为分区是必然的，系统设计时只能实现AP和CP系统，CA系统是不可能的。</p>
+</li>
+<li><p>从技术上来说，分区确实会出现，但从效果或者概率来说，分区很少出现，可以认为系统不会发生分区。由于分区很少发生，那么在系统不存在分区的情况下没什么理由牺牲C或A。</p>
+</li>
+</ul>
+<p>从更广阔的分布式计算理论背景下审视CAP理论，可以发现C，A，P三者并不对等。</p>
+<p>CAP之父在《Spanner，真时，CAP理论》一文中写到：</p>
+<p>如果说Spanner真有什么特别之处，那就是谷歌的广域网。Google通过建立私有网络以及强大的网络工程能力来保证P，在多年运营改进的基础上，在生产环境中可以最大程度的减少分区发生，从而实现高可用性。</p>
+<p>从Google的经验中可以得到的结论是，一直以来我们可能被CAP理论蒙蔽了双眼，CAP三者之间并不对称，C和A不是P的原因（P不能和CA trade-off，CP和AP中不存在tradeoff，tradeoff在CA之间）。提高一个系统的抗毁能力，或者说提高P（分区容忍能力）是通过提高基础设施的稳定性来获得的，而不是通过降低C和A来获得的。也就说牺牲C和A也不能提高P。</p>
+<p>还有一种说法是，放弃C不是为了获得A，而是为了低延迟（延迟不也是可用性的内涵吗？我这里有疑问）。PNUTS为了降低WAN上的消息事务的延迟（几百毫秒，对于像亚马逊和雅虎这样的企业需要实施的许多Web应用程序来说，成本太高），采用放弃一致性的做法。</p>
+<p>而CA是系统的刚性强需求，但CA两者也不对等。系统无论如何要保证一致性（无论事先还是事后，这是系统设计的最大不变性约束，后文会详述），在这个前提下，可以谈谈可用性的程度。Google的Spanner就是这样的思路。</p>
+<p><strong>总结：P是一个自然的事实，CA是强需求。三者并不对等。</strong></p>
+<p>补充：文章写完之后，看到最新出版的文章《分布式数据库中一致性与可用性的关系》，值得一读。</p>
+<h2 id="2、保证不发生分区，CA也不容易兼得"><a href="#2、保证不发生分区，CA也不容易兼得" class="headerlink" title="2、保证不发生分区，CA也不容易兼得"></a>2、保证不发生分区，CA也不容易兼得</h2><p>在分布式系统中，安全性、活性是本质需求，并且广泛的研究结果是分布式系统中一直存在一个广泛意义的trade-off：在不可靠的分布式系统中无法同时实现安全性和活性。分布式系统的设计中充满了安全性和活性的trade-off，FLA著名的论文《Impossibility of Distributed Consensus withOne Faulty process》就是说我们不可能设计一个算法既可以绝对保证一致性（安全性）又无需时间等待的实现一致性（活性）。</p>
+<p>CAP就是这个trade-off的的集中体现。分别对应于：</p>
+<ul>
+<li><p>Safety：非正式来说，一个算法没有任何坏的事情发生，那么该算法就是安全的。CAP中的C就是典型的safety属性：所有对客户的响应都是正确的。</p>
+</li>
+<li><p>Liveness：相反，一个算法最终有有一些好的事情发生，那么该算法就是活性的。CAP中的A就是典型的liveness属性：所有的客户最终都会收到回应。</p>
+</li>
+</ul>
+<p>FLA中的故障是指：</p>
+<ul>
+<li><p>Unreliable：有很多种方式可以让一个系统不可靠，CAP中的P。</p>
+</li>
+<li><p>其它故障：系统崩溃、消息丢失、恶意攻击、拜占庭故障等。</p>
+</li>
+</ul>
+<p>所以，CAP理论可以说是FLA不可能性的不同表达方式。P只是Unreliable的一种极端形式而已。在Google的Chubby文章中，指出Paxos协议维护系统的safety，引入时钟来保证liveness，由此克服FLA的不可能性。实际上，基本的Paxos协议可以保证值一旦被选出后就一定不会改变，但不能保证一定会选出值来。换句话说，这个投票算法不一定收敛。所以在系统设计时，Paxos算法的使用是有条件的。</p>
+<p>在数据库领域，CAP也正是ACID和BASE长期博弈(trade off)的结果。ACID伴随数据库的诞生定义了系统基本设计思路，所谓先入为主。2000年左右，随着互联网的发展，高可用的话题被摆上桌面，所以提出了BASE。从此C和A的取舍消长此起彼伏，其结晶就是CAP理论。</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062159470.jpg" alt=""></p>
+<p>从ACID和BASE来说，ACID是为了保证一致性而诞生，因而侧重一致性；BASE是为了高可用系统的设计而诞生，因而侧重可用性。在分解C和A的情况时，肯定要涉及P，所以CAP理论统一了这一切。如果非要说酸碱，或者说酸碱平衡，那就是平衡于CAP理论。</p>
+<p>CAP并不与ACID中的A（原子性）冲突，值得讨论的是ACID中的C（一致性）和I（隔离性）。ACID的C指的是事务不能破坏任何数据库规则，如键的唯一性。与之相比，CAP的C仅指单一副本这个意义上的一致性，因此只是ACID一致性约束的一个严格的子集。如果系统要求ACID中的I（隔离性），那么它在分区期间最多可以在分区一侧维持操作。事务的可串行性（serializability）要求全局的通信，因此在分区的情况下不能成立。</p>
+<p>C与A之间的取舍可以在同一系统内以非常细小的粒度反复发生，而每一次的决策可能因为具体的操作，乃至因为牵涉到特定的数据或用户而有所不同。我们在分布式系统设计的两大原则中讨论过保持一致性的手段：同步复制和异步复制，结合复制协议的各种模式，请参考下表。例如简单满足了C，但延迟升高了，吞吐量下来了，还有什么可用性？我觉得延迟是包含在可用性的范围内的，不可用就是延迟的极大极限值。还有文章就只讨论一致性，可用性和性能问题（比如阿里何登成的《数据一致性-分区可用性-性能——多副本强同步数据库系统实现之我见》），说明在不考虑分区的情况下，CA问题依然是系统设计的难点。</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062212827.jpg" alt=""></p>
+<p>重新审视本文时，恰好看到一个新的理论PACELC：even when the system is running normally in theabsence of partitions, one has to choose between latency (L) and consistency(C). 可谓和我的想法不谋而合。</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062226767.jpg" alt=""></p>
+<p><em>PACELC：In case of network partitioning (P) in a distributed computersystem, one has to choose between availability (A) and consistency (C) (as perthe CAP theorem), but else (E), even when the system is running normally in theabsence of partitions, one has to choose between latency (L) and consistency(C).（<a href="https://en.wikipedia.org/wiki/PACELC\_theorem）" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/PACELC\_theorem）</a></em></p>
+<p>可用性并不是简单的网络连通，服务可以访问，数据可以读取就是可用性，对于互联网业务，可用性是完整的用户体验，甚至会延伸到用户现实生活中（补偿）。有的系统必须容忍大规模可靠分布式系统中的数据不一致，其中原因就是为了在高并发条件下提高读写性能。</p>
+<p>必须容忍大规模可靠分布式系统中的数据不一致，有两个原因：在高并发条件下提高读写性能， 并要区分物理上导致的不一致和协议规定的不一致。</p>
+<ul>
+<li><p>节点已经宕机，副本无法访问（物理）</p>
+</li>
+<li><p>法定数模型会使部分系统不可用的分区情况，即使节点已启动并运行（paxos协议）</p>
+</li>
+<li><p>网络断开，节点孤立（物理）</p>
+</li>
+</ul>
+<p>所以，保证不发生分区，CA也不是免费午餐：尽管保证了网络可靠性，尽量不发生分区，同时获得CA也不是一件简单的事情。</p>
+<p>CA系统才是真正的难点。</p>
+<p>宣称是CA系统的，目前有两家：一家是Google的Spanner，一家是Alibaba的OceanBase。</p>
+<h2 id="3、发生分区时，也不要随意牺牲CA"><a href="#3、发生分区时，也不要随意牺牲CA" class="headerlink" title="3、发生分区时，也不要随意牺牲CA"></a>3、发生分区时，也不要随意牺牲CA</h2><p>虽然架构师仍然需要在分区的前提下对数据一致性和可用性做取舍，但具体如何处理分区和恢复一致性，这里面有不计其数的变通方案和灵活度。</p>
+<p>当发生分区时，系统设计人员不应该盲目地牺牲一致性或可用性。当分区存在或可感知其影响的情况下，就要预备一种策略去探知分区并显式处理其影响。这样的策略应分为三个步骤：探知分区发生，进入显式的分区模式以限制某些操作，启动恢复过程以恢复数据一致性并补偿分区期间发生的错误。</p>
+<p>这一切都需要在系统设计之初考虑到，并在测试时模拟各种故障保证覆盖到你的测试点。</p>
+<p>构建高度稳健的基础设施永远是第一要务，所以我不认为网络分区与CA属性是对等的。</p>
+<p><strong>五、分解，分解，分解</strong></p>
+<p>分解CAP：“三选二”的公式一直存在着误导性，它会过分简单化各性质之间的相互关系。现在我们有必要辨析其中的细节。</p>
+<p>CAP三种性质都可以在程度上衡量，并不是非黑即白的有或无。可用性显然是在0%到100%之间连续变化的，一致性分很多级别，连分区也可以细分为不同含义，如系统内的不同部分对于是否存在分区可以有不一样的认知。</p>
+<h2 id="1、P分解：延迟？故障？分区？"><a href="#1、P分解：延迟？故障？分区？" class="headerlink" title="1、P分解：延迟？故障？分区？"></a>1、P分解：延迟？故障？分区？</h2><p><em>if you’re working with distributed systems,you should always be thinking about failure.</em></p>
+<p><em>如果你正在使用分布式系统，你应该永远考虑失败。</em></p>
+<p>故障，延迟，分区，是一组非常相关的概念。</p>
+<p>在通信网络中，最重要的两个属性是带宽和延迟。延迟也往往取决于链路转发节点的效率。由于延迟的存在，系统很难就全局状态达成一致。当链路发生故障，就会导致网络分区。由于延迟的特性，就算链路没有发生故障，系统也可能判断发生了分区。</p>
+<p>对P的分解需要从网络开始。网络包含了基础设施，光速限制以及软件配置与升级等。Google通过建设自己广域网获得高可靠的基础设施支撑，对于Google Spanner的CA系统，CAP之父曾总结说网络才是根本。</p>
+<p>而光速限制则告诫我们：一致性是一个结果，不是实时的状态。由于光速无法超越，则延迟必然存在（下图显示从加拿大到荷兰的网络延迟在150毫秒左右）。延迟的存在让一个节点无法获得对方节点的实时状态。</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062241195.jpg" alt=""></p>
+<p><em><a href="https://people.eecs.berkeley.edu/~rcs/research/interactive\_latency.html" target="_blank" rel="noopener">https://people.eecs.berkeley.edu/~rcs/research/interactive\_latency.html</a></em></p>
+<p>由于延迟的存在，有人说即时性和全球性的一致性是不可能的，宇宙根本不允许它。我以前从事分布式系统研发时，带我的博士总是告诫说，系统设计不要超越时空的限制。</p>
+<p>软件配置与升级则体现基础设施搭建工程能力和运维能力。Google调查了Spanner事故的内部原因分类显示，网络类别的事故是由网络分区和网络配置问题造成的。</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062254660.jpg" alt=""></p>
+<p>Michael Stonebraker在《Errors in Database Systems, Eventual Consistency, and the CAP Theorem》一文中通过对故障进行分解，给出进入CAP讨论范围的部分故障列表：</p>
+<ul>
+<li><p><strong>应用程序错误。</strong>应用程序执行一个或多个不正确的更新。一般来说，这不是几分钟到几个小时之后才发现的。必须将数据库备份到违规事务之前的一个时间点，然后重做后续活动。</p>
+</li>
+<li><p><strong>可重复的DBMS错误。</strong>DBMS在处理节点上崩溃。在具有副本的处理节点上执行相同的事务将导致备份崩溃。这些错误被称为Bohr错误。</p>
+</li>
+<li><p><strong>不可重复的DBMS错误。</strong>数据库崩溃了，但是一个副本很可能没问题。这些通常是由处理异步操作的奇怪角落造成的，并且被称为Heisenbugs。</p>
+</li>
+<li><p><strong>操作系统错误。</strong>操作系统崩溃在一个节点，产生“蓝屏死亡”。</p>
+</li>
+<li><p><strong>本地集群中的硬件故障。</strong>这些包括内存故障，磁盘故障等。通常，这些会导致操作系统或DBMS的“紧急停止”。但是，有些时候这些失败就像Heisenbugs一样。</p>
+</li>
+<li><p><strong>本地集群中的网络分区。</strong>LAN失败，节点不能再相互通信。</p>
+</li>
+<li><p><strong>灾难。</strong>地方数据中心被洪水，地震等等所消灭。群集不再存在。</p>
+</li>
+<li><p><strong>WAN中的网络故障将集群连接在一起。</strong>WAN失败，群集不能再相互通信。</p>
+</li>
+</ul>
+<p>Michael Stonebraker总结认为错误1、2和7是CAP定理根本不适用的情况的示例，3、4、5和6是本地故障，错误8是WAN网络中的一个分区，但这是非常罕见的。所以不要盲目的follow CAP理论，轻易的放弃一致性。分解故障，进行针对性的设计。</p>
+<p>PACELC理论本质就是对分区进行分解：发生分区时，在CA之间取舍；没有发生分区时，在C和延迟之间取舍。（我们系统设计的大多数情况就是在没有发生分区的时候）</p>
+<p>如何探知分区？这涉及到分布式系统中常见且重要的话题：故障检测。故障检测需要从从分布式系统的定义谈起：节点和连线的模型。在分布式系统中，通过消息通信建立的连接，连接两端的节点在任意时刻以及节点中运行的进程，随时都可能发生故障。</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062312511.jpg" alt=""></p>
+<p>在分布式系统中，节点故障判断必然依赖超时（时限设置），在一定的超时时间内，消息可能延迟，也可能链路故障造成的节点不可达，在这样的情况下，如何判断节点故障？常见的策略是间隔一段时间重新尝试连接，降低误判的风险，这样就增加了系统的延迟时间，也就是降低了可用性。远端节点无法准确的判断存活还是故障，就无法准确的判断分区是否真的发生。所以CAP之父在其著名的文章《CAP Twelve Years Later: How the “Rules” Have Changed》中提出了分布式设计的核心问题：分区两侧是否能够在无通信的情况下继续其操作？</p>
+<p>下面举一个复杂的例子。在分布式事务这样的场景中，涉及的消息和操作很多。每一条消息和操作都有可能故障，如下图所示。这就要求我们在程序的设计和实现过程中，针对大量的异常和故障编写代码。这就是故障检测之后的故障处理。</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062327493.jpg" alt=""></p>
+<p>故障处理如何做？有以下模型可以考虑。</p>
+<ul>
+<li><p><strong>Fail-Fast：</strong>从字面含义看就是“快速失败”，尽可能的发现系统中的错误，使系统能够按照事先设定好的错误的流程执行，对应的方式是“fault-tolerant（容错）”。只发起一次调用，失败立即报错，通常用于非幂等性的写操作。 如果有机器正在重启，可能会出现调用失败 。</p>
+</li>
+<li><p><strong>Fail-Over：</strong>含义为“失效转移”，是一种备份操作模式，当主要组件异常时，其功能转移到备份组件。其要点在于有主有备，且主故障时备可启用，并设置为主。如MySQL的双Master模式，当正在使用的Master出现故障时，可以拿备Master做主使用。阿里同学认为这里可以指失败自动切换。当出现失败，重试其它服务器，通常用于读操作（推荐使用）。 重试会带来更长延迟。</p>
+</li>
+<li><p><strong>Fail-Safe：</strong>含义为“失效安全”，即使在故障的情况下也不会造成伤害或者尽量减少伤害。维基百科上一个形象的例子是红绿灯的“冲突监测模块”当监测到错误或者冲突的信号时会将十字路口的红绿灯变为闪烁错误模式，而不是全部显示为绿灯。有时候来指代“自动功能降级” (Auto-Degrade)。阿里的同学认为失败安全，出现异常时，直接忽略，通常用于写入审计日志等操作。调用信息丢失 可用于生产环境Monitor。</p>
+</li>
+<li><p><strong>Fail-Back：</strong>Fail-over之后的自动恢复，在簇网络系统（有两台或多台服务器互联的网络）中，由于要某台服务器进行维修，需要网络资源和服务暂时重定向到备用系统。在此之后将网络资源和服务器恢复为由原始主机提供的过程，称为自动恢复。阿里的同学认为失败自动恢复，后台记录失败请求，定时重发。通常用于消息通知操作 不可靠，重启丢失。可用于生产环境 Registry。</p>
+</li>
+<li><p><strong>Forking 并行调用多个服务器，</strong>只要一个成功即返回，通常用于实时性要求较高的读操作。 需要浪费更多服务资源 。</p>
+</li>
+<li><p><strong>Broadcast广播调用，</strong>所有提供逐个调用，任意一台报错则报错。通常用于更新提供方本地状态速度慢，任意一台报错则报错。</p>
+</li>
+</ul>
+<p>上述故障模型是从系统设计的角度出发的，根据不同的需要设计不同故障处理方案。现在看来，系统的外延已经扩大。系统的容错性，或者分区容错能力，不能仅仅使用事先和事中的方案解决，系统的容错性还包括事后处理。</p>
+<p>总之，分区发现的要义是工程问题，即如何构建和加强基础设置的稳定性，如何设计出准确高效的故障检测算法。</p>
+<h2 id="2、C分解：服务器端与客户端"><a href="#2、C分解：服务器端与客户端" class="headerlink" title="2、C分解：服务器端与客户端"></a>2、C分解：服务器端与客户端</h2><p>曾经，透明性也是系统的一个要求和属性（透明性：对于系统的用户来说，只能感受到一个系统而不是多个协作系统）。曾经，系统的一致性模型只有一个：当进行更新时，所有观察者都会看到更新。曾经，我们的系统可以用“邻国相望，鸡犬之声相闻，民至老死不相往来”来描述，不是全球部署，不需要复制技术来保证高可用性，也就不会有一致性问题。</p>
+<p>然而，随着互联网的发展，可用性被认为是互联网系统中最重要的属性，特别是CAP理论的提出，使得我们不得不重新审视当初的一些系统原则。我们必须打破系统透明性，把其中的内部细节暴露出来，同时也思考我们到底需要什么？并且需要付出什么？</p>
+<p>关于一致性的讨论主要分为三个方，这个分法也是性能与一致性之间的平衡。</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062340494.jpg" alt=""></p>
+<p>强一致性</p>
+<p>Spanner</p>
+<p>PNUTS: Yahoo!’s Hosted Data ServingPlatform</p>
+<p>弱一致性</p>
+<p>Dynamo: Amazon’s Highly Available Key-valueStore</p>
+<p>CAP理论：一致性与性能之间的trade-off，目前关于这方面的研究有很多。比如：</p>
+<pre><code>Consistency tradeoffs in modern distributeddatabase system design: CAP is only part of the story
+
+Don’t Settle for Eventual:Scalable CausalConsistency for Wide-Area Storage with COPS
+
+Consistency Tradeoffs in Modern DistributedDatabase System Design
+
+Consistency rationing in the cloud pay onlywhen it matters
+
+Making Geo-Replicated Systems Fast asPossible, Consistent when Necessary    </code></pre><p>分解一致性的目的是，在系统设计时不要盲目谈CAP的三选二，而是通过分解不同业务场景和业务操作，使用合适的一致性模型。如上图所示，有大量操作是属于一致性的灰色区域。系统的设计不要以CAP为中心，而是以业务为中心。例如用户名和密码必须强一致，而用户的属性信息可以是弱一致性的。</p>
+<p>一致性模型本质上是进程和数据存储之间关于一致性所达成的约定（contract）。</p>
+<p>首先，我们从客户端的角度，看看有哪些一致性类型。</p>
+<p>强一致性：更新完成后，所有的后续读操作都会返回更新值。</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062353839.png" alt=""></p>
+<p>弱一致性：系统并不保证后续读操作获得更新值的时间点。</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062406654.jpg" alt=""></p>
+<p>最终一致性：如果没有更新，最终系统会返回最后更新的值。换句话说，如果系统在持续更新，则永远无法达到一致性。</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062419592.jpg" alt=""></p>
+<p>因果一致性：和写进程具有因果关系的进程将会读取到更新的数据，写进程保证取代上次更更新。</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062430818.jpg" alt=""></p>
+<p>读己所写一致性：进程永远读取自己上次更新写入的最新值，而不可能读取到任何历史数据。这是传统操作系统默认的一致性行为。</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062454475.png" alt=""></p>
+<p>会话一致性：在同一个会话内，系统保证读己所写的一致性。</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062504946.jpg" alt=""></p>
+<p>单调读一致性：进程在读取到系统的一个特定值，则系统永远不会再返回该值以前的任何值。</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062518660.jpg" alt=""></p>
+<p>单调写一致性：系统保证同一个进程写入操作的串行化。对于多副本系统来说，保证写顺序的一致性（串行化），是很重要的。</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062535682.png" alt=""></p>
+<p>然后我们看下服务器端。</p>
+<p>强一致性：</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062550496.png" alt=""></p>
+<p>为读而优化：</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062602417.png" alt=""></p>
+<p>为写而优化：</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062615541.png" alt=""></p>
+<p>还有一种一致性模型是PNUTS中中提出的，仅保证“时间线一致性”来放松一致性，其中副本可能不一致，但保证在所有副本上以相同的顺序应用更新。</p>
+<p>Azure Cosmos DB 中也提出了几种支持的一致性模型，并宣称可选的支持几种不同的一致性模型。</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062654159.jpg" alt=""></p>
+<h2 id="3、A分解：出来混，迟早要还的"><a href="#3、A分解：出来混，迟早要还的" class="headerlink" title="3、A分解：出来混，迟早要还的"></a>3、A分解：出来混，迟早要还的</h2><p>可用性首先体现在容错。容错不是系统能够在各种故障情况下都能工作，容错是系统发生故障时，系统能够以明确的预定方式运行。下面列出一些可用性指标。</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062707461.png" alt=""></p>
+<p>在系统设计之初，要考虑系统提供什么程度的可用性，并采用相应的一致性模型。可用性体现在用户体验。在现实生活中，更高的可用性意味着更高的收入。</p>
+<p>另外，因为分区引起的可用性问题可以通过事后补偿来获得。</p>
+<p><strong>C = A + compensation</strong> </p>
+<p>总结起来，C&gt;A&gt;P，这里的大于号，不是包含关系，也不是优先级关系，而是尽力保证P是为了CA，为了保证C,需要牺牲一点点A。或者也可以说A&gt; C&gt;P，为了保证可用性，需要牺牲暂时的不一致性。</p>
+<p>这里有人可能有疑问，在某一个场景下，我选择了可用性，那就放弃了一致性啊！那我说，你一定有补偿措施。也就是说无论事先还是事后，你总要保证一致性。</p>
+<p>当代CAP实践应将目标定为针对具体的应用，在合理范围内最大化数据一致性和可用性的“合力”。这样的思路延伸为如何规划分区期间的操作和分区之后的恢复，从而启发设计师加深对CAP的认识，突破过去由于CAP理论的表述而产生的思维局限。</p>
+<p>当发生分区时，如何设计可用性？以下几个方面供思考和探讨。</p>
+<p><strong>明确系统的不变性约束：</strong>通过仔细分析和管理在分区期间系统的不变性约束来优化CA属性。我认为系统唯一的不变性约束就是数据的一致性约束。当然你也可以设计C和A都是系统的不变性约束，然后用C=A+compensation来保证一致性，这样就是CA系统。</p>
+<p>就一致性不变性约束来说，唯一的是不变性，有两种：系统内加锁访问的对象和现实生活设置的阈值。</p>
+<p>例如航空公司，不变性约束必须至少与乘客座位一样多。如果乘客太多，有人会失去座位，理想的客户服务会以某种方式补偿这些乘客。在飞机航班“超售”的情况下，可以把乘客登机看作是对之前售票情况的分区恢复，必须恢复“座位数不少于乘客数”这项不变性约束。那么当乘客太多的时候，有些乘客将失去座位，客服需要补偿他们。航空公司的例子就是系统内需要加锁访问的对象成为不变性约束。而像ATM机最后的余额不能低于零的例子就是现实生活设置的阈值，这也是不能违背的不变性约束。ATM机的例子也可以引入政府或者操作者的背书机制：比如引入操作者的信用，如果操作者具有超过阈值的信用，就可以继续操作。还有一种补偿方式法律的形式，透支的金额由用户补偿，多扣的手续费退回给客户（和信用绑定：既然一致性已经打破系统的透明性，应用已经参与进来，那就干脆引入社会信用吧）。</p>
+<p>现在很多系统设计时没有梳理清楚系统的所有不变性约束，并且对其影响也不明确，大多选择了一致性，牺牲一点可用性。</p>
+<p><strong>设计补偿机制：</strong>管理分区就是管理补偿。根据C=A+compensation的思考，所谓不变性约束，前提是无法补偿，如果可以补偿，一切都是可变性约束。一般的补偿分为内部补偿和外部补偿。</p>
+<p>以重复的订单为例（还有一种情况是删除的数据重新出现），系统可以将合并后的订单中取消一个重复的订单，并不通知用户，这是内部补偿。如果这次错误产生了外在影响，补偿策略可以是自动生成一封电子邮件，向顾客解释系统意外将订单执行了两次，现在错误已经被纠正，附上一张优惠券下次可以用。但C=A+compensation并没有打破数据一致性约束，只是让用户在分区的情况下继续保持可用性。</p>
+<p><strong>设计数据不变性：</strong>补偿依赖完善的日志，我在这里借用《How to beat the CAP theorem》的数据不变性原理，把日志称为数据不变性。</p>
+<p><strong>这里的日志是广泛意义的日志，不仅包含数据的所有历史版本，还包括分区历史（时间，地点，人物，加上这些，世界上不存在重复的数据主键）和分区合并历史，以及节点成员关系等。是系统重构？还是节点启动加入系统？还是系统发生了分区？这些都要记录下来。这样当节点加入系统，应该能够找到自己曾经所在的父分区。我认为数据不变性+补偿机制可以打败CAP定理。</strong></p>
+<p>如果分区之后要保证可用性，用于用户继续操作数据。那么在分区合并之后，继续保持数据的分区状态也是可以的（相当于多了一条分支数据）。可以让数据的元数据中记录分区信息，甚至记录所有分区历史。分区模式操作的跟踪和限制确保知道哪些不变量可能被违反，这又使得设计者能够为每个这样的不变量创建恢复策略。这里和不变性原理是一致的：设计利用的基本原则是“数据本质上是不可变的”。这是因为数据总是与一个时间，人物，地点（分区）相关联，你可以将数据视为当时的事实。所以当你的银行帐户的余额可能会从时间T到时间T+ 1从10变化到20，以及操作的分区，这些数据，时间，人物，地点永远是真实的。有了这些数据，我们可以任何的补偿操作。上面订单重复的例子，假如没有完善的历史记录，就只好靠顾客亲自去发现错误了。</p>
+<p><strong>应用分解：</strong>有两个层面。第一是分解业务细节，有些时候这些细节也对应于系统调用或者API。例如ATM的基本操作是存款、取款、查看余额。在分区发生时，存款和查看是可以进行的，取款可以设置取款限额或者不设限额后续补偿。第二是应用程序处理补偿。不一致是否可以接受取决于客户端应用程序。在所有情况下，开发人员需要注意，存储系统提供一致性保证，并在开发应用程序时需要考虑。最终的一致性模型有一些实际的改进，例如会话级一致性和单调读取，为开发人员提供更好的工具。许多时候，应用程序能够处理存储系统的最终一致性保证，没有任何问题。</p>
+<p>从可用性的角度来看，阿里OceanBase的观点可见一斑：数据库一定是时延很低的，时延高就会导致应用出问题，实际上这个问题要花另外一个篇幅去讲，那就是应用程序必须要去适应这种时延高的数据库系统。当然用了batching和pipeling技术，本质上都是通用的工程优化，让跨网络多副本同步变得高效，但是时延一定会增加。</p>
+<p><strong>六、真正的难题</strong></p>
+<p>分布式并发读写事务。如果下图所示，进程A和B是地理上分布的两个进程，A进程对系统发起写操作，B进程同时并发的读取。</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062744751.png" alt=""></p>
+<p><strong>首先第一个难题，是否允许任意节点并发可写。</strong>在Google的F1、蚂蚁的OceanBase、亚马逊的Aurora中，都是指定一个写节点或者更新节点的（据说OB升级1.0后，所有节点都是同等地位的）。</p>
+<p><strong>第二个难题，是否支持读写并发。</strong>这里涉及到读写一致性的问题。比如上图，当用户A在写入系统的时候，用户B的读取情况是什么样子的？是读取数据的上一个快照，还是读取A写入的最新数据？用户A和用户B在读取的过程中如何加锁？特别跨越广域网的不同的数据中心的时候。这里tricky的地方在于是否要对整个数据加读写锁。目前我看Google的主要方法是目前A进程在写的时候采用多版本数据存储，并保证分布式事务。B进程可以实现无锁的快照读取。基于中心节点的机制，如果读写冲突或者写写冲突，会被锁机制拒绝，用户操作失败。</p>
+<p>这个问题还涉及到分布式事务的隔离性问题。传统数据库ANSISQL标准定义了四个“隔离等级”：</p>
+<ul>
+<li><p><strong>未提交读：</strong>一个事务可以读任何已提交或未提交的数据。这可以通过“读操作不需要请求任何锁”来实现。</p>
+</li>
+<li><p><strong>已提交读：</strong>一个事务可以读任何已提交的数据。对于同一个对象的重复读可能导致读到不同版本的数据。实现方式是，读数据前必须首先获得一个读操作锁，一旦数据读取之后该锁被立即释放。</p>
+</li>
+<li><p><strong>可重复读：</strong>一个事务只能读取一个已提交数据的一个版本；一旦该事务读取了一个对象，那么，它将只能读取该对象的同一个版本。实现方式是，事务在请求读数据之前必须获得一个锁，并且保持该锁直到事务结束。</p>
+</li>
+<li><p><strong>可串行化：</strong>保证完全的可串行化。</p>
+</li>
+</ul>
+<p>分布式数据库如何满足，是设计分布式系统的首要问题。严格说来，Google的实现应该是一种可重复读（这里还要存疑）。</p>
+<p><strong>第三个难题，元数据如何保存。</strong>用户A或B在读取或者写入系统的时候，如何获得数据的版本和时间戳？这在OceanBase、Spanner/F1，以及TiDB中PD机制中略有涉及，但都不详细。如果元数据在异地数据中心，获得元数据将会有一个广域网延迟到时间开销。我认为Google的truetime是用了物理时间代替经典的逻辑时钟，并且作为副本的时间戳，也就是版本号，这样基于truetime的精巧API设计，让版本号和物理时间线性对齐，无需去查询副本的元数据信息。相反的例子是Google Chubby提到的：在一个已经初步成熟的复杂应用程序的每次操作中引入版本号的开销是非常大的。所以后来退一步求其次，Chubby采用了仅仅在所有使用锁的操作中引入版本号。</p>
+<p><strong>第四个难题，在读写事务期间，节点故障。</strong>注意，这里是指任意节点故障，包括一次事务中的leader节点，参与节点，以及用户节点。特别是用户所在的节点故障要求系统必须有加锁租约等自恢复机制。</p>
+<p>关于锁的设计，在CAP的范围内，需要满足三点：</p>
+<ul>
+<li><p>锁对象信息的要写入多副本以应对故障</p>
+</li>
+<li><p>不同对象的锁信息需要分布化和负载均衡</p>
+</li>
+<li><p>锁信息写入持久化存储系统</p>
+</li>
+</ul>
+<p>注意，这里锁的概念和Google Chubby中锁的概念是不同的。这里是一种粗粒度的锁（leader选举），其作者也不建议把Chubby应用在细粒度锁（事务更新）的场景中。这两种锁在CAP的范围内使用时值得非常细心的研究和讨论，特别是在分布式数据库领域内。</p>
+<p><strong>第五个难题，嵌套事务或者链式事务</strong>。这是电子商务的基础。下面以Percolator的实现说明这个问题。银行转账，Bob 向 Joe 转账7元。该事务于start timestamp =7 开始，commit timestamp=8 结束。具体过程如下：</p>
+<p>1. 初始状态下，Bob的帐户下有10（首先查询column write获取最新时间戳数据,获取到data@ 5,然后从column data里面获取时间戳为5的数据，即$10），Joe的帐户下有2。</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062759269.jpg" alt=""></p>
+<p>2、转账开始，使用stattimestamp=7作为当前事务的开始时间戳，将Bob选为本事务的primary，通过写入Column Lock锁定Bob的帐户，同时将数据7:$3写入到Column,data列。</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062809361.jpg" alt=""></p>
+<p>3、同样的，使用stat timestamp=7，锁定Joe的帐户，并将Joe改变后的余额写入到Column,data,当前锁作为secondary并存储一个指向primary的引用（当失败时，能够快速定位到primary锁，并根据其状态异步清理）</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062820502.jpg" alt=""></p>
+<p>4、事务带着当前时间戳commit timestamp=8进入commit阶段：删除primary所在的lock，并在write列中写入从提交时间戳指向数据存储的一个指针commit_ts=&gt;data @ 7。至此，读请求过来时将看到Bob的余额为3。</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062829210.jpg" alt=""></p>
+<p>5、依次在secondary项中写入write并清理锁，整个事务提交结束。在本例中，只有一个secondary:Joe.</p>
+<p><img src="http://dbaplus.cn/uploadfile/2018/0131/20180131062842746.jpg" alt=""></p>
+<p><strong>七、总结</strong></p>
+<p>本文的主要观点是：</p>
+<ol>
+<li><p>CAP中的三个因素并不对等，P是基础，CA之间需要tradeoff。系统设计不是三选二的取舍。</p>
+</li>
+<li><p>延迟作为可用性的指标和体现，系统设计通常需要在C和延迟之间tradeoff。</p>
+</li>
+<li><p>CAP真正的trade-off在CA之间，系统设计需要细心分解C和A，不同的系统有不同的需求。本文在对CAP分解的基础上，提供了系统设计的一些思考方法。未来系统的设计必然是要满足多种一致性模型和多种可用性需求（例如微软的cosmos DB声称支持多种一致性模型）。</p>
+</li>
+<li><p>针对分区设计数据不变性，记录所有的分区历史，这让分区合并之后的compensation有据可依。借助社会和法律因素，一致性最终都是可以保证的。另外，如果像阿里日照的见解，可用性是一定时间延迟（可能是一天）之后返回响应（在这期间实现服务切换），那么可用性也是可以保证的。</p>
+</li>
+<li><p>在第3点的基础上，未来分布式系统需要从整体上考虑，即需要考虑IT基础设施，也要考虑应用的适应和配合，以及人类社会中的法律和补偿。</p>
+</li>
+<li><p>本文讨论了在CAP范围内，分布式系统设计的一些难点。</p>
+</li>
+</ol>
+<p>注意本文的分区和数据库的分片（分区）不是一个概念。</p>
+<p><strong>八、附录</strong></p>
+<h2 id="附录1：不变性如何打败CAP定理？"><a href="#附录1：不变性如何打败CAP定理？" class="headerlink" title="附录1：不变性如何打败CAP定理？"></a>附录1：不变性如何打败CAP定理？</h2><p>以下翻译自《how to beat CAP》。</p>
+<p>CAP定理仍然适用，所以你需要在可用性和一致性上做出选择，这里的漂亮之处在于，一旦你权衡之后做出了选择，你就做完了所有的事情。通常的那些因为CAP定理带来的问题，都可以通过不可改变的数据和从原始数据中计算查询来规避。</p>
+<p>如果你选择一致性而不是可用性，那么跟以前并没有多大的区别，因为你放弃了可用性，所以一些时候你将无法读取或者写入数据。当然这只是针对对强一致性有要求的系统。</p>
+<p>如果你选择可用性而不是一致性，在这种情况下，系统可以达到最终一致性而且规避了所有最终一致性带来的复杂问题。由于系统总是可用的，所以你总可以写入新数据或者进行查询。在出错情况下，查询可能返回的不是最近写入的数据，但根据最终一致性，这个数据最终会一致，而查询函数最终会把这个数据计算进去。</p>
+<p>这里的关键在于数据是不可变的。不可变数据意味着这里没有更新操作，所以不可能出现数据复制不同这种不一致的情况，也意味着不需要版本化的数据、矢量时钟或者读取修复。在一个查询场景中，一个数据只有存在或者不存在两种情况。这里只有数据和在数据之上的函数。这里没有需要你为确保最终一致性额外做的事情，最终一致性也不会因此使你的系统变得复杂。</p>
+<h2 id="附录2：放弃P-选择C"><a href="#附录2：放弃P-选择C" class="headerlink" title="附录2：放弃P,选择C"></a>附录2：放弃P,选择C</h2><p>在《Errors in DatabaseSystems, Eventual Consistency, and the CAP Theorem》一文中，Michael Stonebraker指出：</p>
+<p>A partition in a WAN network. There is enough redundancy engineered into today’s WANs that apartition is quite rare. My experience is that local failures andapplication errors are way more likely. Moreover, the most likely WANfailure is to separate a small portion of the network from the majority. Inthis case, the majority can continue with straightforward algorithms, and onlythe small portion must block. Hence, itseems unwise to give up consistency all the time in exchange for availabilityof a small subset of the nodes in a fairly rare scenario.</p>
+<p>In summary, one should not throw out the C so quickly, since there are realerror scenarios where CAP does not apply and it seems like a bad tradeoff inmany of the other situations.</p>
+<h2 id="附录3：用PACELC替换CAP"><a href="#附录3：用PACELC替换CAP" class="headerlink" title="附录3：用PACELC替换CAP"></a>附录3：用PACELC替换CAP</h2><p>《Problems with CAP,and Yahoo’s little known NoSQL system》</p>
+<p>Not only is the asymmetry of thecontributions of C, A, and P confusing, but the lack of latency considerationsin CAP significantly reduces its utility.</p>
+<p>In conclusion, rewriting CAP as PACELC removessome confusing asymmetry in CAP, and, in my opinion, comes closer to explainingthe design of NoSQL systems.</p>
+<p><strong>九、参考文献</strong></p>
+<ul>
+<li><p>Immutability Changes Everything</p>
+</li>
+<li><p>Transactions Across Datacenters</p>
+</li>
+<li><p><a href="https://snarfed.org/transactions\_across\_datacenters\_io.html" target="_blank" rel="noopener">https://snarfed.org/transactions\_across\_datacenters\_io.html</a></p>
+</li>
+<li><p>From the Ground Up: Reasoning AboutDistributed Systems in the Real World</p>
+</li>
+<li><p><a href="http://bravenewgeek.com/from-the-ground-up-reasoning-about-distributed-systems-in-the-real-world/" target="_blank" rel="noopener">http://bravenewgeek.com/from-the-ground-up-reasoning-about-distributed-systems-in-the-real-world/</a></p>
+</li>
+<li><p>How Google Serves Data From MultipleDatacenters</p>
+</li>
+<li><p><a href="http://highscalability.com/blog/2009/8/24/how-google-serves-data-from-multiple-datacenters.html" target="_blank" rel="noopener">http://highscalability.com/blog/2009/8/24/how-google-serves-data-from-multiple-datacenters.html</a></p>
+</li>
+<li><p>Everything You Know About Latency Is Wrong</p>
+</li>
+<li><p><a href="http://bravenewgeek.com/everything-you-know-about-latency-is-wrong/" target="_blank" rel="noopener">http://bravenewgeek.com/everything-you-know-about-latency-is-wrong/</a></p>
+</li>
+<li><p>You Can’t Sacrifice Partition Tolerance</p>
+</li>
+<li><p><a href="https://codahale.com/you-cant-sacrifice-partition-tolerance/" target="_blank" rel="noopener">https://codahale.com/you-cant-sacrifice-partition-tolerance/</a></p>
+</li>
+<li><p>Distributed systems for fun and profit</p>
+</li>
+<li><p><a href="http://book.mixu.net/distsys/single-page.html" target="_blank" rel="noopener">http://book.mixu.net/distsys/single-page.html</a></p>
+</li>
+<li><p>Distributed Systems and the CAP Theorem</p>
+</li>
+<li><p><a href="http://ternarysearch.blogspot.fi/2014/03/distributed-systems-and-cap-theorem.html" target="_blank" rel="noopener">http://ternarysearch.blogspot.fi/2014/03/distributed-systems-and-cap-theorem.html</a></p>
+</li>
+<li><p>CAP Twelve Years Later: How the”Rules” Have Changed</p>
+</li>
+<li><p><a href="http://www.infoq.com/cn/articles/cap-twelve-years-later-how-the-rules-have-changed" target="_blank" rel="noopener">http://www.infoq.com/cn/articles/cap-twelve-years-later-how-the-rules-have-changed</a></p>
+</li>
+<li><p>《How to beat the CAPtheorem》</p>
+</li>
+<li><p>A Conversation with Bruce Lindsay</p>
+</li>
+<li><p><a href="http://nathanmarz.com/blog/how-to-beat-the-cap-theorem.html" target="_blank" rel="noopener">http://nathanmarz.com/blog/how-to-beat-the-cap-theorem.html</a></p>
+</li>
+<li><p><a href="http://ternarysearch.blogspot.fi/2014/03/distributed-systems-and-cap-theorem.html" target="_blank" rel="noopener">http://ternarysearch.blogspot.fi/2014/03/distributed-systems-and-cap-theorem.html</a></p>
+</li>
+<li><p>Rethinking Eventual Consistency: Can we dobetter?</p>
+</li>
+<li><p>Rethinking Eventual Consistency</p>
+</li>
+<li><p>Perspectives on the CAP Theorem</p>
+</li>
+<li><p>Spanner, TrueTime &amp; The CAP Theorem</p>
+</li>
+<li><p>Eventual Consistent Databases: State of theArt</p>
+</li>
+<li><p>Incremental Consistency Guarantees forReplicated Objects</p>
+</li>
+<li><p><a href="http://martin.kleppmann.com/2015/05/11/please-stop-calling-databases-cp-or-ap.html" target="_blank" rel="noopener">http://martin.kleppmann.com/2015/05/11/please-stop-calling-databases-cp-or-ap.html</a></p>
+</li>
+<li><p><a href="https://github.com/aphyr/partitions-post" target="_blank" rel="noopener">https://github.com/aphyr/partitions-post</a></p>
+</li>
+<li><p><a href="https://ying-zhang.github.io/cloud/2017/spanner-truetime-cap/index.html" target="_blank" rel="noopener">https://ying-zhang.github.io/cloud/2017/spanner-truetime-cap/index.html</a></p>
+</li>
+<li><p>《数据一致性-分区可用性-性能——多副本强同步数据库系统实现之我见》</p>
+</li>
+</ul>
+<pre><code>本文转自喔家ArchiSelf订阅号（wireless\_com），原文：    http://mp.weixin.qq.com/s/gV7DqSgSkz\_X56p2X\_x\_cQ</code></pre>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/06/01/qiwihui-pocket_readings-1123/" rel="prev" title="Introduction to architecting systems for scale.">
+      <i class="fa fa-chevron-left"></i> Introduction to architecting systems for scale.
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/06/04/qiwihui-pocket_readings-1125/" rel="next" title="Best Practices Around Production Ready Web Apps with Docker Compose">
+      Best Practices Around Production Ready Web Apps with Docker Compose <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#一文带你重新审视CAP理论与分布式系统设计-分布式-dbaplus社群：围绕Data、Blockchain、AiOps的企业级专业社群。技术大咖、原创干货，每天精品原创文章推送，每周线上技术分享，每月线下技术沙龙。"><span class="nav-number"></span> <span class="nav-text">一文带你重新审视CAP理论与分布式系统设计 - 分布式 - dbaplus社群：围绕Data、Blockchain、AiOps的企业级专业社群。技术大咖、原创干货，每天精品原创文章推送，每周线上技术分享，每月线下技术沙龙。</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1、通过复制来提高可用性"><span class="nav-number"></span> <span class="nav-text">1、通过复制来提高可用性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2、使用CAP理论指导分布式系统设计"><span class="nav-number"></span> <span class="nav-text">2、使用CAP理论指导分布式系统设计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1、CAP三者并不对等：P是基础，CA之间tradeoff"><span class="nav-number"></span> <span class="nav-text">1、CAP三者并不对等：P是基础，CA之间tradeoff</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2、保证不发生分区，CA也不容易兼得"><span class="nav-number"></span> <span class="nav-text">2、保证不发生分区，CA也不容易兼得</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3、发生分区时，也不要随意牺牲CA"><span class="nav-number"></span> <span class="nav-text">3、发生分区时，也不要随意牺牲CA</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1、P分解：延迟？故障？分区？"><span class="nav-number"></span> <span class="nav-text">1、P分解：延迟？故障？分区？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2、C分解：服务器端与客户端"><span class="nav-number"></span> <span class="nav-text">2、C分解：服务器端与客户端</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3、A分解：出来混，迟早要还的"><span class="nav-number"></span> <span class="nav-text">3、A分解：出来混，迟早要还的</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#附录1：不变性如何打败CAP定理？"><span class="nav-number"></span> <span class="nav-text">附录1：不变性如何打败CAP定理？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#附录2：放弃P-选择C"><span class="nav-number"></span> <span class="nav-text">附录2：放弃P,选择C</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#附录3：用PACELC替换CAP"><span class="nav-number"></span> <span class="nav-text">附录3：用PACELC替换CAP</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

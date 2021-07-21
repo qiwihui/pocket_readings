@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="给互联网人的反侦查手册">
+<meta property="og:type" content="article">
+<meta property="og:title" content="
+
+
+给互联网人的反侦查手册 ">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/04/20/qiwihui-pocket_readings-1077/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="给互联网人的反侦查手册">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/VWpZENjIo5uiaB9KVx3ia2xsdwAaObMZ5Qibicsd3975uPdkBX53Q9toacmVvySlR4Dg8S3MtcbGsac92oImTRmpIA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/VWpZENjIo5u2L6icBW8MzYgmzuDgyGoCDicqiciavBrF0VQKUvycdCN7CN4Dic5wrjibWqZX35tNPIn7Eibz56CNnIXSA/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/VWpZENjIo5uiaB9KVx3ia2xsdwAaObMZ5Qby3SWhZq7m1cT7deQRhw1krnT8MQXe7MDhkfftgDZBmN12HJiaEiarSw/640?wx_fmt=jpeg">
+<meta property="article:published_time" content="2021-04-20T08:21:06.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.422Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://mmbiz.qpic.cn/mmbiz_png/VWpZENjIo5uiaB9KVx3ia2xsdwAaObMZ5Qibicsd3975uPdkBX53Q9toacmVvySlR4Dg8S3MtcbGsac92oImTRmpIA/640?wx_fmt=png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/04/20/qiwihui-pocket_readings-1077/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>
+
+
+给互联网人的反侦查手册  | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/04/20/qiwihui-pocket_readings-1077/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+
+
+给互联网人的反侦查手册 
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-04-20 08:21:06" itemprop="dateCreated datePublished" datetime="2021-04-20T08:21:06+00:00">2021-04-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">
+
+
+给互联网人的反侦查手册 </div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#24494;&#20449;&#21495; postlate &#21151;&#33021;&#20171;&#32461; &#26368;&#22909;&#30340;&#21830;&#19994;&#25253;&#36947; &#21592;&#24037;&#22312;&#25104;&#20026;&#19968;&#23478;&#20844;&#21496;&#30340;&#21592;&#24037;&#20043;&#21069;&#65292;&#39318;&#20808;&#26159;&#19968;&#20010;&#20154;&#65292;&#24212;&#24403;&#25317;&#26377;&#22522;&#26412;&#30340;&#26435;&#21033;&#12290;&#25991; | &#31649;&#33402;&#38639;&#32534;&#36753; | &#40644;&#20426;&#26480;&ldquo;&#36825;&#27425;&#35848;&#35805;&#27604;&#36739;&#37325;&#35201;&#65292;&#20320;&#26368;&#22909;&#23454;&#35805;&#23454;&#35828;&#12290;&rdquo;&#38754;&#21069;&#37027;&#20010;&#22352;&#30528;&#30340;&#20154;&#24320;&#21475;&#20102;&#65292;&#20182;&#36523;&#36793;&#30340;&#21516;&#20107;&#25970;&#36215;<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/3n0Kowv" target="_blank" rel="noopener">https://ift.tt/3n0Kowv</a> original site<br><br><br><br>April 20, 2021 at 04:11PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1077#issuecomment-823082297" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>4/20/2021</strong></p>
+</blockquote>
+<h2 id="给互联网人的反侦查手册-by-晚点LatePost"><a href="#给互联网人的反侦查手册-by-晚点LatePost" class="headerlink" title="给互联网人的反侦查手册 by 晚点LatePost"></a>给互联网人的反侦查手册 by 晚点LatePost</h2><p><strong>2021-04-19</strong><br><img src="https://mmbiz.qpic.cn/mmbiz_png/VWpZENjIo5uiaB9KVx3ia2xsdwAaObMZ5Qibicsd3975uPdkBX53Q9toacmVvySlR4Dg8S3MtcbGsac92oImTRmpIA/640?wx_fmt=png" alt=""></p>
+<p><strong>员工在成为一家公司的员工之前，首先是一个人，应当拥有基本的权利。</strong></p>
+<p><strong>文 | 管艺雯</strong>  </p>
+<p><strong>编辑 | 黄俊杰</strong></p>
+<p>“这次谈话比较重要，你最好实话实说。”面前那个坐着的人开口了，他身边的同事敲起键盘做笔录。</p>
+<p>不到十平米的小屋，阿番和两名问询者隔桌而坐。狭小、密闭的空间，让对峙感更加浓烈。他明白了刑侦剧里的嫌犯为什么从一坐下来开始就会感到害怕。</p>
+<p>“你日常怎样操作的，手机上都有。”问询者表明他们已经掌握了确凿的证据，“如果你交代的和我们掌握的有差异，后果会更加严重。”</p>
+<p>接着，问询者开始步步紧逼，追问具体细节。</p>
+<p>在一家电商平台巨头负责对接商户的阿番，是第一次坐在这样的位置。当然，他也从没想过会有这样的经历。不到一小时前，公司品控部通知阿番到小会议室面谈。来了他才知道，是有人举报他私下里和商家有经济往来，公司调查人员要了解具体情况。</p>
+<p>问询者让阿番自我辩解。他很快拿出聊天记录，证明自己是因为没有给商家想要的回扣，才被对方举报。</p>
+<p>但问询者并没有终止这场 “审判”，他继续追问，假设了各种利益输送的可能，让阿番证明没有发生。</p>
+<p>在一个接一个追问下，阿番有点慌了。他急于撇清问题，说，自己只是给商户送了一点小礼品，但价值不足 200 元。</p>
+<p>这就够了。虽然整个集团规定小额礼品可以接受。但阿番所在业务部有 “十诫”，其一是员工不能和商户有任何的经济往来。</p>
+<p>半个月后，阿番被公司辞退。</p>
+<p>事后，他意识到：如果证据确凿，HR 直接走程序就行了，根本不需要问询。但在那个场景下，他觉得自己完全被震慑住了。</p>
+<p>不奇怪，阿番经历了一场教科书般的审讯：在隔绝的空间里，审问方多对一谈话、夸大所掌握证据、缜密盘问每一个细节，最终从小处突破拿到口供……所有技巧都可以在美国警察审讯教材《刑事审讯与供述》（Criminal Interrogation And Confessions）里找到。这本 1962 年出版的方法论多次修订再版，被全球警方所借鉴。</p>
+<p>普通人很难不被这些手段震慑住。1967 年的米兰达案里，美国最高大法官厄尔·沃伦（Earl Warren）大段引述这本书的内容，称这种审讯是 “精神压迫”，并从此开始要求警方给嫌犯保持沉默的权利。</p>
+<p>在互联网公司里扮演这些“问询者”角色的人，很多是延续了他们上一份工作中的职业要求。</p>
+<p>在不同的公司，这样的职责由不同团队负责，有些叫内审、有些叫廉政合规部、有些叫职业道德委员会、有些叫反舞弊团队。多家公司在招聘此类职位时会明确列出 “公安系统网安、刑侦五年以上工作经验”、“一线执法办案经验” 等需求。</p>
+<p>《晚点 LatePost》接触的多位在北京、上海、杭州不同互联网巨头工作的员工都描述过类似的审问，有些是亲身经历、有些是内部听闻。有亲历者表示，审问人员在谈话中直接拿过手机查看微信信息。</p>
+<p>员工往往不明确自身权利，就被威吓录了口供。这些人被雇佣到大公司后，不再具有公权力。</p>
+<p>阿番离职后，他的这桩故事还被公司的品控做成了一个视频——XX 员工，因为给商户赠送小礼品，被品控逮住了，但他潜意识里还认为这不算违规，最后的结局是开除——这个视频就作为宣传案例，被发在公司的大群里，用来提醒其他员工。</p>
+<p>问询只是今天互联网大厂员工可能面对的极端状况。更常见的，是对公司监控的焦虑。</p>
+<p>阿番至今也不能确认自己手机上的信息是不是都被公司拿到了。“可能公司没那么无所不知”，但他最后也没法肯定。</p>
+<p>Netflix 纪录片《The Social Dilemma》详细描绘了人们在手机上做出的每一个行为，具体到你停在哪一张图片、看了多久，都被小心翼翼地监控、记录、评估，帮助互联网公司分析每个人的行为，进而调整界面和内容，诱导你看更多广告、买更多东西或者借更多钱。拥有最优秀模型的那家公司就能在商业竞争胜出。</p>
+<p>见多了数据运用的员工们，难免担心这些监控行为正在蔓延到自己身上。公司采用各种工具和手段，从员工身上获得尽可能多的剩余价值，让他们更高效工作，并试图避免公司的一切损失。</p>
+<p>在另一个城市、因为另一家公司，一场“无痕会面”正在进行。</p>
+<p>陈建明是另一个电商平台公司的技术部员工，比大部分人更有反监控意识。和晚点记者见面时，他刚刚离职，但怀疑公司依然在利用技术手段监控自己。</p>
+<p>因此，他与记者的会面格外谨慎——使用加密沟通应用 Signal 沟通；见面地点经过了他层层缜密的筛选。一开始，他提议，晚上在一座公园会面，理由是 “方便观察四周”。</p>
+<p>但彼时正值严冬，室外实在太冷，这一方案只好最终作罢。他先敲定时间，地点只给了一个范围。直至临近会面，他才谨慎地发来一个具体位置：“你来到 XX 购物中心附近”。记者到了之后，他又发消息将地点改在附近一家茶馆的包厢。</p>
+<p>见面时，陈建明明确告诉记者不能录音，并仔细检查了记者的手机、电脑。两小时的交谈结束后，陈建明步行去 2 公里外取车。</p>
+<p> “在我看来，不给别人留下任何能 trace（追踪）的痕迹总是好的。”——他显现出在公司技术监控的笼罩下，一个员工高度谨慎和自我保护的草木皆兵。</p>
+<p>阿番和陈建明的故事是员工在公司监控下的极端体现。但在几乎每家互联网公司里，程度更低的隐私侵犯几乎无处不在。</p>
+<p>办工场所公司会监控员工的几乎一切行为，比如查看内部系统某些信息的次数、社交软件上的聊天内容、午休时间浏览的网页、离开工位的时长、加班的时长、如厕的时长。即使在一个员工离职后，监控也不会停止，入职一家存在竞争关系的公司，可能会让这个员工赔偿上百万元。</p>
+<p>公司对员工的控制存在已久。仅仅是感受到被监控的感觉，也能让员工守规矩，这是一种流行的管理方式。米歇尔·福柯（Michel Foucault）称其为 “全景监狱”——人们会严格遵守规则，因为他们并不确定自己是否正受到监视。因此一些时候，监控技术要奏效，并不一定非要正常运转。</p>
+<p>20 世纪初，福特汽车发明工业生产流水线之后，创始人亨利·福特（Henry Ford）宣布在公司实行 8 小时工作制，并将薪水提到每天 5 美元——这是当时同类工种薪酬的两倍，用来激励消费、减少工人流动。</p>
+<p>福特用技术推动了现代工业制造，并为工人带来更高福利，这成为典型商业案例。但故事还有另一半。</p>
+<p>要拿到 5 美元高薪，是有严格条件的——他得是个“良民”：工人们必须允许福特公司社会部分的调查员访谈家人、朋友。一名员工曾因为 “出售房地产” 而被取消资格，另一位则因为 “饮酒” 和 “奢华婚礼” 而被剔除。福特雇佣了一位前海军军官负责“社会部门”，来监控员工。</p>
+<p>福特对工人行为的严密控制，某种程度来说，是其个人价值观的投射。而福特是一位价值观极其强烈的人，他出过一本反犹太主义巨著，被希特勒称为 “唯一伟大的（美国）企业家”。他对工人如何生活也有具体的想法。</p>
+<p>福特对员工的监视项目一直持续了 8 年，投入了巨大的资源和人力，非常多的员工对这种侵犯私人空间和家长式的控制怨声载道；但更多员工选择接受这些代价，接受的员工平均家庭储蓄在五年内翻了十倍——这像极了今天的互联网大厂员工的处境，高薪与高压并存。</p>
+<p>今天公司用技术手段可以在一秒内做到过去福特公司的调查员们投入大量的时间和人力也到不了的程度。同时调查员也依然存在。</p>
+<p>“在我看来，公司监控员工的确是一个问题，因为它确实侵犯了隐私；同时又不是一个问题，因为好像全都在这么干。” 一位在三家互联网巨头工作过的员工说。</p>
+<p>今年 1 月初，一家杭州公司给员工发放了智能坐垫，声称用来检测员工心跳、坐姿、疲劳度等健康状况，实则也会根据坐垫产生的数据，来监督员工哪些时段不在工位；去年 10 月，快手被爆料称其在厕所安装了坑位计时器。</p>
+<p>这些具体到细枝末节的监控或许不近人情，但未必违法。因为员工“同意”了。</p>
+<p>“理论上说，公司没有权利在办公网络下监控员工私人聊天信息、要求核查微信聊天记录，以及叫到密闭的小会议室问话。”中国政法大学民商经济法学院助理教授任启明表示，“但公司在做这些的时候，都能以员工已经同意为基础。”</p>
+<p>任启明说，所谓“同意”可以是公司刊发员工手册、可以是员工单次表示同意，也可以只是行为在发生时，员工没有直接拒绝被认定为配合。</p>
+<p>一位在两家互联网巨头工作过的员工表示，他认为大部分公司不会真的在 24 小时实时监控自己的所有员工——公司没有这个资源和人力。但是当公司要大裁员，或者有更高序列的管理层想针对自己的时候，确实有可能小题大作。这时，监控会成为一种手段。</p>
+<p>员工当然有自己选择一份工作的自由，而当他加入一家公司后，员工相较于公司天然是弱势的，面临着各种制约和考量——股票期权、升职空间、职场声誉。这种处境之下，当公司采取各种手段监控员工、获取信息，个体往往要面对一些曾经没有想到过的不便与不快。</p>
+<p>“所以比较好的办法是提高行为动作的基础标准，保护好自己。”阿番说。但他也清楚，“你不可能去上个班，还要花很大精力去做反刑侦的谈话应对措施，而且这种事本身就是小概率事情。”</p>
+<p>所谓互联网大厂都是中国经济里最有活力、最创新的公司，往往也是给员工最多财务回报的公司。员工选择加入这些公司，往往能创造最大价值，为自己的利益也为社会的前进。</p>
+<p>互联网公司也不是一开始就施加如此多的监控手段，都是在遇到问题后设立规则，层层叠加。如果追溯最初的目的，公司有两个无可厚非的理由：一个是保护商业机密，打击腐败行为；另一个是提升员工效率，做出更成功的产品。</p>
+<p>但无论一开始的初衷多么合理，在执行中，这些公司用的手段越来越多、覆盖的范围越来越大，已经成为了一种颇具时代特色的独特商业现象。最终，这些缺少制约的权力成为了公司管理层的工具，本质上都在帮助公司加强控制、维护少部分人利益。</p>
+<p>2021 年元旦起实行的《中华人民共和国民法典》第一次详细规定了人格权保护制度，将个人隐私保护纳入其中。</p>
+<p>员工在成为一家公司的员工之前，首先是一个人，应当拥有基本的权利。</p>
+<p><strong>反侦查手册</strong></p>
+<p>《晚点 LatePost》采访了多位互联网大公司员工，包括阿里、拼多多、字节、快手、京东、美团、腾讯等，他们有的已经在多家互联网公司工作过、有的开始管理自己的团队、有的曾经被关过 “小黑屋”、有的刚刚离职正在竞业期。</p>
+<p>他们分享了很多自己如何反监控的经验。《晚点 LatePost》整理后推出反监控手册，不是帮助员工在违规时逃避公司治理，而是为了让人在这个公司权力日渐膨胀的环境下，保护自己的隐私和尊严、减少麻烦——即使你为人坦荡、问心无愧。</p>
+<p>毕竟，工作关系并不只是把劳动力标价卖出去。 </p>
+<p><strong>入职前：</strong></p>
+<ul>
+<li><strong>了解你的工作环境</strong></li>
+</ul>
+<p>找工作前问朋友，看脉脉、知乎或者 V2EX 之类的垂直职业讨论社区已经是惯常步骤。不过一些最生动的细节往往来自诉讼记录。</p>
+<p>最高法院的裁判文书网收录最全，但它已经持续很长时间基本无法正常搜索。你可以在无讼、北大法宝等第三方网站查找公司相关的判决文书，通过这些文书所记录的各种取证信息和案情描述理解公司在遇到纠纷时会做什么、有什么数据。</p>
+<p>一家公司用硅谷起源的 OKR、在内部不用头衔和职级并不等于它愿意真正平等对待员工。</p>
+<ul>
+<li><strong>准备专门的工作微信号</strong></li>
+</ul>
+<p>这可能不是每个公司都需要。有 5 位在不同时期离职的拼多多员工向《晚点 LatePost》回忆，办理离职手续时，HR 或者主管要求自己打开微信，像老师盯学生写作业一样，看着他们退出拼多多相关微信群，有 2 位还被要求一一删除自己同事的微信好友，其中一位整整删了 2 个多小时才结束。</p>
+<p>员工离职时，公司删除员工的工作联系无可厚非。不过机制完善的公司往往远程清除钉钉、飞书、企业微信、企业邮箱等专用工具的信息。</p>
+<p>一位早先离职的拼多多员工说，她入职前就听说公司有这种不体面的环节，但又不想在离职时与公司发生冲突，就注册了单独的微信号，只和工作相关的人联系。 </p>
+<p>北京大学法学院助理教授阎天认为，如果双方事先约定了离职时删除微信，员工需要遵守。如果事先没有约定，员工有权拒绝。如果企业因此不提供离职证明，员工可以依法提起仲裁。</p>
+<p><strong>在职期间：</strong></p>
+<ul>
+<li><strong>工作和私人设备完全隔离，不在工作电脑或手机上存储个人信息</strong></li>
+</ul>
+<p>公司往往会配发工作电脑，有些还会配发工作手机。</p>
+<p>这些设备往往会安装防护软件，理由是防止电脑被攻击入侵，但就像保护一栋大楼一样，你必须对这栋大楼有很多了解，才能去保护它。也就是说，员工在电脑上的聊天内容、浏览的网页、传输的文件，都有可能被记录下来。需要的时候，公司也可以远程清空设备上的信息。</p>
+<p>大多数员工并不会用这些设备做违反公司规定的事，公司也不可能监控所有人的信息。但如果你介意公司可以获取自己的私人信息或者当前所在位置，就需要避免用工作电脑和工作手机处理个人事务。</p>
+<p>在工作电脑上存储个人数据还有信息丢失的风险。2016 年优步中国被滴滴收购的两周前，Uber 总部要求中国区所有员工安装 “Global Protect” 软件，声称可令办公环境更安全。而在宣布出售中国业务前几小时，安装该软件的电脑上的所有数据都被紧急清空。据《人物》杂志报道，当时有员工的私人照片、实习生的毕业论文都被清除。</p>
+<ul>
+<li><strong>不要用私人的电脑或者手机连接公司网络</strong></li>
+</ul>
+<p>在私人电脑和手机上连接公司的 VPN 网络或者公司 Wi-Fi 联网后，传输的信息都有被公司截取的风险。</p>
+<p>微信等软件会加密所传输数据，但根据深信服等企业监控设备提供商，至少电脑上的微信客户端聊天是可以截取的。</p>
+<p>IT 与知识产权律师赵占领告诉《晚点 LatePost》，公司在办公场所对员工和派发的工作电脑和工作手机上安装软件进行监控，在法律上是被允许的。</p>
+<p>但如果在员工的私人手机里要安装监控软件，赵占领律师表示，“那就必须要明确告知会监控哪些信息，经过员工同意，如果超出告知的范围，比如你告知只是安装一个 VPN ，但实际会监听你的通话录音，那显然就侵犯到了员工的隐私权。”</p>
+<p>但这只是从理论角度的分析，实际情况中，员工想要举证自己被监听非常困难。 </p>
+<ul>
+<li><strong>勿以恶小而为之</strong></li>
+</ul>
+<p>公司都有员工规范，除了一些大是大非，还有很多细节，具体到比如不能向合作伙伴赠送超过 XX 元的礼品，不能虚报打车费用等等。</p>
+<p>员工可能觉得虚报百十来元的打车费用是件小事，但这同样是违规。如果公司以此为由开除员工，程序上没有漏洞。</p>
+<p>比如 2016 年，阿里开除了几名利用技术手段抢内销月饼的程序员，之后也开除过多报销加班车费的员工。《晚点 LatePost》采访的一位互联网公司中层也曾处理过一位淘宝上买病假条的员工。</p>
+<p>有些处罚，有人会觉得小题大做，甚至阿里首席人才官童文红也曾在内部反思，说月饼事件处罚得可能过重。（详见<a href="http://mp.weixin.qq.com/s?__biz=MzU3Mjk1OTQ0Ng==&mid=2247485902&idx=1&sn=6e98cb8a107fa4f3081c456dde612786&chksm=fcc9b677cbbe3f61dba27ec36cd82355009d0aff9ef1fc6b7049a92f1995d3d298adb750d896&scene=21#wechat_redirect" target="_blank" rel="noopener">《阿里内部价值观大辩论：谁的红线？》</a>）但规则和标准的那条线，始终掌握在公司的管理层手中。</p>
+<ul>
+<li><strong>访问内部信息都留下记录</strong></li>
+</ul>
+<p>企业内部系统、聊天工具都会打上不易察觉的水印，截图后分享出去会暴露身份。很多办公通信工具会记录员工截屏或复制的操作。 </p>
+<p>水印是很基础的常识，但依然有很多员工不知道或者不在意，把公司内部信等随意截图发给别人，最后被广泛传播。</p>
+<p>被记录的几乎是一切。大到访问商业机密：查看商业数据、OKR 的行为往往被记录；小到开门：在多家并不要求员工打卡的互联网巨头，HR 都会根据门禁刷卡信息提醒团队负责人，评估出门较早的员工工作是否不饱和。</p>
+<p>监控有时候会成为一种手段，当公司要大裁员，或者内部斗争，都可能小题大作。甚至监控也可能成为公司政治斗争，清除异己的工具。</p>
+<ul>
+<li><strong>泄露你隐私的不只是数据</strong></li>
+</ul>
+<p>缩小范围，再通过询问目标身边的人是基本侦查手段。不过今天的互联网大厂并不只在察觉员工违规或犯罪行为时使用这招，有时候只是为了让不利于公司的声音消失——哪怕员工所述属实。</p>
+<p>一位原拼多多员工曾被要求向同事套话。原因是有人在脉脉上发帖抱怨办公电梯故障，自己打卡迟到被罚。HR 查到是哪些人被困后，联系这位员工，让他去问一位有私交的同事，是否在脉脉上发了帖子。</p>
+<ul>
+<li><strong>极端情况下，不要默许公司的行为</strong></li>
+</ul>
+<p>阿番经历的“小黑屋”听上去不合理，但却并不违法。</p>
+<p>“除非询问的内容涉及员工个人隐私、商业秘密或者国家秘密，否则员工原则上不能拒绝被询问。”阎天教授表示，企业问询员工是行使管理权的一部分。</p>
+<p>但企业的权力有一些限制，包括不能涉及隐私信息、查看微信聊天记录前需要获得员工同意等。如果企业以拒绝问话为由开除员工，也需要有相应的规章制度支持。</p>
+<p>这样的问询没有公平可言。企业如果起诉员工，可以只提供问询中对自己有利的部分。员工若没有证据，很难证明当时双方说过什么。</p>
+<p>多位被问询的员工说，自己事后也觉得在和品控、HR、领导沟通时应该录音，但慌乱中都没有录。面对经验丰富，甚至有刑侦经验的企业内部人员，个体是脆弱的。</p>
+<p>很多被问询的人确实存在过错，但也有人在慌乱中，听从多交代一些可以从轻处理的说辞，承认了自己没犯过的过错，并被开除。警方有更多调查手段、更严格的审讯规范，尚难免错案，何况企业。</p>
+<p>一位在一家平台电商公司品控部门工作过的员工告诉《晚点 LatePost》，如果员工不承认，品控就会列出证据继续询问，期间会有一定程度的语言威胁，但他们不会使用暴力——这显然是违法的。</p>
+<p>品控的目的还是摧毁员工的心理防线，让员工亲口承认错误。他们也许会直接拿过员工的手机一条一条翻微信聊天记录。</p>
+<p>如任启明教授所说，如果此时员工没有直接拒绝问询者拿走手机，那企业的行为就会被认定得到了员工的默许。</p>
+<p>一个人很难为刑侦式的问询做什么心理准备，但拒绝不合理的要求是可以做的——对面并不是警察，没有强制权。</p>
+<p><strong>离职：</strong></p>
+<ul>
+<li><strong>离职前谨慎更新简历、查询信息</strong></li>
+</ul>
+<p>一个人在领英、脉脉等渠道更新简历，往往会被猎头视为潜在求职对象。一些企业的 HR 也是这么想的。</p>
+<p>一位有多家互联网巨头工作经验的员工建议，离职前不要轻易向公开平台释放简历及相关信息，而是在私下场合谨慎表达对工作的意愿和态度；默认公司会爬取领英、招聘网站数据，如果你只是在招聘平台更新简历，也可能会被识别为潜在离职人员。</p>
+<ul>
+<li><strong>关于竞业协议，我们也找不到什么好建议</strong></li>
+</ul>
+<p>竞业协议是指公司通过劳动合同和保密协议，禁止离职员工在离职后一段时间内，加入与原公司有业务竞争的公司，包括员工自行创建的与原公司业务范围相同的企业。目前已经广泛应用于各大互联网公司。</p>
+<p>员工往往不认可竞业协议，但作为离职的附属条件，他们如果不申请仲裁就无法避免。一些公司的竞业协议上几乎把所有一定规模的互联网公司都列上去了，让员工离职后几乎无处可去。（详见<a href="http://mp.weixin.qq.com/s?__biz=MzU3Mjk1OTQ0Ng==&mid=2247484214&idx=1&sn=b1224a60029f5b6f5cb7ec35d2f0c4f1&chksm=fcc9bc8fcbbe359918a4c19c3984f7e2f7fe6a896665e0b2f0a1517837e473ee190f5716cd4b&scene=21#wechat_redirect" target="_blank" rel="noopener">《全网通缉前员工的互联网大公司们》</a>）</p>
+<p>离职后，原公司会要求涉及到竞业的员工每个月向指定固定邮箱提交每个月的社保缴纳情况。律师建议，这个邮箱发过来的邮件不要收、公司打竞业补偿金的银行卡不要用，以免被公司作为起诉证据。</p>
+<p>换新的手机号、不接听陌生电话、不对前同事透露新公司信息都是今天互联网大厂员工规避竞业协议处罚的常用手段。</p>
+<p>一些公司的 HR 甚至建议不要在手机上安装任何前公司的应用——哪怕是针对消费者的应用，以避免技术手段监控。并且入职后新公司不要收来路不明的快递、上下班戴口罩、出门前取下工牌。</p>
+<p>这些听上去神经兮兮的建议并不是没由来。 </p>
+<p>根据法院公布的裁判文书，字节跳动为起诉一位前员工违反竞业协议加入腾讯，向他所在工作场所寄送快递取得收件证明、拍摄那位员工进入办公楼的视频。同样的手法，你也可以在腾讯、美团等公司相关的诉讼判决文书中找到。根据一份判决，互联网公司互相偷拍的视频可以详尽到，连续三天在对方办公楼内拍摄前员工走动、电梯上与人打招呼的视频。</p>
+<p>竞业协议最初只是限制高管和核心技术人员加入主要竞争对手，现在覆盖的员工层级不断变大、波及公司也越来越多。甚至，不在列表中的公司也会被判违规。</p>
+<p>今年 3 月，腾讯与两位前员工的竞业限制纠纷案件被曝光，两位前员工此前皆就职于腾讯游戏部门，离职后入职科之锐公司，但实则加入了腾讯游戏的竞争对手米哈游公司，法院接受了腾讯的主张，判决两位前员工违约金皆达百万元。</p>
+<p>因为竞业限制纠纷被罚款的案例不在少数，但腾讯与米哈游案例典型之处在于：其中一名员工的竞业协议中，米哈游不在名单上，但依然被判处罚款；被腾讯竞业的米哈游也会要求员工签署竞业协议。</p>
+<p>关于公司竞业限制的范围，赵占领律师曾表示，有的公司采用明确列举，有的采用概括方式，而腾讯采用的就是列举加概括的方式。所以，即使入职没有被列在竞业名单上的公司，但只要存在竞争关系，哪怕从事不直接相关的岗位，员工依然可能存在违反竞业的风险。</p>
+<p>任启明教授认为，互联网公司随具体业务的发展，进入其他互联网业务领域。因此一家互联网公司将其他大型互联网公司均视为竞争对手，具有经营本身的合理性。这也是目前法院做出裁决的依据。</p>
+<p>结果是竞业协议可以涵盖几乎整个互联网行业，成为企业单方面约束员工的手段。面对公司能够调用的侦查资源，员工也基本无从躲避。</p>
+<p>“现有的公司法和劳动法，更多是以福特生产线以来的现代大型产业公司为模型，并在此基础上形成了相关的法律制度。这些法律制度，未必能够适应当下的互联网公司的发展，这也是为何关于互联网公司的争议不断。”任启明教授表示。</p>
+<p>他认为解决这些矛盾，法律需要随数字经济发展而更新。员工也需要通过集体谈判、争取社会公众，以获得更大力量，才能改变目前的不对等地位。</p>
+<p>互联网平台公司的兴起，一定程度上改变了传统劳动法理论对于企业形态的假设，也改变了企业与员工的力量平衡。</p>
+<p>平等关系，从来都是需要争取的。</p>
+<p><strong>（文中阿番、陈建明为化名。）</strong></p>
+<p>- FIN -</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/VWpZENjIo5u2L6icBW8MzYgmzuDgyGoCDicqiciavBrF0VQKUvycdCN7CN4Dic5wrjibWqZX35tNPIn7Eibz56CNnIXSA/640?wx_fmt=jpeg" alt=""></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/VWpZENjIo5uiaB9KVx3ia2xsdwAaObMZ5Qby3SWhZq7m1cT7deQRhw1krnT8MQXe7MDhkfftgDZBmN12HJiaEiarSw/640?wx_fmt=jpeg" alt=""></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/04/20/qiwihui-pocket_readings-1076/" rel="prev" title="死前100件事 （完结）">
+      <i class="fa fa-chevron-left"></i> 死前100件事 （完结）
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/04/21/qiwihui-pocket_readings-1078/" rel="next" title="SSL 指纹识别和绕过">
+      SSL 指纹识别和绕过 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#给互联网人的反侦查手册-by-晚点LatePost"><span class="nav-number"></span> <span class="nav-text">给互联网人的反侦查手册 by 晚点LatePost</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

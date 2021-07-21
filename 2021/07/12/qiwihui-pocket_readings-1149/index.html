@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="5 分钟搞懂高性能分布式消息系统 Kafka">
+<meta property="og:type" content="article">
+<meta property="og:title" content="
+
+
+5 分钟搞懂高性能分布式消息系统 Kafka ">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/07/12/qiwihui-pocket_readings-1149/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="5 分钟搞懂高性能分布式消息系统 Kafka">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/8ZFzrRjqatoic3DPOUXAUMw7aB3knsujjXGMMUr8358hWVzkrI2dnKuusXx5sanK595rthXUWoADUzTS6RHibCibA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvatDFVsqVJ1a4Ugshk7PWX3jLwxzgD4YYZrRZqCGApPVNM3NictdpVnL3WibPLs6wupC44N7UWjtdgcw/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvatDFVsqVJ1a4Ugshk7PWX3jceT2h0PQD6N2icSib3423LCzA9GqNUwOfNLibhUjNicXfBz0vtGpKH3LhA/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/j3gficicyOvasEtFG6LQPP2j6QQlo4YF3v3MNSVwSnAgy1MV0aBfHMc5fxxB7ibdBYySMjXnO39Xmoa6SKUm5PibicA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvatDFVsqVJ1a4Ugshk7PWX3juOe0ibBU82ZCibvtVaMyZ7NSWCmYibyFrBlBSXeEQeTr0mk0XveQqHurQ/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvatDFVsqVJ1a4Ugshk7PWX3jVBbujfzMQspChia0rDuPkKOHUmz7jVbFfx4lfkERWRIrSO7GDTJqmnA/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvatDFVsqVJ1a4Ugshk7PWX3jClGd3jFibewKx7vqHic3RpTwHpzdIkzGkIMarPGhEvxqKepDfYm2qacA/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvatDFVsqVJ1a4Ugshk7PWX3jsicbWcIlQkiaGcNZxnh9E1La3dpcGby58U1CN63I9sEVSQicVqkwOehjQ/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvatDFVsqVJ1a4Ugshk7PWX3jAK54VLv6bGE7oX91qXZVibvC2p0uz5UbKk7vM5Bxd21n5jicnUPAyYnw/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvatDFVsqVJ1a4Ugshk7PWX3j2IVeqibXSo341SlLC3AMsHgjqkHUcCKlUz5iaTvSBOGkqbNDBGVI9fVQ/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvatDFVsqVJ1a4Ugshk7PWX3jznKoxsnuf6FId7daSFonicKBbx4DcgNQtOQLQ0F02JlkMtcdARC0YnQ/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvatDFVsqVJ1a4Ugshk7PWX3jKul2ct8RxpfK6AcvPt6EzI7HBKgI1ytqcehNDmbuucQ2SvDiaadmRng/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvatDFVsqVJ1a4Ugshk7PWX3j1wmPLrApswsa4GTuZkplTvUTSMPKvsuAg0UwQicAuwiacWiaMC30L0VBA/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvatDFVsqVJ1a4Ugshk7PWX3jIvIdxWwBJOaN4xTL29mgB3PkrSKMHAPibiafZJ6AWVMTfEUJtZnT4Gqw/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvatDFVsqVJ1a4Ugshk7PWX3jMlxgbwib1mJxW8xLfkry0vO9WTXTmpXPATua1MQn4C18PETa9SK7quA/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvatDFVsqVJ1a4Ugshk7PWX3jOla6fFiawoTYjD8o7GRAlRY0kmYBKk5wRjgKAGJwW48E3HbV0ShdqjA/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_gif/V3ll7FMyGyMqQC7JRNgVZlsiaJibSyp27USlRia194K6Nqfvz8Wblg7HDceOn4Y3MekppS14lazRZTKLdt2BHuYGA/640?wx_fmt=gif">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/V3ll7FMyGyMSBQlhpwK0j3jOS5icKmFncGJdY8kL5kY6AswDpOBsz06GFowoDicL2dC2fr9haibnrwNdZ7rJLXqUA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/8ZFzrRjqatrib8ooJBib9Cp75cmyticOyZOlYY6ZaFEEsicjE53WoeLF4QocIVB0rMq6lCQAvPndudNw0lu1dBOW5w/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/8ZFzrRjqatp2tT33oPt3QewgUFpSTicnbQclteiaQSLibeOJ1D7RRwicwuib1cZ7ZraaiblWGwyIsHpMM4mZgezvc5Tw/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/8ZFzrRjqatpX5KlSvhARyBhcqYmvglSE9zMfzA8CSgNIibAiaFFNHBoXujK9vo2655gRWM5RibLzzF6jPhk4CuYAg/640?wx_fmt=png">
+<meta property="article:published_time" content="2021-07-12T04:22:29.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.422Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://mmbiz.qpic.cn/mmbiz_png/8ZFzrRjqatoic3DPOUXAUMw7aB3knsujjXGMMUr8358hWVzkrI2dnKuusXx5sanK595rthXUWoADUzTS6RHibCibA/640?wx_fmt=png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/07/12/qiwihui-pocket_readings-1149/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>
+
+
+5 分钟搞懂高性能分布式消息系统 Kafka  | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/07/12/qiwihui-pocket_readings-1149/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+
+
+5 分钟搞懂高性能分布式消息系统 Kafka 
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-07-12 04:22:29" itemprop="dateCreated datePublished" datetime="2021-07-12T04:22:29+00:00">2021-07-12</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">
+
+
+5 分钟搞懂高性能分布式消息系统 Kafka </div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#21151;&#33021;&#20171;&#32461; &#36825;&#37324;&#26159; Linux &#29233;&#22909;&#32773;&#30340;&#32858;&#38598;&#22320;&#65292;&#19981;&#20165;&#26377;&#21508;&#31181;&#30828;&#26680;&#24178;&#36135;&#25991;&#31456;&#21644;&#26032;&#22855;&#20869;&#23481;&#8203;&#25512;&#33616;&#65292;&#36824;&#24120;&#24120;&#26377;&#31119;&#21033;&#32418;&#21253;&#31561;&#20320;&#26469;&#39046;&#21727;&#12290;&#24555;&#24555;&#21152;&#20837;&#25105;&#20204;&#65292;&#19968;&#36215;&#24841;&#24555;&#29609;&#32781;&#21543;&#65281;<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/3k9BUDQ" target="_blank" rel="noopener">https://ift.tt/3k9BUDQ</a> original site<br><br><br><br>July 12, 2021 at 11:28AM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1149#issuecomment-877959355" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>7/12/2021</strong></p>
+</blockquote>
+<h2 id="5-分钟搞懂高性能分布式消息系统-Kafka-by-奇妙的Linux世界"><a href="#5-分钟搞懂高性能分布式消息系统-Kafka-by-奇妙的Linux世界" class="headerlink" title="5 分钟搞懂高性能分布式消息系统 Kafka by 奇妙的Linux世界"></a>5 分钟搞懂高性能分布式消息系统 Kafka by 奇妙的Linux世界</h2><p><strong>2021-07-05</strong><br>公众号关注 「奇妙的 Linux 世界」  </p>
+<p>设为「星标」，每天带你玩转 Linux ！</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/8ZFzrRjqatoic3DPOUXAUMw7aB3knsujjXGMMUr8358hWVzkrI2dnKuusXx5sanK595rthXUWoADUzTS6RHibCibA/640?wx_fmt=png" alt="">  </p>
+<p>kafka 由 LinkedIn 公司推出的一个高吞吐的分布式消息系统，通俗的说就是一个基于发布和订阅的消息队列。</p>
+<blockquote>
+<p>官网地址：<a href="https://kafka.apache.org/intro" target="_blank" rel="noopener">https://kafka.apache.org/intro</a></p>
+</blockquote>
+<h2 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h2><ul>
+<li><p>异步解构：在上下游没有强依赖的业务关系或针对单次请求不需要立刻处理的业务；</p>
+</li>
+<li><p>系统缓冲：有利于解决服务系统的吞吐量不一致的情况，尤其对处理速度较慢的服务来说起到缓冲作用；</p>
+</li>
+<li><p>消峰作用：对于短时间偶现的极端流量，对后端的服务可以启动保护作用；</p>
+</li>
+<li><p>数据流处理：集成 spark 做实时数据流处理。</p>
+</li>
+</ul>
+<h2 id="Kafka-拓扑图（多副本机制）"><a href="#Kafka-拓扑图（多副本机制）" class="headerlink" title="Kafka 拓扑图（多副本机制）"></a>Kafka 拓扑图（多副本机制）</h2><p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvatDFVsqVJ1a4Ugshk7PWX3jLwxzgD4YYZrRZqCGApPVNM3NictdpVnL3WibPLs6wupC44N7UWjtdgcw/640?wx_fmt=jpeg" alt=""></p>
+<p>由上图我们可以发现 Kafka 是分布式，同时对于每一个分区都存在多副本，同时整个集群的管理都通过 zookeeper 管理。  </p>
+<h2 id="Kafka-核心组件"><a href="#Kafka-核心组件" class="headerlink" title="Kafka 核心组件"></a>Kafka 核心组件</h2><h3 id="broker"><a href="#broker" class="headerlink" title="broker"></a>broker</h3><p>Kafka 服务器，负责消息存储和转发；一 broker 就代表一个 kafka 节点。<strong>一个 broker 可以包含多个 topic</strong></p>
+<h3 id="topic"><a href="#topic" class="headerlink" title="topic"></a>topic</h3><p>消息类别，Kafka 按照 topic 来分类消息</p>
+<h3 id="partition"><a href="#partition" class="headerlink" title="partition"></a>partition</h3><ul>
+<li><p>topic 的分区，一个 topic 可以包含多个 partition，topic 消息保存在各个 partition 上；由于一个 topic 能被分到多个分区上，给 kafka 提供给了并行的处理能力，这也正是 kafka 高吞吐的原因之一。</p>
+</li>
+<li><p>partition 物理上由多个 segment 文件组成，每个 segment 大小相等，<strong>顺序读写（这也是 kafka 比较快的原因之一，不需要随机写）</strong>。每个 Segment 数据文件以该段中最小的 offset ，文件扩展名为.log。当查找 offset 的 Message 的时候，通过二分查找快速找到 Message 所处于的 Segment 中。</p>
+</li>
+</ul>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvatDFVsqVJ1a4Ugshk7PWX3jceT2h0PQD6N2icSib3423LCzA9GqNUwOfNLibhUjNicXfBz0vtGpKH3LhA/640?wx_fmt=jpeg" alt=""></p>
+<h3 id="offset"><a href="#offset" class="headerlink" title="offset"></a>offset</h3><ul>
+<li><p>消息在日志中的位置，可以理解是消息在 partition 上的偏移量，也是代表该消息的 <strong>唯一序号</strong>。</p>
+</li>
+<li><p>同时也是主从之间的需要同步的信息。</p>
+</li>
+</ul>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/j3gficicyOvasEtFG6LQPP2j6QQlo4YF3v3MNSVwSnAgy1MV0aBfHMc5fxxB7ibdBYySMjXnO39Xmoa6SKUm5PibicA/640?wx_fmt=png" alt=""></p>
+<h3 id="Producer"><a href="#Producer" class="headerlink" title="Producer"></a>Producer</h3><p>生产者，负责向 Kafka Broker 发消息的客户端</p>
+<h3 id="Consumer"><a href="#Consumer" class="headerlink" title="Consumer"></a>Consumer</h3><p>消息消者，负责消费 Kafka Broker 中的消息</p>
+<h3 id="Consumer-Group"><a href="#Consumer-Group" class="headerlink" title="Consumer Group"></a>Consumer Group</h3><p>消费者组，每个 Consumer 必须属于一个 group；（<strong>注意的是 一个分区只能由组内一个消费者消费，消费者组之间互不影响。</strong>）</p>
+<h3 id="Zookeeper"><a href="#Zookeeper" class="headerlink" title="Zookeeper"></a>Zookeeper</h3><p>管理 kafka 集群，负责存储了集群 broker、topic、partition 等 meta 数据存储，同时也负责 broker 故障发现，partition leader 选举，负载均衡等功能。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvatDFVsqVJ1a4Ugshk7PWX3juOe0ibBU82ZCibvtVaMyZ7NSWCmYibyFrBlBSXeEQeTr0mk0XveQqHurQ/640?wx_fmt=jpeg" alt=""></p>
+<p>服务治理  </p>
+<hr>
+<p>既然 Kafka 是分布式的发布/订阅系统，这样如果做的集群之间数据同步和一致性，kafka 是不是肯定不会丢消息呢？以及宕机的时候如果进行 Leader 选举呢？</p>
+<h3 id="数据同步"><a href="#数据同步" class="headerlink" title="数据同步"></a>数据同步</h3><p>在 Kafka 中的 Partition 有一个 leader 与多个 follower，producer 往某个 Partition 中写入数据时，只会往 leader 中写入数据，然后数据才会被复制进其他的 Replica 中。而每一个 follower 可以理解成一个消费者，定期去 leader 去拉取消息。而只有数据同步了后，kafka 才会给生产者返回一个 ACK 告知消息已经存储落地了。</p>
+<h4 id="ISR"><a href="#ISR" class="headerlink" title="ISR"></a>ISR</h4><p>在 Kafka 中，为了保证性能，Kafka 不会采用强一致性的方式来同步主从的数据。而是维护了一个：in-sync Replica 的列表，Leader 不需要等待所有 Follower 都完成同步，只要在 ISR 中的 Follower 完成数据同步就可以发送 ack 给生产者即可认为消息同步完成。同时如果发现 ISR 里面某一个 follower 落后太多的话，就会把它剔除。</p>
+<p>具体流程如下：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvatDFVsqVJ1a4Ugshk7PWX3jVBbujfzMQspChia0rDuPkKOHUmz7jVbFfx4lfkERWRIrSO7GDTJqmnA/640?wx_fmt=jpeg" alt=""></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvatDFVsqVJ1a4Ugshk7PWX3jClGd3jFibewKx7vqHic3RpTwHpzdIkzGkIMarPGhEvxqKepDfYm2qacA/640?wx_fmt=jpeg" alt=""></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvatDFVsqVJ1a4Ugshk7PWX3jsicbWcIlQkiaGcNZxnh9E1La3dpcGby58U1CN63I9sEVSQicVqkwOehjQ/640?wx_fmt=jpeg" alt=""></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvatDFVsqVJ1a4Ugshk7PWX3jAK54VLv6bGE7oX91qXZVibvC2p0uz5UbKk7vM5Bxd21n5jicnUPAyYnw/640?wx_fmt=jpeg" alt=""></p>
+<p><strong>上述的做法并无法保证 kafka 一定不丢消息。</strong> 虽然 Kafka 通过多副本机制中最大限度保证消息不会丢失，但是如果数据已经写入系统 page cache 中但是还没来得及刷入磁盘，此时突然机器宕机或者掉电，那消息自然而然的就会丢失。  </p>
+<h4 id="Kafka-故障恢复"><a href="#Kafka-故障恢复" class="headerlink" title="Kafka 故障恢复"></a>Kafka 故障恢复</h4><p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvatDFVsqVJ1a4Ugshk7PWX3j2IVeqibXSo341SlLC3AMsHgjqkHUcCKlUz5iaTvSBOGkqbNDBGVI9fVQ/640?wx_fmt=jpeg" alt=""></p>
+<p>Kafka 通过 Zookeeper 连坐集群的管理，所以这里的选举机制采用的是 Zab(zookeeper 使用)。</p>
+<ul>
+<li><p>生产者发生消息给 leader，这个时候 leader 完成数据存储，突然发生故障，没有给 producer 返回 ack；</p>
+</li>
+<li><p>通过 ZK 选举，其中一个 follower 成为 leader，这个时候 producer 重新请求新的 leader，并存储数据。</p>
+</li>
+</ul>
+<h2 id="Kafka-为什么这么快"><a href="#Kafka-为什么这么快" class="headerlink" title="Kafka 为什么这么快"></a>Kafka 为什么这么快</h2><h3 id="顺序写磁盘"><a href="#顺序写磁盘" class="headerlink" title="顺序写磁盘"></a>顺序写磁盘</h3><p>Kafka 采用了顺序写磁盘，而由于顺序写磁盘相对随机写，减少了寻地址的耗费时间。（在 Kafka 的每一个分区里面消息是有序的。</p>
+<h3 id="Page-Cache"><a href="#Page-Cache" class="headerlink" title="Page Cache"></a>Page Cache</h3><p>Kafka 在 OS 系统方面使用了 Page Cache 而不是我们平常所用的 Buffer。Page Cache 其实不陌生，也不是什么新鲜事物。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvatDFVsqVJ1a4Ugshk7PWX3jznKoxsnuf6FId7daSFonicKBbx4DcgNQtOQLQ0F02JlkMtcdARC0YnQ/640?wx_fmt=jpeg" alt=""></p>
+<p>我们在linux上查看内存的时候，经常可以看到buff/cache，两者都是用来加速IO读写用的，而cache是作用于读，也就是说，磁盘的内容可以读到cache里面这样，应用程序读磁盘就非常快；而buff是作用于写，我们开发写磁盘都是，一般如果写入一个buff里面再flush就非常快。而kafka正是把这两者发挥了极致：Kafka虽然是scala写的，但是依旧在Java的虚拟机上运行，尽管如此，kafka它还是尽量避开了JVM的限制，它利用了Page cache来存储，这样躲开了数据在JVM因为GC而发生的STW。另一方面也是Page Cache使得它实现了零拷贝，具体下面会讲。</p>
+<h3 id="零拷贝"><a href="#零拷贝" class="headerlink" title="零拷贝"></a>零拷贝</h3><p>无论是优秀的 Netty 还是其他优秀的 Java 框架，基本都在零拷贝减少了 CPU 的上下文切换和磁盘的 IO。当然 Kafka 也不例外。零拷贝的概念具体这里不作太详细的复述，大致的给大家讲一下这个概念。</p>
+<h4 id="传统的一次应用程序请求数据的过程"><a href="#传统的一次应用程序请求数据的过程" class="headerlink" title="传统的一次应用程序请求数据的过程"></a>传统的一次应用程序请求数据的过程</h4><p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvatDFVsqVJ1a4Ugshk7PWX3jKul2ct8RxpfK6AcvPt6EzI7HBKgI1ytqcehNDmbuucQ2SvDiaadmRng/640?wx_fmt=jpeg" alt=""></p>
+<p>这里大致可以发传统的方式发生了 4 次拷贝，2 次 DMA 和 2 次 CPU，而 CPU 发生了 4 次的切换。_（DMA 简单理解就是，在进行 I/O 设备和内存的数据传输的时候，数据搬运的工作全部交给 DMA 控制器，而 CPU 不再参与任何与数据搬运相关的事情）。</p>
+<h4 id="零拷贝的方式"><a href="#零拷贝的方式" class="headerlink" title="零拷贝的方式"></a>零拷贝的方式</h4><p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvatDFVsqVJ1a4Ugshk7PWX3j1wmPLrApswsa4GTuZkplTvUTSMPKvsuAg0UwQicAuwiacWiaMC30L0VBA/640?wx_fmt=jpeg" alt=""></p>
+<p>通过优化我们可以发现，CPU 只发生了 2 次的上下文切换和 3 次数据拷贝。（linux 系统提供了系统事故调用函数“ sendfile()”，这样系统调用，可以直接把内核缓冲区里的数据拷贝到 socket 缓冲区里，不再拷贝到用户态）。</p>
+<h4 id="分区分段"><a href="#分区分段" class="headerlink" title="分区分段"></a>分区分段</h4><p>我们上面也介绍过了，kafka 采取了分区的模式，而每一个分区又对应到一个物理分段，而查找的时候可以根据二分查找快速定位。这样不仅提高了数据读的查询效率，也提供了并行操作的方式。</p>
+<h4 id="数据压缩"><a href="#数据压缩" class="headerlink" title="数据压缩"></a>数据压缩</h4><p>Kafka 对数据提供了：Gzip 和 Snappy 压缩协议等压缩协议，对消息结构体进行了压缩，一方面减少了带宽，也减少了数据传输的消耗。</p>
+<h2 id="Kafka-安装"><a href="#Kafka-安装" class="headerlink" title="Kafka 安装"></a>Kafka 安装</h2><h3 id="安装-JDK"><a href="#安装-JDK" class="headerlink" title="安装 JDK"></a>安装 JDK</h3><p>由于使用压缩包还需要自己配置环境变量，所以这里推荐直接用 yum 安装，熟悉查看目前 Java 的版本：</p>
+<p><code>$ yum -y list Java*</code></p>
+<p>安装你想要的版本，这里我是 1.8</p>
+<p><code>$ yum install java-1.8.0-openjdk-devel.x86_64</code></p>
+<p>查看是否安装成功</p>
+<p><code>$ Java -version</code></p>
+<h3 id="安装-Zookeeper"><a href="#安装-Zookeeper" class="headerlink" title="安装 Zookeeper"></a>安装 Zookeeper</h3><p>首先需要去官网下载安装包，然后解压</p>
+<p><code>$ tar -zxvf zookeeper-3.4.9.tar.gz</code></p>
+<p><strong>要做的就是将这个文件复制一份，并命名为：zoo.cfg，然后在 zoo.cfg 中修改自己的配置即可</strong></p>
+<p><code>$ cp zoo_sample.cfg zoo.cfg  
+$ vim zoo.cfg</code></p>
+<p>主要配置解释如下</p>
+<p>`# zookeeper内部的基本单位，单位是毫秒，这个表示一个tickTime为2000毫秒，在zookeeper的其他配置中，都是基于tickTime来做换算的<br>tickTime=2000  </p>
+<h1 id="集群中的follower服务器-F-与leader服务器-L-之间-初始连接-时能容忍的最多心跳数（tickTime的数量）。"><a href="#集群中的follower服务器-F-与leader服务器-L-之间-初始连接-时能容忍的最多心跳数（tickTime的数量）。" class="headerlink" title="集群中的follower服务器(F)与leader服务器(L)之间 初始连接 时能容忍的最多心跳数（tickTime的数量）。"></a>集群中的follower服务器(F)与leader服务器(L)之间 初始连接 时能容忍的最多心跳数（tickTime的数量）。</h1><p>initLimit=10<br>#syncLimit：集群中的follower服务器(F)与leader服务器(L)之间 请求和应答 之间能容忍的最多心跳数（tickTime的数量）<br>syncLimit=5  </p>
+<h1 id="数据存放文件夹，zookeeper运行过程中有两个数据需要存储，一个是快照数据（持久化数据）另一个是事务日志"><a href="#数据存放文件夹，zookeeper运行过程中有两个数据需要存储，一个是快照数据（持久化数据）另一个是事务日志" class="headerlink" title="数据存放文件夹，zookeeper运行过程中有两个数据需要存储，一个是快照数据（持久化数据）另一个是事务日志"></a>数据存放文件夹，zookeeper运行过程中有两个数据需要存储，一个是快照数据（持久化数据）另一个是事务日志</h1><p>dataDir=/tmp/zookeeper  </p>
+<h2 id="客户端访问端口"><a href="#客户端访问端口" class="headerlink" title="客户端访问端口"></a>客户端访问端口</h2><p>clientPort=2181<br>`</p>
+<p>配置环境变量</p>
+<p>`$ vim ~/.bash_profile<br>$ export ZK=/usr/local/src/apache-zookeeper-3.7.0-bin<br>$ export PATH=$PATH:$ZK/bin<br>$ export PATH  </p>
+<h1 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h1><p>$ zkServer.sh start<br>`</p>
+<p>下面能看启动成功</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvatDFVsqVJ1a4Ugshk7PWX3jIvIdxWwBJOaN4xTL29mgB3PkrSKMHAPibiafZJ6AWVMTfEUJtZnT4Gqw/640?wx_fmt=jpeg" alt=""></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvatDFVsqVJ1a4Ugshk7PWX3jMlxgbwib1mJxW8xLfkry0vO9WTXTmpXPATua1MQn4C18PETa9SK7quA/640?wx_fmt=jpeg" alt=""></p>
+<h3 id="安装-Kafka"><a href="#安装-Kafka" class="headerlink" title="安装 Kafka"></a>安装 Kafka</h3><ul>
+<li>下载 kafka</li>
+</ul>
+<p><code>$ wget https://www.apache.org/dyn/closer.cgi?path=/kafka/2.8.0/kafka-2.8.0-src.tgz</code></p>
+<ul>
+<li>安装 kafka</li>
+</ul>
+<p><code>$ tar -xzvf kafka_2.12-2.0.0.tgz</code></p>
+<ul>
+<li>配置环境变量</li>
+</ul>
+<p><code>$ export ZK=/usr/local/src/apache-zookeeper-3.7.0-bin  
+$ export PATH=$PATH:$ZK/bin  
+$ export KAFKA=/usr/local/src/kafka  
+$ export PATH=$PATH:$KAFKA/bin</code></p>
+<ul>
+<li>启动 Kafka</li>
+</ul>
+<p><code>$ nohup kafka-server-start.sh 自己的配置文件路径/server.properties &amp;</code></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/j3gficicyOvatDFVsqVJ1a4Ugshk7PWX3jOla6fFiawoTYjD8o7GRAlRY0kmYBKk5wRjgKAGJwW48E3HbV0ShdqjA/640?wx_fmt=jpeg" alt=""></p>
+<p>大功告成！  </p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
+<li>《深入理解 Kafka：核心设计实践原理》  </li>
+</ul>
+<blockquote>
+<p>本文转载自：「 腾讯技术工程 」，原文：<a href="https://tinyurl.com/2ssfz7rk" target="_blank" rel="noopener">https://tinyurl.com/2ssfz7rk</a> ，版权归原作者所有。欢迎投稿，投稿邮箱: editor@ hi-linux.com。</p>
+</blockquote>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_gif/V3ll7FMyGyMqQC7JRNgVZlsiaJibSyp27USlRia194K6Nqfvz8Wblg7HDceOn4Y3MekppS14lazRZTKLdt2BHuYGA/640?wx_fmt=gif" alt="">  </p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/V3ll7FMyGyMSBQlhpwK0j3jOS5icKmFncGJdY8kL5kY6AswDpOBsz06GFowoDicL2dC2fr9haibnrwNdZ7rJLXqUA/640?wx_fmt=png" alt=""></p>
+<p><strong>你可能还喜欢</strong></p>
+<p>点击下方图片即可阅读  </p>
+<p><a href="http://mp.weixin.qq.com/s?__biz=MzI3MTI2NzkxMA==&mid=2247496461&idx=1&sn=4aad2b1ac08534573ceede2a017f3af9&chksm=eac6d224ddb15b32ee9fe28dbdd3d929f1c0d4e210233306542d78c89e41670c4ae05f632403&scene=21#wechat_redirect" target="_blank" rel="noopener"><img src="https://mmbiz.qpic.cn/mmbiz_jpg/8ZFzrRjqatrib8ooJBib9Cp75cmyticOyZOlYY6ZaFEEsicjE53WoeLF4QocIVB0rMq6lCQAvPndudNw0lu1dBOW5w/640?wx_fmt=jpeg" alt=""></a></p>
+<p>巧用 Dummy 解决断网情况下的网络访问问题  </p>
+<p><a href="https://mp.weixin.qq.com/s?__biz=MzI3MTI2NzkxMA==&mid=2247497276&idx=1&sn=61f986b72110413958717654f9281375&chksm=eac6d715ddb15e035bbfc8fed812384dabbe2b7778d9bae9fc7c5c4a0f0a005c42394892b1c9" target="_blank" rel="noopener"><img src="https://mmbiz.qpic.cn/mmbiz_jpg/8ZFzrRjqatp2tT33oPt3QewgUFpSTicnbQclteiaQSLibeOJ1D7RRwicwuib1cZ7ZraaiblWGwyIsHpMM4mZgezvc5Tw/640?wx_fmt=jpeg" alt=""></a></p>
+<p>点击上方图片，打开小程序，加入「玩转 Linux」圈子  </p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/8ZFzrRjqatpX5KlSvhARyBhcqYmvglSE9zMfzA8CSgNIibAiaFFNHBoXujK9vo2655gRWM5RibLzzF6jPhk4CuYAg/640?wx_fmt=png" alt=""></p>
+<p>更多有趣的互联网新鲜事，关注「奇妙的互联网」视频号全了解！</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/07/06/qiwihui-pocket_readings-1148/" rel="prev" title="Python Best Practices for a New Project in 2021">
+      <i class="fa fa-chevron-left"></i> Python Best Practices for a New Project in 2021
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/07/12/qiwihui-pocket_readings-1150/" rel="next" title="
+
+
+2 万字长文深入详解 Kafka，从源码到架构全部讲透 ">
+      
+
+
+2 万字长文深入详解 Kafka，从源码到架构全部讲透  <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-分钟搞懂高性能分布式消息系统-Kafka-by-奇妙的Linux世界"><span class="nav-number"></span> <span class="nav-text">5 分钟搞懂高性能分布式消息系统 Kafka by 奇妙的Linux世界</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#应用场景"><span class="nav-number"></span> <span class="nav-text">应用场景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Kafka-拓扑图（多副本机制）"><span class="nav-number"></span> <span class="nav-text">Kafka 拓扑图（多副本机制）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Kafka-核心组件"><span class="nav-number"></span> <span class="nav-text">Kafka 核心组件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#broker"><span class="nav-number">1.</span> <span class="nav-text">broker</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#topic"><span class="nav-number">2.</span> <span class="nav-text">topic</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#partition"><span class="nav-number">3.</span> <span class="nav-text">partition</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#offset"><span class="nav-number">4.</span> <span class="nav-text">offset</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Producer"><span class="nav-number">5.</span> <span class="nav-text">Producer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Consumer"><span class="nav-number">6.</span> <span class="nav-text">Consumer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Consumer-Group"><span class="nav-number">7.</span> <span class="nav-text">Consumer Group</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Zookeeper"><span class="nav-number">8.</span> <span class="nav-text">Zookeeper</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数据同步"><span class="nav-number">9.</span> <span class="nav-text">数据同步</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#ISR"><span class="nav-number">9.1.</span> <span class="nav-text">ISR</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Kafka-故障恢复"><span class="nav-number">9.2.</span> <span class="nav-text">Kafka 故障恢复</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Kafka-为什么这么快"><span class="nav-number"></span> <span class="nav-text">Kafka 为什么这么快</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#顺序写磁盘"><span class="nav-number">1.</span> <span class="nav-text">顺序写磁盘</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Page-Cache"><span class="nav-number">2.</span> <span class="nav-text">Page Cache</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#零拷贝"><span class="nav-number">3.</span> <span class="nav-text">零拷贝</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#传统的一次应用程序请求数据的过程"><span class="nav-number">3.1.</span> <span class="nav-text">传统的一次应用程序请求数据的过程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#零拷贝的方式"><span class="nav-number">3.2.</span> <span class="nav-text">零拷贝的方式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#分区分段"><span class="nav-number">3.3.</span> <span class="nav-text">分区分段</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#数据压缩"><span class="nav-number">3.4.</span> <span class="nav-text">数据压缩</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Kafka-安装"><span class="nav-number"></span> <span class="nav-text">Kafka 安装</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#安装-JDK"><span class="nav-number">1.</span> <span class="nav-text">安装 JDK</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安装-Zookeeper"><span class="nav-number">2.</span> <span class="nav-text">安装 Zookeeper</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#集群中的follower服务器-F-与leader服务器-L-之间-初始连接-时能容忍的最多心跳数（tickTime的数量）。"><span class="nav-number"></span> <span class="nav-text">集群中的follower服务器(F)与leader服务器(L)之间 初始连接 时能容忍的最多心跳数（tickTime的数量）。</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#数据存放文件夹，zookeeper运行过程中有两个数据需要存储，一个是快照数据（持久化数据）另一个是事务日志"><span class="nav-number"></span> <span class="nav-text">数据存放文件夹，zookeeper运行过程中有两个数据需要存储，一个是快照数据（持久化数据）另一个是事务日志</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#客户端访问端口"><span class="nav-number"></span> <span class="nav-text">客户端访问端口</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#启动"><span class="nav-number"></span> <span class="nav-text">启动</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#安装-Kafka"><span class="nav-number">1.</span> <span class="nav-text">安装 Kafka</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-number"></span> <span class="nav-text">参考资料</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

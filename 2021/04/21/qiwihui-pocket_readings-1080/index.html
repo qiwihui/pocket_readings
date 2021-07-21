@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Nzyme: A WiFi defense system for detecting ‘bandit’ devices">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Nzyme: A WiFi defense system for detecting ‘bandit’ devices">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/04/21/qiwihui-pocket_readings-1080/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="Nzyme: A WiFi defense system for detecting ‘bandit’ devices">
+<meta property="og:image" content="https://portswigger.net/cms/images/b1/3e/d924-article-210330-nzyme-body-text.jpg">
+<meta property="og:image" content="https://portswigger.net/cms/images/33/58/ac47-article-nzyme-screenshot.png">
+<meta property="article:published_time" content="2021-04-21T06:21:37.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.414Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://portswigger.net/cms/images/b1/3e/d924-article-210330-nzyme-body-text.jpg">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/04/21/qiwihui-pocket_readings-1080/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>Nzyme: A WiFi defense system for detecting ‘bandit’ devices | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/04/21/qiwihui-pocket_readings-1080/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Nzyme: A WiFi defense system for detecting ‘bandit’ devices
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-04-21 06:21:37" itemprop="dateCreated datePublished" datetime="2021-04-21T06:21:37+00:00">2021-04-21</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">Nzyme: A WiFi defense system for detecting ‘bandit’ devices</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>The system, dubbed &lsquo;Nzyme&rsquo;, has been published under the v1.0 moniker &lsquo;Kyle Canyon&rsquo; on GitHub.<br><br><br><br>Tags: sec, security<br><br><br><br>via Pocket <a href="https://ift.tt/3fseFCu" target="_blank" rel="noopener">https://ift.tt/3fseFCu</a> original site<br><br><br><br>April 21, 2021 at 01:45PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1080#issuecomment-823809232" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>4/21/2021</strong></p>
+</blockquote>
+<h2 id="Nzyme-A-WiFi-defense-system-for-detecting-‘bandit’-devices-by-SecurityCharlie"><a href="#Nzyme-A-WiFi-defense-system-for-detecting-‘bandit’-devices-by-SecurityCharlie" class="headerlink" title="Nzyme: A WiFi defense system for detecting ‘bandit’ devices by @SecurityCharlie"></a>Nzyme: A WiFi defense system for detecting ‘bandit’ devices by @SecurityCharlie</h2><p>Platform aims to shore up lax wireless security and eradicate WiFi spoofing attacks</p>
+<p><img src="https://portswigger.net/cms/images/b1/3e/d924-article-210330-nzyme-body-text.jpg" alt="Nzyme: A WiFi defense system for detecting bandit WiFi devices and hacking"></p>
+<p>A new platform designed to detect WiFi hijacking devices has been released to the <a href="https://portswigger.net/daily-swig/open-source-software" target="_blank" rel="noopener">open source</a> community.</p>
+<p>The system, dubbed ‘Nzyme’, has been published under the v1.0 moniker ‘Kyle Canyon’ on <a href="https://github.com/lennartkoopmann/nzyme" target="_blank" rel="noopener">GitHub</a>.</p>
+<p>Nzyme is the result of three years’ worth of “weekend hacking” by developer Lennart Koopmann and is described as a “free and open WiFi defense system that detects and physically locates threats using an easy to build and deploy sensor system”.</p>
+<h3 id="WiFi-attacks"><a href="#WiFi-attacks" class="headerlink" title="WiFi attacks"></a>WiFi attacks</h3><p>There are a variety of ways to defend today’s wireless networks, including enabling WPA2 <a href="https://portswigger.net/daily-swig/encryption" target="_blank" rel="noopener">encryption</a>, changing default <a href="https://portswigger.net/daily-swig/passwords" target="_blank" rel="noopener">password</a> setups, and enabling firewalls. Wireless intrusion detection systems (IDS) can also be used to monitor external entry attempts.</p>
+<p>However, the developer says that current IDS solutions “fall short and are easily spoofed”, and could be broken by out-of-the-box, commercially available <a href="https://portswigger.net/daily-swig/hacking-tools" target="_blank" rel="noopener">hacking tools</a>.</p>
+<p>“Existing tools are focusing a lot on signature-based detection,” Koopmann told <em>The Daily Swig</em>. “They look for anomalies and outliers, but I found that WiFi communication is almost effortless to spoof, and anomaly detection has very high false-positive rates, especially in wireless environments.”</p>
+<p>To combat these devices, including but not limited to offerings such as the <a href="https://shop.hak5.org/products/wifi-pineapple" target="_blank" rel="noopener">WiFi Pineapple</a> and <a href="https://pwnagotchi.ai/" target="_blank" rel="noopener">Pwnagotchi</a>, Nzyme – which can be used as a portable tracker device – has built-in definitions for “out-of-the-box bandit” devices that will detect them the moment they are “powered on and in range”, the developer says.</p>
+<p><img src="https://portswigger.net/cms/images/33/58/ac47-article-nzyme-screenshot.png" alt="Nzyme is an open source tool that detects bandit WiFi devices and attacks">Nzyme monitors the entire WiFi spectrum in the hunt for so-called ‘bandit’ devices</p>
+<h3 id="Under-the-HUD"><a href="#Under-the-HUD" class="headerlink" title="Under the HUD"></a>Under the HUD</h3><p>The platform’s overview screen includes system status, active alerts, timestamps for intrusion or anomalies detected, probe logs, channel traffic monitoring, and fingerprint records.</p>
+<p>“Nzyme and its ‘bandits’ concept can detect many of these platforms the moment they power on, often even before an <a href="https://portswigger.net/daily-swig/cyber-attacks" target="_blank" rel="noopener">attack</a> is executed, and then even track specific devices,” Koopmann explained.</p>
+<p>“This ability massively increases your security posture in a notoriously under-secured and easy-to-attack environment like WiFi.”</p>
+<p><strong>RECOMMENDED</strong> <a href="https://portswigger.net/daily-swig/centris-new-tool-helps-prevent-software-supply-chain-attacks-by-flagging-modified-open-source-components" target="_blank" rel="noopener">Centris helps prevent supply chain attacks by flagging modified open source components</a></p>
+<p>Nzyme can be tailored to use built-in definitions or custom alerts, although bandit definitions considered to be too wide-ranging may result in false positives.</p>
+<p>“A Nzyme tracker device can be used to physically locate the source of specific WiFi frames and play a big role in actively defending your perimeter,” the developer <a href="https://www.nzyme.org/post/nzyme-v1-0-0-kyle-canyon-has-been-released" target="_blank" rel="noopener">added</a>, noting this concept is currently <a href="https://github.com/lennartkoopmann/nzyme/issues/335" target="_blank" rel="noopener">being explored</a> through both LoRa and 802.11 WiFi standards.</p>
+<h3 id="Active-development"><a href="#Active-development" class="headerlink" title="Active development"></a>Active development</h3><p>When <a href="https://www.reddit.com/r/netsec/comments/m9obb9/nzyme_v100_free_and_open_wifi_defense_system/" target="_blank" rel="noopener">queried</a> over the potential use of clone SSID denial-of-service (DoS) techniques in the future – or keep the software’s capabilities to alert-only – Koopmann said there are no plans, at present, to introduce “fire back” options, but the callback system for alerts will soon be upgraded to trigger local scripts which will extend Nzyme further.</p>
+<p>As a <a href="https://github.com/lennartkoopmann/nzyme/discussions" target="_blank" rel="noopener">new project</a> now in active development, naturally there are bugs and hurdles to overcome.</p>
+<p>A future improvement on the Nzyme roadmap is multi-node support and potentially the introduction of a node type that could allow sensors to be deployed to extend coverage, or perhaps go so far as to triangulate bandits.</p>
+<p>“Currently, I am looking for community feedback after this initial release,” Koopmann commented. “Nzyme is my weekend project, and all feedback and contributions are always welcome.”</p>
+<p><strong>YOU MIGHT ALSO LIKE</strong> <a href="https://portswigger.net/daily-swig/isnt-it-ironic-exploiting-gdpr-laws-to-gain-access-to-personal-data" target="_blank" rel="noopener">Isn’t it ironic: Exploiting GDPR laws to gain access to personal data</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/04/21/qiwihui-pocket_readings-1079/" rel="prev" title="
+
+
+我们的第一次近源渗透 ">
+      <i class="fa fa-chevron-left"></i> 
+
+
+我们的第一次近源渗透 
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/04/23/qiwihui-pocket_readings-1082/" rel="next" title="
+
+
+世纪大案终于裁决：肖万有罪  这是整个美国都在屏息等待的结果 ">
+      
+
+
+世纪大案终于裁决：肖万有罪  这是整个美国都在屏息等待的结果  <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Nzyme-A-WiFi-defense-system-for-detecting-‘bandit’-devices-by-SecurityCharlie"><span class="nav-number"></span> <span class="nav-text">Nzyme: A WiFi defense system for detecting ‘bandit’ devices by @SecurityCharlie</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#WiFi-attacks"><span class="nav-number">1.</span> <span class="nav-text">WiFi attacks</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Under-the-HUD"><span class="nav-number">2.</span> <span class="nav-text">Under the HUD</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Active-development"><span class="nav-number">3.</span> <span class="nav-text">Active development</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

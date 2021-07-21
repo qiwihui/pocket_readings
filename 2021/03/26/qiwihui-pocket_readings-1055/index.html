@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="深入理解分布式缓存设计">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入理解分布式缓存设计">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/03/26/qiwihui-pocket_readings-1055/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="深入理解分布式缓存设计">
+<meta property="og:image" content="https://pic3.zhimg.com/v2-e28cea575b015b5680b01ee3d39645fe/_b.jpg">
+<meta property="og:image" content="data:image/svg+xml;utf8,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%27891%27%20height=%27547%27%3E%3C/svg%3E">
+<meta property="og:image" content="https://pic1.zhimg.com/v2-b08abf0ff2883f62aa710676cd299adc/_b.jpg">
+<meta property="og:image" content="data:image/svg+xml;utf8,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%27909%27%20height=%27543%27%3E%3C/svg%3E">
+<meta property="og:image" content="https://pic3.zhimg.com/v2-ca128482395b5b2731a00a7478163962/_b.jpg">
+<meta property="og:image" content="data:image/svg+xml;utf8,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%27950%27%20height=%27586%27%3E%3C/svg%3E">
+<meta property="og:image" content="https://pic2.zhimg.com/v2-fc0f0251b6a733acf112df1206af7901/_b.jpg">
+<meta property="og:image" content="data:image/svg+xml;utf8,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%27776%27%20height=%27469%27%3E%3C/svg%3E">
+<meta property="og:image" content="https://pic4.zhimg.com/v2-3ceaa3fc0eb1d03a36e82606f29fae23/_b.jpg">
+<meta property="og:image" content="data:image/svg+xml;utf8,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%27740%27%20height=%27432%27%3E%3C/svg%3E">
+<meta property="og:image" content="https://pic1.zhimg.com/v2-d2f0a3000ef74d0f8f3838da0c68dab8/_b.jpg">
+<meta property="og:image" content="data:image/svg+xml;utf8,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%27704%27%20height=%27388%27%3E%3C/svg%3E">
+<meta property="og:image" content="https://pic3.zhimg.com/v2-3095d792258d52249b96afbde4728e5e/_b.jpg">
+<meta property="og:image" content="data:image/svg+xml;utf8,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%27962%27%20height=%27575%27%3E%3C/svg%3E">
+<meta property="og:image" content="https://pic4.zhimg.com/v2-8e5a044ade42fcb924f588c364283faf/_b.jpg">
+<meta property="og:image" content="data:image/svg+xml;utf8,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%271007%27%20height=%27538%27%3E%3C/svg%3E">
+<meta property="og:image" content="https://pic3.zhimg.com/v2-88e5dea812a7ca8acc3c6700e10ec442/_b.jpg">
+<meta property="og:image" content="data:image/svg+xml;utf8,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%27736%27%20height=%27344%27%3E%3C/svg%3E">
+<meta property="og:image" content="https://pic1.zhimg.com/v2-ced3f4627623e4ecddee8b7051f02c4c/_b.jpg">
+<meta property="og:image" content="data:image/svg+xml;utf8,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%271388%27%20height=%27548%27%3E%3C/svg%3E">
+<meta property="og:image" content="https://pic3.zhimg.com/v2-eee68335734c9c5564edfcb4bb638f0e_180x120.jpg">
+<meta property="og:image" content="https://pic2.zhimg.com/v2-ad1cdf716d9a45508424d78138fc8c45_ipico.jpg">
+<meta property="article:published_time" content="2021-03-26T07:21:17.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.430Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://pic3.zhimg.com/v2-e28cea575b015b5680b01ee3d39645fe/_b.jpg">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/03/26/qiwihui-pocket_readings-1055/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>深入理解分布式缓存设计 | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/03/26/qiwihui-pocket_readings-1055/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          深入理解分布式缓存设计
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-03-26 07:21:17" itemprop="dateCreated datePublished" datetime="2021-03-26T07:21:17+00:00">2021-03-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">深入理解分布式缓存设计</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#21069;&#35328; &#22312;&#39640;&#24182;&#21457;&#30340;&#20998;&#24067;&#24335;&#30340;&#31995;&#32479;&#20013;&#65292;&#32531;&#23384;&#26159;&#24517;&#19981;&#21487;&#23569;&#30340;&#19968;&#37096;&#20998;&#12290;&#27809;&#26377;&#32531;&#23384;&#23545;&#31995;&#32479;&#30340;&#21152;&#36895;&#21644;&#38459;&#25377;&#22823;&#37327;&#30340;&#35831;&#27714;&#30452;&#25509;&#33853;&#21040;&#31995;&#32479;&#30340;&#24213;&#23618;&#65292;&#31995;&#32479;&#26159;&#24456;&#38590;&#25745;&#20303;&#39640;&#24182;&#21457;&#30340;&#20914;&#20987;&#65292;&#25152;&#20197;&#20998;&#24067;&#24335;&#31995;&#32479;&#20013;&#32531;&#23384;&#30340;&#35774;&#35745;&#26159;&#24456;&#37325;&#35201;&#30340;&#19968;&#29615;&#12290;&#19979;&#38754;&#23601;&#26469;&#32842;&#32842;&#20998;&#24067;&#24335;<br><br><br><br>Tags: cache, engineering<br><br><br><br>via Pocket <a href="https://ift.tt/3sqFkDt" target="_blank" rel="noopener">https://ift.tt/3sqFkDt</a> original site<br><br><br><br>March 26, 2021 at 02:51PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1055#issuecomment-807998941" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>3/26/2021</strong></p>
+</blockquote>
+<h2 id="深入理解分布式缓存设计-by-林林"><a href="#深入理解分布式缓存设计-by-林林" class="headerlink" title="深入理解分布式缓存设计 by 林林"></a>深入理解分布式缓存设计 by 林林</h2><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>在高并发的分布式的系统中，缓存是必不可少的一部分。没有缓存对系统的加速和阻挡大量的请求直接落到系统的底层，系统是很难撑住高并发的冲击，所以分布式系统中缓存的设计是很重要的一环。下面就来聊聊分布式系统中关于缓存的设计以及过程中遇到的一些问题。</p>
+<h2 id="缓存的收益与成本"><a href="#缓存的收益与成本" class="headerlink" title="缓存的收益与成本"></a>缓存的收益与成本</h2><p>使用缓存我们得到以下收益：</p>
+<ul>
+<li>加速读写。因为缓存通常是全内存的，比如Redis、Memcache。对内存的直接读写会比传统的存储层如MySQL，性能好很多。举个例子：同等配置单机Redis QPS可轻松上万，MySQL则只有几千。加速读写之后，响应时间加快，相比之下系统的用户体验能得到更好的提升。</li>
+</ul>
+<ul>
+<li>降低后端的负载。缓存一些复杂计算或者耗时得出的结果可以降低后端系统对CPU、IO、线程这些资源的需求，让系统运行在一个相对资源健康的环境。</li>
+</ul>
+<p>但随之以来也有一些成本：</p>
+<ul>
+<li>数据不一致性：缓存层与存储层的数据存在着一定时间窗口一致，时间窗口与缓存的过期时间更新策略有关。</li>
+<li>代码维护成本：加入缓存后，需要同时处理缓存层和存储层的逻辑，增加了开发者维护代码的成本。</li>
+<li>运维成本：引入缓存层，比如Redis。为保证高可用，需要做主从，高并发需要做集群。</li>
+</ul>
+<p><strong>综合起来，只要收益大于成本，我们就可以采用缓存。</strong></p>
+<h2 id="缓存的更新"><a href="#缓存的更新" class="headerlink" title="缓存的更新"></a>缓存的更新</h2><p>缓存的数据一般都是有生命时间的，过了一段时间之后就会失效，再次访问时需要重新加载。<strong>缓存的失效是为了保证与数据源真实的数据保证一致性和缓存空间的有效利用性。下面将从使用场景、数据一致性、开发运维维护成本三个方面来介绍几种缓存的更新策略。</strong></p>
+<p><strong>1、LRU/LFU/FIFO</strong></p>
+<p>这三种算法都是属于当<strong>缓存不够用</strong>时采用的更新算法。只是选出的淘汰元素的规则不一样：LRU淘汰最久没有被访问过的，LFU淘汰访问次数最少的，FIFO先进先出。</p>
+<p>一致性：要清理哪些数据是由具体的算法定的，开发人员只能选择其中的一种，一致性差。</p>
+<p>开发维护成本：算法不需要开发人员维护，只需要配置最大可使用内存即可，然后选择淘汰算法即可，故成本低。</p>
+<p>使用场景：<strong>适合内存空间有限，数据长期不变动，基本不存在数据一不致性业务。比如一些一经确定就不允许变更的信息。</strong></p>
+<p><strong>2、超时剔除</strong></p>
+<p>给<strong>缓存数据手动设置一个过期时间</strong>，比如Redis expire命令。当超过时间后，再次访问时从数据源重新加载并设回缓存。</p>
+<p>一致性：主要处决于缓存的生命时间窗口，这点由开发人员控制。但仍不能保证实时一致性，估一致性一般。</p>
+<p>开发维护成本：成本不是很高，很多缓存系统都自带过期时间API。比如Redis expire</p>
+<p>使用场景：<strong>适合于能够容忍一定时间内数据不一致性的业务，比如促销活动的描述文案</strong>。</p>
+<p><strong>3、主动更新</strong></p>
+<p><strong>如果数据源的数据有更新，则主动更新缓存。</strong></p>
+<p>一致性：<strong>三者当中一致性最高</strong>，只要能确定正确更新，一致性就能有保证。</p>
+<p>开发维护成本：这个相对来说就高了，<strong>业务数据更新与缓存更新藕合了一起。需要处理业务数据更新成功，而缓存更新失败的情景，</strong>为了解耦一般用来消息队列的方式更新。<strong>不过为了提高容错性，一般会结合超时剔除方案，避免缓存更新失败，缓存得不到更新的场景。</strong></p>
+<p>使用场景：对于数据的一致性要求很高，比如交易系统，优惠劵的总张数。</p>
+<p><strong>所以总的来说缓存更新的最佳实践是：</strong></p>
+<p><strong>低一致性业务：可以选择第一并结合第二种策略。</strong></p>
+<p><strong>高一致性业务：二、三策略结合。</strong></p>
+<h2 id="穿透优化"><a href="#穿透优化" class="headerlink" title="穿透优化"></a>穿透优化</h2><p>缓存穿透指查询一个根本不存在的数据，缓存层和存储层都不命中。<strong>一般的处理逻辑是如果存储层都不命中的话，缓存层就没有对应的数据。但在高并发场景中大量的缓存穿透，请求直接落到存储层，稍微不慎后端系统就会被压垮。所以对于缓存穿透我们有以下方案来优化。</strong></p>
+<p><strong>1、缓存空对象</strong></p>
+<p>第一种方案就是缓存一个空对象。对于存储层都没有命中请求，我们默认返回一个业务上的对象。这样就可以抵挡<strong>大量重复的没有意义</strong>的请求，起到了保护后端的作用。不过这个方案还是不能应对大量高并发且不相同的缓存穿透，<strong>如果有人之前摸清楚了你业务有效范围，一瞬间发起大量不相同的请求，你第一次查询还是会穿透到DB</strong>。另外这个方案的一种缺点就是<strong>：每一次不同的缓存穿透，缓存一个空对象。大量不同的穿透，缓存大量空对象。内存被大量白白占用，使真正有效的数据不能被缓存起来。</strong></p>
+<p><strong>所以对于这种方案需要做到：第一，做好业务过滤。比如我们确定业务ID的范围是[a, b]，只要不属于[a,b]的，系统直接返回，直接不走查询。第二，给缓存的空对象设置一个较短的过期时间，在内存空间不足时可以被有效快速清除。</strong></p>
+<p><strong>2、布隆过滤器</strong></p>
+<p>布隆过滤器是一种结合hash函数与bitmap的一种数据结构。相关定义如下：</p>
+<blockquote>
+<p><strong>布隆过滤器</strong>（英语：Bloom Filter）是1970年由布隆提出的。它实际上是一个很长的<a href="https://link.zhihu.com/?target=https%3A//zh.wikipedia.org/wiki/%25E4%25BA%258C%25E8%25BF%259B%25E5%2588%25B6">二进制</a>向量和一系列随机<a href="https://link.zhihu.com/?target=https%3A//zh.wikipedia.org/wiki/%25E6%2598%25A0%25E5%25B0%2584">映射函数</a>。布隆过滤器可以用于检索一个元素是否在一个集合中。它的优点是空间效率和查询时间都远远超过一般的算法，缺点是有一定的误识别率和删除困难。</p>
+</blockquote>
+<p>关于布隆过滤器的原理与实现网上有很多介绍，大家百度/GOOGLE一下便可。</p>
+<p>布隆过滤器可以有效的判别元素是否集合中，比如上面的业务ID，并且即使是上亿的数据布隆过滤器也能运用得很好。<strong>所以对于一些历史数据的查询布隆过滤器是极佳的防穿透的选择</strong>。<strong>对于实时数据，则需要在业务数据时主动更新布隆过滤器，这里会增加开发维护更新的成本，与主动更新缓存逻辑一样需要处理各种异常结果。</strong></p>
+<p><strong>综上所述，其实我觉得布隆过滤器和缓存空对象是完全可以结合起来的。具体做法是布隆过滤器用本地缓存实现，因为内存占用极低，不命中时再走redis/memcache这种远程缓存查询。</strong></p>
+<h2 id="无底洞优化"><a href="#无底洞优化" class="headerlink" title="无底洞优化"></a>无底洞优化</h2><p>1. 什么是缓存无底洞问题：</p>
+<p>Facebook的工作人员反应2010年已达到3000个memcached节点，储存数千G的缓存。他们发现一个问题–memcached的连接效率下降了，于是添加memcached节点，添加完之后，并没有好转。称为“无底洞”现象</p>
+<p>2. 缓存无底洞产生的原因：</p>
+<p>键值数据库或者缓存系统，由于通常采用hash函数将key映射到对应的实例，造成key的分布与业务无关，但是由于数据量、访问量的需求，需要使用分布式后（无论是客户端一致性哈性、redis-cluster、codis），批量操作比如批量获取多个key(例如redis的mget操作)，通常需要从不同实例获取key值，相比于单机批量操作只涉及到一次网络操作，分布式批量操作会涉及到多次网络io。</p>
+<img src="https://pic3.zhimg.com/v2-e28cea575b015b5680b01ee3d39645fe\_b.jpg" data-caption="" data-size="normal" data-rawwidth="891" data-rawheight="547" width="891" data-original="https://pic3.zhimg.com/v2-e28cea575b015b5680b01ee3d39645fe\_r.jpg">
+
+<p><img src="data:image/svg+xml;utf8,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%27891%27%20height=%27547%27%3E%3C/svg%3E" alt=""></p>
+<img src="https://pic1.zhimg.com/v2-b08abf0ff2883f62aa710676cd299adc\_b.jpg" data-caption="" data-size="normal" data-rawwidth="909" data-rawheight="543" width="909" data-original="https://pic1.zhimg.com/v2-b08abf0ff2883f62aa710676cd299adc\_r.jpg">
+
+<p><img src="data:image/svg+xml;utf8,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%27909%27%20height=%27543%27%3E%3C/svg%3E" alt=""></p>
+<p>3. 无底洞问题带来的危害：</p>
+<p>(1) 客户端一次批量操作会涉及多次网络操作，也就意味着批量操作会随着实例的增多，耗时会不断增大。</p>
+<p>(2) 服务端网络连接次数变多，对实例的性能也有一定影响。</p>
+<p>所以无底洞似乎是一个无解的问题。实际上我们只要了解无底洞产生原因在业务前期规划好就可以减轻甚至避免无底洞的产生。</p>
+<p>1、首先如果你的业务查询没有，像mget这种批量操作，恭喜你，无底洞将远离你。</p>
+<p>2、将集群以项目组做隔离，这样每组业务的redis/memcache集群就不会太大。</p>
+<p>3、如果你公司的最大峰值流量远不及FB，可能也不需要担心这个问题。</p>
+<p>那技术上有没有一些优先点？解决思路如下：</p>
+<p>1. IO的优化思路：</p>
+<p>(1) 命令本身的效率：例如sql优化，命令优化。</p>
+<p>(2) 网络次数：减少通信次数。</p>
+<p>(3) 降低接入成本:长连/连接池,NIO等。</p>
+<p>(4) IO访问合并:O(n)到O(1)过程:批量接口(mget)。</p>
+<p>(1)、(3)、(4)通常是由缓存系统的设计开发者来决定的，作为使用者我们可以从(2)减少通信次数上做优化</p>
+<img src="https://pic3.zhimg.com/v2-ca128482395b5b2731a00a7478163962\_b.jpg" data-caption="" data-size="normal" data-rawwidth="950" data-rawheight="586" width="950" data-original="https://pic3.zhimg.com/v2-ca128482395b5b2731a00a7478163962\_r.jpg">
+
+<p><img src="data:image/svg+xml;utf8,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%27950%27%20height=%27586%27%3E%3C/svg%3E" alt=""></p>
+<p>以mget来说有四种方案：</p>
+<p>(1).串行mget</p>
+<p>将mget操作(n个key)拆分为逐次执行N次get操作, 很明显这种操作时间复杂度较高，它的操作时间=n次网络时间+n次命令时间，网络次数是n，很显然这种方案不是最优的，但是足够简单。</p>
+<img src="https://pic2.zhimg.com/v2-fc0f0251b6a733acf112df1206af7901\_b.jpg" data-caption="" data-size="normal" data-rawwidth="776" data-rawheight="469" width="776" data-original="https://pic2.zhimg.com/v2-fc0f0251b6a733acf112df1206af7901\_r.jpg">
+
+<p><img src="data:image/svg+xml;utf8,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%27776%27%20height=%27469%27%3E%3C/svg%3E" alt=""></p>
+<p>(2). 串行IO</p>
+<p>将mget操作(n个key)，利用已知的hash函数算出key对应的节点，这样就可以得到一个这样的关系：Map&lt;node, somekeys&gt;，也就是每个节点对应的一些keys</p>
+<p>它的操作时间=node次网络时间+n次命令时间，网络次数是node的个数，很明显这种方案比第一种要好很多，但是如果节点数足够多，还是有一定的性能问题。</p>
+<img src="https://pic4.zhimg.com/v2-3ceaa3fc0eb1d03a36e82606f29fae23\_b.jpg" data-caption="" data-size="normal" data-rawwidth="740" data-rawheight="432" width="740" data-original="https://pic4.zhimg.com/v2-3ceaa3fc0eb1d03a36e82606f29fae23\_r.jpg">
+
+<p><img src="data:image/svg+xml;utf8,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%27740%27%20height=%27432%27%3E%3C/svg%3E" alt=""></p>
+<p>(3). 并行IO</p>
+<p>此方案是将方案（2）中的最后一步，改为多线程执行，网络次数虽然还是nodes.size()，但网络时间变为o(1)，但是这种方案会增加编程的复杂度。</p>
+<p>它的操作时间=1次网络时间+n次命令时间</p>
+<img src="https://pic1.zhimg.com/v2-d2f0a3000ef74d0f8f3838da0c68dab8\_b.jpg" data-caption="" data-size="normal" data-rawwidth="704" data-rawheight="388" width="704" data-original="https://pic1.zhimg.com/v2-d2f0a3000ef74d0f8f3838da0c68dab8\_r.jpg">
+
+<p><img src="data:image/svg+xml;utf8,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%27704%27%20height=%27388%27%3E%3C/svg%3E" alt=""></p>
+<p>(4). hash-tag实现。</p>
+<p>由于hash函数会造成key随机分配到各个节点，那么有没有一种方法能够强制一些key到指定节点到指定的节点呢?</p>
+<p>redis提供了这样的功能，叫做hash-tag。什么意思呢？假如我们现在使用的是redis-cluster（10个redis节点组成），我们现在有1000个k-v，那么按照hash函数(crc16)规则，这1000个key会被打散到10个节点上，那么时间复杂度还是上述(1)~(3)</p>
+<img src="https://pic3.zhimg.com/v2-3095d792258d52249b96afbde4728e5e\_b.jpg" data-caption="" data-size="normal" data-rawwidth="962" data-rawheight="575" width="962" data-original="https://pic3.zhimg.com/v2-3095d792258d52249b96afbde4728e5e\_r.jpg">
+
+<p><img src="data:image/svg+xml;utf8,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%27962%27%20height=%27575%27%3E%3C/svg%3E" alt=""></p>
+<p>那么我们能不能像使用单机redis一样，一次IO将所有的key取出来呢？hash-tag提供了这样的功能，如果将上述的key改为如下，也就是用大括号括起来相同的内容，那么这些key就会到指定的一个节点上。</p>
+<img src="https://pic4.zhimg.com/v2-8e5a044ade42fcb924f588c364283faf\_b.jpg" data-caption="" data-size="normal" data-rawwidth="1007" data-rawheight="538" width="1007" data-original="https://pic4.zhimg.com/v2-8e5a044ade42fcb924f588c364283faf\_r.jpg">
+
+<p><img src="data:image/svg+xml;utf8,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%271007%27%20height=%27538%27%3E%3C/svg%3E" alt=""></p>
+<p>它的操作时间=1次网络时间+n次命令时间</p>
+<img src="https://pic3.zhimg.com/v2-88e5dea812a7ca8acc3c6700e10ec442\_b.jpg" data-caption="" data-size="normal" data-rawwidth="736" data-rawheight="344" width="736" data-original="https://pic3.zhimg.com/v2-88e5dea812a7ca8acc3c6700e10ec442\_r.jpg">
+
+<p><img src="data:image/svg+xml;utf8,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%27736%27%20height=%27344%27%3E%3C/svg%3E" alt=""></p>
+<p>3. 四种批量操作解决方案对比：</p>
+<img src="https://pic1.zhimg.com/v2-ced3f4627623e4ecddee8b7051f02c4c\_b.jpg" data-caption="" data-size="normal" data-rawwidth="1388" data-rawheight="548" width="1388" data-original="https://pic1.zhimg.com/v2-ced3f4627623e4ecddee8b7051f02c4c\_r.jpg">
+
+<p><img src="data:image/svg+xml;utf8,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%271388%27%20height=%27548%27%3E%3C/svg%3E" alt=""></p>
+<p>关于无底洞优化这块的内容，详细可参考并发编程网上面的一篇文章。</p>
+<p><a href="https://link.zhihu.com/?target=http%3A//ifeve.com/redis-multiget-hole/">并发编程网 - ifeve.com​ifeve.com<img src="https://pic3.zhimg.com/v2-eee68335734c9c5564edfcb4bb638f0e_180x120.jpg" alt="图标"></a></p>
+<p><strong>提一下，生产中串行IO和并行IO的方案，我都有用过，其实效果还好。</strong>毕竟结点都是有限，不是FB、BAT这种流量那么多。<strong>并行IO如果你是用java，并且JDK8或以上，只要开启labmda并行流就可以实现并行IO了，很方便的，编程起来并不复杂，超时定位的话，可以加多些日志。</strong></p>
+<h2 id="雪崩优化"><a href="#雪崩优化" class="headerlink" title="雪崩优化"></a>雪崩优化</h2><p>缓存雪崩：由于缓存层承载着大量请求，有效保护了存储层，但是如果缓存层由于某些原因不能提供服务，于是所有的请求到达存储层，存储层的调用量会暴增，造成存储层级联宕机的情况。预防和解决缓存雪崩问题可以从以下几方面入手。</p>
+<p>(1)保证缓存层服务的高可用性，比如一主多从，Redis Sentine机制。</p>
+<p>(2)依赖隔离组件为后端限流并降级，比如netflix的hystrix。关于限流、降级以及hystrix的技术设计可参考以下链接。</p>
+<p><a href="https://link.zhihu.com/?target=https%3A//github.com/Netflix/Hystrix">Netflix/Hystrix​github.com<img src="https://pic2.zhimg.com/v2-ad1cdf716d9a45508424d78138fc8c45_ipico.jpg" alt="图标"></a></p>
+<p>(3)项目资源隔离。避免某个项目的bug，影响了整个系统架构，有问题也局限在项目内部。</p>
+<h2 id="热点key重建优化"><a href="#热点key重建优化" class="headerlink" title="热点key重建优化"></a>热点key重建优化</h2><p>开发人员使用”缓存+过期时间”的策略来加速读写，又保证数据的定期更新，这种模式基本能满足绝大部分需求。但是如果有两个问题同时出现，可能会对应用造成致命的伤害。</p>
+<ol>
+<li>当前key是一个hot key，比如热点娱乐新闻，并发量非常大。</li>
+<li>重建缓存不能在短时间完成，可能是一个复杂计算，例如复杂的SQL, 多次IO，多个依赖等。</li>
+</ol>
+<p>当缓存失效的瞬间，将会有大量线程来重建缓存，造成后端负载加大，甚至让应该崩溃。要解决这个问题有以下方案：</p>
+<p><strong>1、互斥锁</strong></p>
+<p>具体做法是只允许一个线程重建缓存，其它线程等待重建缓存的线程执行完，重新从缓存获取数据即可。<strong>这种方案的话，有个风险就是重建的时间太长或者并发量太大，将会大量的线程阻塞，同样会加大系统负载。优化方法：除了重建线程之外，其它线程拿旧值直接返回。比如Google 的 Guava Cache 的refreshAfterWrite采用的就是这种方案避免雪崩效应。</strong></p>
+<p><strong>2、永不过期</strong></p>
+<p>这种就是缓存更新操作是独立的，可以通过跑定时任务来定期更新，或者变更数据时主动更新。</p>
+<p><strong>3、后端限流</strong></p>
+<p><strong>以上两种方案都是建立在我们事先知道hot key的情况下，如果我们事先知道哪些是hot key的话，其实问题都不是很大。问题是我们不知道的情况！既然hot key的危害是因为有大量的重建请求落到了后端，如果后端自己做了限流呢，</strong>只有部分请求落到了后端, 其它的都打回去了。<strong>一个hot key 只要有一个重建请求处理成功了,后面的请求都是直接走缓存了，问题就解决了</strong>。</p>
+<p><strong>所以高并发情况下，后端限流是必不可少。</strong></p>
+<p><strong>以上就是我在工作中关于缓存设计、使用的一些心得。如果喜欢文章的话，欢迎点赞或者加关注。</strong></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/03/26/qiwihui-pocket_readings-1054/" rel="prev" title="SQLite is not a toy database">
+      <i class="fa fa-chevron-left"></i> SQLite is not a toy database
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/03/26/qiwihui-pocket_readings-1056/" rel="next" title="缓存那些事">
+      缓存那些事 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#深入理解分布式缓存设计-by-林林"><span class="nav-number"></span> <span class="nav-text">深入理解分布式缓存设计 by 林林</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#缓存的收益与成本"><span class="nav-number"></span> <span class="nav-text">缓存的收益与成本</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#缓存的更新"><span class="nav-number"></span> <span class="nav-text">缓存的更新</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#穿透优化"><span class="nav-number"></span> <span class="nav-text">穿透优化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#无底洞优化"><span class="nav-number"></span> <span class="nav-text">无底洞优化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#雪崩优化"><span class="nav-number"></span> <span class="nav-text">雪崩优化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#热点key重建优化"><span class="nav-number"></span> <span class="nav-text">热点key重建优化</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

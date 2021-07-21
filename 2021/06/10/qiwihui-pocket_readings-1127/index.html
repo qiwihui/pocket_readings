@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="NoSQL Databases: a Survey and Decision Guidance">
+<meta property="og:type" content="article">
+<meta property="og:title" content="NoSQL Databases: a Survey and Decision Guidance">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/06/10/qiwihui-pocket_readings-1127/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="NoSQL Databases: a Survey and Decision Guidance">
+<meta property="og:image" content="https://miro.medium.com/fit/c/96/96/1*z9kVxlSs1eZkF1kizI9Ihw.png">
+<meta property="og:image" content="https://miro.medium.com/max/2968/1*XzNUrV1IpNpkPNyEIvaFkA.png">
+<meta property="og:image" content="https://miro.medium.com/max/60/1*SIDPgNDxvBOcXNiiQrfa5A.png?q=20">
+<meta property="og:image" content="https://medium.baqend.com/nosql-databases-a-survey-and-decision-guidance-ea7823a822d?gi=ff838f96d3cb">
+<meta property="og:image" content="https://miro.medium.com/max/2894/1*SIDPgNDxvBOcXNiiQrfa5A.png">
+<meta property="og:image" content="https://miro.medium.com/max/60/1*swUK-eLWsk-wudXSXRgyYQ.png?q=20">
+<meta property="og:image" content="https://medium.baqend.com/nosql-databases-a-survey-and-decision-guidance-ea7823a822d?gi=ff838f96d3cb">
+<meta property="og:image" content="https://miro.medium.com/max/2298/1*swUK-eLWsk-wudXSXRgyYQ.png">
+<meta property="og:image" content="https://miro.medium.com/max/60/1*gdxUo2ojiTX2JQIkA2hxcQ.png?q=20">
+<meta property="og:image" content="https://medium.baqend.com/nosql-databases-a-survey-and-decision-guidance-ea7823a822d?gi=ff838f96d3cb">
+<meta property="og:image" content="https://miro.medium.com/max/2506/1*gdxUo2ojiTX2JQIkA2hxcQ.png">
+<meta property="og:image" content="https://miro.medium.com/max/60/1*jvxgAtqWADL8E43gs0p8jw.png?q=20">
+<meta property="og:image" content="https://medium.baqend.com/nosql-databases-a-survey-and-decision-guidance-ea7823a822d?gi=ff838f96d3cb">
+<meta property="og:image" content="https://miro.medium.com/max/3852/1*jvxgAtqWADL8E43gs0p8jw.png">
+<meta property="og:image" content="https://miro.medium.com/max/5330/1*Yp10mfavInjDULz5Qz-f-Q.png">
+<meta property="og:image" content="https://miro.medium.com/max/60/1*fjEVwivJAJxxvolywt6z3Q.png?q=20">
+<meta property="og:image" content="https://medium.baqend.com/nosql-databases-a-survey-and-decision-guidance-ea7823a822d?gi=ff838f96d3cb">
+<meta property="og:image" content="https://miro.medium.com/max/2416/1*fjEVwivJAJxxvolywt6z3Q.png">
+<meta property="og:image" content="https://miro.medium.com/max/5266/1*cwUuBS3Z_sZK19R0ig5zEA.png">
+<meta property="og:image" content="https://miro.medium.com/max/4964/1*qP4HSIx95ZBVla7tjluhLg.png">
+<meta property="og:image" content="https://miro.medium.com/max/5602/1*iI7vzaOjFWWwZKtTaJCtXQ.png">
+<meta property="article:published_time" content="2021-06-10T11:21:32.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.410Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://miro.medium.com/fit/c/96/96/1*z9kVxlSs1eZkF1kizI9Ihw.png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/06/10/qiwihui-pocket_readings-1127/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>NoSQL Databases: a Survey and Decision Guidance | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/06/10/qiwihui-pocket_readings-1127/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          NoSQL Databases: a Survey and Decision Guidance
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-06-10 11:21:32" itemprop="dateCreated datePublished" datetime="2021-06-10T11:21:32+00:00">2021-06-10</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+
+          
+            <div class="post-description">NoSQL Databases: a Survey and Decision Guidance</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Together with our colleagues at the University of Hamburg, we &mdash; that is Felix Gessert, Wolfram Wingerath, Steffen Friedrich and Norbert Ritter &mdash; presented an overview over the NoSQL landscape at SummerSOC&rsquo;16 last month. Here is the written gist.<br><br><br><br>Tags: system-design<br><br><br><br>via Pocket <a href="https://ift.tt/3wgswBq" target="_blank" rel="noopener">https://ift.tt/3wgswBq</a> original site<br><br><br><br>June 10, 2021 at 07:09PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1127#issuecomment-858537962" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>6/10/2021</strong></p>
+</blockquote>
+<h2 id="NoSQL-Databases-a-Survey-and-Decision-Guidance-by-Felix-Gessert"><a href="#NoSQL-Databases-a-Survey-and-Decision-Guidance-by-Felix-Gessert" class="headerlink" title="NoSQL Databases: a Survey and Decision Guidance by Felix Gessert"></a>NoSQL Databases: a Survey and Decision Guidance by Felix Gessert</h2><h1 id="NoSQL-Databases-a-Survey-and-Decision-Guidance"><a href="#NoSQL-Databases-a-Survey-and-Decision-Guidance" class="headerlink" title="NoSQL Databases: a Survey and Decision Guidance"></a>NoSQL Databases: a Survey and Decision Guidance</h1><p>[<img src="https://miro.medium.com/fit/c/96/96/1*z9kVxlSs1eZkF1kizI9Ihw.png" alt="Felix Gessert">](<a href="https://medium.com/@" target="_blank" rel="noopener">https://medium.com/@</a> felix.gessert?source=post_page—–ea7823a822d——————————–)</p>
+<p>[Felix Gessert](<a href="https://medium.com/@" target="_blank" rel="noopener">https://medium.com/@</a> felix.gessert?source=post_page—–ea7823a822d——————————–)</p>
+<p><a href="https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F233cc61c4b11&operation=register&redirect=https%3A%2F%2Fmedium.baqend.com%2Fnosql-databases-a-survey-and-decision-guidance-ea7823a822d&user=Felix%20Gessert&userId=233cc61c4b11&source=post_page-233cc61c4b11----ea7823a822d---------------------follow_byline-----------" target="_blank" rel="noopener">Follow</a></p>
+<p><a href="https://medium.baqend.com/nosql-databases-a-survey-and-decision-guidance-ea7823a822d?source=post_page-----ea7823a822d--------------------------------" target="_blank" rel="noopener">Aug 15, 2016</a> · 26 min read</p>
+<p><a href="https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fea7823a822d&operation=register&redirect=https%3A%2F%2Fmedium.baqend.com%2Fnosql-databases-a-survey-and-decision-guidance-ea7823a822d&source=post_actions_header--------------------------bookmark_preview-----------" target="_blank" rel="noopener"></a></p>
+<p>(At the bottom of this page, you find a <a href="https://medium.baqend.com/#598d" target="_blank" rel="noopener"><strong>BibTeX reference</strong></a> to cite this article.)</p>
+<p>Together with our colleagues at the University of Hamburg, we — that is <a href="http://www.baqend.com/" target="_blank" rel="noopener">Felix Gessert</a>, <a href="https://vsis-www.informatik.uni-hamburg.de/vsis/members/look/1316" target="_blank" rel="noopener">Wolfram Wingerath</a>, <a href="https://vsis-www.informatik.uni-hamburg.de/vsis/members/look/1317" target="_blank" rel="noopener">Steffen Friedrich</a> and <a href="https://vsis-www.informatik.uni-hamburg.de/vsis/members/look/209" target="_blank" rel="noopener">Norbert Ritter</a> — presented an overview over the NoSQL landscape at <a href="http://www.summersoc.eu/" target="_blank" rel="noopener">SummerSOC’16</a> last month. Here is the written gist. We give our best to convey the condensed NoSQL knowledge we gathered building <a href="https://www.baqend.com/" target="_blank" rel="noopener">Baqend</a>.</p>
+<p><img src="https://miro.medium.com/max/2968/1*XzNUrV1IpNpkPNyEIvaFkA.png" alt=""></p>
+<h1 id="TL-DR"><a href="#TL-DR" class="headerlink" title="TL;DR"></a>TL;DR</h1><p>Today, data is generated and consumed at unprecedented scale. This has lead to novel approaches for scalable data management subsumed under the term “NoSQL” database systems to handle the ever-increasing data volume and request loads. However, the heterogeneity and diversity of the numerous existing systems impede the well-informed selection of a data store appropriate for a given application context. Therefore, this article gives a top-down overview of the field: Instead of contrasting the implementation specifics of individual representatives, we propose a comparative classification model that relates functional and non-functional requirements to techniques and algorithms employed in NoSQL databases. This NoSQL Toolbox allows us to derive a simple decision tree to help practitioners and researchers filter potential system candidates based on central application requirements.</p>
+<h1 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h1><p>Traditional relational database management systems (RDBMSs) provide powerful mechanisms to store and query structured data under strong consistency and transaction guarantees and have reached an unmatched level of reliability, stability and support through decades of development. In recent years, however, the amount of useful data in some application areas has become so vast that it cannot be stored or processed by traditional database solutions. User-generated content in social networks or data retrieved from large sensor networks are only two examples of this phenomenon commonly referred to as <strong>Big Data</strong>. A class of novel data storage systems able to cope with Big Data are subsumed under the term <strong>NoSQL databases</strong>, many of which offer horizontal scalability and higher availability than relational databases by sacrificing querying capabilities and consistency guarantees. These trade-offs are pivotal for service-oriented computing and as-a-service models, since any stateful service can only be as scalable and fault-tolerant as its underlying data store.</p>
+<p>There are dozens of NoSQL database systems and it is hard to keep track of where they excel, where they fail or even where they differ, as implementation details change quickly and feature sets evolve over time. In this article, we therefore aim to provide an overview of the NoSQL landscape by discussing employed concepts rather than system specificities and explore the requirements typically posed to NoSQL database systems, the techniques used to fulfil these requirements and the trade-offs that have to be made in the process. Our focus lies on key-value, document and wide-column stores, since these NoSQL categories cover the most relevant techniques and design decisions in the space of scalable data management.</p>
+<p>In Section 2, we describe the most common high-level approaches towards categorizing NoSQL database systems either by their data model into key-value stores, document stores and wide-column stores or by the safety-liveness trade-offs in their design (CAP and PACELC). We then survey commonly used techniques in more detail and discuss our model of how requirements and techniques are related in Section 3 , before we give a broad overview of prominent database systems by applying our model to them in Section 4 . A simple and abstract decision model for restricting the choice of appropriate NoSQL systems based on application requirements concludes the paper in Section 5.</p>
+<h1 id="2-High-Level-System-Classification"><a href="#2-High-Level-System-Classification" class="headerlink" title="2. High-Level System Classification"></a>2. High-Level System Classification</h1><p>In order to abstract from implementation details of individual NoSQL systems, high-level classification criteria can be used to group similar data stores into categories. In this section, we introduce the two most prominent approaches: data models and CAP theorem classes.</p>
+<p><img src="https://miro.medium.com/max/60/1*SIDPgNDxvBOcXNiiQrfa5A.png?q=20" alt=""></p>
+<p><img src="https://medium.baqend.com/nosql-databases-a-survey-and-decision-guidance-ea7823a822d?gi=ff838f96d3cb" alt="">)<img src="https://miro.medium.com/max/2894/1*SIDPgNDxvBOcXNiiQrfa5A.png" alt=""></p>
+<h2 id="2-1-Different-Data-Models"><a href="#2-1-Different-Data-Models" class="headerlink" title="2.1 Different Data Models"></a>2.1 Different Data Models</h2><p>The most commonly employed distinction between NoSQL databases is the way they store and allow access to data. Each system covered in this paper can be categorised as either key-value store, document store or wide-column store.</p>
+<p><img src="https://miro.medium.com/max/60/1*swUK-eLWsk-wudXSXRgyYQ.png?q=20" alt=""></p>
+<p><img src="https://medium.baqend.com/nosql-databases-a-survey-and-decision-guidance-ea7823a822d?gi=ff838f96d3cb" alt="">)<img src="https://miro.medium.com/max/2298/1*swUK-eLWsk-wudXSXRgyYQ.png" alt=""></p>
+<p>Figure 1: Key-value stores offer efficient storage and retrieval of arbitrary values.</p>
+<p><strong>2.1.1 Key-Value Stores.</strong> A key-value store consists of a set of key-value pairs with unique keys. Due to this simple structure, it only supports get and put operations. As the nature of the stored value is transparent to the database, pure key-value stores do not support operations beyond simple CRUD (Create, Read, Update, Delete). Key-value stores are therefore often referred to as <strong>schemaless</strong>: Any assumptions about the structure of stored data are implicitly encoded in the application logic (<em>schema-on-read</em>) and not explicitly defined through a data definition language (<em>schema-on-write</em>).</p>
+<p>The obvious advantages of this data model lie in its simplicity. The very simple abstraction makes it easy to partition and query the data, so that the database system can achieve low latency as well as high throughput. However, if an application demands more complex operations, e.g. range queries, this data model is not powerful enough. <a href="https://medium.baqend.com/#fig:data_models_key-value" target="_blank" rel="noopener">Figure 1</a> illustrates how user account data and settings might be stored in a key-value store. Since queries more complex than simple lookups are not supported, data has to be analyzed inefficiently in application code to extract information like whether cookies are supported or not (cookies: false).</p>
+<p><strong>2.1.2 Document Stores.</strong> A document store is a key-value store that restricts values to semi-structured formats such as JSON documents. This restriction in comparison to key-value stores brings great flexibility in accessing the data. It is not only possible to fetch an entire document by its ID, but also to retrieve only parts of a document, e.g. the age of a customer, and to execute queries like aggregation, query-by-example or even full-text search.</p>
+<p><img src="https://miro.medium.com/max/60/1*gdxUo2ojiTX2JQIkA2hxcQ.png?q=20" alt=""></p>
+<p><img src="https://medium.baqend.com/nosql-databases-a-survey-and-decision-guidance-ea7823a822d?gi=ff838f96d3cb" alt="">)<img src="https://miro.medium.com/max/2506/1*gdxUo2ojiTX2JQIkA2hxcQ.png" alt=""></p>
+<p>Figure 2: Document stores are aware of the internal structure of the stored entity and thus can support queries.</p>
+<p><strong>3.1.3 Wide-Column Stores</strong> Wide-column stores inherit their name from the image that is often used to explain the underlying data model: a relational table with many sparse columns. Technically, however, a wide-column store is closer to a distributed multi-level sorted map: The first-level keys identify rows which themselves consist of key-value pairs. The first-level keys are called <strong>row keys</strong>, the second-level keys are called <strong>column keys</strong>. This storage scheme makes tables with arbitrarily many columns feasible, because there is no column key without a corresponding value. Hence, null values can be stored without any space overhead. The set of all columns is partitioned into so-called <strong>column families</strong> to colocate columns on disk that are usually accessed together. On disk, wide-column stores do not colocate all data from each row, but instead values of the same column family <em>and</em> from the same row. Hence, an entity (a row) cannot be retrieved by one single lookup as in a document store, but has to be joined together from the columns of all column families. However, this storage layout usually enables highly efficient data compression and makes retrieving only a portion of an entity very efficient. The data are stored in lexicographic order of their keys, so that data that are accessed together are physically co-located, given a careful key design. As all rows are distributed into contiguous ranges (so-called <strong>tablets</strong>) among different <strong>tablet servers</strong>, row scans only involve few servers and thus are very efficient.</p>
+<p><img src="https://miro.medium.com/max/60/1*jvxgAtqWADL8E43gs0p8jw.png?q=20" alt=""></p>
+<p><img src="https://medium.baqend.com/nosql-databases-a-survey-and-decision-guidance-ea7823a822d?gi=ff838f96d3cb" alt="">)<img src="https://miro.medium.com/max/3852/1*jvxgAtqWADL8E43gs0p8jw.png" alt=""></p>
+<p>Figure 3: Data in a wide-column store.</p>
+<p><a href="http://static.googleusercontent.com/media/research.google.com/de//archive/bigtable-osdi06.pdf" target="_blank" rel="noopener">Bigtable</a>, which pioneered the wide-column model, was specifically developed to store a large collection of webpages as illustrated in <a href="https://medium.baqend.com/#fig:data_models_wide-column" target="_blank" rel="noopener">Figure 3</a>. Every row in the webpages table corresponds to a single webpage. The row key is a concatenation of the URL components in reversed order and every column key is composed of the column family name and a column qualifier, separated by a colon. There are two column families: the “contents” column family with only one column holding the actual webpage and the “anchor” column family holding links to each webpage, each in a separate column. Every cell in the table (i.e. every value accessible by the combination of row and column key) can be versioned by timestamps or version numbers. It is important to note that much of the information of an entity lies in the keys and not only in the values .</p>
+<h2 id="2-2-Consistency-Availability-Trade-Offs-CAP-and-PACELC"><a href="#2-2-Consistency-Availability-Trade-Offs-CAP-and-PACELC" class="headerlink" title="2.2 Consistency-Availability Trade-Offs: CAP and PACELC"></a>2.2 Consistency-Availability Trade-Offs: CAP and PACELC</h2><p>Another defining property of a database apart from how the data are stored and how they can be accessed is the level of consistency that is provided. Some databases are built to guarantee strong consistency and serializability (<a href="http://www.minet.uni-jena.de/dbis/lehre/ws2005/dbs1/HaerderReuter83.pdf" target="_blank" rel="noopener">ACID</a>), while others favour availability (<a href="http://queue.acm.org/detail.cfm?id=1394128" target="_blank" rel="noopener">BASE</a>). This trade-off is inherent to every distributed database system and the huge number of different NoSQL systems shows that there is a wide spectrum between the two paradigms. In the following, we explain the two theorems CAP and PACELC according to which database systems can be categorised by their respective positions in this spectrum.</p>
+<p><strong>CAP</strong>. Like the famous <a href="https://groups.csail.mit.edu/tds/papers/Lynch/jacm85.pdf" target="_blank" rel="noopener">FLP Theorem</a>, the <a href="https://people.eecs.berkeley.edu/~brewer/PODC2000.pdf" target="_blank" rel="noopener">CAP Theorem</a>, presented by Eric Brewer at PODC 2000 and later <a href="https://www.comp.nus.edu.sg/~gilbert/pubs/BrewersConjecture-SigAct.pdf" target="_blank" rel="noopener">proven by Gilbert and Lynch</a>, is one of the truly influential impossibility results in the field of distributed computing, because it places an ultimate upper bound on what can possibly be accomplished by a distributed system. It states that a sequentially consistent read/write register that eventually responds to every request cannot be realised in an asynchronous system that is prone to network partitions. In other words, it can guarantee at most two of the following three properties at the same time:</p>
+<ul>
+<li><strong>Consistency (C)</strong>: Reads and writes are always executed atomically and are strictly consistent (<a href="http://www.cs.cornell.edu/andru/cs711/2002fa/reading/linearizability.pdf" target="_blank" rel="noopener">linearizable</a>). Put differently, all clients have the same view on the data at all times.</li>
+<li><strong>Availability (A)</strong>: Every non-failing node in the system can always accept read and write requests by clients and will eventually return with a meaningful response, i.e. not with an error message.</li>
+<li><strong>Partition-tolerance (P)</strong>: The system upholds the previously displayed consistency guarantees and availability in the presence of message loss between the nodes or partial system failure.</li>
+</ul>
+<p>Brewer argues that a system can be both available and consistent in normal operation, but in the presence of a system partition, this is not possible: If the system continues to work in spite of the partition, there is some non-failing node that has lost contact to the other nodes and thus has to decide to either continue processing client requests to preserve availability (AP, <strong>eventual consistent systems</strong>) or to reject client requests in order to uphold consistency guarantees (CP). The first option violates consistency, because it might lead to stale reads and conflicting writes, while the second option obviously sacrifices availability. There are also systems that usually are available and consistent, but fail completely when there is a partition (CA), for example single-node systems. It has been shown that the CAP-theorem holds for any consistency property that is at least as strong as causal consistency, which also includes any recency bounds on the permissible staleness of data (<a href="http://www.cs.utexas.edu/users/dahlin/papers/cac-tr.pdf" target="_blank" rel="noopener">Δ-atomicity</a>). Serializability as the correctness criterion of transactional isolation does not require strong consistency. However, similar to consistency, <a href="http://repository.upenn.edu/cgi/viewcontent.cgi?article=1669&context=cis_reports" target="_blank" rel="noopener">serializability can also not be achieved under network partitions</a>.</p>
+<p>The classification of NoSQL systems as either AP, CP or CA vaguely reflects the individual systems’ capabilities and hence is widely accepted as a means for high-level comparisons. However, it is important to note that the CAP Theorem actually does not state anything on normal operation; it merely tells us whether a system favors availability or consistency <em>in the face of a network partition</em>. In contrast to the FLP-Theorem, the CAP theorem assumes a failure model that allows arbitrary messages to be dropped, reordered or delayed indefinitely. Under the weaker assumption of reliable communication channels (i.e. messages always arrive but asynchronously and possibly reordered) a CAP-system is in fact possible using the <a href="http://groups.csail.mit.edu/tds/papers/Attiya/TM-423.pdf" target="_blank" rel="noopener">Attiya, Bar-Noy, Dolev algorithm</a>, as long as a majority of nodes are up. (Therefore, consensus as used for coordination in many NoSQL systems either natively (e.g. in <a href="http://static.googleusercontent.com/media/research.google.com/de//pubs/archive/36971.pdf" target="_blank" rel="noopener">Megastore</a>) or through coordination services like Chubby and <a href="http://static.cs.brown.edu/courses/cs227/archives/2012/papers/replication/hunt.pdf" target="_blank" rel="noopener">Zookeeper</a> is even harder to achieve with high availability than strong consistency, see <a href="https://groups.csail.mit.edu/tds/papers/Lynch/jacm85.pdf" target="_blank" rel="noopener">FLP Theorem</a>.)</p>
+<p><strong>PACELC</strong>. This lack of the CAP Theorem is addressed in <a href="http://cs-www.cs.yale.edu/homes/dna/papers/abadi-pacelc.pdf" target="_blank" rel="noopener">an article by Daniel Abadi</a> in which he points out that the CAP Theorem fails to capture the trade-off between latency and consistency during <em>normal operation</em>, even though it has proven to be much more influential on the design of distributed systems than the availability-consistency trade-off in failure scenarios. He formulates PACELC which unifies both trade-offs and thus portrays the design space of distributed systems more accurately. From PACELC, we learn that in case of a <strong>P</strong>artition, there is an <strong>A</strong>vailability-<strong>C</strong>onsistency trade-off; <strong>E</strong>lse, i.e. in normal operation, there is a <strong>L</strong>atency-<strong>C</strong>onsistency trade-off.</p>
+<p>This classification basically offers two possible choices for the partition scenario (A/C) and also two for normal operation (L/C) and thus appears more fine-grained than the CAP classification. However, many systems cannot be assigned exclusively to one single PACELC class and one of the four PACELC classes, namely PC/EL, can hardly be assigned to any system.</p>
+<h1 id="3-Techniques"><a href="#3-Techniques" class="headerlink" title="3. Techniques"></a>3. Techniques</h1><p>Every significantly successful database is designed for a particular class of applications, or to achieve a specific combination of desirable system properties. The simple reason why there are so many different database systems is that it is not possible for any system to achieve all desirable properties at once. Traditional SQL databases such as PostgreSQL have been built to provide the full functional package: a very flexible data model, sophisticated querying capabilities including joins, global integrity constraints and transactional guarantees. On the other end of the design spectrum, there are key-value stores like Dynamo that scale with data and request volume and offer high read and write throughput as well as low latency, but barely any functionality apart from simple lookups.</p>
+<p>In this section, we highlight the design space of distributed database systems, concentrating on sharding, replication, storage management and query processing. We survey the available techniques and discuss how they are related to different functional and non-functional properties (goals) of data management systems. In order to illustrate what techniques are suitable to achieve which system properties, we provide the <strong>NoSQL Toolbox</strong> (<a href="https://medium.baqend.com/#fig:NoSQL_toolbox" target="_blank" rel="noopener">Figure 4</a>) where each technique is connected to the functional and non-functional properties it enables (positive edges only).</p>
+<p><img src="https://miro.medium.com/max/5330/1*Yp10mfavInjDULz5Qz-f-Q.png" alt=""></p>
+<p>Figure 4: The NoSQL Toolbox: It connects the techniques of NoSQL databases with the desired functional and non-functional system properties they support.</p>
+<h2 id="3-1-Sharding"><a href="#3-1-Sharding" class="headerlink" title="3.1 Sharding"></a>3.1 Sharding</h2><p>Several distributed relational database systems such as Oracle RAC or IBM DB2 pureScale rely on a <strong>shared-disk architecture</strong> where all database nodes access the same central data repository (e.g. a NAS or SAN). Thus, these systems provide consistent data at all times, but are also inherently difficult to scale. In contrast, the (NoSQL) database systems focused in this paper are built upon a <strong>shared-nothing architecture</strong>, meaning each system consists of many servers with private memory and private disks that are connected through a network. Thus, high scalability in throughput and data volume is achieved by <strong>sharding</strong> (partitioning) data across different nodes (<strong>shards</strong>) in the system. There are three basic distribution techniques: range-sharding, hash-sharding and entity-group sharding. To make efficient scans possible, the data can be partitioned into ordered and contiguous value ranges by <strong>range-sharding</strong>. However, this approach requires some coordination through a master that manages assignments. To ensure elasticity, the system has to be able to detect and resolve hotspots automatically by further splitting an overburdened shard.</p>
+<p>Range sharding is supported by wide-column stores like <a href="http://static.googleusercontent.com/media/research.google.com/de//archive/bigtable-osdi06.pdf" target="_blank" rel="noopener">BigTable</a>, HBase or Hypertable and document stores, e.g. MongoDB, RethinkDB, <a href="http://www.csce.uark.edu/~xintaowu/BDAM/p1135-qiao.pdf" target="_blank" rel="noopener">Espresso</a> and <a href="http://www.vldb.org/pvldb/vol8/p1668-shukla.pdf" target="_blank" rel="noopener">DocumentDB</a>. Another way to partition data over several machines is <strong>hash-sharding</strong> where every data item is assigned to a shard server according to some hash value built from the primary key. This approach does not require a coordinator and also guarantees the data to be evenly distributed across the shards, as long as the used hash function produces an even distribution. The obvious disadvantage, though, is that it only allows lookups and makes scans unfeasible. Hash sharding is used in key-value stores and is also available in some wide-coloumn stores like <a href="https://www.cs.cornell.edu/projects/ladis2009/papers/lakshman-ladis2009.pdf" target="_blank" rel="noopener">Cassandra</a> or <a href="http://sigops.org/sosp/sosp11/current/2011-Cascais/printable/11-calder.pdf" target="_blank" rel="noopener">Azure Tables</a>.</p>
+<p>The shard server that is responsible for a record can be determined as serverid = hash(id)%servers, for example. However, this hashing scheme requires all records to be reassigned every time a new server joins or leaves, because it changes with the number of shard servers (servers). Consequently, it infeasible to use in elastic systems like Dynamo, Riak or Cassandra, which allow additional resources to be added on-demand and again be removed when dispensable. For increased flexibility, elastic systems typically use <a href="https://www.akamai.com/es/es/multimedia/documents/technical-publication/consistent-hashing-and-random-trees-distributed-caching-protocols-for-relieving-hot-spots-on-the-world-wide-web-technical-publication.pdf" target="_blank" rel="noopener"><strong>consistent hashing</strong></a> where records are not directly assigned to servers, but instead to logical partitions which are then distributed across all shard servers. Thus, only a fraction of the data have to be reassigned upon changes in the system topology. For example, an elastic system can be downsized by offloading all logical partitions residing on a particular server to other servers and then shutting down the now idle machine. For details on how consistent hashing is used in NoSQL systems, see <a href="http://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf" target="_blank" rel="noopener">the Dynamo paper</a>.</p>
+<p><strong>Entity-group sharding</strong> is a data partitioning scheme with the goal of enabling single-partition transactions on co-located data. The partitions are called entity-groups and either explicitly declared by the application (e.g. in <a href="http://www.cs.ucsb.edu/~sudipto/papers/socc10-das.pdf" target="_blank" rel="noopener">G-Store</a> and<a href="http://static.googleusercontent.com/media/research.google.com/de//pubs/archive/36971.pdf" target="_blank" rel="noopener">MegaStore</a>) or derived from transactions’ access patterns (e.g. in <a href="http://nms.lcs.mit.edu/papers/relcloud_cidr11.pdf" target="_blank" rel="noopener">Relational Cloud</a> and <a href="http://dl.acm.org/citation.cfm?id=2005651" target="_blank" rel="noopener">Cloud SQL Server</a>). If a transaction accesses data that spans more than one group, data ownership can be transferred between entity-groups or the transaction manager has to fallback to more expensive multi-node transaction protocols.</p>
+<h2 id="3-2-Replication"><a href="#3-2-Replication" class="headerlink" title="3.2 Replication"></a>3.2 Replication</h2><p>In terms of CAP, conventional RDBMSs are often CA systems run in single-server mode: The entire system becomes unavailable on machine failure. And so system operators secure data integrity and availability through expensive, but reliable high-end hardware. In contrast, NoSQL systems like Dynamo, BigTable or Cassandra are designed for data and request volumes that cannot possibly be handled by one single machine, and therefore they run on clusters consisting of thousands of servers. (Low-end hardware is used, because it is substantially more cost-efficient than high-end hardware.) Since <a href="https://www.usenix.org/legacy/event/lisa07/tech/full_papers/hamilton/hamilton_html/" target="_blank" rel="noopener">failures are inevitable and will occur frequently in any large-scale distributed system</a>, the software has to cope with them on a daily basis . In 2009, Google fellow <a href="https://www.cs.cornell.edu/projects/ladis2009/talks/dean-keynote-ladis2009.pdf" target="_blank" rel="noopener">Jeff Dean stated</a> that a typical new cluster at Google encounters thousands of hard drive failures, 1,000 single-machine failures, 20 rack failures and several network partitions due to expected and unexpected circumstances in its first year alone. <a href="https://aphyr.com/posts/288-the-network-is-reliable" target="_blank" rel="noopener">Many more recent cases of network partitions and outages</a> in large cloud data centers have been reported . Replication allows the system to maintain availability and durability in the face of such errors. But storing the same records on different machines (<strong>replica servers</strong>) in the cluster introduces the problem of synchronization between them and thus a trade-off between consistency on the one hand and latency and availability on the other.</p>
+<p><a href="http://db.cs.berkeley.edu/cs286/papers/dangers-sigmod1996.pdf" target="_blank" rel="noopener">Gray et al.</a> propose a two-tier classification of different replication strategies according to <em>when</em> updates are propagated to replicas and <em>where</em> updates are accepted. There are two possible choices on tier one (“when”): <strong>Eager</strong>(<em>synchronous</em>) replication propagates incoming changes synchronously to all replicas before a commit can be returned to the client, whereas <strong>lazy</strong> (<em>asynchronous</em>) replication applies changes only at the receiving replica and passes them on asynchronously. The great advantage of <em>eager</em> replication is consistency among replicas, but it comes at the cost of higher write latency due to the need to wait for other replicas and impaired availability. <em>Lazy</em> replication is faster, because it allows replicas to diverge; as a consequence, stale data might be served. On the second tier (“where”), again, two different approaches are possible: Either a <strong>master-slave</strong> (<em>primary copy</em>) scheme is pursued where changes can only be accepted by one replica (the master) or, in a <strong>update anywhere</strong> (<em>multi-master</em>) approach, every replica can accept writes. In <em>master-slave</em> protocols, concurrency control is not more complex than in a distributed system without replicas, but the entire replica set becomes unavailable, as soon as the master fails. Multi-master protocols require complex mechanisms for prevention or detection and reconciliation of conflicting changes. Techniques typically used for these purposes are versioning, vector clocks, gossiping and read repair (e.g. in <a href="http://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf" target="_blank" rel="noopener">Dynamo</a>) and <a href="http://hal.upmc.fr/inria-00555588/document" target="_blank" rel="noopener">convergent or commutative datatypes</a> (e.g. in Riak).</p>
+<p>Basically, all four combinations of the two-tier classification are possible. Distributed relational systems usually perform <em>eager master-slave</em> replication to maintain strong consistency. <em>Eager update anywhere</em> replication as for example featured in Google’s Megastore suffers from a heavy communication overhead generated by synchronisation and can cause distributed deadlocks which are expensive to detect. NoSQL database systems typically rely on _lazy_replication, either in combination with the master-slave (CP systems, e.g. HBase and MongoDB) or the update anywhere approach (AP systems, e.g. Dynamo and Cassandra). Many NoSQL systems leave the choice between latency and consistency to the client, i.e. for every request, the client decides whether to wait for a response from any replica to achieve minimal latency or for a certainly consistent response (by a majority of the replicas or the master) to prevent stale data.</p>
+<p>An aspect of replication that is not covered by the two-tier scheme is the distance between replicas. The obvious advantage of placing replicas near one another is low latency, but close proximity of replicas might also reduce the positive effects on availability; for example, if two replicas of the the same data item are placed in the same rack, the data item is not available on rack failure in spite of replication. But more than the possibility of mere temporary unavailability, placing replicas nearby also bears the peril of losing all copies at once in a disaster scenario. An alternative technique for latency reduction is used in <a href="http://www.btw-2015.de/res/proceedings/Hauptband/Wiss/Gessert-The_Cache_Sketch-165.pdf" target="_blank" rel="noopener">Orestes</a>, where data is cached close to applications using web caching infrastructure and cache coherence protocols.</p>
+<p>Geo-replication can protect the system against complete data loss and improve read latency for distributed access from clients. <em>Eager geo-replication</em>, as implemented in <a href="http://static.googleusercontent.com/media/research.google.com/de//pubs/archive/36971.pdf" target="_blank" rel="noopener">Megastore</a>, <a href="http://static.googleusercontent.com/media/research.google.com/de//archive/spanner-osdi2012.pdf" target="_blank" rel="noopener">Spanner</a>, <a href="http://mdcc.cs.berkeley.edu/mdcc.pdf" target="_blank" rel="noopener">MDCC</a> and <a href="http://sysnet.ucsd.edu/~yamao/pub/mencius-osdi.pdf" target="_blank" rel="noopener">Mencius</a> achieve strong consistency at the cost of higher write latencies (typically 100ms to 600ms). With <em>lazy geo-replication</em> as in Dynamo, <a href="http://www.cs.ucsb.edu/~agrawal/fall2009/PNUTS.pdf" target="_blank" rel="noopener">PNUTS</a>, <a href="http://news.cs.nyu.edu/~jinyang/pub/walter-sosp11.pdf" target="_blank" rel="noopener">Walter</a>, <a href="https://www.cs.cmu.edu/~dga/papers/cops-sosp2011.pdf" target="_blank" rel="noopener">COPS</a>, Cassandra and BigTable recent changes may be lost, but the system performs better and remains available during partitions. <a href="http://dl.acm.org/citation.cfm?id=2172338" target="_blank" rel="noopener">Charron-Bost et al. (Chapter 12)</a> and <a href="http://dl.acm.org/citation.cfm?id=293457" target="_blank" rel="noopener">Öszu and Valduriez (Chapter 13)</a> provide a comprehensive discussion of database replication.</p>
+<h2 id="3-3-Storage-Management"><a href="#3-3-Storage-Management" class="headerlink" title="3.3 Storage Management"></a>3.3 Storage Management</h2><p>For best performance, database systems need to be optimized for the storage media they employ to serve and persist data. These are typically main memory (RAM), solid-state drives (SSDs) and spinning disk drives (HDDs) that can be used in any combination. Unlike RDBMSs in enterprise setups, distributed NoSQL databases avoid specialized shared-disk architectures in favor of shared-nothing clusters based on commodity servers (employing commodity storage media). Storage devices are typically visualized as a “storage pyramid” (see <a href="https://medium.baqend.com/#fig:storage_model" target="_blank" rel="noopener">Figure 5</a> or <a href="http://db.cs.berkeley.edu/papers/fntdb07-architecture.pdf" target="_blank" rel="noopener">Hellerstein et al.</a>). There is also a set of transparent caches (e.g. L1-L3 CPU caches and disk buffers, not shown in the Figure), that are only implicitly leveraged through well-engineered database algorithms that promote data locality. The very different cost and performance characteristics of RAM, SSD and HDD storage and the different strategies to leverage their strengths (storage management) are one reason for the diversity of NoSQL databases. Storage management has a spatial dimension (where to store data) and a temporal dimension (when to store data). Update-in-place and append-only-IO are two complementary spatial techniques of organizing data; in-memory prescribes RAM as the location of data, whereas logging is a temporal technique that decouples main memory and persistent storage and thus provides control over when data is actually persisted.</p>
+<p><img src="https://miro.medium.com/max/60/1*fjEVwivJAJxxvolywt6z3Q.png?q=20" alt=""></p>
+<p><img src="https://medium.baqend.com/nosql-databases-a-survey-and-decision-guidance-ea7823a822d?gi=ff838f96d3cb" alt="">)<img src="https://miro.medium.com/max/2416/1*fjEVwivJAJxxvolywt6z3Q.png" alt=""></p>
+<p>Figure 5: The storage pyramid and its role in NoSQL systems.</p>
+<p>In their seminal paper <a href="http://nms.csail.mit.edu/~stavros/pubs/hstore.pdf" target="_blank" rel="noopener">“the end of an architectural era”</a>, Stonebraker et al. have found that in typical RDBMSs, only 6.8% of the execution time is spent on “useful work”, while the rest is spent on:</p>
+<ul>
+<li>buffer management (34.6%), i.e. caching to mitigate slower disk access</li>
+<li>latching (14.2%), to protect shared data structures from race conditions caused by multi-threading</li>
+<li>locking (16.3%), to guarantee logical isolation of transactions</li>
+<li>logging (1.9%), to ensure durability in the face of failures</li>
+<li>hand-coded optimizations (16.2%)</li>
+</ul>
+<p>This motivates that large performance improvements can be expected if RAM is used as primary storage (<strong>in-memory databases</strong>). The downside are high storage costs and lack of durability — a small power outage can destroy the database state. This can be solved in two ways: The state can be replicated over n in-memory server nodes protecting against n-1 single-node failures (e.g. <a href="http://hstore.cs.brown.edu/papers/hstore-demo.pdf" target="_blank" rel="noopener">HStore</a>, VoltDB) or by <strong>logging</strong> to durable storage (e.g. Redis or SAP Hana). Through logging, a random write access pattern can be transformed to a sequential one comprised of received operations and their associated properties (e.g. redo information). In most NoSQL systems, the commit rule for logging is respected, which demands every write operation that is confirmed as successful to be logged and the log to be flushed to persistent storage. In order to avoid the rotational latency of HDDs incurred by logging each operation individually, log flushes can be batched together (group commit) which slightly increases the latency of individual writes, but drastically improves throughput.</p>
+<p>SSDs and more generally all storage devices based on NAND flash memory differ substantially from HDDs in various aspects: “(1) asymmetric speed of read and write operations, (2) no in-place overwrite — the whole block must be erased before overwriting any page in that block, and (3) limited program/erase cycles” (<a href="https://www.usenix.org/legacy/events/fast12/tech/full_papers/Min.pdf" target="_blank" rel="noopener">Min et al., 2012</a>). Thus, a database system’s storage management must not treat SSDs and HDDs as slightly slower, persistent RAM, since random writes to an SSD are roughly an order of magnitude slower than sequential writes. Random reads, on the other hand, can be performed without any performance penalties. There are some database systems (e.g. Oracle Exadata, Aerospike) that are explicitly engineered for these performance characteristics of SSDs. In HDDs, both random reads and writes are 10–100 times slower than sequential access. Logging hence suits the strengths of SSDs and HDDs which both offer a significantly higher throughput for sequential writes.</p>
+<p>For in-memory databases, an <strong>update-in-place</strong> access pattern is ideal: It simplifies the implementation and random writes to RAM are essentially equally fast as sequential ones, with small differences being hidden by pipelining and the CPU-cache hierarchy. However, RDBMSs and many NoSQL systems (e.g. MongoDB) employ an update-in-place update pattern for persistent storage, too. To mitigate the slow random access to persistent storage, main memory is usually used as a cache and complemented by logging to guarantee durability. In RDBMSs, this is achieved through a complex buffer pool which not only employs cache-replace algorithms appropriate for typical SQL-based access patterns, but also ensures ACID semantics. NoSQL databases have simpler buffer pools that profit from simpler queries and the lack of ACID transactions. The alternative to the buffer pool model is to leave caching to the OS through virtual memory (e.g. employed in MongoDB’s MMAP storage engine). This simplifies the database architecture, but has the downside of giving less control over which data items or pages reside in memory and when they get evicted. Also read-ahead (speculative reads) and write-behind (write buffering) transparently performed with OS buffering lack sophistication as they are based on file system logics instead of database queries.</p>
+<p><strong>Append-only</strong> storage (also referred to as log-structuring) tries to maximize throughput by writing sequentially. Although log-structured file systems have a long research history, append-only I/O has only recently been popularized for databases by BigTable’s use of Log-Structured Merge (LSM) trees consisting of an in-memory cache, a persistent log and immutable, periodically written storage files. LSM trees and variants like Sorted Array Merge Trees (SAMT) and Cache-Oblivious Look-ahead Arrays (COLA) have been applied in many NoSQL systems (Cassandra, CouchDB, LevelDB, Bitcask, RethinkDB, WiredTiger, RocksDB, InfluxDB, TokuDB). Designing a database to achieve maximum write performance by always writing to a log is rather simple, the difficulty lies in providing fast random and sequential reads. This requires an appropriate index structure that is either permanently updated as a copy-on-write (COW) data structure (e.g. CouchDB’s COW B-trees) or only periodically persisted as an immutable data structure (e.g. in BigTable-style systems). An issue of all log-structured storage approaches is costly garbage collection (compaction) to reclaim space of updated or deleted items.</p>
+<p>In virtualized environments like Infrastructure-as-a-Service clouds many of the discussed characteristics of the underlying storage layer are hidden.</p>
+<p><img src="https://miro.medium.com/max/5266/1*cwUuBS3Z_sZK19R0ig5zEA.png" alt=""></p>
+<p>Table 1: A direct comparison of functional requirements, non-functional requirements and techniques among MongoDB, Redis, HBase, Riak, Cassandra and MySQL according to our NoSQL Toolbox.</p>
+<h2 id="3-4-Query-Processing"><a href="#3-4-Query-Processing" class="headerlink" title="3.4 Query Processing"></a>3.4 Query Processing</h2><p>The querying capabilities of a NoSQL database mainly follow from its distribution model, consistency guarantees and data model. <strong>Primary key lookup</strong>, i.e. retrieving data items by a unique ID, is supported by every NoSQL system, since it is compatible to range- as well as hash-partitioning. <strong>Filter queries</strong> return all items (or projections) that meet a predicate specified over the properties of data items from a single table. In their simplest form, they can be performed as <em>filtered full-table scans</em>. For hash-partitioned databases this implies a <em>scatter-gather</em> pattern where each partition performs the predicated scan and results are merged. For range-partitioned systems, any conditions on the range attribute can be exploited to select partitions.</p>
+<p>To circumvent the inefficiencies of O(n) scans, secondary indexes can be employed. These can either be <strong>local secondary indexes</strong> that are managed in each partition or <strong>global secondary indexes</strong> that index data over all partitions. As the global index itself has to be distributed over partitions, consistent secondary index maintenance would necessitate slow and potentially unavailable commit protocols. Therefore in practice, most systems only offer eventual consistency for these indexes (e.g. Megastore, Google AppEngine Datastore, DynamoDB) or do not support them at all (e.g. HBase, Azure Tables). When executing global queries over local secondary indexes the query can only be targeted to a subset of partitions if the query predicate and the partitioning rules intersect. Otherwise, results have to be assembled through scatter-gather. For example, a user table with range-partitioning over an age field can service queries that have an equality condition on age from one partition whereas queries over names need to be evaluated at each partition. A special case of global secondary indexing is full-text search, where selected fields or complete data items are fed into either a database-internal inverted index (e.g. MongoDB) or to an external search platform such as ElasticSearch or Solr (Riak Search, DataStax Cassandra).</p>
+<p><strong>Query planning</strong> is the task of optimizing a query plan to minimize execution costs. For aggregations and joins, query planning is essential as these queries are very inefficient and hard to implement in application code. The wealth of literature and results on relational query processing is largely disregarded in current NoSQL systems for two reasons. First, the key-value and wide-column model are centered around CRUD and scan operations on primary keys which leave little room for query optimization. Second, most work on distributed query processing focuses on OLAP (online analytical processing) workloads that favor throughput over latency whereas single-node query optimization is not easily applicable for partitioned and replicated databases. However, it remains an open research challenge to generalize the large body of applicable query optimization techniques especially in the context of document databases. (Currently only RethinkDB can perform general Θ-joins. MongoDB’s aggregation framework has support for left-outer equi-joins in its aggregation framework and CouchDB allows joins for pre-declared map-reduce views.)</p>
+<p><strong>In-database analytics</strong> can be performed either natively (e.g. in MongoDB, Riak, CouchDB) or through external analytics platforms such as Hadoop, Spark and Flink (e.g. in Cassandra and HBase). The prevalent native batch analytics abstraction exposed by NoSQL systems is <a href="http://static.googleusercontent.com/media/research.google.com/de//archive/mapreduce-osdi04.pdf" target="_blank" rel="noopener">MapReduce</a>. (An alternative to MapReduce are generalized <strong>data processing pipelines</strong>, where the database tries to optimize the flow of data and locality of computation based on a more declarative query language, e.g. MongoDB’s aggregation framework.) Due to I/O, communication overhead and limited execution plan optimization, these batch- and micro-batch-oriented approaches have high response times.<strong>Materialized views</strong> are an alternative with lower query response times. They are declared at design time and continuously updated on change operations (e.g. in CouchDB and Cassandra). However, similar to global secondary indexing, view consistency is usually relaxed in favor of fast, highly-available writes, when the system is distributed. As only few database systems come with built-in support for ingesting and querying unbounded streams of data,<strong>near-real-time analytics</strong> pipelines commonly implement either the <a href="http://lambda-architecture.net/" target="_blank" rel="noopener"><strong>Lambda Architecture</strong></a> or the <a href="https://www.oreilly.com/ideas/questioning-the-lambda-architecture" target="_blank" rel="noopener"><strong>Kappa Architecture</strong></a>: The former complements a batch processing framework like Hadoop MapReduce with a stream processor such as Storm (see for example <a href="http://www.vldb.org/pvldb/vol7/p1441-boykin.pdf" target="_blank" rel="noopener">Summingbird</a>) and the latter exclusively relies on stream processing and forgoes batch processing altogether.</p>
+<h1 id="4-System-Case-Studies"><a href="#4-System-Case-Studies" class="headerlink" title="4. System Case Studies"></a>4. System Case Studies</h1><p>In this section, we provide a qualitative comparison of some of the most prominent key-value, document and wide-column stores. We present the results in strongly condensed comparisons and refer to the documentations of the individual systems for in-detail information. The proposed NoSQL Toolbox (see <a href="https://medium.baqend.com/#fig:NoSQL_toolbox" target="_blank" rel="noopener">Figure 4</a>) is a means of abstraction that can be used to classify database systems along three dimensions: functional requirements, non-functional requirements and the techniques used to implement them. We argue that this classification characterizes many database systems well and thus can be used to meaningfully contrast different database systems: <a href="https://medium.baqend.com/#tab:NoSQL_toolbox_table_2" target="_blank" rel="noopener">Table 1</a> shows a direct comparison of MongoDB, Redis, HBase, Riak, Cassandra and MySQL in their respective default configurations. A more verbose comparison of central system properties is presented in the large comparison <a href="https://medium.baqend.com/#tab:NoSQL_toolbox_table_comparison_lscape" target="_blank" rel="noopener">Table 2</a> at the end of this article.</p>
+<p>The methodology used to identify the specific system properties consists of an in-depth analysis of publicly available documentation and literature on the systems. Furthermore, some properties had to be evaluated by researching the open-source code bases, personal communication with the developers as well as a meta-analysis of reports and benchmarks by practitioners.</p>
+<p>For detailed descriptions see the slides from our <a href="https://speakerdeck.com/divinetraube/nosql-data-stores-in-research-and-practice-icde-2016-tutorial-extended-version" target="_blank" rel="noopener">ICDE 2016 Tutorial</a>, which goes over many details of the different NoSQL systems:</p>
+<p>The comparison elucidates how SQL and NoSQL databases are designed to fulfill very different needs: RDBMSs provide an unmatched level of functionality whereas NoSQL databases excel on the non-functional side through scalability, availability, low latency and/or high throughput. However, there are also large differences among the NoSQL databases. Riak and Cassandra, for example, can be configured to fulfill many non-functional requirements, but are only eventually consistent and do not feature many functional capabilities apart from data analytics and, in case of Cassandra, conditional updates. MongoDB and HBase, on the other hand, offer stronger consistency and more sophisticated functional capabilities such as scan queries and — only MongoDB: — filter queries, but do not maintain read and write availability during partitions and tend to display higher read latencies. Redis, as the only non-partitioned system in this comparison apart from MySQL, shows a special set of trade-offs centered around the ability to maintain extremely high throughput at low-latency using in-memory data structures and asynchronous master-slave replication.</p>
+<p><img src="https://miro.medium.com/max/4964/1*qP4HSIx95ZBVla7tjluhLg.png" alt=""></p>
+<p>Figure 6: A decision tree for mapping requirements to (NoSQL) database systems.</p>
+<h1 id="5-Conclusions"><a href="#5-Conclusions" class="headerlink" title="5. Conclusions"></a>5. Conclusions</h1><p>Choosing a database system always means to choose one set of desirable properties over another. To break down the complexity of this choice, we present a binary decision tree in <a href="https://medium.baqend.com/#fig:NoSQL_tree" target="_blank" rel="noopener">Figure 6</a> that maps trade-off decisions to example applications and potentially suitable database systems. The leaf nodes cover applications ranging from simple caching (left) to Big Data analytics (right). Naturally, this view on the problem space is not complete, but it vaguely points towards a solution for a particular data management problem.</p>
+<p>The first split in the tree is along the access pattern of applications: They either rely on fast lookups only (left half) or require more complex querying capabilities (right half). The fast lookup applications can be distinguished further by the data volume they process: If the main memory of one single machine can hold all the data, a single-node system like Redis or Memcache probably is the best choice, depending on whether functionality (Redis) or simplicity (Memcache) is favored. If the data volume is or might grow beyond RAM capacity or is even unbounded, a multi-node system that scales horizontally might be more appropriate. The most important decision in this case is whether to favor availability (AP) or consistency (CP) as described by the CAP theorem. Systems like Cassandra and Riak can deliver an always-on experience, while systems like HBase, MongoDB and DynamoDB deliver strong consistency.</p>
+<p>The right half of the tree covers applications requiring more complex queries than simple lookups. Here, too, we first distinguish the systems by the data volume they have to handle according to whether single-node systems are feasible (HDD-size) or distribution is required (unbounded volume). For common OLTP (online transaction processing) workloads on moderately large data volumes, traditional RDBMSs or graph databases like Neo4J are optimal, because they offer ACID semantics. If, however, availability is of the essence, distributed systems like MongoDB, CouchDB or DocumentDB are preferrable.</p>
+<p>If the data volume exceeds the limits of a single machine, the choice of the right system depends on the prevalent query pattern: When complex queries have to be optimised for latency, as for example in social networking applications, MongoDB is very attractive, because it facilitates expressive ad-hoc queries. HBase and Cassandra are also useful in such a scenario, but excel at throughput-optimised Big Data analytics, when combined with Hadoop.</p>
+<p>In summary, we are convinced that the proposed top-down model is an effective decision support to filter the vast amount of NoSQL database systems based on central requirements. The NoSQL Toolbox furthermore provides a mapping from functional and non-functional requirements to common implementation techniques to categorize the constantly evolving NoSQL space.</p>
+<p><img src="https://miro.medium.com/max/5602/1*iI7vzaOjFWWwZKtTaJCtXQ.png" alt=""></p>
+<p>Table 2: A qualitative comparison of MongoDB, HBase, Cassandra, Riak and Redis.</p>
+<p>Don’t want to miss our next post on NoSQL topics? Get it conveniently delivered to your inbox by <a href="http://www.baqend.com/#newsletter" target="_blank" rel="noopener">joining our newsletter</a>.</p>
+<p>If you want to cite this article, please use this <a href="https://dblp.uni-trier.de/rec/html/journals/ife/GessertWFR17" target="_blank" rel="noopener"><strong>DBLP reference</strong></a>:</p>
+<p>@ article{DBLP:journals/ife/GessertWFR17,<br>  author    = {Felix Gessert and<br>               Wolfram Wingerath and<br>               Steffen Friedrich and<br>               Norbert Ritter},<br>  title     = {NoSQL database systems: a survey and decision guidance},<br>  journal   = {Computer Science - R{\&amp;}D},<br>  volume    = {32},<br>  number    = {3-4},<br>  pages     = {353–365},<br>  year      = {2017},<br>  doi       = {10.1007/s00450-016-0334-3}<br>}</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/06/07/qiwihui-pocket_readings-1126/" rel="prev" title="Hacker's guide to deep-learning side-channel attacks: code walkthrough">
+      <i class="fa fa-chevron-left"></i> Hacker's guide to deep-learning side-channel attacks: code walkthrough
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/06/11/qiwihui-pocket_readings-1128/" rel="next" title="Cacao: Building macOS (and iOS) Apps in Rust | Ryan McGrath">
+      Cacao: Building macOS (and iOS) Apps in Rust | Ryan McGrath <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#NoSQL-Databases-a-Survey-and-Decision-Guidance-by-Felix-Gessert"><span class="nav-number"></span> <span class="nav-text">NoSQL Databases: a Survey and Decision Guidance by Felix Gessert</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#NoSQL-Databases-a-Survey-and-Decision-Guidance"><span class="nav-number"></span> <span class="nav-text">NoSQL Databases: a Survey and Decision Guidance</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#TL-DR"><span class="nav-number"></span> <span class="nav-text">TL;DR</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#1-Introduction"><span class="nav-number"></span> <span class="nav-text">1. Introduction</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-High-Level-System-Classification"><span class="nav-number"></span> <span class="nav-text">2. High-Level System Classification</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-Different-Data-Models"><span class="nav-number"></span> <span class="nav-text">2.1 Different Data Models</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-Consistency-Availability-Trade-Offs-CAP-and-PACELC"><span class="nav-number"></span> <span class="nav-text">2.2 Consistency-Availability Trade-Offs: CAP and PACELC</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-Techniques"><span class="nav-number"></span> <span class="nav-text">3. Techniques</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-1-Sharding"><span class="nav-number"></span> <span class="nav-text">3.1 Sharding</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-2-Replication"><span class="nav-number"></span> <span class="nav-text">3.2 Replication</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-3-Storage-Management"><span class="nav-number"></span> <span class="nav-text">3.3 Storage Management</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-4-Query-Processing"><span class="nav-number"></span> <span class="nav-text">3.4 Query Processing</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-System-Case-Studies"><span class="nav-number"></span> <span class="nav-text">4. System Case Studies</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#5-Conclusions"><span class="nav-number"></span> <span class="nav-text">5. Conclusions</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

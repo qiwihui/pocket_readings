@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="fbprophet方法在ueba中的应用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="
+
+
+fbprophet方法在ueba中的应用 ">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/02/24/qiwihui-pocket_readings-1030/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="fbprophet方法在ueba中的应用">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd46EyfTZpgLic9d3lT5QhOjCicy4rNx5xQXFNOsIntSphIhQo9XsCDm8qQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4iavh7aYCd8EnKtDHaccfCefvC5zArs6ccc1c319sR1ic8OfILepBWXWQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd40hgavnPOsjm4kwfUWtbsZGdBuToX4oGcEtibrg5wDXI5H7D9y5a2eQA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4BB8EtNxBqn3bSyPukCYFibgTWRVA8ooNVtbHGZKMiaOHX9adklu6wPcA/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4iaaHicbddsVe1zAYI98YnKpk53gh1x5sv4Dagfba70GVlomUwIGh71PA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4ak8K66z2vjL6ex53vl5PBtyY3FggmqD9ZjSd5XUvChHiaFnV0qp1t7w/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4Q2sfuVpzslrABszTf0HMgf91Ku7nKuib2g2ib5icyOW5mffyC17ibmxgCg/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd48J0rbEiaI8urCUuL9BduLcCicVDiaYljxYVbTZnT1JpmXZmM7g5ZuU8tQ/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4nPfzH30vmJfhUMicG0qwJicvEveOLv69DQG8M7ibtD2jVVCws4EPfdcKA/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4uhyKplMsW2J2QSicNzkHsaxJtFwcY8mDmUHG8rpJEPicPHSCk9F1NrvQ/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4a4k2DntjXYtemycPITsk2g6jYfq7Nbc1x2XiaYo6RCq3mMYYU1ic8Deg/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd43L6lFRotYaprFW4IIZzneofY6BMaYib6snxJWvFwHjX9iad3NZXrNHFA/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd46egRahlDibTAImIia8mC85kc1gGhA8omK3unyGbgexcIiawPGRUk4jsXQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd48J0rbEiaI8urCUuL9BduLcCicVDiaYljxYVbTZnT1JpmXZmM7g5ZuU8tQ/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd48J0rbEiaI8urCUuL9BduLcCicVDiaYljxYVbTZnT1JpmXZmM7g5ZuU8tQ/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4LYWskqS7tSITcRaCQhibwxlhaMtr5sDLZ6GGGfWwMfHn7046icjS462A/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4QCsvICfiahFlrP776iaibU1UYboxOHA8Jjo5OxsBQCrk3b7E9aJWybhxg/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4gJdQDAo4ZeCuWPdOricT0fDeEkt14h07nnL22vZ4c8O8oiaAFYR1CKGg/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4RDATWbW3W8e8bS3pfWpqYuD8gu9bwn78jYc31mXNdVLgFzhAluZiawA/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4QrhZo1xjtcmwibxOuf7IJKnicRTicPE8zOTufO973wruZwSDM3Yjl1ZBQ/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4KXkCnuRxj7FMmficmBNHnia0YkjC87C6Gv5QkT9hibNEOJPx8atmiaLaaQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4gvWkibGOtkCKHHktJuyhBXsSa955e9WuibOg609fuicycOEoDajNvlUjA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4PzT20EibymW1cRqRiazdc0QkUq9ordfJzqFfYYuOXZRhYyPicHtIKkxqw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4mK0ngtQAqxtCDQeic2TbIib20upKkvN4Iu7QbdF1wPvhciayicE2LuYpHg/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4fgdZFoia9IRIicD2IkQjbIX4k4bR09xgJe4TiavE7ZR7o8ksD9gGUQJqA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4csicxTia5sCIThqFz9mvibicPAs8O9cd9U3mVl6L4TicVy2nFvcbPbKjeeQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4jEBr70NTjJIATQibKPIGY646AbMPORiarNDGa0ugwIHHZrvFBEibNjlLg/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4l85vib2fEF0xaXhvLqRHOdzBZQB0RqjwCX2Dw0co8UpicC3tDSS5NcUw/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/PS7NCCJ5iavSz7LFPYXY88tnoMia4alOPLwV3deKUb417g6T16y0jxazq6DqMYK8caGmsXdicPXSmSjb3sGXUibGbw/640?wx_fmt=jpeg">
+<meta property="article:published_time" content="2021-02-24T08:21:26.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.414Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://mmbiz.qpic.cn/mmbiz_png/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd46EyfTZpgLic9d3lT5QhOjCicy4rNx5xQXFNOsIntSphIhQo9XsCDm8qQ/640?wx_fmt=png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/02/24/qiwihui-pocket_readings-1030/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>
+
+
+fbprophet方法在ueba中的应用  | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/02/24/qiwihui-pocket_readings-1030/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+
+
+fbprophet方法在ueba中的应用 
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-02-24 08:21:26" itemprop="dateCreated datePublished" datetime="2021-02-24T08:21:26+00:00">2021-02-24</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">
+
+
+fbprophet方法在ueba中的应用 </div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#24494;&#20449;&#21495; TX_Security_AI &#21151;&#33021;&#20171;&#32461; &#35813;&#36134;&#21495;&#20027;&#35201;&#22260;&#32469;&#26234;&#33021;&#21270;&#25216;&#26415;&#22914;&#20309;&#24110;&#21161;&#20225;&#19994;&#25552;&#21319;&#32593;&#32476;&#23433;&#20840;&#27700;&#24179;&#23637;&#24320;&#65292;&#20869;&#23481;&#28041;&#21450;&#26426;&#22120;&#23398;&#20064;&#12289;&#22823;&#25968;&#25454;&#22788;&#29702;&#31561;&#26234;&#33021;&#21270;&#25216;&#26415;&#22312;&#23433;&#20840;&#39046;&#22495;&#30340;&#23454;&#36341;&#32463;&#39564;&#20998;&#20139;&#65292;&#19994;&#30028;&#39046;&#20808;&#30340;&#20135;&#21697;&#21644;&#21069;&#27839;&#36235;&#21183;&#30340;&#35299;&#35835;&#20998;&#26512;&#31561;&#12290;&#36890;&#36807;&#20998;&#20139;&#12289;&#20132;<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/3pOFtOM" target="_blank" rel="noopener">https://ift.tt/3pOFtOM</a> original site<br><br><br><br>February 24, 2021 at 04:14PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1030#issuecomment-784897679" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>2/24/2021</strong></p>
+</blockquote>
+<h2 id="fbprophet方法在ueba中的应用-by-腾讯安全智能"><a href="#fbprophet方法在ueba中的应用-by-腾讯安全智能" class="headerlink" title="fbprophet方法在ueba中的应用 by 腾讯安全智能"></a>fbprophet方法在ueba中的应用 by 腾讯安全智能</h2><p><strong>2021-02-09</strong><br>腾讯御见UEBA（用户实体行为分析）面向政务、金融、能源等行业的办公安全、数据安全、员工行为管理，使用一系列分析方法（统计学习、机器学习等高级分析方法）通过分析用户实体（用户、设备、主机等）相关行为日志构建用户实体画像（静态画像、动态画像），然后基于用户实体画像进行风险检测、风险分析、风险评估，最终识别内部风险用户和风险实体。在产品上，提供仪表板和风险时间线能力，帮助感知和运营，提升运营效率。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd46EyfTZpgLic9d3lT5QhOjCicy4rNx5xQXFNOsIntSphIhQo9XsCDm8qQ/640?wx_fmt=png" alt=""></p>
+<p>在用户实体行为分析(UEBA)中，很多场景都会用到时间序列分析、预测、检测相关的技术，例如：  </p>
+<ul>
+<li><p>检测某个重要服务器外发的数据大小是否异常</p>
+</li>
+<li><p>检测两个端点之间的通信模式是否异常</p>
+</li>
+<li><p>检测某个账号从服务器下载的数据量是否异常</p>
+</li>
+<li><p>检测某个用户访问的内网资源数量是否异常</p>
+</li>
+<li><p>检测用户每天的首次活跃时间是否有异常</p>
+</li>
+</ul>
+<p>然而，传统的分析方法无法较好的应对多周期、多变点、趋势变化等复杂因素下的时间序列检测问题，在落地中会带来较多的误报。</p>
+<p>因此，我们在UEBA的落地实践中，针对时间序列检测和预测问题做了一系列算法上的调研与落地尝试。本文主要介绍在复杂时间序列异常检测问题上，广泛受认可的方法：fbprophet。</p>
+<p>本文内容分为几个部分：</p>
+<ol>
+<li><p>介绍有关时间序列的基本知识。先让大家理解算法上如何看待时间序列这类数据。  </p>
+</li>
+<li><p>介绍fbprophet方法的原理。  </p>
+</li>
+<li><p>介绍该方法与LSTM方法的效果对比，及分享我们在UEBA中做场景落地时候的收获。</p>
+</li>
+<li><p>小结。</p>
+</li>
+<li><p>附录：自动选择拐点时的处理逻辑  </p>
+</li>
+<li><p>小彩蛋</p>
+</li>
+</ol>
+<p><strong>引言</strong></p>
+<p>时间序列在机器学习领域，是比较特别的一类数据。原因是它在取值之外，加上了时间维度。在检测问题上，它检测的是在某个时间点，观察到这个取值是否是正常的，而不是仅仅看取值是不是正常。</p>
+<p>例如，某个服务器在凌晨发1G/分钟的数据出去，与在中午12点发1G/分钟的数据的意义是不一样的，正常情况下，我们更倾向于中午12点的观测是由于访问量增加导致的，而凌晨的观测可能是由于被攻击导致的。</p>
+<p>因此，在检测时间序列之前，我们首先需要对时间序列的常见模式有个基本的认识。目前，工业界和学术界普遍将时间序列建模为如下几种因素，周期、频率、趋势、节假日、随机波动。</p>
+<p>下面结合一组图来介绍时间序列的几个关键概念，让大家对它有一个直观的理解，例如下图1和图2具有明显的周期形状(某个形状重复出现)，下图1和下图2的周期重复频率又是不一样的(某个形状重复出现的快慢不一样)，图1的频率比图2的频率高。图3和图4则在周期之外，添加了趋势分量，图3为平稳上升的趋势，图4则是平稳下降趋势。图5和图6则有了“均值漂移”的表现，在两张图中的中间部分可以看到“陡增“和“陡降”形状，在这部分改变之后，时间序列的走势又趋于平稳，在UEBA中我们叫它“拐点”，业界结合业务因素将这种“拐点”解释为由于节假日或者故障导致的波动因素。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4iavh7aYCd8EnKtDHaccfCefvC5zArs6ccc1c319sR1ic8OfILepBWXWQ/640?wx_fmt=png" alt=""></p>
+<p>图1 时间序列类型示意图</p>
+<p>我们面对的时间序列检测问题，可以理解为是在复杂的因素综合作用下，识别哪些是异常变化，而不是由于趋势变化、周期变化、节假日活动影响导致的预期内变化。</p>
+<p>该问题在行业内是一个极具挑战的问题，而在我们的产品中，由于要把异常检测的能力做成一个通用的内置能力提供给客户，还要保证良好的效果，因此，在算法选型上具有更大的挑战。</p>
+<p>结合我们团队在时间序列检测上的一些积累，下文分享工业界领先的fbprophet方法及在ueba中的应用尝试。</p>
+<p><strong>1. fbprophet方法</strong></p>
+<p>fbprophet方法是facebook开源的一个时间序列检测利器，频繁被AIOps作为瑞士军刀使用。它的特点在于调参成本低，即便不调参，也可以获得不错的效果，它的另一个优点是训练成本低，在UEBA的大部分场景中，它可以在分钟级别完成训练和预测，并且效果媲美训练了2，3个小时的lstm模型。</p>
+<p>这个优点，让它我们私有化的场景中加分不少，因为我们UEBA上，计算资源紧张，并且检测的问题很多。那么它是如何做到在保证质量的同时，还能在分钟级完成建模的呢？</p>
+<p>Fbprophet方法基于传统的加性模型，它将时间序列建模为趋势、周期、节假日和高斯噪声分量的加和，也就是说将观测的结果看作是4个分量的加法作用，可以表示为：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd40hgavnPOsjm4kwfUWtbsZGdBuToX4oGcEtibrg5wDXI5H7D9y5a2eQA/640?wx_fmt=png" alt=""></p>
+<p>其中g(t), s(t),h(t)分别为趋势分量、周期分量、节假日分量，<img src="https://mmbiz.qpic.cn/mmbiz_jpg/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4BB8EtNxBqn3bSyPukCYFibgTWRVA8ooNVtbHGZKMiaOHX9adklu6wPcA/640?wx_fmt=jpeg" alt=""></p>
+<p>为高斯噪声分量。在这个框架下，该方法为每个子分量精心的设计了模型。  </p>
+<p> <strong>1.1 关于趋势分量g(t)</strong></p>
+<p>fbprophet提到使用两种模型分别是饱和增长模型和线性模型来建模趋势分量。其中饱和增长模型的含义是指观测指标有个理论上的上限，且观测指标的变化以某个速率进行变化。</p>
+<p>例如，环境的可容纳人口有上限60亿，人口每年以0.4%的速率进行增长，那么我们观测每年的地球人口数量，可以按基础的饱和增长模型进行预测。饱和增长模型的基本形式如下：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4iaaHicbddsVe1zAYI98YnKpk53gh1x5sv4Dagfba70GVlomUwIGh71PA/640?wx_fmt=png" alt=""></p>
+<p>g(t)为趋势分量随时间变化的函数。其中C为饱和总量，k为增长率，m为常量偏置项。比较特别的是，在fbprophet这个方法中，它提出C，k都不应该是一个常量，它们应该也会随着时间t而变化。怎么理解呢？</p>
+<p>例如在互联网中，我们监控产品DAU，C则为网民数量，而网民数量不是静态不变的，它也是不断增加的，而同样的，在DAU上的增长率k也应是动态变化的。在这个设想下，C建模为时间t的函数C（t），在考虑k的变化的时候，则会更精细一点，它会考虑哪些因素对k有重要的影响，例如“拐点”。假设时间序列中存在S个拐点，每个拐点都对时间序列的走势有影响，那么在j时刻的影响大小为j之前时刻的拐点影响的总和。</p>
+<p>基于这个思路，首先将这些拐点的改变用向量表示为<img src="https://mmbiz.qpic.cn/mmbiz_png/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4ak8K66z2vjL6ex53vl5PBtyY3FggmqD9ZjSd5XUvChHiaFnV0qp1t7w/640?wx_fmt=png" alt=""></p>
+<p>其中<img src="https://mmbiz.qpic.cn/mmbiz_jpg/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4Q2sfuVpzslrABszTf0HMgf91Ku7nKuib2g2ib5icyOW5mffyC17ibmxgCg/640?wx_fmt=jpeg" alt="">)为在拐点<img src="https://mmbiz.qpic.cn/mmbiz_jpg/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd48J0rbEiaI8urCUuL9BduLcCicVDiaYljxYVbTZnT1JpmXZmM7g5ZuU8tQ/640?wx_fmt=jpeg" alt="">)处增长率k的变化大小。那么在时间t处的增长率k会变为<img src="https://mmbiz.qpic.cn/mmbiz_jpg/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4nPfzH30vmJfhUMicG0qwJicvEveOLv69DQG8M7ibtD2jVVCws4EPfdcKA/640?wx_fmt=jpeg" alt="">)。为了使用向量表示，引入一个指示向量<img src="https://mmbiz.qpic.cn/mmbiz_jpg/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4uhyKplMsW2J2QSicNzkHsaxJtFwcY8mDmUHG8rpJEPicPHSCk9F1NrvQ/640?wx_fmt=jpeg" alt="">).<img src="https://mmbiz.qpic.cn/mmbiz_jpg/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4a4k2DntjXYtemycPITsk2g6jYfq7Nbc1x2XiaYo6RCq3mMYYU1ic8Deg/640?wx_fmt=jpeg" alt="">)变为<img src="https://mmbiz.qpic.cn/mmbiz_jpg/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd43L6lFRotYaprFW4IIZzneofY6BMaYib6snxJWvFwHjX9iad3NZXrNHFA/640?wx_fmt=jpeg" alt=""><strong>.</strong> 在偏置项的改变上，在<em>j</em>处也可以调整为<strong>：</strong></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd46egRahlDibTAImIia8mC85kc1gGhA8omK3unyGbgexcIiawPGRUk4jsXQ/640?wx_fmt=png" alt=""></p>
+<p><em>【至于为什么是这种形式，可以理解为，<strong><img src="https://mmbiz.qpic.cn/mmbiz_jpg/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd48J0rbEiaI8urCUuL9BduLcCicVDiaYljxYVbTZnT1JpmXZmM7g5ZuU8tQ/640?wx_fmt=jpeg" alt=""></strong>为当前拐点的时间点，m为一个固定的偏置量，从<strong><img src="https://mmbiz.qpic.cn/mmbiz_jpg/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd48J0rbEiaI8urCUuL9BduLcCicVDiaYljxYVbTZnT1JpmXZmM7g5ZuU8tQ/640?wx_fmt=jpeg" alt=""></strong>后退一个偏置量，再将过去拐点未知的扰动量减掉，剩下从语义上来说应为一个本次拐点的扰动大小。之后再利用增长率变化的大小做一个尺度的调整，即为本次拐点位置的扰动量。】</em></p>
+<p>在考虑C和k的动态性之后，原基础的饱和增长模型变化为：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4LYWskqS7tSITcRaCQhibwxlhaMtr5sDLZ6GGGfWwMfHn7046icjS462A/640?wx_fmt=png" alt=""></p>
+<p>该模型也为fbprophet拟合中，growth取‘logistic’时的趋势项模型。在使用中，饱和总量C(t)需要事先指定，其他几个参数则有默认取值。除此之外，将logistic函数换为线性函数（或其他函数），即变为趋势模型的线性表示方式：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4QCsvICfiahFlrP776iaibU1UYboxOHA8Jjo5OxsBQCrk3b7E9aJWybhxg/640?wx_fmt=png" alt=""></p>
+<p>该方法相比logistic趋势而言，虽然看上去简单，但实际使用中发现效果挺好，而且没有饱和总量C的参数。  </p>
+<p> <strong>1.2 关于周期分量</strong></p>
+<p>fbprophet考虑时间序列中存在多周期的情况，并利用fourier 变换来进行周期的表示。周期分量的fourier表示形式如下，其中通过配置不同的P和n,可以实现不同尺度的周期表示。一般来说，我们会配置（365.23，10），（7，3）两组参数，来抓住年周期趋势和周周期趋势。 </p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4gJdQDAo4ZeCuWPdOricT0fDeEkt14h07nnL22vZ4c8O8oiaAFYR1CKGg/640?wx_fmt=png" alt=""></p>
+<p> <strong>1.3 关于节假日分量</strong></p>
+<p>它支持算法人员传入过去和未来的节假日列表，对于每个节假日，支持配置节假日的影响窗口，例如圣诞前前后各一天都算节假日的影响范围。在每个节假日上，配置对观测值的影响大小，即为<img src="https://mmbiz.qpic.cn/mmbiz_jpg/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4RDATWbW3W8e8bS3pfWpqYuD8gu9bwn78jYc31mXNdVLgFzhAluZiawA/640?wx_fmt=jpeg" alt="">, <img src="https://mmbiz.qpic.cn/mmbiz_jpg/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4QrhZo1xjtcmwibxOuf7IJKnicRTicPE8zOTufO973wruZwSDM3Yjl1ZBQ/640?wx_fmt=jpeg" alt="">表示第<em>i</em>个节假日的区间。我们假设服从均值为0，方差为的正态分布。</p>
+<p>节假日的分量可以如下表示：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4KXkCnuRxj7FMmficmBNHnia0YkjC87C6Gv5QkT9hibNEOJPx8atmiaLaaQ/640?wx_fmt=png" alt=""></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4gvWkibGOtkCKHHktJuyhBXsSa955e9WuibOg609fuicycOEoDajNvlUjA/640?wx_fmt=png" alt=""></p>
+<p>在模型建立之后，在模型训练阶段，fbprophet方法利用stan’s LBFGS方法进行优化求解。</p>
+<p><strong>关于调优tips：</strong></p>
+<p>容量C：在选择饱和增长模型的时候，容量C必须配置，具体的取值依赖业务知识（相比arima方法等，这种调参成本很低）</p>
+<p>拐点：拐点可以选择主动传入，也可以自动选择，自动选择的情况下，默认从前80%的点中，等距的选择25个点作为拐点。</p>
+<p>节假日和周期性：依赖业务经验，一般而言，可以依赖可视化来进行模型调优。（把曲线画出来，看下大概是什么样的周期，节假日变点在哪里）</p>
+<p>平滑参数：算法人员通过调节τ，v，δ 3个参数来控制拟合曲线的平滑度。</p>
+<p><strong>2. 效果评测</strong></p>
+<p>lstm方法是深度学习方法中针对时间序列的经典方法，对比fbprophet方法而言，它没有建模过程，直接从历史观测序列中学习拟合。此处对lstm方法不做介绍，仅仅把它的结果和fbprophet方法做个对比。  </p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4PzT20EibymW1cRqRiazdc0QkUq9ordfJzqFfYYuOXZRhYyPicHtIKkxqw/640?wx_fmt=png" alt=""></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4mK0ngtQAqxtCDQeic2TbIib20upKkvN4Iu7QbdF1wPvhciayicE2LuYpHg/640?wx_fmt=png" alt=""></p>
+<p>Lstm  拟合预测（10000次）</p>
+<p>Fbprophet方法（无调参）</p>
+<p>图2 效果评测对比</p>
+<p>从预测效果上看，lstm预测效果比fpprophet要好，实验中lstm的mse值在0.21，而fbprophet方法的mse在0.25。但是在训练时间上，lstm在无GPU的机器上，训练用了2.5小时，而fbprophet方法在默认参数下，分钟级别完成训练和预测。</p>
+<p>在UEBA的实践中，针对“设备外发数据量检测”，“用户访问资源数量检测”，基于该方法都取得了较好的效果，从中也体会到该方法善于抓住周期、趋势和突变的优点，极大的降低了误报。</p>
+<p><strong>3. 小结</strong></p>
+<p>UEBA中的很多场景涉及到时间序列检测问题，在业界的大多数实现方案中，可以通过k-sigma，box-plot，esd,s-esd, wavelet, fourier decomposion等多种方法来进行检测。</p>
+<p>但实际中，发现简单的模型会带来比较多的误报，而复杂的模型又没有办法在有限的资源中进行全量检测。</p>
+<p>因此，在算法的实际落地中，我们在UEBA中多采用层次检测和集成检测两种思路，层次检测指的是搭建多个简单模型对全量数据进行粗筛，之后在用性价比高、可解释性好的模型进行精准检测，在某些场景中，我们也会采用多个算法集成输出的思路，以提高检测的有效性和准确性。  </p>
+<p>*<em>附录：自动选择拐点的方法<br>*</em></p>
+<p>拐点作为该方法的亮点之一，此处附加fbprophet方法中关于拐点的选择逻辑。该算法原文中提到，算法人员可以主动提供拐点（可以通过将时间序列画出来，拿到拐点，传入算法模型）；也可以根据业务经验粗略的定拐点（例如一年中的节假日、产品活动日等）。最后也可以由算法自动的进行拐点的选择。</p>
+<p>在自动选择拐点的模式下，算法人员传入对δ的一个稀疏先验，并假设该稀疏先验服从参数为（0,τ）的拉普拉斯分布。τ在调参上的含义主要是用来控制在增长率改变上的灵活度，如下，拉普拉斯分布在中间部分的集中度是不一样的，在集中度比较小的时候，对τ有较大的概率采样到一个较大的值，自动选择拐点的逻辑具体如下：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4fgdZFoia9IRIicD2IkQjbIX4k4bR09xgJe4TiavE7ZR7o8ksD9gGUQJqA/640?wx_fmt=png" alt=""></p>
+<p>假设T个点中有S个拐点，每个拐点服从一个参数为（0,τ）的拉普拉斯分布。在预测的情况下，我们模拟未来增长率的改变，通过将τ替换为一个从数据中推测得到的数值。这个数值使用过去拐点处增长率改变的均值。在预测未来走势的时候，拐点是按如下方式采样得到。  </p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4csicxTia5sCIThqFz9mvibicPAs8O9cd9U3mVl6L4TicVy2nFvcbPbKjeeQ/640?wx_fmt=png" alt=""></p>
+<p>这里有个假设是在增长率的改变上，未来会有与过去相同的平均频率和幅值。当增大τ的时候，训练误差会降低。</p>
+<hr>
+<p>最后，小编给各位大大准备了个彩蛋</p>
+<p>噔噔噔噔~</p>
+<p>腾讯御见安全中心牛年定制限量红包封面！</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4jEBr70NTjJIATQibKPIGY646AbMPORiarNDGa0ugwIHHZrvFBEibNjlLg/640?wx_fmt=png" alt=""></p>
+<p>扫描下方二维码可领取</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/PS7NCCJ5iavRTgLWvlGzPoqKRznJvKdd4l85vib2fEF0xaXhvLqRHOdzBZQB0RqjwCX2Dw0co8UpicC3tDSS5NcUw/640?wx_fmt=jpeg" alt=""></p>
+<p>数量有限，快来领取吧  </p>
+<p>祝大家牛年新年快乐！牛气冲天！牛转乾坤！</p>
+<hr>
+<p><strong>智能化 自动化 一站式</strong></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/PS7NCCJ5iavSz7LFPYXY88tnoMia4alOPLwV3deKUb417g6T16y0jxazq6DqMYK8caGmsXdicPXSmSjb3sGXUibGbw/640?wx_fmt=jpeg" alt="">  </p>
+<p>（长按二维码快速扫描关注）  </p>
+<p>该账号主要围绕智能化技术如何帮助企业提升网络安全水平展开，内容涉及机器学习、大数据处理等智能化技术在安全领域的实践经验分享，业界领先的产品和前沿趋势的解读分析等。通过分享、交流，推动安全智能的落地、应用。欢迎关注~</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-1026/" rel="prev" title="《深度剖析CPython解释器》30. 源码解密内置函数 iter、next - 古明地盆 - 博客园">
+      <i class="fa fa-chevron-left"></i> 《深度剖析CPython解释器》30. 源码解密内置函数 iter、next - 古明地盆 - 博客园
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/27/qiwihui-pocket_readings-1032/" rel="next" title="Rust ownership, the hard way">
+      Rust ownership, the hard way <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fbprophet方法在ueba中的应用-by-腾讯安全智能"><span class="nav-number"></span> <span class="nav-text">fbprophet方法在ueba中的应用 by 腾讯安全智能</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

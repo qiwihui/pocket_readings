@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Domain Borrowing: 一种基于CDN的新型隐蔽通信方法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Domain Borrowing: 一种基于CDN的新型隐蔽通信方法">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/05/24/qiwihui-pocket_readings-1112/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="Domain Borrowing: 一种基于CDN的新型隐蔽通信方法">
+<meta property="og:image" content="https://xlab.tencent.com/cn/uploads/2021/05/upload_1d900578f5e2f933ee68d4fd60e9a4fa.png">
+<meta property="og:image" content="https://xlab.tencent.com/cn/uploads/2021/05/upload_7697bb16b751073f06f74b7ed5f12cb1.png">
+<meta property="og:image" content="https://xlab.tencent.com/cn/uploads/2021/05/upload_bd2d37c01bbad5c01ff0ad5f447ecfcc.png">
+<meta property="og:image" content="https://xlab.tencent.com/cn/uploads/2021/05/upload_41f53b0fe26318f773e47229c3a4341d.png">
+<meta property="og:image" content="https://xlab.tencent.com/cn/uploads/2021/05/upload_9a9928f2fd4cd5d2d67e5c249916836d.png">
+<meta property="og:image" content="https://xlab.tencent.com/cn/uploads/2021/05/upload_19e0a807def102901d62a73bb60a4763.png">
+<meta property="og:image" content="https://xlab.tencent.com/cn/uploads/2021/05/upload_20793c294584cd70e7f438095da7db35.png">
+<meta property="og:image" content="https://xlab.tencent.com/cn/uploads/2021/05/upload_d0bb368bc15a90a3b578d90b8787372f.png">
+<meta property="og:image" content="https://xlab.tencent.com/cn/uploads/2021/05/upload_7d3ddef3b18bd8034db72a784f5f46a1.png">
+<meta property="og:image" content="https://xlab.tencent.com/cn/uploads/2021/05/upload_e42ef76302a792ac1ace057540d4e588.png">
+<meta property="og:image" content="https://xlab.tencent.com/cn/uploads/2021/05/upload_772a67991ba912afe3046193fbb3519f.png">
+<meta property="og:image" content="https://xlab.tencent.com/cn/uploads/2021/05/upload_adcb3f8a21421fdc7a3e9798557ecff9.png">
+<meta property="og:image" content="https://xlab.tencent.com/cn/uploads/2021/05/upload_4ea15732e80b1098ae412872a9159ef6.png">
+<meta property="og:image" content="https://xlab.tencent.com/cn/uploads/2021/05/upload_68139116be7c97f74f631b41f6e3cc9d.png">
+<meta property="og:image" content="https://xlab.tencent.com/cn/uploads/2021/05/upload_d26a90669d72fc26ff14b8248b5f3bb8.png">
+<meta property="og:image" content="https://xlab.tencent.com/cn/uploads/2021/05/upload_265620f7d88811fdee87e9e4ddeca73e.png">
+<meta property="og:image" content="https://xlab.tencent.com/cn/uploads/2021/05/upload_763acf49bb6d0697a3b9c9eb6db916ff.png">
+<meta property="og:image" content="https://xlab.tencent.com/cn/uploads/2021/05/upload_f694e4bf9ba266e7baf75d5c34737983.png">
+<meta property="og:image" content="https://xlab.tencent.com/cn/uploads/2021/05/upload_1e206dae72a2dd8145f0e40f4997abda.png">
+<meta property="og:image" content="https://xlab.tencent.com/cn/uploads/2021/05/upload_efce16059e3000410f2ee2d3f88b6578.png">
+<meta property="og:image" content="https://xlab.tencent.com/cn/uploads/2021/05/upload_f4934271528cc2458a8d962e91745772.png">
+<meta property="article:published_time" content="2021-05-24T13:21:31.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.406Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://xlab.tencent.com/cn/uploads/2021/05/upload_1d900578f5e2f933ee68d4fd60e9a4fa.png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/05/24/qiwihui-pocket_readings-1112/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>Domain Borrowing: 一种基于CDN的新型隐蔽通信方法 | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/05/24/qiwihui-pocket_readings-1112/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Domain Borrowing: 一种基于CDN的新型隐蔽通信方法
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-05-24 13:21:31" itemprop="dateCreated datePublished" datetime="2021-05-24T13:21:31+00:00">2021-05-24</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">Domain Borrowing: 一种基于CDN的新型隐蔽通信方法</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>CDN(Content Delivery Network) &#26159;&#20113;&#26381;&#21153;&#21378;&#21830;&#25552;&#20379;&#30340;&#19968;&#31181;Web&#20869;&#23481;&#21152;&#36895;&#20998;&#21457;&#26381;&#21153;&#12290; &#23545;&#20110;&#25915;&#20987;&#32773;&#26469;&#35828;&#65292;CDN&#25552;&#20379;&#20102;&#22823;&#37327;&#20998;&#24067;&#20110;&#20840;&#29699;&#21508;&#22320;&#30340;&#36793;&#32536;&#33410;&#28857;IP&#65292;&#24182;&#19988;&#21487;&#20197;&#23558;&#28304;&#26381;&#21153;&#22120;&#38544;&#34255;&#22312;CDN&#33410;&#28857;&#20043;&#21518;&#65292;&#25152;&#20197;CDN&#38750;&#24120;&#36866;&#21512;&#34987;&#29992;&#20110;&#20445;&#25252;C2&#30340;&#36890;&#20449;&#12290;<br><br><br><br>Tags: security<br><br><br><br>via Pocket <a href="https://ift.tt/3fhvQ9v" target="_blank" rel="noopener">https://ift.tt/3fhvQ9v</a> original site<br><br><br><br>May 24, 2021 at 08:48PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1112#issuecomment-847038992" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>5/24/2021</strong></p>
+</blockquote>
+<h2 id="Domain-Borrowing-一种基于CDN的新型隐蔽通信方法"><a href="#Domain-Borrowing-一种基于CDN的新型隐蔽通信方法" class="headerlink" title="Domain Borrowing: 一种基于CDN的新型隐蔽通信方法"></a>Domain Borrowing: 一种基于CDN的新型隐蔽通信方法</h2><p><em>作者：腾讯安全玄武实验室 dlive, salt</em></p>
+<h1 id="0x00-背景简介"><a href="#0x00-背景简介" class="headerlink" title="0x00 背景简介"></a>0x00 背景简介</h1><p>CDN(Content Delivery Network) 是云服务厂商提供的一种Web内容加速分发服务。</p>
+<p>对于攻击者来说，CDN提供了大量分布于全球各地的边缘节点IP，并且可以将源服务器隐藏在CDN节点之后，所以CDN非常适合被用于保护C2的通信。</p>
+<p>本文介绍了我们在某些CDN实现中发现的一些特性，以及如何利用这些特性隐藏C2通信流量，我们将这种新型的基于CDN的隐蔽通信方法称为Domain Borrowing。</p>
+<p>该研究已经发表在<a href="https://www.blackhat.com/asia-21/briefings/schedule/index.html#domain-borrowing-catch-my-c-traffic-if-you-can-22314" target="_blank" rel="noopener">Black Hat Asia 2021</a>。</p>
+<h1 id="0x01-历史研究"><a href="#0x01-历史研究" class="headerlink" title="0x01 历史研究"></a>0x01 历史研究</h1><h2 id="Domain-Fronting"><a href="#Domain-Fronting" class="headerlink" title="Domain Fronting"></a>Domain Fronting</h2><p>Domain Fronting[1]是Fifield David等研究人员在2015年提出的一种基于CDN的隐蔽通信方法，该方法至今仍被广泛应用于真实APT攻击和红蓝对抗中。</p>
+<p>Domain Fronting的工作原理如下图所示，主要利用了CDN转发HTTPS请求时的特性。</p>
+<p><img src="https://xlab.tencent.com/cn/uploads/2021/05/upload_1d900578f5e2f933ee68d4fd60e9a4fa.png" alt=""></p>
+<p>在处理HTTPS请求时，CDN会首先将它解密，并根据HTTP Host的值做请求转发。</p>
+<p>如果客户端想要访问一个非法网站<code>forbidden.com</code>，它可以使用一个CDN上的合法的域名<code>allow.com</code>作为SNI, 然后使用<code>forbidden.com</code>作为HTTP Host与CDN进行HTTPS通信。之后，CDN会将HTTP请求重新封装，并发往<code>forbidden.com</code>的源服务器。</p>
+<p>这种情况下，客户端实际通信的对象是<code>forbidden.com</code>，但在流量监控设备看来，客户端是在与<code>allow.com</code>通信，即客户端将流量成功伪装成了与<code>allow.com</code>通信的流量。</p>
+<p>Domain Fronting也有一些局限性。</p>
+<p>Domain Fronting流量的一个显著特点是SNI和Host不相等。企业的防守方可以部署HTTPS流量解密设备，并对比流量中的SNI和Host是否相等，如果不相等则说明是该流量是Domain Fronting流量。这也是MITRE ATT&amp;CK[2]中建议的检测方式。</p>
+<p>并且，随着该技术不断在真实网络攻击中被使用，云厂商也逐渐意识到了Domain Fronting的危害，目前Cloudflare、AWS CloudFront、Google Cloud CDN等厂商也都纷纷禁用了这种隐蔽通信方法。</p>
+<h2 id="Domain-Hiding"><a href="#Domain-Hiding" class="headerlink" title="Domain Hiding"></a>Domain Hiding</h2><p>Domain Hiding[2]是Erik Hunstad在DEFCON28上提出的隐蔽通信方法，这种方法主要依赖于TLSv1.3和ESNI。</p>
+<p><img src="https://xlab.tencent.com/cn/uploads/2021/05/upload_7697bb16b751073f06f74b7ed5f12cb1.png" alt=""></p>
+<p>ESNI是IETF的一个草案，目前只有Cloudflare CDN支持该标准。</p>
+<p>通信的客户端可以从<code>_esni.forbidden.com</code>的TXT记录中获取密钥，并使用该密钥加密SNI，在HTTPS Client Hello中即可使用加密后的SNI即ESNI与CDN进行通信。</p>
+<p>因为DNS查询可以通过DNS over TLS/HTTPS进行，所以整个HTTPS通信流量中不会出现明文的<code>forbidden.com</code>。流量监控设备也就无法识别该流量是否为非法流量。</p>
+<p>Erik Hunstad还发现Cloudflare处理ESNI的一个特性，如果Client Hello里同时出现SNI和ESNI， Cloudflare会忽略SNI字段，使用ESNI完成接下来的通信过程。这样攻击者在使用ESNI通信时，就可以将SNI设置为一个高信誉的的域名来伪装通信流量。</p>
+<p>Domain Hiding也存在一些局限性。一方面，Cloudflare现在已经不支持Client Hello里同时出现SNI和ESNI。另一方面，为了进行流量审查，很多企业甚至国家级防火墙会直接禁止使用ESNI通信。</p>
+<h1 id="0x02-Domain-Borrowing"><a href="#0x02-Domain-Borrowing" class="headerlink" title="0x02 Domain Borrowing"></a>0x02 Domain Borrowing</h1><p>对攻击者来说，一个理想的C2通信流量需要满足以下几个条件</p>
+<ol>
+<li>拥有大量IP地址供C2 agent连接</li>
+<li>使用高信誉的的域名和合法的HTTPS证书</li>
+<li>即使HTTPS流量可以被解密，解密后的流量也应该与正常流量高度相似，特别是SNI==Host</li>
+<li>通信协议不依赖于特殊协议标准</li>
+<li>通信方式不在特殊地区受限制</li>
+</ol>
+<p>下面将详细介绍我们在某些CDN实现中发现的一些特性，以及如何利用这些特性满足一个理想C2的隐蔽通信需求。</p>
+<p>在HTTPS CDN的工作流程中，DNS只是用于寻找CDN边缘节点，并不直接参与HTTPS通信。</p>
+<p>所以客户端可以直接抛弃DNS解析流程，或者使用另一个加速域名<code>cdn.b.com</code>做DNS解析, 然后使用<code>cdn.a.com</code>作为SNI/Host与CDN边缘节点通信。</p>
+<p><img src="https://xlab.tencent.com/cn/uploads/2021/05/upload_bd2d37c01bbad5c01ff0ad5f447ecfcc.png" alt=""></p>
+<p>为了伪装C2通信流量，需要保证流量中SNI和Host为高信誉度域名，也就需要我们具备在CDN上注册高信誉度域名的能力。</p>
+<p>我们调研了国外常见CDN加速域名注册时的域名归属认证机制，结果如下图所示。</p>
+<p><img src="https://xlab.tencent.com/cn/uploads/2021/05/upload_41f53b0fe26318f773e47229c3a4341d.png" alt=""></p>
+<p>Azure CDN使用DNS CNAME记录验证域名归属，Cloudflare使用DNS NS记录验证域名归属，使用者配置相应的DNS记录后才可以使用CDN服务。</p>
+<p>AWS CloudFront使用域名的HTTPS证书来验证域名归属权，使用者需要提供域名的合法HTTPS证书才可使用CDN服务。</p>
+<p>Google Cloud CDN的AnyCast机制需要使用者直接将加速域名解析配置为Google Cloud CDN指定的某个固定IP，虽然AnyCast机制的目的不是为了进行域名归属验证，但是确实达到了归属验证的效果。</p>
+<p>Fastly，StackPath，KeyCDN，CDN77和CDNSun则不存在域名归属验证，攻击者可以在这些CDN上任意注册高信誉度域名的加速服务, 如下图所示。</p>
+<p><img src="https://xlab.tencent.com/cn/uploads/2021/05/upload_9a9928f2fd4cd5d2d67e5c249916836d.png" alt=""></p>
+<p>以<code>www.blackhat.com</code>为例，虽然我们可以在上述CDN中注册该域名的CDN加速服务，但是我们并没有这个域名的合法HTTPS证书</p>
+<p>当CDN无法找到SNI中的域名对应的证书时，通常有两种处理逻辑</p>
+<ol>
+<li>大多数CDN会返回一个默认的证书给客户端</li>
+<li>少数CDN会直接断开与客户端的TCP连接</li>
+</ol>
+<p>如下图所示，Fastly CDN会返回<code>default.ssl.fastly.net</code>的证书给客户端</p>
+<p><img src="https://xlab.tencent.com/cn/uploads/2021/05/upload_19e0a807def102901d62a73bb60a4763.png" alt=""></p>
+<p>在这种情况下，客户端可以选择忽略HTTPS证书验证并与CDN边缘节点进行HTTPS通信</p>
+<p>这时HTTPS流量中<code>SNI == Host == www.blackhat.com</code>，可以绕过对Domain Fronting的检测</p>
+<p>虽然default.ssl.fastly.net证书比自签名证书可信度要高，但是对于这个HTTPS连接来说这仍然是一个非法的证书</p>
+<p>那么应该如何获取高信誉度域名的合法的证书？最简单的方法就是通过漏洞</p>
+<p>如果攻击者可以获取目标站点的RCE或者任意文件下载，攻击者可以直接获得域名的证书和私钥</p>
+<p>如果攻击者发现了目标站点的RCE、subdomain takeover、任意文件上传（尤其是云存储的任意文件上传）等漏洞，攻击者可以通过HTTP验证（.well-known）的方式申请目标站点域名的新的证书</p>
+<p>并且由于证书的有效期比较长，在站点漏洞被修复后，攻击者申请的证书可能仍然是有效的</p>
+<p><img src="https://xlab.tencent.com/cn/uploads/2021/05/upload_20793c294584cd70e7f438095da7db35.png" alt=""></p>
+<p><code>ppe.verify.microsoft.com</code>的subdomain takeover漏洞（该漏洞由作者一个朋友发现）已经被修复，但是申请下来的证书仍然有效</p>
+<p>因为AWS CloudFront仅通过HTTPS证书来做域名归属验证，所以我们拿到一个合法的证书之后就可以在AWS CloudFront上注册该域名的CDN服务</p>
+<p><img src="https://xlab.tencent.com/cn/uploads/2021/05/upload_d0bb368bc15a90a3b578d90b8787372f.png" alt=""></p>
+<p><img src="https://xlab.tencent.com/cn/uploads/2021/05/upload_7d3ddef3b18bd8034db72a784f5f46a1.png" alt=""></p>
+<p>成功注册之后，C2 agent就可以使用这个域名上线</p>
+<p>C2 agent可以使用<code>blogs.aws.amazon.com</code>进行DNS解析寻找CDN边缘节点，HTTPS请求中的SNI和HTTP Host都可以设置为<code>ppe.verify.microsoft.com</code>, 并且HTTPS证书使用的是我们上传的该域名的合法证书。</p>
+<p>是否有办法在不利用目标站点漏洞的情况下获取高信誉度域名的合法证书？</p>
+<p>我们在研究各个CDN厂商的HTTPS证书分发流程时发现了部分CDN厂商的实现存在一些特性，我们可以利用这些特性借用其他CDN用户上传的合法证书</p>
+<p>首先来看一下正确的证书分发流程</p>
+<p><img src="https://xlab.tencent.com/cn/uploads/2021/05/upload_e42ef76302a792ac1ace057540d4e588.png" alt=""></p>
+<p>当用户使用<code>cdn.example.com</code>作为SNI进行HTTPS请求时，CDN会从他的数据库中查找<code>cdn.example.com</code>的证书</p>
+<p>查询逻辑类似 <code>select certificate from db where domain_name = &quot;cdn.example.com&quot;</code></p>
+<p>（真实情况会更加复杂，这里只是用一个简单的数据库操作来演示CDN的处理逻辑）</p>
+<p>很明显，表中的第一行数据符合查询条件, <code>*.example.com.crt</code> 会被select出来，并返回给客户端</p>
+<p>但是部分CDN的实现存在问题</p>
+<p>攻击者在CDN上注册加速域名<code>static.example.com</code>，但是攻击者并没有该域名的证书。CDN会在数据库中新增一条数据，如下图所示。</p>
+<p><img src="https://xlab.tencent.com/cn/uploads/2021/05/upload_772a67991ba912afe3046193fbb3519f.png" alt=""></p>
+<p>客户端使用<code>static.example.com</code>作为SNI向CDN发送HTTPS请求，CDN从数据库中查询<code>static.example.com</code>的证书</p>
+<p><img src="https://xlab.tencent.com/cn/uploads/2021/05/upload_adcb3f8a21421fdc7a3e9798557ecff9.png" alt=""></p>
+<p>与正确的证书分发流程不同的是，这里的查询逻辑类似 <code>select certificate from db where certificate matches &quot;static.example.com&quot;</code></p>
+<p>第一行数据中的通配符证书<code>*.example.com.crt</code>可以匹配到<code>static.example.com</code></p>
+<p>但是这个证书是Alice上传的，也就是说Alice上传的通配符证书<code>*.example.com.crt</code>匹配到了攻击者注册的CDN加速域名<code>static.example.com</code></p>
+<p>之后CDN会将Alice上传的证书返回给客户端，于是客户端便获得了一个对于当前HTTPS连接来说合法的通配符HTTPS证书</p>
+<p>通过CDN的这个特性，攻击者就可以借用其他用户上传到CDN的通配符HTTPS证书，并与CDN建立合法的HTTPS连接</p>
+<p>我们发现StackPath和CDN77都存在这个特性，所以我们可以借用用户上传到StackPath和CDN77上的通配符HTTPS证书</p>
+<p><img src="https://xlab.tencent.com/cn/uploads/2021/05/upload_4ea15732e80b1098ae412872a9159ef6.png" alt=""></p>
+<p>并且StackPath和CDN77上有很多高信誉度的域名</p>
+<p><img src="https://xlab.tencent.com/cn/uploads/2021/05/upload_68139116be7c97f74f631b41f6e3cc9d.png" alt=""></p>
+<p>尤其是StackPath是JS Foundation的CDN服务提供商, 有一些非常知名的前端项目比如Bootstrap和FontAwesome将他们的静态资源部署在StackPath上</p>
+<p>作为知名前端项目，Bootstrap和FontAwesome在Alex top 1k网站上使用率非常高</p>
+<p>攻击者可以借用他们的子域名和合法的HTTPS证书将C2通信伪造成Bootstrap和FontAwesome的通信流量</p>
+<p>以Bootstrap为例，攻击者可以在CDN上注册任意<code>bootstrapcdn.com</code>的子域名，甚至是一个并不存在的子域名，比如<code>static.bootstrapcdn.com</code></p>
+<p><img src="https://xlab.tencent.com/cn/uploads/2021/05/upload_d26a90669d72fc26ff14b8248b5f3bb8.png" alt=""></p>
+<p>使用curl去测试，可以发现，当使用<code>static.bootstrapcdn.com</code>作为SNI进行HTTPS通信时，CDN会将<code>*.bootstrapcdn.com</code>返回给客户端</p>
+<p><img src="https://xlab.tencent.com/cn/uploads/2021/05/upload_265620f7d88811fdee87e9e4ddeca73e.png" alt=""></p>
+<p>于是攻击者就可以将<code>static.bootstrapcdn.com</code>作为SNI和Host，借用StackPath上合法的通配符HTTPS证书<code>*.bootstrapcdn.com</code>进行C2通信。</p>
+<p>无论是通信的HTTPS流量还是解密之后的HTTP流量，看起来都是一个高信誉度域名<code>static.bootstrapcdn.com</code>的合法通信流量。</p>
+<h1 id="0x03-防御方法"><a href="#0x03-防御方法" class="headerlink" title="0x03 防御方法"></a>0x03 防御方法</h1><p>对于企业防守方来说，最简单有效的Domain Borrowing防御方法是在防火墙检测HTTPS SNI的DNS解析结果是否与通信的目标IP地址相同, 并且建议配合DNS Proxy一起使用以减少误报。</p>
+<p><img src="https://xlab.tencent.com/cn/uploads/2021/05/upload_763acf49bb6d0697a3b9c9eb6db916ff.png" alt=""></p>
+<p>对于CDN厂商来说，可以采取以下方法禁用Domain Borrowing。</p>
+<ol>
+<li>用户在CDN上注册加速域名时，严格校验域名归属权</li>
+<li>客户端连接CDN时，正确地分发HTTPS证书</li>
+</ol>
+<p>对于网站管理员来说，可以通过下列方式缓解网站证书被滥用的问题。</p>
+<ol>
+<li>被入侵之后吊销现有证书，防止证书被攻击者窃取和滥用</li>
+<li>通过证书透明度检查攻击者是否申请了该网站域名的新的证书</li>
+</ol>
+<h1 id="0x04-案例：绕过Palo-Alto防火墙"><a href="#0x04-案例：绕过Palo-Alto防火墙" class="headerlink" title="0x04 案例：绕过Palo Alto防火墙"></a>0x04 案例：绕过Palo Alto防火墙</h1><p>Palo Alto Firewall PAN-VM是Palo Alto的下一代防火墙产品，支持很多优秀的特性，比如SSLv3.0-TLSv1.3的流量解密和Anti-Spyware功能。</p>
+<p>对SSL解密功能支持的算法如下图所示</p>
+<p><img src="https://xlab.tencent.com/cn/uploads/2021/05/upload_f694e4bf9ba266e7baf75d5c34737983.png" alt=""></p>
+<p>Anti-Spyware功能内置了各类恶意软件通信流量的检测规则和一些通用的检测逻辑比如Anti-Spyware Evasion Signatures[4]。</p>
+<p>Anti-Spyware Evasion Signatures包含两条检测规则Suspicious HTTP Evasion Found和Suspicious TLS Evasion Found</p>
+<p><img src="https://xlab.tencent.com/cn/uploads/2021/05/upload_1e206dae72a2dd8145f0e40f4997abda.png" alt=""></p>
+<p>Suspicious HTTP Evasion Found用于检测HTTP Host的DNS解析结果是否与通信目的IP地址相同</p>
+<p>Suspicious HTTPS Evasion Found用于检测HTTPS SNI的DNS解析结果是否与通信目的IP地址相同</p>
+<p>所以理论上Anti-Spyware Evasion Signatures是可以检测Domain Borrowing的。但是我们研究发现，Palo Alto Firewall在这个功能的实现上存在问题。</p>
+<p>如果防火墙无法解析出SNI和Host域名的IP地址，则这条通信流量会直接通过检测。</p>
+<p>对于Domain Borrowing来说，SNI和Host可以被设置为一个不存在的域名（即该域名没有IP地址），这样就可以绕过Palo Alto Firewall的检测。</p>
+<p>以<code>img.fontawesome.com</code>为例</p>
+<p><img src="https://xlab.tencent.com/cn/uploads/2021/05/upload_efce16059e3000410f2ee2d3f88b6578.png" alt=""></p>
+<p>该域名不是一个真实存在的域名，它没有任何的DNS记录</p>
+<p>攻击者可以在StackPath上注册<code>img.fontawesome.com</code>的CDN加速服务，并使用<code>img.fontawesome.com</code>作为SNI和Host，借用StackPath上合法的通配符HTTPS证书<code>*.fontawesome.com</code>进行C2通信。</p>
+<p>在检测设备看来，攻击者的通信流量就是一个完全合法的高信誉度域名<code>img.fontawesome.com</code>的HTTPS通信流量，并且可以绕过Anti-Spyware Evasion Signatures的检测。</p>
+<p><img src="https://xlab.tencent.com/cn/uploads/2021/05/upload_f4934271528cc2458a8d962e91745772.png" alt=""></p>
+<p>该绕过方法已经报告给Palo Alto PSIRT。</p>
+<h1 id="0x05-Covenant-Implant-Template"><a href="#0x05-Covenant-Implant-Template" class="headerlink" title="0x05 Covenant Implant Template"></a>0x05 Covenant Implant Template</h1><p>我们实现了一个使用Domain Borrowing通信的Covenant[5] Implant Template，希望帮助攻击方在红蓝对抗中应用Domain Borrowing技术，也希望能够帮助防守方加强对此类通信流量的检测能力。</p>
+<p>Github Repo: <a href="https://github.com/Dliv3/DomainBorrowing" target="_blank" rel="noopener">https://github.com/Dliv3/DomainBorrowing</a></p>
+<h1 id="0x06-参考资料"><a href="#0x06-参考资料" class="headerlink" title="0x06 参考资料"></a>0x06 参考资料</h1><p>[1] <a href="https://www.icir.org/vern/papers/meek-PETS-2015.pdf" target="_blank" rel="noopener">https://www.icir.org/vern/papers/meek-PETS-2015.pdf</a><br>[2] <a href="https://attack.mitre.org/techniques/T1090/004/" target="_blank" rel="noopener">https://attack.mitre.org/techniques/T1090/004/</a><br>[3] <a href="https://media.defcon.org/DEF%20CON%2028/DEF%20CON%20Safe%20Mode%20presentations/DEF%20CON%20Safe%20Mode%20-%20Erik%20Hunstad%20-%20Domain%20Fronting%20is%20Dead%20Long%20Live%20Domain%20Fronting.pdf" target="_blank" rel="noopener">https://media.defcon.org/DEF%20CON%2028/DEF%20CON%20Safe%20Mode%20presentations/DEF%20CON%20Safe%20Mode%20-%20Erik%20Hunstad%20-%20Domain%20Fronting%20is%20Dead%20Long%20Live%20Domain%20Fronting.pdf</a><br>[4] <a href="https://docs.paloaltonetworks.com/pan-os/10-0/pan-os-admin/threat-prevention/enable-evasion-signatures.html" target="_blank" rel="noopener">https://docs.paloaltonetworks.com/pan-os/10-0/pan-os-admin/threat-prevention/enable-evasion-signatures.html</a><br>[5] <a href="https://github.com/cobbr/Covenant" target="_blank" rel="noopener">https://github.com/cobbr/Covenant</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/05/24/qiwihui-pocket_readings-1111/" rel="prev" title="Security headers quick reference">
+      <i class="fa fa-chevron-left"></i> Security headers quick reference
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/05/24/qiwihui-pocket_readings-1113/" rel="next" title="
+
+
+北大博士论文书写了怎样的外卖江湖｜大象公会 ">
+      
+
+
+北大博士论文书写了怎样的外卖江湖｜大象公会  <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Domain-Borrowing-一种基于CDN的新型隐蔽通信方法"><span class="nav-number"></span> <span class="nav-text">Domain Borrowing: 一种基于CDN的新型隐蔽通信方法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x00-背景简介"><span class="nav-number"></span> <span class="nav-text">0x00 背景简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x01-历史研究"><span class="nav-number"></span> <span class="nav-text">0x01 历史研究</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Domain-Fronting"><span class="nav-number"></span> <span class="nav-text">Domain Fronting</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Domain-Hiding"><span class="nav-number"></span> <span class="nav-text">Domain Hiding</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x02-Domain-Borrowing"><span class="nav-number"></span> <span class="nav-text">0x02 Domain Borrowing</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x03-防御方法"><span class="nav-number"></span> <span class="nav-text">0x03 防御方法</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x04-案例：绕过Palo-Alto防火墙"><span class="nav-number"></span> <span class="nav-text">0x04 案例：绕过Palo Alto防火墙</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x05-Covenant-Implant-Template"><span class="nav-number"></span> <span class="nav-text">0x05 Covenant Implant Template</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x06-参考资料"><span class="nav-number"></span> <span class="nav-text">0x06 参考资料</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

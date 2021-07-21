@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Run your own private CA &amp; ACME server using step-ca">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Run your own private CA &amp; ACME server using step-ca">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/03/26/qiwihui-pocket_readings-1053/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="Run your own private CA &amp; ACME server using step-ca">
+<meta property="og:image" content="https://smallstep.com/uploads/Mike-Malone.jpg">
+<meta property="og:image" content="https://smallstep.com/images/icons/twitter.svg">
+<meta property="og:image" content="https://smallstep.com/uploads/acme-unfurl-org.png">
+<meta property="og:image" content="https://smallstep.com/uploads/acme-connect-to-step-ca.png">
+<meta property="og:image" content="https://smallstep.com/uploads/acme-how-it-works.png">
+<meta property="og:image" content="https://smallstep.com/uploads/ACME_Icon.svg">
+<meta property="og:image" content="https://smallstep.com/uploads/acme-certbot.png">
+<meta property="og:image" content="https://smallstep.com/uploads/acme-acme-sh.png">
+<meta property="og:image" content="https://smallstep.com/uploads/acme-step.png">
+<meta property="og:image" content="https://smallstep.com/uploads/acme-caddy.png">
+<meta property="og:image" content="https://smallstep.com/uploads/acme-nginx.png">
+<meta property="og:image" content="https://smallstep.com/uploads/acme-apache.png">
+<meta property="og:image" content="https://smallstep.com/uploads/acme-traefik.png">
+<meta property="og:image" content="https://smallstep.com/uploads/acme-golang.png">
+<meta property="og:image" content="https://smallstep.com/uploads/acme-python.png">
+<meta property="og:image" content="https://smallstep.com/uploads/acme-node-js.png">
+<meta property="og:image" content="https://smallstep.com/images/blog/2019-02-25-localhost-tls.png">
+<meta property="og:image" content="https://smallstep.com/uploads/acme-all-the-things.png">
+<meta property="og:image" content="https://smallstep.com/images/smallstep-icon.svg">
+<meta property="og:image" content="https://smallstep.com/uploads/ACME_Icon.svg">
+<meta property="og:image" content="https://smallstep.com/uploads/not-human-unfurl_hu459366f7200d1db389e87d226a475d50_43524_518x388_resize_q90_box_2.png">
+<meta property="og:image" content="https://smallstep.com/uploads/iid-unfurl_huc389c08cc58cc9688007a1f3472375be_396046_518x388_resize_q90_box_2.png">
+<meta property="og:image" content="https://smallstep.com/uploads/bridge_automate-unfurl_hu67e5a560cbaabd797e895d7ade2345c3_65008_518x388_resize_q90_box_2.png">
+<meta property="article:published_time" content="2021-03-26T03:21:08.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.426Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://smallstep.com/uploads/Mike-Malone.jpg">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/03/26/qiwihui-pocket_readings-1053/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>Run your own private CA & ACME server using step-ca | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/03/26/qiwihui-pocket_readings-1053/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Run your own private CA & ACME server using step-ca
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-03-26 03:21:08" itemprop="dateCreated datePublished" datetime="2021-03-26T03:21:08+00:00">2021-03-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">Run your own private CA & ACME server using step-ca</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>With today&rsquo;s release (v0.13.0), you can now use ACME to get certificates from step-ca. ACME (RFC8555) is the protocol that Let&rsquo;s Encrypt uses to automate certificate management for websites.<br><br><br><br>Tags: engineering<br><br><br><br>via Pocket <a href="https://ift.tt/350fPxw" target="_blank" rel="noopener">https://ift.tt/350fPxw</a> original site<br><br><br><br>March 26, 2021 at 10:32AM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1053#issuecomment-807907503" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>3/26/2021</strong></p>
+</blockquote>
+<h2 id="Run-your-own-private-CA-amp-ACME-server-using-step-ca"><a href="#Run-your-own-private-CA-amp-ACME-server-using-step-ca" class="headerlink" title="Run your own private CA &amp; ACME server using step-ca"></a>Run your own private CA &amp; ACME server using step-ca</h2><p>Get your own private ACME server</p>
+<p><a href="https://info.smallstep.com/acme-use-case/" target="_blank" rel="noopener">Learn More &gt;</a></p>
+<h1 id="Run-your-own-private-CA-amp-ACME-server-using-step-ca-1"><a href="#Run-your-own-private-CA-amp-ACME-server-using-step-ca-1" class="headerlink" title="Run your own private CA &amp; ACME server using step-ca"></a>Run your own private CA &amp; ACME server using step-ca</h1><hr>
+<p><img src="https://smallstep.com/uploads/Mike-Malone.jpg" alt="Mike Malone"></p>
+<p>Mike Malone</p>
+<p>2019-09-17</p>
+<p><a href="https://twitter.com/smallsteplabs" target="_blank" rel="noopener">follow smallstep on Twitter  <img src="https://smallstep.com/images/icons/twitter.svg" alt=""></a> </p>
+<p><img src="https://smallstep.com/uploads/acme-unfurl-org.png" alt="smallstep supports ACME protocol"></p>
+<p>With today’s release (<code>v0.13.0</code>), you can now use ACME to get certificates from <a href="https://github.com/smallstep/certificates" target="_blank" rel="noopener"><code>step-ca</code></a>. ACME (<a href="https://tools.ietf.org/html/rfc8555" target="_blank" rel="noopener">RFC8555</a>) is the protocol that <a href="https://letsencrypt.org/" target="_blank" rel="noopener">Let’s Encrypt</a> uses to automate certificate management for websites. <strong>ACME radically simplifies the deployment of TLS and HTTPS by letting you obtain certificates automatically, without human interaction.</strong></p>
+<p><a href="https://github.com/smallstep/cli" target="_blank" rel="noopener">Star</a> </p>
+<p>step cli</p>
+<p><a href="https://github.com/smallstep/certificates" target="_blank" rel="noopener">Star</a> </p>
+<p>step certificates</p>
+<p>ACME support in <code>step-ca</code> means you can easily <strong>run your own ACME server</strong> to issue certificates to internal services and infrastructure in production, development, and other pre-production environments.</p>
+<p><img src="https://smallstep.com/uploads/acme-connect-to-step-ca.png" alt="Caddy using ACME to connect to step-ca"></p>
+<h2 id="Why-ACME"><a href="#Why-ACME" class="headerlink" title="Why ACME?"></a>Why ACME?</h2><p>ACME support in <code>step-ca</code> means you can leverage <a href="https://letsencrypt.org/docs/client-options/" target="_blank" rel="noopener">existing ACME clients and libraries</a> to get certificates from your own certificate authority (CA). The bulk of this post demonstrates how that’s done.</p>
+<p>There are lots of reasons you might want to run your own CA, but the two that guided our ACME implementation are:</p>
+<ol>
+<li>Using ACME in production to issue certificates to workloads, proxies, queues, databases, etc. so you can use mutual TLS for authentication &amp; encryption.</li>
+<li>Simulating Let’s Encrypt’s CA in dev &amp; pre-production in scenarios where connecting to Let’s Encrypt’s <a href="https://letsencrypt.org/docs/staging-environment/" target="_blank" rel="noopener">staging server</a> is problematic.</li>
+</ol>
+<p>Running your own CA is more flexible than using a public Web PKI CA. It means you needn’t <a href="https://smallstep.com/blog/everything-pki.html#trustworthiness" target="_blank" rel="noopener">trust 100+ third parties</a> for your internal systems’ security. You can issue certificates with <a href="https://cabforum.org/internal-names/" target="_blank" rel="noopener">internal hostnames</a>, with <a href="https://www.zdnet.com/article/google-wants-to-reduce-lifespan-for-https-certificates-to-one-year/" target="_blank" rel="noopener">any lifetime</a> you’d like, using any key type, and you don’t have to worry about public Web PKI threats like <a href="https://letsencrypt.org/docs/rate-limits/" target="_blank" rel="noopener">rate limits</a>, <a href="https://en.wikipedia.org/wiki/StartCom" target="_blank" rel="noopener">China</a>, or <a href="https://www.eff.org/deeplinks/2019/02/cyber-mercenary-groups-shouldnt-be-trusted-your-browser-or-anywhere-else" target="_blank" rel="noopener">the</a> <a href="https://en.wikipedia.org/wiki/DigiNotar" target="_blank" rel="noopener">NSA</a>.</p>
+<p>Still, we were afraid we might ruffle feathers with this announcement, so we reached out to Let’s Encrypt a few weeks ago to give them a preview. Turns out we had nothing to worry about. They responded enthusiastically. We ended up becoming sponsors, and now we have some new friends! Relatedly, we’re <a href="https://smallstep.com/#free-stuff" target="_blank" rel="noopener">giving away some Let’s Encrypt hoodies</a>!</p>
+<blockquote>
+<p>“We developed the ACME protocol to encourage automation in PKI. It is exciting to see others prioritizing automation in security as well.”</p>
+<p>-- <a href="https://twitter.com/0xjosh" target="_blank" rel="noopener">Josh Aas</a>, Executive Director, Let’s Encrypt/ISRG</p>
+</blockquote>
+<p>We’re excited too!</p>
+<p><img src="https://smallstep.com/uploads/acme-how-it-works.png" alt="How ACME protocol works"></p>
+<p>At a high level, ACME is pretty simple. An ACME client creates an account with an ACME server and submits a certificate order. The server responds with a set of <em>challenges</em> for the client to complete, to prove control over identifiers (domain names) in the certificate. Once the client successfully completes these challenges, it submits a <a href="https://smallstep.com/#epki-csr" target="_blank" rel="noopener">certificate signing request</a> (CSR) and the server issues a certificate.</p>
+<p>The most interesting part of all of this is the challenge – where the client proves control over an identifier. There is no single standard way to “prove control” over an “identifier”, so the core ACME specification makes this an extension point. That said, there are only two challenge types broadly used in practice. Both are designed to prove control over a domain name, and both are supported by <code>step-ca</code>:</p>
+<ul>
+<li>The <strong>HTTP Challenge</strong> (technically, <code>http-01</code>), in which the ACME server challenges the client to host a random number at a random URL on the domain in question and verifies client control by issuing an HTTP GET request to that URL</li>
+<li>The <strong>DNS Challenge</strong> (technically, <code>dns-01</code>), in which the ACME server challenges the client to provision a random DNS TXT record for the domain in question and verifies client control by querying DNS for that TXT record</li>
+</ul>
+<p>That should be enough background to understand what’s going on, configure, debug, and operate ACME clients. Now let’s try out ACME with <code>step-ca</code>.</p>
+<h2 id="Using-ACME-with-step-ca"><a href="#Using-ACME-with-step-ca" class="headerlink" title="Using ACME with step-ca"></a>Using ACME with <code>step-ca</code></h2><p>Let’s assume you’ve <a href="https://smallstep.com/docs/getting-started/#1-installing-step-and-step-ca" target="_blank" rel="noopener">installed <code>step-ca</code></a> (e.g., using <code>brew install step</code>), have it running at <code>https://ca.internal</code>, and you’ve <a href="https://smallstep.com/docs/getting-started/#bootstrapping" target="_blank" rel="noopener">bootstrapped your ACME client system(s)</a> (or at least <a href="https://smallstep.com/docs/cli/ca/root/" target="_blank" rel="noopener">installed your root certificate</a> at <code>~/.step/certs/root_ca.crt</code>).</p>
+<h3 id="Enabling-ACME"><a href="#Enabling-ACME" class="headerlink" title="Enabling ACME"></a>Enabling ACME</h3><p>To enable ACME, simply <a href="https://smallstep.com/docs/cli/ca/provisioner/add/" target="_blank" rel="noopener">add an ACME <em>provisioner</em></a> to your <code>step-ca</code> configuration by running:</p>
+<pre><code>step ca provisioner add acme --type ACME</code></pre><p>Now restart <code>step-ca</code> to pick up the new configuration.</p>
+<p>🏌️‍that’s it.</p>
+<h3 id="Configuring-clients"><a href="#Configuring-clients" class="headerlink" title="Configuring clients"></a>Configuring clients</h3><p>To configure an ACME client to connect to <code>step-ca</code> you need to:</p>
+<ol>
+<li>Point the client at the right ACME directory URL</li>
+<li>Tell the client to trust your CA’s root certificate</li>
+</ol>
+<p>Once certificates are issued, you’ll also need to ensure they’re renewed before they expire.</p>
+<h4 id="Pointing-clients-at-the-right-ACME-Directory-URL"><a href="#Pointing-clients-at-the-right-ACME-Directory-URL" class="headerlink" title="Pointing clients at the right ACME Directory URL"></a>Pointing clients at the right ACME Directory URL</h4><p>Most ACME clients connect to Let’s Encrypt’s CA by default. To connect to <code>step-ca</code> you need to point the client at the right <a href="https://tools.ietf.org/html/rfc8555#section-7.1.1" target="_blank" rel="noopener">ACME directory URL</a>.</p>
+<p>A single instance of <code>step-ca</code> can have multiple ACME provisioners, each with their own ACME directory URL that looks like:</p>
+<pre><code>https://{ca-host}/acme/{provisioner-name}/directory</code></pre><p>We just added an ACME provisioner named “acme”. Its ACME directory URL is:</p>
+<pre><code>https://ca.internal/acme/acme/directory</code></pre><h4 id="Telling-clients-to-trust-your-CA’s-root-certificate"><a href="#Telling-clients-to-trust-your-CA’s-root-certificate" class="headerlink" title="Telling clients to trust your CA’s root certificate"></a>Telling clients to trust your CA’s root certificate</h4><p>Communication between an ACME client and server <a href="https://tools.ietf.org/html/rfc8555#section-6.1" target="_blank" rel="noopener">always uses HTTPS</a>. By default, client’s will validate the server’s HTTPS certificate using the public root certificates in your system’s default <a href="https://smallstep.com/blog/everything-pki.html#trust-stores" target="_blank" rel="noopener">trust store</a>. That’s fine when you’re connecting to Let’s Encrypt: it’s a public CA and its root certificate is in your system’s default trust store already. Your internal root certificate isn’t, so HTTPS connections from ACME clients to <code>step-ca</code> will fail.</p>
+<p>There are two ways to address this problem:</p>
+<ol>
+<li>Explicitly configure your ACME client to trust <code>step-ca</code>‘s root certificate, or</li>
+<li>Add <code>step-ca</code>‘s root certificate to your system’s default trust store (e.g., using <a href="https://smallstep.com/docs/cli/certificate/install/" target="_blank" rel="noopener"><code>step certificate install</code></a>)</li>
+</ol>
+<p>If you’re using your CA for TLS in production, explicitly configuring your ACME client to only trust your root certificate is a better option. We’ll demonstrate this method with several clients below.</p>
+<p>If you’re simulating Let’s Encrypt in pre-production, installing your root certificate is a more faithful simulation of production. Once your root certificate is installed, no additional client configuration is necessary.</p>
+<blockquote>
+<p>Caution: adding a root certificate to your system’s trust store is a global operation. Certificates issued by your CA will be trusted everywhere, including in web browsers.</p>
+</blockquote>
+<p><img src="https://smallstep.com/uploads/ACME_Icon.svg" alt="cta-icon"></p>
+<p>Get your own private ACME server</p>
+<p><a href="https://info.smallstep.com/acme-use-case/" target="_blank" rel="noopener">Learn More &gt;</a></p>
+<h2 id="Examples"><a href="#Examples" class="headerlink" title="Examples"></a>Examples</h2><p><code>step-ca</code> should work with any ACMEv2 (<a href="https://tools.ietf.org/html/rfc8555" target="_blank" rel="noopener">RFC8555</a>) compliant client that supports the <code>http-01</code> or <code>dns-01</code> challenge. If you run into any issues please <a href="https://github.com/smallstep/certificates/discussions" target="_blank" rel="noopener">start a discussion</a> or <a href="https://github.com/smallstep/certificates/issues/new?template=bug_report.md" target="_blank" rel="noopener">open an issue</a>.</p>
+<p>Let’s look at some examples.</p>
+<h3 id=""><a href="#" class="headerlink" title=""></a><img src="https://smallstep.com/uploads/acme-certbot.png" alt="certbot"></h3><p><a href="https://certbot.eff.org/" target="_blank" rel="noopener"><code>certbot</code></a> is the grandaddy of ACME clients. Built and supported by <a href="https://www.eff.org/" target="_blank" rel="noopener">the EFF</a>, it’s the standard-bearer for production-grade command-line ACME.</p>
+<p>To get a certificate from <code>step-ca</code> using <code>certbot</code> you need to:</p>
+<ol>
+<li>Point <code>certbot</code> at your ACME directory URL using the <code>--server</code> flag</li>
+<li>Tell <code>certbot</code> to trust your root certificate using the <code>REQUESTS_CA_BUNDLE</code> environment variable</li>
+</ol>
+<p>For example:</p>
+<pre><code>$ sudo REQUESTS_CA_BUNDLE=$(step path)/certs/root_ca.crt \
+  certbot certonly -n --standalone -d foo.internal \
+    --server https://ca.internal/acme/acme/directory</code></pre><p><code>sudo</code> is required in <code>certbot</code>‘s <a href="https://certbot.eff.org/docs/using.html#standalone" target="_blank" rel="noopener"><em>standalone</em> mode</a> so it can listen on port 80 to complete the <code>http-01</code> challenge. If you already have a webserver running you can use <a href="https://certbot.eff.org/docs/using.html#webroot" target="_blank" rel="noopener"><em>webroot</em> mode</a> instead. With the <a href="https://certbot.eff.org/docs/using.html#dns-plugins" target="_blank" rel="noopener">appropriate plugin</a> <code>certbot</code> also supports the <code>dns-01</code> challenge for most popular DNS providers. Deeper integrations with <a href="https://certbot.eff.org/docs/using.html#nginx" target="_blank" rel="noopener">nginx</a> and <a href="https://certbot.eff.org/docs/using.html#apache" target="_blank" rel="noopener">apache</a> can even configure your server to use HTTPS automatically (we’ll set this up ourselves later). All of this works with <code>step-ca</code>.</p>
+<p>You can renew all of the certificates you’ve installed using <code>cerbot</code> by running:</p>
+<pre><code>$ sudo REQUESTS_CA_BUNDLE=$(step path)/certs/root_ca.crt certbot renew</code></pre><p>You can automate renewal with a simple <code>cron</code> entry:</p>
+<pre><code>*/15 * * * * root REQUESTS_CA_BUNDLE=$(step path)/certs/root_ca.crt certbot -q renew</code></pre><p>The <code>certbot</code> packages for some Linux distributions will create a <code>cron</code> entry or <a href="https://stevenwestmoreland.com/2017/11/renewing-certbot-certificates-using-a-systemd-timer.html" target="_blank" rel="noopener">systemd timer</a> like this for you. This entry won’t work with <code>step-ca</code> because it <a href="https://github.com/certbot/certbot/issues/7170" target="_blank" rel="noopener">doesn’t set the <code>REQUESTS_CA_BUNDLE</code> environment variable</a>. You’ll need to manually tweak it to do so.</p>
+<p>More subtly, <code>certbot</code>‘s default renewal job is tuned for Let’s Encrypt’s 90 day certificate lifetimes: it’s run every 12 hours, with actual renewals occurring for certificates within 30 days of expiry. By default, <code>step-ca</code> issues certificates with <em>much shorter</em> 24 hour lifetimes. The <code>cron</code> entry above accounts for this by running <code>certbot renew</code> every 15 minutes. You’ll also want to configure your domain to only renew certificates when they’re within a few hours of expiry by adding a line like:</p>
+<pre><code>renew_before_expiry = 8 hours</code></pre><p>to the top of your renewal configuration (e.g., in <code>/etc/letsencrypt/renewal/foo.internal.conf</code>).</p>
+<h3 id="-1"><a href="#-1" class="headerlink" title=""></a><img src="https://smallstep.com/uploads/acme-acme-sh.png" alt="acme.sh"></h3><p><a href="https://github.com/Neilpang/acme.sh" target="_blank" rel="noopener">acme.sh</a> is another popular command-line ACME client. It’s written completely in shell (<code>bash</code>, <code>dash</code>, and <code>sh</code> compatible) with very few dependencies.</p>
+<p>To get a certificate from <code>step-ca</code> using <code>acme.sh</code> you need to:</p>
+<ol>
+<li>Point <code>acme.sh</code> at your ACME directory URL using the <code>--server</code> flag</li>
+<li>Tell <code>acme.sh</code> to trust your root certificate using the <code>--ca-bundle</code> flag</li>
+</ol>
+<p>For example:</p>
+<pre><code>$ sudo acme.sh --issue --standalone -d foo.internal \
+    --server https://ca.internal/acme/acme/directory \
+    --ca-bundle $(step path)/certs/root_ca.crt \
+    --fullchain-file foo.crt \
+    --key-file foo.key</code></pre><p>Like <code>certbot</code>, <code>acme.sh</code> can solve the <code>http-01</code> challenge in <a href="https://github.com/Neilpang/acme.sh#4-use-standalone-server-to-issue-cert" target="_blank" rel="noopener"><em>standalone</em> mode</a> and <a href="https://github.com/Neilpang/acme.sh#2-just-issue-a-cert" target="_blank" rel="noopener"><em>webroot</em> mode</a>. It can also solve the <code>dns-01</code> challenge for <a href="https://github.com/Neilpang/acme.sh/wiki/dnsapi" target="_blank" rel="noopener">many DNS providers</a>.</p>
+<p>Renewals are slightly easier since <code>acme.sh</code> remembers to use the right root certificate. It can also remember how long you’d like to wait before renewing a certificate. Unfortunately, the <a href="https://github.com/Neilpang/acme.sh/issues/2422" target="_blank" rel="noopener">duration is specified in days</a> (via the <code>--days</code> flag) which is too coarse for <code>step-ca</code>‘s default 24 hour certificate lifetimes. So the easiest way to schedule renewals with <code>acme.sh</code> is to force them at a reasonable frequency, like every 8 hours, via cron:</p>
+<pre><code>0 */8 * * * root &quot;/home/&lt;user&gt;/.acme.sh&quot;/acme.sh --cron --home &quot;/home/&lt;user&gt;/.acme.sh&quot; --force &gt; /dev/null</code></pre><h3 id="-2"><a href="#-2" class="headerlink" title=""></a><img src="https://smallstep.com/uploads/acme-step.png" alt="step"></h3><p><a href="https://github.com/smallstep/cli" target="_blank" rel="noopener"><code>step</code></a> is a versatile security utility that can replace <code>openssl</code> for most certificate management tasks. It’s also a <code>step-ca</code> client. With today’s release (<code>v0.13.0</code>), we’ve added ACME to the <a href="https://smallstep.com/docs/design-doc.html#provisioners" target="_blank" rel="noopener">list of ways</a> <code>step</code> can get certificates from <code>step-ca</code>. ACME support also means <code>step</code> can get certificates from other ACME CAs, like Let’s Encrypt’s.</p>
+<p><a href="https://github.com/smallstep/cli" target="_blank" rel="noopener">Star</a> </p>
+<p>step cli</p>
+<p><a href="https://github.com/smallstep/certificates" target="_blank" rel="noopener">Star</a> </p>
+<p>step certificates</p>
+<h5 id="Getting-certificates-from-step-ca"><a href="#Getting-certificates-from-step-ca" class="headerlink" title="Getting certificates from step-ca"></a>Getting certificates from <code>step-ca</code></h5><p>Once you’ve <a href="https://smallstep.com/docs/getting-started/" target="_blank" rel="noopener">installed <code>step</code></a> and <a href="https://smallstep.com/docs/getting-started/#bootstrapping" target="_blank" rel="noopener">bootstrapped your environment</a> you can get a certificate from <code>step-ca</code> by running the <a href="https://smallstep.com/docs/cli/ca/certificate/" target="_blank" rel="noopener"><code>step ca certificate</code> subcommand</a> and selecting your ACME provisioner interactively:</p>
+<pre><code>$ sudo step ca certificate foo.internal foo.crt foo.key
+Use the arrow keys to navigate: ↓ ↑ → ←
+What provisioner key do you want to use?
+  ▸ acme (ACME)
+
+✔ Provisioner: acme (ACME)
+Using Standalone Mode HTTP challenge to validate foo.internal .. done!
+Waiting for Order to be &apos;ready&apos; for finalization .. done!
+Finalizing Order .. done!
+✔ Certificate: foo.crt
+✔ Private Key: foo.key</code></pre><p>Or non-interactively, by specifying your ACME provisioner’s name with the <code>--provisioner</code> flag:</p>
+<pre><code>$ sudo step ca certificate foo.internal foo.crt foo.key --provisioner acme</code></pre><h5 id="Automating-renewals"><a href="#Automating-renewals" class="headerlink" title="Automating renewals"></a>Automating renewals</h5><p>You can renew any certificate issued by <code>step-ca</code> using <code>step ca renew</code>:</p>
+<pre><code>$ step ca renew bar.crt bar.key --force</code></pre><p>You can run <code>step ca renew</code> via <code>cron</code>, but a better option is to run <code>step</code> in <code>--daemon</code> mode under [a process supervisor like <code>systemd</code>](<a href="https://medium.com/@" target="_blank" rel="noopener">https://medium.com/@</a> benmorel/creating-a-linux-service-with-systemd-611b5c8b91d6) to keep it running:</p>
+<pre><code>$ cat &lt;&lt;EOF | sudo tee /etc/systemd/system/step.service &gt; /dev/null
+[Unit]
+Description=Automated certificate management
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=mmalone
+ExecStart=/usr/bin/step ca renew --daemon /home/mmalone/foo.crt /home/mmalone/foo.key
+
+[Install]
+WantedBy=multi-user.target
+EOF</code></pre><p>Start the service:</p>
+<pre><code>$ sudo systemctl start step</code></pre><p>And tell <code>systemd</code> to restart it on reboot:</p>
+<pre><code>$ sudo systemctl enable step</code></pre><h5 id="Getting-certificates-from-Let’s-Encrypt"><a href="#Getting-certificates-from-Let’s-Encrypt" class="headerlink" title="Getting certificates from Let’s Encrypt"></a>Getting certificates from Let’s Encrypt</h5><p>Unlike other ACME clients, <code>step</code> connects to <code>step-ca</code> by default. To get a certificate from Let’s Encrypt’s CA we need to tell <code>step</code> to use Let’s Encrypt’s ACME directory URL:</p>
+<pre><code>$ sudo step ca certificate acme.step.toys acme.crt acme.key \
+    --acme https://acme-v02.api.letsencrypt.org/directory</code></pre><p><code>step ca certificate</code> only supports the <code>http-01</code> challenge. Like <code>certbot</code> and <code>acme.sh</code>, it can operate in <em>standalone</em> mode or <em>webroot</em> mode.</p>
+<h3 id="-3"><a href="#-3" class="headerlink" title=""></a><img src="https://smallstep.com/uploads/acme-caddy.png" alt="Caddy"></h3><p><a href="https://caddyserver.com/" target="_blank" rel="noopener">Caddy</a> is an HTTP/2 web server with <em>automatic HTTPS</em> powered by an integrated ACME client. In addition to serving static websites, Caddy is commonly used as a TLS-terminating <a href="https://caddyserver.com/docs/proxy" target="_blank" rel="noopener">API gateway proxy</a>. It’s super easy to use, and secure by default.</p>
+<h4 id="Caddy-v2"><a href="#Caddy-v2" class="headerlink" title="Caddy v2"></a>Caddy v2</h4><p><a href="https://caddyserver.com/v2" target="_blank" rel="noopener">Caddy v2</a> ships with an embedded ACME server that uses smallstep’s open source libraries to issue certificates for internal and local addresses.</p>
+<h4 id="Caddy-v1"><a href="#Caddy-v1" class="headerlink" title="Caddy v1"></a>Caddy v1</h4><p>To get a certificate from <code>step-ca</code> to Caddy you need to:</p>
+<ol>
+<li>Point Caddy at your ACME directory URL using the <a href="https://caddyserver.com/docs/tls" target="_blank" rel="noopener"><code>tls.ca</code> directive</a> in your <a href="https://caddyserver.com/tutorial/caddyfile" target="_blank" rel="noopener">Caddyfile</a></li>
+<li>Tell Caddy to trust your root certificate using the <a href="https://github.com/go-acme/lego/blob/bc4b57accc090b9c61bde051c99fcb14e952f6e6/lego/client_config.go#L18-L28" target="_blank" rel="noopener"><code>LEGO_CA_CERTIFICATES</code> environment variable</a></li>
+</ol>
+<p>To demonstrate, create a <code>Caddyfile</code> that looks something like:</p>
+<pre><code>foo.internal {
+  root /var/run/www
+  tls mike@ example.com {
+    ca https://ca.internal/acme/acme/directory
+  }
+}</code></pre><p>In the same directory, set the <code>LEGO_CA_CERTIFICATES</code> environment variable and run <code>caddy</code> to start serving HTTPS!</p>
+<pre><code>$ LEGO_CA_CERTIFICATES=$(step path)/certs/root_ca.crt caddy</code></pre><p>We can check our work with <code>curl</code>:</p>
+<pre><code>$ curl https://foo.internal --cacert $(step path)/certs/root_ca.crt
+Hello, TLS!</code></pre><h3 id="-4"><a href="#-4" class="headerlink" title=""></a><img src="https://smallstep.com/uploads/acme-nginx.png" alt="Nginx"></h3><p><a href="https://www.nginx.com/" target="_blank" rel="noopener">Nginx</a> doesn’t support ACME natively, but you can use a command-line ACME client to get certificates for Nginx to use.</p>
+<p>Here’s an example <code>nginx.conf</code> that runs Nginx in a common configuration: terminating TLS and proxying to a backend server listening on local loopback:</p>
+<pre><code>server {
+    listen 443 ssl;
+    server_name foo.internal;
+
+    ssl_certificate /path/to/foo.crt;
+    ssl_certificate_key /path/to/foo.key;
+
+    location / {
+        proxy_pass http://127.0.0.1:8000
+    }
+}</code></pre><p>There’s nothing magic here. We’re just telling nginx to listen on port 443 using TLS, with a certificate and private key stored on disk. [Other](<a href="https://medium.com/@" target="_blank" rel="noopener">https://medium.com/@</a> mvuksano/how-to-properly-configure-your-nginx-for-tls-564651438fe0) [resources](<a href="https://medium.com/@" target="_blank" rel="noopener">https://medium.com/@</a> pentacent/nginx-and-lets-encrypt-with-docker-in-less-than-5-minutes-b4b8a60d3a71) provide a more thorough explanation of Nginx’s various TLS configuration options.</p>
+<p>We can start an HTTP server using <code>python</code> and check our work with <code>curl</code>:</p>
+<pre><code>$ echo &quot;Hello TLS!&quot; &gt; index.html
+$ python -m SimpleHTTPServer 8000 &amp;
+$ curl https://foo.internal --cacert $(step path)/certs/root_ca.crt
+Hello TLS!</code></pre><p>Nginx only reads certificates once, at startup. When you renew the certificate on disk, Nginx won’t notice. Therefore, after each renewal you’ll need to run <code>nginx -s reload</code>.</p>
+<p>You can use the <code>--exec</code> flag to <code>step ca renew</code> to do this automatically:</p>
+<pre><code>$ step ca renew --daemon --exec &quot;nginx -s reload&quot; \
+    /path/to/foo.crt \
+    /path/to/foo.key</code></pre><p>If you’re using <code>certbot</code> check out the <code>--post-hook</code> flag to do the same thing. If you’re using <code>acme.sh</code> check out <code>--reloadcmd</code>.</p>
+<h3 id="-5"><a href="#-5" class="headerlink" title=""></a><img src="https://smallstep.com/uploads/acme-apache.png" alt="Apache"></h3><p>Apache <code>httpd</code> has integrated ACME support via <a href="https://github.com/icing/mod_md" target="_blank" rel="noopener"><code>mod_md</code></a>. The <code>v1.x.x</code> releases only work with ACMEv1. <a href="https://github.com/icing/mod_md/wiki/V2Design" target="_blank" rel="noopener">The <code>v2.x.x</code> releases</a> do <a href="https://icing.github.io/mod_md/acmev2.html" target="_blank" rel="noopener">support</a> <a href="https://github.com/icing/mod_md/#versions-and-releases" target="_blank" rel="noopener">ACMEv2</a> but, unfortunately, I had trouble getting <code>mod_md</code> working with <code>step-ca</code> in time for this post. For now, we can deploy certificates to Apache the same way we did for Nginx: by using a command-line ACME client, configuring Apache to load a certificate and key from disk, and signaling the server after certificate renewals.</p>
+<p>Here’s an example Apache configuration, using certificates issued by <code>step-ca</code> using <code>certbot</code>:</p>
+<pre><code>&lt;VirtualHost *:443&gt;
+    ServerName foo.internal
+    DocumentRoot /home/mmalone/www
+    SSLEngine on
+    SSLCertificateFile /etc/letsencrypt/live/foo.internal/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/foo.internal/privkey.pem
+&lt;/VirtualHost&gt;</code></pre><p>Start Apache and check our work with <code>curl</code>:</p>
+<pre><code>$ curl --cacert $(step path)/certs/root_ca.crt https://foo.internal
+Hello TLS</code></pre><p>Like Nginx, Apache needs to be signaled after certificates are renewed by running <code>apachectl graceful</code>.</p>
+<h3 id="-6"><a href="#-6" class="headerlink" title=""></a><img src="https://smallstep.com/uploads/acme-traefik.png" alt="Traefik"></h3><p><a href="https://traefik.io/" target="_blank" rel="noopener">Traefik</a> is a modern reverse-proxy with integrated support for ACME. It’s designed primarily to handle ingress for a compute cluster, dynamically routing traffic to microservices and web applications.</p>
+<p>To get a certificate from <code>step-ca</code> to Traefik you need to:</p>
+<ol>
+<li>Point Traefik at your ACME directory URL using the <a href="https://docs.traefik.io/configuration/acme/#caserver" target="_blank" rel="noopener"><code>caServer</code> directive</a> in your <a href="https://docs.traefik.io/basics/#configuration-file" target="_blank" rel="noopener">configuration file</a></li>
+<li>Tell Traefik to trust your root certificate <a href="https://github.com/containous/traefik/issues/5196" target="_blank" rel="noopener">using the <code>LEGO_CA_CERTIFICATES</code> environment variable</a></li>
+</ol>
+<p>Here’s an example <code>traefik.toml</code> file that configures Traefik to terminate TLS and proxy to a service listening on localhost:</p>
+<pre><code>defaultEntryPoints = [&quot;http&quot;, &quot;https&quot;]
+
+[entryPoints]
+  [entryPoints.http]
+  address = &quot;:80&quot;
+  [entryPoints.https]
+  address = &quot;:443&quot;
+    [entryPoints.https.tls]
+
+[acme]
+
+storage = &quot;acme.json&quot;
+caServer = &quot;https://ca.internal/acme/acme/directory&quot;
+entryPoint = &quot;https&quot;
+
+[acme.httpChallenge]
+entryPoint = &quot;http&quot;
+
+[[acme.domains]]
+main = &quot;foo.internal&quot;
+
+[file]
+
+[frontends]
+  [frontends.foo]
+  backend = &quot;foo&quot;
+
+[backends]
+  [backends.foo]
+    [backends.foo.servers.server0]
+      url = &quot;http://127.0.0.1:8000&quot;</code></pre><p>Start Traefik by running:</p>
+<pre><code>$ LEGO_CA_CERTIFICATES=$(step path)/certs/root_ca.crt traefik</code></pre><p>Start an HTTP server for Traefik to proxy to, and test with <code>curl</code>:</p>
+<pre><code>$ echo &quot;Hello TLS!&quot; &gt; index.html
+$ python -m SimpleHTTPServer 8000 &amp;
+$ curl https://foo.internal --cacert $(step path)/certs/root_ca.crt
+Hello TLS!</code></pre><h3 id="-7"><a href="#-7" class="headerlink" title=""></a><img src="https://smallstep.com/uploads/acme-golang.png" alt="Golang"></h3><p><a href="https://github.com/go-acme/lego" target="_blank" rel="noopener"><code>lego</code></a> is an ACME client library written in Go. You can use it to obtain a certificate from <code>step-ca</code> programmatically. A complete production-grade example is too long to embed in this post, but <a href="https://gist.github.com/mmalone/abce3c30df96972ed47f3298543be345" target="_blank" rel="noopener">here’s a gist</a>. The bits that are most relevant to our discussion are where we:</p>
+<ol>
+<li>Point <code>lego</code> at your ACME directory URL by <a href="https://gist.github.com/mmalone/abce3c30df96972ed47f3298543be345#file-acme-go-L141" target="_blank" rel="noopener">setting <code>lego.Config.CADirUrl</code></a></li>
+<li>Tell <code>lego</code> to trust your CA by <a href="https://gist.github.com/mmalone/abce3c30df96972ed47f3298543be345#file-acme-go-L63-L84" target="_blank" rel="noopener">configuring an <code>http.Client</code></a> that <a href="https://gist.github.com/mmalone/abce3c30df96972ed47f3298543be345#file-acme-go-L47-L61" target="_blank" rel="noopener">trusts your root certificate</a> and <a href="https://gist.github.com/mmalone/abce3c30df96972ed47f3298543be345#file-acme-go-L143" target="_blank" rel="noopener">telling <code>lego</code> to use it</a></li>
+</ol>
+<p>Fetch the required dependencies and start the server:</p>
+<pre><code>$ go get golang.org/x/net/http2
+$ go get github.com/go-acme/lego
+$ go run acme.go</code></pre><p>Then test with <code>curl</code>:</p>
+<pre><code>$ curl https://foo.internal:5443 --cacert $(step path)/certs/root_ca.crt
+Hello, TLS!</code></pre><p>The server is configured to <a href="https://gist.github.com/mmalone/abce3c30df96972ed47f3298543be345#file-acme-go-L286-L288" target="_blank" rel="noopener">verify client certificates if they’re sent</a> (i.e., it’s configured to support mutual TLS). <a href="https://gist.github.com/mmalone/abce3c30df96972ed47f3298543be345#file-acme-go-L257-L264" target="_blank" rel="noopener">The handler</a> checks whether a client certificate was provided, and responds with a personalized greeting if one was.</p>
+<p>We can <a href="https://smallstep.com/blog/easily-curl-services-secured-by-https-tls.html" target="_blank" rel="noopener">grab a client certificate from <code>step-ca</code> using an OAuth/OIDC provisioner</a>:</p>
+<pre><code>$ step ca certificate mike@ example.com mike.crt mike.key
+✔ Provisioner: Google (OIDC) [client: &lt;redacted&gt;.apps.googleusercontent.com]
+✔ CA: https://ca.internal
+✔ Certificate: mike.crt
+✔ Private Key: mike.key</code></pre><p>And test mutual TLS out with <code>curl</code>:</p>
+<pre><code>$ curl https://foo.internal:5443 \
+    --cacert $(step path)/certs/root_ca.crt \
+    --cert mike.crt \
+    --key mike.key
+Hello, mike@ example.com!</code></pre><p>With a few tweaks to this code you can implement robust access control.</p>
+<p>There are other good options for programmatic ACME in Go. The <a href="https://github.com/mholt/certmagic" target="_blank" rel="noopener"><code>certmagic</code></a> package builds on <code>lego</code> and offers higher level, easier to use abstractions. The <a href="https://godoc.org/golang.org/x/crypto/acme" target="_blank" rel="noopener"><code>x/crypto/acme</code></a> package is lower level and offers more control, but it <a href="https://github.com/golang/go/issues/33229" target="_blank" rel="noopener">currently implements a pre-standardization draft version of ACME</a> that doesn’t work with <code>step-ca</code>.</p>
+<h3 id="-8"><a href="#-8" class="headerlink" title=""></a><img src="https://smallstep.com/uploads/acme-python.png" alt="python"></h3><p><code>certbot</code> is written in Python and exposes its <a href="https://github.com/certbot/certbot/tree/master/acme" target="_blank" rel="noopener"><code>acme</code> module</a> as a <a href="https://pypi.org/project/acme/" target="_blank" rel="noopener">standalone package</a> (<a href="https://letsencrypt.readthedocs.io/projects/acme/en/stable/" target="_blank" rel="noopener">API docs</a>). <a href="https://gist.github.com/mmalone/12f5422b2ec68e64e9d11eae0c6ca47d" target="_blank" rel="noopener">Here’s an example</a> of how to use it to obtain a certificate and serve HTTPS in pure Python.</p>
+<p>The interesting parts are where we:</p>
+<ol>
+<li><a href="https://gist.github.com/mmalone/12f5422b2ec68e64e9d11eae0c6ca47d#file-https-py-L153-L154" target="_blank" rel="noopener">Point the ACME client</a> at <a href="https://gist.github.com/mmalone/12f5422b2ec68e64e9d11eae0c6ca47d#file-https-py-L45-L46" target="_blank" rel="noopener">your ACME directory URL</a></li>
+<li>Tell the ACME client to trust your CA by <a href="https://gist.github.com/mmalone/12f5422b2ec68e64e9d11eae0c6ca47d#file-https-py-L152" target="_blank" rel="noopener">configuring the injected HTTP client</a> to verify certificates using <a href="https://gist.github.com/mmalone/12f5422b2ec68e64e9d11eae0c6ca47d#file-https-py-L48-L49" target="_blank" rel="noopener">your root certificate</a></li>
+</ol>
+<p>To install dependencies and start the server run:</p>
+<pre><code>$ pip install acme
+$ pip install pem
+$ python https.py</code></pre><p>Then check your work with <code>curl</code>:</p>
+<pre><code>$ curl https://foo.internal:10443 --cacert $(step path)/certs/root_ca.crt
+Hello, TLS!</code></pre><p>Like the Go example above, this server also supports <a href="https://gist.github.com/mmalone/12f5422b2ec68e64e9d11eae0c6ca47d#file-https-py-L186-L191" target="_blank" rel="noopener">optional client authentication</a> using certificates (i.e., mutual TLS) and <a href="https://gist.github.com/mmalone/12f5422b2ec68e64e9d11eae0c6ca47d#file-https-py-L136-L141" target="_blank" rel="noopener">checks if the client authenticated in the handler</a>:</p>
+<pre><code>$ curl https://foo.internal:10443 \
+    --cacert $(step path)/certs/root_ca.crt \
+    --cert mike.crt \
+    --key mike.key
+Hello, mike@ smallstep.com!</code></pre><h3 id="-9"><a href="#-9" class="headerlink" title=""></a><img src="https://smallstep.com/uploads/acme-node-js.png" alt="node.js"></h3><p>For Node.js, <a href="https://github.com/publishlab/node-acme-client" target="_blank" rel="noopener">Publish Lab’s <code>acme-client</code></a> is an excellent ACMEv2 client that’s very easy to use. <a href="https://gist.github.com/mmalone/f3c33a2381ffa3d67e86c6d5ad3042c9" target="_blank" rel="noopener">Here’s an example</a> of how to use it to obtain a certificate and serve HTTPS in pure javascript.</p>
+<p>The interesting parts are where we:</p>
+<ol>
+<li><a href="https://gist.github.com/mmalone/f3c33a2381ffa3d67e86c6d5ad3042c9#file-acme-js-L89-L92" target="_blank" rel="noopener">Point the ACME client</a> at <a href="https://gist.github.com/mmalone/f3c33a2381ffa3d67e86c6d5ad3042c9#file-acme-js-L10" target="_blank" rel="noopener">your ACME directory URL</a></li>
+<li>Tell the ACME client to trust your CA by <a href="https://gist.github.com/mmalone/f3c33a2381ffa3d67e86c6d5ad3042c9#file-acme-js-L15-L20" target="_blank" rel="noopener">configuring the HTTP client</a> to verify certificates using <a href="https://gist.github.com/mmalone/f3c33a2381ffa3d67e86c6d5ad3042c9#file-acme-js-L11" target="_blank" rel="noopener">your root certificate</a></li>
+</ol>
+<p>To install dependencies and start the server run:</p>
+<pre><code>$ npm install node-acme-client
+$ node acme.js</code></pre><p>Then check your work with <code>curl</code>:</p>
+<pre><code>$ curl https://foo.internal:11443 \
+    --cacert $(step path)/certs/root_ca.crt
+Hello, TLS</code></pre><p>Once again, this server supports <a href="https://gist.github.com/mmalone/f3c33a2381ffa3d67e86c6d5ad3042c9#file-acme-js-L111-L112" target="_blank" rel="noopener">optional client authentication</a> using certificates and <a href="https://gist.github.com/mmalone/f3c33a2381ffa3d67e86c6d5ad3042c9#file-acme-js-L121-L133" target="_blank" rel="noopener">checks if the client authenticated in the handler</a>:</p>
+<pre><code>$ curl https://foo.internal:11443 \
+    --cacert $(step path)/certs/root_ca.crt \
+    --cert mike.crt \
+    --key mike.key
+Hello, mike@ smallstep.com</code></pre><h3 id="Kubernetes-databases-queues-config-management-and-more…"><a href="#Kubernetes-databases-queues-config-management-and-more…" class="headerlink" title="Kubernetes, databases, queues, config management, and more…"></a>Kubernetes, databases, queues, config management, and more…</h3><p>This post is long, but it’s far from exhaustive. Lots of stuff <a href="https://letsencrypt.org/docs/client-options/" target="_blank" rel="noopener">works with ACME</a>. There are modules for <a href="https://docs.ansible.com/ansible/latest/modules/acme_certificate_module.html" target="_blank" rel="noopener">Ansible</a>, <a href="https://forge.puppet.com/puppet/letsencrypt" target="_blank" rel="noopener">Puppet</a>, <a href="https://github.com/schubergphilis/chef-acme" target="_blank" rel="noopener">Chef</a>, and <a href="https://www.terraform.io/docs/providers/acme/index.html" target="_blank" rel="noopener">Terraform</a> (<a href="https://gist.github.com/mmalone/881b638fa0d71b03e9e082b05f0f5b38" target="_blank" rel="noopener">example</a> &amp; <a href="https://opencredo.com/blogs/letsencrypt-terraform/" target="_blank" rel="noopener">more info</a>).</p>
+<p>For Kubernetes you can <a href="https://hub.helm.sh/charts/smallstep/step-certificates" target="_blank" rel="noopener">install <code>step-ca</code> using helm</a> and use <a href="https://github.com/jetstack/cert-manager" target="_blank" rel="noopener">cert-manager</a> along with <a href="https://www.getambassador.io/" target="_blank" rel="noopener">one</a> <a href="https://github.com/heptio/contour" target="_blank" rel="noopener">of</a> <a href="https://github.com/containous/traefik" target="_blank" rel="noopener">the</a> <a href="https://www.nginx.com/products/nginx/kubernetes-ingress-controller" target="_blank" rel="noopener">many</a> <a href="https://github.com/Kong/kubernetes-ingress-controller" target="_blank" rel="noopener">ingress</a> <a href="https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/#additional-controllers" target="_blank" rel="noopener">controllers</a> that support TLS. Ingresses are typically used to proxy web and API traffic from the public internet, often using certificates from Let’s Encrypt. You can use <code>step-ca</code> to simulate this setup locally. You can also [configure an ingress to use <em>mutual</em> TLS](<a href="https://medium.com/@" target="_blank" rel="noopener">https://medium.com/@</a> awkwardferny/configuring-certificate-based-mutual-authentication-with-kubernetes-ingress-nginx-20e7e38fdfca) in production, with certificates from <code>step-ca</code>, to secure service-to-service traffic into, out of, and between Kubernetes clusters without a VPN or SDN.</p>
+<p>ACME support is widespread, but <em>even more</em> stuff can be configured to <a href="https://smallstep.com/blog/use-tls.html" target="_blank" rel="noopener"><em>use</em> certificates</a>, improving security and reducing your secrets management burden. <a href="https://www.postgresql.org/docs/current/ssl-tcp.html" target="_blank" rel="noopener">PostgreSQL</a>, <a href="https://dev.mysql.com/doc/refman/8.0/en/encrypted-connections.html" target="_blank" rel="noopener">MySQL</a>, <a href="https://docs.datastax.com/en/security/6.7/security/secSslTOC.html" target="_blank" rel="noopener">Cassandra</a>, <a href="https://www.cockroachlabs.com/docs/stable/create-security-certificates-custom-ca.html" target="_blank" rel="noopener">CockroachDB</a>, <a href="https://docs.redislabs.com/latest/rs/administering/designing-production/security/client-connections/" target="_blank" rel="noopener">Redis</a>, <a href="https://www.rabbitmq.com/ssl.html" target="_blank" rel="noopener">RabbitMQ</a>, <a href="https://docs.confluent.io/current/kafka/authentication_ssl.html" target="_blank" rel="noopener">Kafka</a>, <a href="https://grpc.io/docs/guides/auth/" target="_blank" rel="noopener">gRPC</a> – pretty much everything – can be configured to use mutual TLS for encryption and authentication instead of using insecure connections and shared secrets. All you need is an internal CA powered by <code>step-ca</code> and any command line ACME client to issue certificates.</p>
+<h2 id="Local-Development-amp-Pre-Production"><a href="#Local-Development-amp-Pre-Production" class="headerlink" title="Local Development &amp; Pre-Production"></a>Local Development &amp; Pre-Production</h2><p>As a final demonstration, let’s simulate Let’s Encrypt locally with a new ACME provisioner named “fake-le”.</p>
+<p>We’ll have to manually <a href="https://github.com/smallstep/certificates/blob/master/docs/GETTING_STARTED.md#use-custom-claims-for-provisioners-to-control-certificate-validity-etc" target="_blank" rel="noopener">edit <code>$(step path)/config/ca.json</code></a> to add the provisioner and override <code>step-ca</code>‘s default 24 hour certificate lifetime to match Let’s Encrypt’s 90 days (2160 hours):</p>
+<pre><code>&quot;provisioners&quot;: {
+    ...
+    {
+        &quot;type&quot;: &quot;acme&quot;,
+        &quot;name&quot;: &quot;fake-le&quot;,
+        &quot;claims&quot;: {
+            &quot;maxTLSCertDuration&quot;: &quot;2160h&quot;,
+            &quot;defaultTLSCertDuration&quot;: &quot;2160h&quot;
+        }
+    },
+    ...
+}</code></pre><p>Next, let’s add our root certificate to our system’s trust store:</p>
+<pre><code>sudo step certificate install $(step path)/certs/root_ca.crt</code></pre><p>With our root certificate installed and certificate lifetimes matching Let’s Encrypt’s, you can use any ACME client to get certificates from <code>step-ca</code> by simply changing the ACME directory URL – just like you would for <a href="https://letsencrypt.org/docs/staging-environment/" target="_blank" rel="noopener">Let’s Encrypt’s staging environment</a>.</p>
+<p>Root certificate installation means other TLS clients will also trust certificates issued by <code>step-ca</code>. You won’t need <code>--cacert</code> with <code>curl</code> and you won’t get certificate warnings in your browser. Certificates issues by <code>step-ca</code> will work exactly like certificates from Let’s Encrypt on any system with your root certificate installed.</p>
+<p><img src="https://smallstep.com/images/blog/2019-02-25-localhost-tls.png" alt="Browser address bar showing HTTPS connection to localhost"></p>
+<p>If you want to connect from another machine, you’ll need to <a href="https://smallstep.com/docs/cli/certificate/install/" target="_blank" rel="noopener">install your root certificate</a> there, too. You can use <a href="https://smallstep.com/docs/cli/ca/root/" target="_blank" rel="noopener"><code>step ca root</code></a> or <a href="https://smallstep.com/docs/cli/ca/bootstrap/" target="_blank" rel="noopener"><code>step ca bootstrap</code></a> to help with this.</p>
+<p>Keep in mind that certificate installation is a global operation: certificates issued by your CA will be trusted by your browser and lots of other stuff running on your system. You should only install a root certificate if you actually trust the CA (and the person running it). You can uninstall a root certificate when you’re not using it to mitigate this risk:</p>
+<pre><code>sudo step certificate uninstall $(step path)/certs/root_ca.crt</code></pre><h3 id="-10"><a href="#-10" class="headerlink" title=""></a><img src="https://smallstep.com/uploads/acme-all-the-things.png" alt="ACME + step-ca &amp; TLS all the things"></h3><p>ACME support in <code>step-ca</code> is a game changer. It’s great for testing. More importantly, <code>step-ca</code> and ACME make running your own CA and getting certificates issued so easy that using TLS should be a no-brainer for tons of production use cases.</p>
+<p><a href="https://smallstep.com/docs/getting-started/" target="_blank" rel="noopener">Give it a try</a>, and don’t be shy about those GitHub stars (our investors love them):</p>
+<p><a href="https://github.com/smallstep/cli" target="_blank" rel="noopener">Star</a> </p>
+<p>step cli</p>
+<p><a href="https://github.com/smallstep/certificates" target="_blank" rel="noopener">Star</a> </p>
+<p>step certificates</p>
+<p>If you run into any problems, have any questions, or just want to talk please <a href="https://github.com/smallstep/certificates/discussions" target="_blank" rel="noopener">start a discussion</a>. We’re excited to hear from you!</p>
+<p><img src="https://smallstep.com/images/smallstep-icon.svg" alt="cta-icon"></p>
+<p>Subscribe to updates</p>
+<p>Unsubscribe anytime, see <a href="https://smallstep.com/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a></p>
+<p><img src="https://smallstep.com/uploads/ACME_Icon.svg" alt="cta-icon"></p>
+<p>Get your own private ACME server</p>
+<p><a href="https://info.smallstep.com/acme-use-case/" target="_blank" rel="noopener">Learn More &gt;</a></p>
+<p><a href="https://smallstep.com/tags/technical" target="_blank" rel="noopener">Technical</a> <a href="https://smallstep.com/tags/acme" target="_blank" rel="noopener">ACME</a> <a href="https://smallstep.com/tags/production-identity" target="_blank" rel="noopener">Production Identity</a></p>
+<h4 id="Further-reading"><a href="#Further-reading" class="headerlink" title="Further reading"></a>Further reading</h4><p>[</p>
+<p><img src="https://smallstep.com/uploads/not-human-unfurl_hu459366f7200d1db389e87d226a475d50_43524_518x388_resize_q90_box_2.png" alt="Post Featured Image"></p>
+<p>Prove you are not human – Take the ACME Challenge</p>
+<p>](<a href="https://smallstep.com/blog/prove-you-are-not-human/" target="_blank" rel="noopener">https://smallstep.com/blog/prove-you-are-not-human/</a>)</p>
+<p>[</p>
+<p><img src="https://smallstep.com/uploads/iid-unfurl_huc389c08cc58cc9688007a1f3472375be_396046_518x388_resize_q90_box_2.png" alt="Post Featured Image"></p>
+<p>Embarrassingly easy private certificate management for VMs on AWS, GCP, and Azure</p>
+<p>](<a href="https://smallstep.com/blog/embarrassingly-easy-certificates-on-aws-azure-gcp/" target="_blank" rel="noopener">https://smallstep.com/blog/embarrassingly-easy-certificates-on-aws-azure-gcp/</a>)</p>
+<p>[</p>
+<p><img src="https://smallstep.com/uploads/bridge_automate-unfurl_hu67e5a560cbaabd797e895d7ade2345c3_65008_518x388_resize_q90_box_2.png" alt="Post Featured Image"></p>
+<p>Traffic, Bridge Tolls, and Secure Browsing - How Automation Secures The Internet</p>
+<p>](<a href="https://smallstep.com/blog/automation-secures-the-internet/" target="_blank" rel="noopener">https://smallstep.com/blog/automation-secures-the-internet/</a>)</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/03/26/qiwihui-pocket_readings-1052/" rel="prev" title="一文读懂网管协议 -  SNMP，NETCONF，RESTCONF - 以终为始 - 博客园">
+      <i class="fa fa-chevron-left"></i> 一文读懂网管协议 -  SNMP，NETCONF，RESTCONF - 以终为始 - 博客园
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/03/26/qiwihui-pocket_readings-1054/" rel="next" title="SQLite is not a toy database">
+      SQLite is not a toy database <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Run-your-own-private-CA-amp-ACME-server-using-step-ca"><span class="nav-number"></span> <span class="nav-text">Run your own private CA &amp; ACME server using step-ca</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Run-your-own-private-CA-amp-ACME-server-using-step-ca-1"><span class="nav-number"></span> <span class="nav-text">Run your own private CA &amp; ACME server using step-ca</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Why-ACME"><span class="nav-number"></span> <span class="nav-text">Why ACME?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Using-ACME-with-step-ca"><span class="nav-number"></span> <span class="nav-text">Using ACME with step-ca</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Enabling-ACME"><span class="nav-number">1.</span> <span class="nav-text">Enabling ACME</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Configuring-clients"><span class="nav-number">2.</span> <span class="nav-text">Configuring clients</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Pointing-clients-at-the-right-ACME-Directory-URL"><span class="nav-number">2.1.</span> <span class="nav-text">Pointing clients at the right ACME Directory URL</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Telling-clients-to-trust-your-CA’s-root-certificate"><span class="nav-number">2.2.</span> <span class="nav-text">Telling clients to trust your CA’s root certificate</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Examples"><span class="nav-number"></span> <span class="nav-text">Examples</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#"><span class="nav-number">1.</span> <span class="nav-text"></span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#-1"><span class="nav-number">2.</span> <span class="nav-text"></span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#-2"><span class="nav-number">3.</span> <span class="nav-text"></span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Getting-certificates-from-step-ca"><span class="nav-number">3.0.1.</span> <span class="nav-text">Getting certificates from step-ca</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Automating-renewals"><span class="nav-number">3.0.2.</span> <span class="nav-text">Automating renewals</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Getting-certificates-from-Let’s-Encrypt"><span class="nav-number">3.0.3.</span> <span class="nav-text">Getting certificates from Let’s Encrypt</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#-3"><span class="nav-number">4.</span> <span class="nav-text"></span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Caddy-v2"><span class="nav-number">4.1.</span> <span class="nav-text">Caddy v2</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Caddy-v1"><span class="nav-number">4.2.</span> <span class="nav-text">Caddy v1</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#-4"><span class="nav-number">5.</span> <span class="nav-text"></span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#-5"><span class="nav-number">6.</span> <span class="nav-text"></span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#-6"><span class="nav-number">7.</span> <span class="nav-text"></span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#-7"><span class="nav-number">8.</span> <span class="nav-text"></span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#-8"><span class="nav-number">9.</span> <span class="nav-text"></span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#-9"><span class="nav-number">10.</span> <span class="nav-text"></span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Kubernetes-databases-queues-config-management-and-more…"><span class="nav-number">11.</span> <span class="nav-text">Kubernetes, databases, queues, config management, and more…</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Local-Development-amp-Pre-Production"><span class="nav-number"></span> <span class="nav-text">Local Development &amp; Pre-Production</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#-10"><span class="nav-number">1.</span> <span class="nav-text"></span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Further-reading"><span class="nav-number">1.1.</span> <span class="nav-text">Further reading</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

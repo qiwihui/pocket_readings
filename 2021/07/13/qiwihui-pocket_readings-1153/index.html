@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="The C10K problem翻译 - fll - 博客园">
+<meta property="og:type" content="article">
+<meta property="og:title" content="The C10K problem翻译 - fll - 博客园">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/07/13/qiwihui-pocket_readings-1153/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="The C10K problem翻译 - fll - 博客园">
+<meta property="og:image" content="http://counter.csdn.net/pv.aspx?id=24">
+<meta property="article:published_time" content="2021-07-13T06:21:44.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.414Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://counter.csdn.net/pv.aspx?id=24">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/07/13/qiwihui-pocket_readings-1153/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>The C10K problem翻译 - fll - 博客园 | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/07/13/qiwihui-pocket_readings-1153/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          The C10K problem翻译 - fll - 博客园
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-07-13 06:21:44" itemprop="dateCreated datePublished" datetime="2021-07-13T06:21:44+00:00">2021-07-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">The C10K problem翻译 - fll - 博客园</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#22914;&#20170;&#30340;web&#26381;&#21153;&#22120;&#38656;&#35201;&#21516;&#26102;&#22788;&#29702;&#19968;&#19975;&#20010;&#20197;&#19978;&#30340;&#23458;&#25143;&#31471;&#20102;&#65292;&#38590;&#36947;&#19981;&#26159;&#21527;&#65311;&#27605;&#31455;&#22914;&#20170;&#30340;&#32593;&#32476;&#26159;&#20010;big place&#20102;&#12290;<br><br><br><br>Tags: architecture<br><br><br><br>via Pocket <a href="https://ift.tt/3ritv2x" target="_blank" rel="noopener">https://ift.tt/3ritv2x</a> original site<br><br><br><br>July 13, 2021 at 01:44PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1153#issuecomment-878812945" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>7/13/2021</strong></p>
+</blockquote>
+<h2 id="The-C10K-problem翻译-fll-博客园"><a href="#The-C10K-problem翻译-fll-博客园" class="headerlink" title="The C10K problem翻译 - fll - 博客园"></a>The C10K problem翻译 - fll - 博客园</h2><h2 id="The-C10K-problem翻译"><a href="#The-C10K-problem翻译" class="headerlink" title="The C10K problem翻译"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">The C10K problem翻译</a></h2><p>对网络编程感兴趣而翻译此文，翻译的可能并不好，甚至有些句子更本就没有翻译，纯粹当阅读的一些记录。还剩最后的一部分没有翻译完，到时候再更新。如果发现有错，请指正。</p>
+<h1 id="The-C10K-problem"><a href="#The-C10K-problem" class="headerlink" title="The C10K problem"></a><a href="http://www.kegel.com/c10k.html" target="_blank" rel="noopener">The C10K problem</a></h1><p>如今的web服务器需要同时处理一万个以上的客户端了，难道不是吗？毕竟如今的网络是个big place了。</p>
+<p>现在的计算机也很强大了，你只需要花大概$1200就可以买一个1000MHz的处理器，2G的内存， 1000Mbit/sec的网卡的机器。让我们来看看–20000个客户，每个为50KHz，100Kbyes和 50Kbit/sec，那么没有什么比为这两万个客户端的每个每秒从硬盘读取4千字节然后发送到网络上 去更消耗资源的了。可以看出硬件不再是瓶颈了。 (That works out to $0.08 per client, by the way. Those $100/client licensing fees some operating systems charge are starting to look a little heavy!)</p>
+<p>在1999年最繁忙的ftp站点，cdrom.com，尽管有G比特的网络带宽，却也只能同时处理10000个 客户端。在2001年，同样的速度可以被<a href="http://www.senteco.com/telecom/ethernet.htm" target="_blank" rel="noopener">几个ISP服务商</a>所提供，他们预期该趋势会因为大量的商业 用户而变得越来越普遍。</p>
+<p>目前的瘦客户端模型也开始又变得流行起来了–服务器运行在Internet上，为数千个客户端服务。</p>
+<p>基于以上一些考虑，这里就配置操作系统或者编写支持数千个网络客户端的代码问题提出一些 注意点，该论题是基于类Unix操作系统的–该系统是我的个人爱好，当然Windows也有占有一席之地。</p>
+<h2 id="Contents"><a href="#Contents" class="headerlink" title="Contents"></a>Contents</h2><ul>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#top" target="_blank" rel="noopener">The C10K problem</a></li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#related" target="_blank" rel="noopener">相关网站</a></li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#books" target="_blank" rel="noopener">须首先阅读的书籍</a></li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#frameworks" target="_blank" rel="noopener">I/O框架</a></li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#strategies" target="_blank" rel="noopener">I/O策略</a><ol>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#nb" target="_blank" rel="noopener">Serve many clients with each thread, and use nonblocking I/O and <strong>level-triggered</strong> readiness notification</a><ul>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#nb.select" target="_blank" rel="noopener">The traditional select()</a></li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#nb.poll" target="_blank" rel="noopener">The traditional poll()</a></li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#nb./dev/poll" target="_blank" rel="noopener">/dev/poll</a> (Solaris 2.7+)</li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#nb.kqueue" target="_blank" rel="noopener">kqueue</a> (FreeBSD, NetBSD)</li>
+</ul>
+</li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#nb.edge" target="_blank" rel="noopener">Serve many clients with each thread, and use nonblocking I/O and readiness <strong>change</strong> notification</a><ul>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#nb.epoll" target="_blank" rel="noopener">epoll</a> (Linux 2.6+)</li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#nb.kevent" target="_blank" rel="noopener">Polyakov’s kevent</a> (Linux 2.6+)</li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#nb.newni" target="_blank" rel="noopener">Drepper’s New Network Interface</a> (proposal for Linux 2.6+)</li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#nb.sigio" target="_blank" rel="noopener">Realtime Signals</a> (Linux 2.4+)</li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#nb.sigfd" target="_blank" rel="noopener">Signal-per-fd</a></li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#nb.kqueue" target="_blank" rel="noopener">kqueue</a> (FreeBSD, NetBSD)</li>
+</ul>
+</li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#aio" target="_blank" rel="noopener">Serve many clients with each thread, and use asynchronous I/O and completion notification</a></li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#threaded" target="_blank" rel="noopener">Serve one client with each server thread</a><ul>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#threads.linuxthreads" target="_blank" rel="noopener">LinuxThreads</a> (Linux 2.0+)</li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#threads.ngpt" target="_blank" rel="noopener">NGPT</a> (Linux 2.4+)</li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#threads.nptl" target="_blank" rel="noopener">NPTL</a> (Linux 2.6, Red Hat 9)</li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#threads.freebsd" target="_blank" rel="noopener">FreeBSD threading support</a></li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#threads.netbsd" target="_blank" rel="noopener">NetBSD threading support</a></li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#threads.solaris" target="_blank" rel="noopener">Solaris threading support</a></li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#threads.java" target="_blank" rel="noopener">Java threading support in JDK 1.3.x and earlier</a></li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#1:1" target="_blank" rel="noopener">Note: 1:1 threading vs. M:N threading</a></li>
+</ul>
+</li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#kio" target="_blank" rel="noopener">Build the server code into the kernel</a></li>
+</ol>
+</li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#comments" target="_blank" rel="noopener">Comments</a></li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#limits.filehandles" target="_blank" rel="noopener">Limits on open filehandles</a></li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#limits.threads" target="_blank" rel="noopener">Limits on threads</a></li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#java" target="_blank" rel="noopener">Java issues</a> [Updated 27 May 2001]</li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#tips" target="_blank" rel="noopener">Other tips</a><ul>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#zerocopy" target="_blank" rel="noopener">Zero-Copy</a></li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#sendfile" target="_blank" rel="noopener">The sendfile() system call can implement zero-copy networking.</a></li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#writev" target="_blank" rel="noopener">Avoid small frames by using writev (or TCP_CORK)</a></li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#nativethreads" target="_blank" rel="noopener">Some programs can benefit from using non-Posix threads.</a></li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#caching" target="_blank" rel="noopener">Caching your own data can sometimes be a win.</a></li>
+</ul>
+</li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#limits.other" target="_blank" rel="noopener">Other limits</a></li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#kernel" target="_blank" rel="noopener">Kernel Issues</a></li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#benchmarking" target="_blank" rel="noopener">Measuring Server Performance</a></li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#examples" target="_blank" rel="noopener">Examples</a><ul>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#examples.nb.select" target="_blank" rel="noopener">Interesting select()-based servers</a></li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#examples.nb./dev/poll" target="_blank" rel="noopener">Interesting /dev/poll-based servers</a></li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#examples.nb.kqueue" target="_blank" rel="noopener">Interesting kqueue()-based servers</a></li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#examples.nb.sigio" target="_blank" rel="noopener">Interesting realtime signal-based servers</a></li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#examples.threaded" target="_blank" rel="noopener">Interesting thread-based servers</a></li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#examples.kio" target="_blank" rel="noopener">Interesting in-kernel servers</a></li>
+</ul>
+</li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#links" target="_blank" rel="noopener">Other interesting links</a></li>
+</ul>
+<h2 id="Related-Sites"><a href="#Related-Sites" class="headerlink" title="Related Sites"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">Related Sites</a></h2><p>2003年10月，Felix von Leitner整理了一个很好的<a href="http://bulk.fefe.de/scalability/" target="_blank" rel="noopener">网站</a>和一个 <a href="http://bulk.fefe.de/scalable-networking.pdf" target="_blank" rel="noopener">presentation</a>，该网站介绍了网络的可测量性，完成 了以不同网络系统调用和不同的操作系统为基准的性能比较。其中一项就是2.6版本的Linux内核 击败了2.4的内核，当然还有许多的图片可以给OS的开发者在平时提供点想法。<br>(See also the <a href="http://developers.slashdot.org/developers/03/10/19/0130256.shtml?tid=106&tid=130&tid=185&tid=190" target="_blank" rel="noopener">Slashdot</a> comments; it’ll be interesting to see whether anyone does followup benchmarks improving on Felix’s results.)</p>
+<h2 id="Book-to-Read-First"><a href="#Book-to-Read-First" class="headerlink" title="Book to Read First"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">Book to Read First</a></h2><p>如果你还没有读过W.Richard Stevens先生的<a href="http://www.amazon.com/exec/obidos/ASIN/013490012X/" target="_blank" rel="noopener">《Unix网络编程:第一卷》</a>的话，请尽快获取一份 拷贝，该书描述了许多关于编写高性能的服务器的I/O策略和各自的一些缺陷，甚至还讲述 了<a href="http://www.citi.umich.edu/projects/linux-scalability/reports/accept.html" target="_blank" rel="noopener">“thundering herd”</a>问题，同时你也可以阅读 <a href="http://pl.atyp.us/content/tech/servers.html" target="_blank" rel="noopener">Jeff Darcy写的关于高性能服务器设计</a>的一些 notes。<br>(Another book which might be more helpful for those who are *using* rather than *writing* a web server is <a href="http://www.amazon.com/gp/product/0596102356" target="_blank" rel="noopener">Building Scalable Web Sites</a> by Cal Henderson.)</p>
+<h3 id="I-O框架"><a href="#I-O框架" class="headerlink" title="I/O框架"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">I/O框架</a></h3><p>以下所列的为几个包装好的库，它们概要了几中常见的技巧，并且可以使你的代码与具体操作 系统隔离，从而具有更好的移植性。</p>
+<ul>
+<li><a href="http://www.cs.wustl.edu/%7Eschmidt/ACE.html" target="_blank" rel="noopener">ACE</a>, 一个重量级的C++ I/O框架，用面向对象实现了一些I/O策略和其它有用的东西，特别的， 它的Reactor是用OO方式处理非阻塞I/O，而Proactor是用OO方式处理异步I/O的( In particular, his Reactor is an OO way of doing nonblocking I/O, and Proactor is an OO way of doing asynchronous I/O).</li>
+<li><a href="http://asio.sf.net/" target="_blank" rel="noopener">ASIO</a> 一个C++的I/O框架，逐渐成为Boost库的一部分。it’s like ACE updated for the STL era。</li>
+<li><a href="http://monkey.org/%7Eprovos/libevent" target="_blank" rel="noopener">libevent</a> 由Niels Provos用C编写的一个轻量级的I/O框架。它支持kqueue和select，并且很 快就可以支持poll和epoll(翻译此文时已经支持)。我想它应该是只采用了水平触发机制，该机制 有好处当然也有不好的地方。Niels给出了<a href="http://monkey.org/%7Eprovos/libevent/libevent-benchmark.jpg" target="_blank" rel="noopener">一张图</a> 来说明时间和连接数目在处理一个事件上的功能，从图上可以看出kqueue和sys_epoll明显胜出。</li>
+<li>我本人也尝试过轻量级的框架(很可惜没有维持至今):<ul>
+<li><a href="http://www.kegel.com/dkftpbench/Poller_bench.html" target="_blank" rel="noopener">Poller</a> 是一个轻量级的C++ I/O框架，它使用任何一种准备就绪API(poll, select, /dev/poll, kqueue, sigio)实现水平触发准备就绪API。以其它<a href="http://www.kegel.com/dkftpbench/Poller_bench.html" target="_blank" rel="noopener">不同的API为基准</a> ，Poller的性能 好得多。该链接文档的下面一部分说明了如何使用这些准备就绪API。</li>
+<li><a href="http://www.cnblogs.com/fll/admin/rn/" target="_blank" rel="noopener">rn</a> 是一个轻量级的C I/O框架，也是我继Poller后的第二个框架。该框架可以很容易的被用 于商业应用中，也容易的适用于非C++应用中。它如今已经在几个商业产品中使用。</li>
+</ul>
+</li>
+<li>Matt Welsh在2000年四月关于在构建服务器方面如何平衡工作线程和事件驱动技术的使用写了 一篇<a href="http://www.cs.berkeley.edu/%7Emdw/papers/events.pdf" target="_blank" rel="noopener">论文</a>，在该论文中描述了他自己的Sandstorm I/O框架。</li>
+<li><a href="http://svn.sourceforge.net/viewcvs.cgi/*checkout*/int64/scale/readme.txt" target="_blank" rel="noopener">Cory Nelson’s Scale! library</a> - 一个Windows下的异步套接字，文件和管道的库。</li>
+</ul>
+<h2 id="I-O-Strategies"><a href="#I-O-Strategies" class="headerlink" title="I/O Strategies"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">I/O Strategies</a></h2><p>网络软件设计者往往有很多种选择，以下列出一些：</p>
+<ul>
+<li>是否处理多个I/O？如何处理在单一线程中的多个I/O调用？<ul>
+<li>不处理，从头到尾使用阻塞和同步I/O调用，可以使用多线程或多进程来达到并发效果。</li>
+<li>使用非阻塞调用（如在一个设置O_NONBLOCK选项的socket上使用write）读取I/O，当I/O完 成时发出通知（如poll，/dev/poll）从而开始下一个I/O。这种主要使用在网络I/O上，而不是磁盘的I/O上。</li>
+<li>使用异步调用（如aio_write()）读取I/O，当I/O完成时会发出通知（如信号或者完成端口），可以同时使用在网络I/O和磁盘I/O上。</li>
+</ul>
+</li>
+<li>如何控制对每个客户的服务?<ul>
+<li>对每个客户使用一个进程（经典的Unix方法，自从1980年一直使用）</li>
+<li>一个系统级的线程处理多个客户，每个客户是如下一种：<ul>
+<li>a user-level thread (e.g. GNU state threads, classic Java with green threads)</li>
+<li>a state machine (a bit esoteric, but popular in some circles; my favorite)</li>
+<li>a continuation (a bit esoteric, but popular in some circles)</li>
+</ul>
+</li>
+<li>o一个系统级的线程对应一个客户端(e.g. classic Java with native threads)</li>
+<li>一个系统级的线程对应每一个活动的客户端(e.g. Tomcat with apache front end; NT完成端口; 线程池)</li>
+</ul>
+</li>
+<li>是否使用标准的操作系统服务，还是把一些代码放入内核中（如自定义驱动，内核模块，VxD）。</li>
+</ul>
+<p>下面的五种方式应该是最常用的了。</p>
+<ol>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#nb" target="_blank" rel="noopener">一个线程服务多个客户端，使用非阻塞I/O和<strong>水平触发</strong>的就绪通知</a></li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#nb.edge" target="_blank" rel="noopener">一个线程服务多个客户端，使用非阻塞I/O和就绪<strong>改变</strong>时通知</a></li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#aio" target="_blank" rel="noopener">一个服务线程服务多个客户端，使用异步I/O</a></li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#threaded" target="_blank" rel="noopener">一个服务线程服务一个客户端，使用阻塞I/O</a></li>
+<li><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#kio" target="_blank" rel="noopener">把服务代码编译进内核</a></li>
+</ol>
+<h3 id="1-一个线程服务多个客户端，使用非阻塞I-O和水平触发的就绪通知"><a href="#1-一个线程服务多个客户端，使用非阻塞I-O和水平触发的就绪通知" class="headerlink" title="1. 一个线程服务多个客户端，使用非阻塞I/O和水平触发的就绪通知"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">1. 一个线程服务多个客户端，使用非阻塞I/O和<strong>水平触发</strong>的就绪通知</a></h3><p>…把网络句柄设置为非阻塞模型，然后使用select()或poll()来告知哪个句柄已有数据在等待 处理。此模型是最传统的，在此模型下，由内核告知你某个文件描述符是否准备好，是否已经完 成你的任务自从上次内核告知已准备好以来（“水平触发”这个名字来源计算机硬件设计，与其 相对的是“<a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#nb.edge" target="_blank" rel="noopener">边缘触发</a>”，Jonathon Lemon在它的<a href="http://people.freebsd.org/%7Ejlemon/papers/kqueue.pdf" target="_blank" rel="noopener">关于kqueue() 的论文</a>中介绍了这两个术语）。</p>
+<p>注意：牢记内核的就绪通知仅仅只是个提示，当你试图从一个文件描述符读取数据时，该文件 描述符可能并没有准备好。这就是为什么需要在使用就绪通知的时候使用非阻塞模型的原因。</p>
+<p>一个重要的瓶颈是read()或sendfile()从磁盘块读取时，如果该页当前并不在内存中。设置磁 盘文件描述符为非阻塞没有任何影响。同样的问题也发生在内存映射磁盘文件中。首先一个服务 需要磁盘I/O时，进程块和所有的客户端都必须等待，因此最初的非线程的性能就被消耗了。<br>这也是异步I/O的目的，当然仅限于没有AIO的系统。处理磁盘I/O的工作线程或工作进程也可能遭遇此 瓶颈。一条途径就是使用内存映射文件，如果mincore()指明I/O必需的话，那么要求一个工作线 程来完成此I/O，然后继续处理网络事件。Jef Poskanzer提到Pai，Druschel和Zwaenepoel的 <a href="http://www.cs.rice.edu/%7Evivek/flash99/" target="_blank" rel="noopener">Flash web服务器</a>使用了这个方法，并且他们就此在 <a href="http://www.usenix.org/events/usenix99/technical.html" target="_blank" rel="noopener">Usenix’99</a>上做了一个演讲，看上去就好像 <a href="http://www.freebsd.org/cgi/man.cgi?query=mincore" target="_blank" rel="noopener">FreeBSD和Solaris 中提供了mincore()一样，但是它并不是</a><a href="http://www.unix-systems.org/" target="_blank" rel="noopener">Single Unix Specification</a>的一部分，在Linux的2.3.51 的内核中提供了该方法，感谢<a href="http://www.citi.umich.edu/projects/citi-netscape/status/mar-apr2000.html" target="_blank" rel="noopener">Chuck Lever</a>。</p>
+<p>在<a href="http://marc.theaimsgroup.com/?l=freebsd-hackers&m=106718343317930&w=2" target="_blank" rel="noopener">2003.11的 freebsd-hackers list中，Vivek Pei</a>上报了一个不错的成果，他们利用系统剖析 工具剖析它们的Flash Web服务器，然后再攻击其瓶颈。其中找到的一个瓶颈就是mincore（猜测 毕竟不是好办法），另外一个就是sendfile在磁盘块访问时。他们修改了sendfile()，当需要读 取的页不在内存中时则返回类似EWOULDBLOCK的值，从而提高了性能。The end result of their optimizations is a SpecWeb99 score of about 800 on a 1GHZ/1GB FreeBSD box, which is better than anything on file at spec.org.</p>
+<p>在非阻塞套接字的集合中，关于单一线程是如何告知哪个套接字是准备就绪的，以下列出了几 种方法:</p>
+<ul>
+<li><p><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener"><strong>传统的select()</strong></a><br>遗憾的是，select()受限于FD_SETSIZE个句柄。该限制被编译进了标准库和用户程序（有些 版本的C library允许你在用户程序编译时放宽该限制）。</p>
+<p>See <a href="http://www.cnblogs.com/fll/admin/dkftpbench/doc/Poller_select.html" target="_blank" rel="noopener">Poller_select</a> (<a href="http://www.cnblogs.com/fll/admin/dkftpbench/dkftpbench-0.45/Poller_select.cc" target="_blank" rel="noopener">cc</a>, <a href="http://www.cnblogs.com/fll/admin/dkftpbench/dkftpbench-0.45/Poller_select.h" target="_blank" rel="noopener">h</a>) for an example of how to use select() interchangeably with other readiness notification schemes.</p>
+</li>
+<li><p><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener"><strong>传统的poll()</strong></a><br>poll()虽然没有文件描述符个数的硬编码限制，但是当有数千个时速度就会变得很慢，因为 大多数的文件描述符在某个时间是空闲的，彻底扫描数千个描述符是需要花费一定时间的。</p>
+<p>有些操作系统（如Solaris 8）通过使用了poll hinting技术改进了poll()，该技术由<a href="http://www.humanfactor.com/cgi-bin/cgi-delegate/apache-ML/nh/1999/May/0415.html" target="_blank" rel="noopener">Niels Provos在1999年实现并利用基准测试程序</a>测试过。</p>
+<p>See <a href="http://www.cnblogs.com/fll/admin/dkftpbench/doc/Poller_poll.html" target="_blank" rel="noopener">Poller_poll</a> (<a href="http://www.cnblogs.com/fll/admin/dkftpbench/dkftpbench-0.45/Poller_poll.cc" target="_blank" rel="noopener">cc</a>, <a href="http://www.cnblogs.com/fll/admin/dkftpbench/dkftpbench-0.45/Poller_poll.h" target="_blank" rel="noopener">h</a>, <a href="http://www.cnblogs.com/fll/admin/dkftpbench/Poller_bench.html" target="_blank" rel="noopener">benchmarks</a>) for an example of how to use poll() interchangeably with other readiness notification schemes.</p>
+</li>
+<li><p><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener"><strong>/dev/poll</strong></a><br>这是在Solaris中被推荐的代替poll的方法。</p>
+<p>/dev/poll的背后思想就是利用poll()在大部分的调用时使用相同的参数。使用/dev/poll时 ，首先打开/dev/poll得到文件描述符，然后把你关心的文件描述符写入到/dev/poll的描述符， 然后你就可以从/dev/poll的描述符中读取到已就绪的文件描述符。</p>
+<p>/dev/poll 在Solaris 7(<a href="http://sunsolve.sun.com/pub-cgi/retrieve.pl?patchid=106541&collection=fpatches" target="_blank" rel="noopener">see patchid 106541</a>) 中就已经存在，不过在[Solaris 8](<a href="http://docs.sun.com/ab2/coll.40.6/REFMAN7/@" target="_blank" rel="noopener">http://docs.sun.com/ab2/coll.40.6/REFMAN7/@</a> Ab2PageView/55123?Ab2Lang=C&amp;Ab2Enc=iso-8859-1) 中才公开现身。<a href="http://www.sun.com/sysadmin/ea/poll.html" target="_blank" rel="noopener">在750个客户端的情况下</a>，this has 10% of the overhead of poll()。</p>
+<p>关于/dev/poll在Linux上有多种不同的尝试实现，但是没有一种可以和epoll相比，不推荐在 Linux上使用/dev/poll。</p>
+<p>See <a href="http://www.cnblogs.com/fll/admin/dkftpbench/doc/Poller_devpoll.html" target="_blank" rel="noopener">Poller_devpoll</a> (<a href="http://www.cnblogs.com/fll/admin/dkftpbench/dkftpbench-0.45/Poller_devpoll.cc" target="_blank" rel="noopener">cc</a>, <a href="http://www.cnblogs.com/fll/admin/dkftpbench/dkftpbench-0.45/Poller_devpoll.h" target="_blank" rel="noopener">h</a> <a href="http://www.cnblogs.com/fll/admin/dkftpbench/Poller_bench.html" target="_blank" rel="noopener">benchmarks</a> ) for an example of how to use /dev/poll interchangeably with many other readiness notification schemes. (Caution - the example is for Linux /dev/poll, might not work right on Solaris.)</p>
+</li>
+<li><p><strong>kqueue()</strong><br>这是在FreeBSD系统上推荐使用的代替poll的方法(and, soon, NetBSD).</p>
+<p><a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#nb.kqueue" target="_blank" rel="noopener">kqueue()</a>即可以水平触发，也可以边缘触发，具体请看下面.</p>
+</li>
+</ul>
+<h3 id="2-一个线程服务多个客户端，使用非阻塞I-O和就绪改变时通知"><a href="#2-一个线程服务多个客户端，使用非阻塞I-O和就绪改变时通知" class="headerlink" title="2. 一个线程服务多个客户端，使用非阻塞I/O和就绪改变时通知"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">2. 一个线程服务多个客户端，使用非阻塞I/O和就绪<strong>改变</strong>时通知</a></h3><p>Readiness change notification（或边缘触发就绪通知）的意思就是当你给内核一个文件描述 符，一段时间后，如果该文件描述符从_没有就绪_到已经_准备就绪_，那么内核就会发出通知，告知 该文件描述符已经就绪，并且不会再对该描述符发出类似的就绪通知直到你在描述符上进行一些 操作使得该描述符不再就绪（如直到在send，recv或者accept等调用上遇到EWOULDBLOCK错误，或 者发送/接收了少于需要的字节数）。</p>
+<p>当使用Readiness change notification时，必须准备好处理乱真事件，因为最常见的实现是只 要接收到任何数据包都发出就绪信号，而不管文件描述符是否准备就绪。</p>
+<p>这是<a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#nb" target="_blank" rel="noopener">水平触发</a>的就绪通知的相对应的机制。It’s a bit less forgiving of programming mistakes, since if you miss just one event, the connection that event was for gets stuck forever. 然而，我发现edge-triggered readiness notification可以使编写带OpenSSL的 非阻塞客户端更简单，可以试下。</p>
+<p><a href="http://www.cs.rice.edu/%7Edruschel/usenix99event.ps.gz" target="_blank" rel="noopener">[Banga, Mogul, Drusha ‘99]</a>详细描述了这种模型.</p>
+<p>有几种APIs可以使得应用程序获得“文件描述符已就绪”的通知:</p>
+<ul>
+<li><p><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener"><strong>kqueue()</strong></a> 这是在FreeBSD系统上推荐使用边缘触发的方法 (and, soon, NetBSD).</p>
+<p>FreeBSD 4.3及以后版本，<a href="http://kerneltrap.org/node.php?id=472" target="_blank" rel="noopener">NetBSD（2002.10）</a>都支持 <a href="http://www.freebsd.org/cgi/man.cgi?query=kqueue&apropos=0&sektion=0&manpath=FreeBSD+5.0-current&format=html" target="_blank" rel="noopener">kqueue()/kevent()</a>， 支持边沿触发和水平触发（请查看<a href="http://people.freebsd.org/%7Ejlemon/" target="_blank" rel="noopener">Jonathan Lemon</a> 的网页和他的BSDCon 2000关于<a href="http://people.freebsd.org/%7Ejlemon/papers/kqueue.pdf" target="_blank" rel="noopener">kqueue</a>的论文）。</p>
+<p>就像/dev/poll一样，你分配一个监听对象，不过不是打开文件/dev/poll，而是调用kqueue ()来获得。需要改变你所监听的事件或者获得当前事件的列表，可以在kqueue()返回的描述符上 调用kevent()来达到目的。它不仅可以监听套接字，还可以监听普通的文件的就绪，信号和I/O完 成的事件也可以.</p>
+<p><strong>Note:</strong> 在2000.10，FreeBSD的线程库和kqueue()并不能一起工作得很好，当kqueue()阻塞时， 那么整个进程都将会阻塞，而不仅仅是调用kqueue()的线程。</p>
+<p>See <a href="http://www.cnblogs.com/fll/admin/dkftpbench/doc/Poller_kqueue.html" target="_blank" rel="noopener">Poller_kqueue</a> (<a href="http://www.cnblogs.com/fll/admin/dkftpbench/dkftpbench-0.45/Poller_kqueue.cc" target="_blank" rel="noopener">cc</a>, <a href="http://www.cnblogs.com/fll/admin/dkftpbench/dkftpbench-0.45/Poller_kqueue.h" target="_blank" rel="noopener">h</a>, <a href="http://www.cnblogs.com/fll/admin/dkftpbench/Poller_bench.html" target="_blank" rel="noopener">benchmarks</a>) for an example of how to use kqueue() interchangeably with many other readiness notification schemes.</p>
+<p>使用kqueue()的例程和库:</p>
+<ul>
+<li><a href="http://people.freebsd.org/%7Edwhite/PyKQueue/" target="_blank" rel="noopener">PyKQueue</a> – 一个Python的kqueue()库.</li>
+<li><a href="http://www.monkeys.com/kqueue/echo.c" target="_blank" rel="noopener">Ronald F.Guilmette的echo的服务器例程</a>; 另外可以查看他在 <a href="http://groups.yahoo.com/group/freebsd-questions/message/223580" target="_blank" rel="noopener">2000.9.28在freebsd</a> 上发表的帖子。</li>
+</ul>
+</li>
+<li><p><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener"><strong>epoll</strong></a><br>这是Linux 2.6的内核中推荐使用的边沿触发poll.</p>
+<p>2001.7.11， Davide Libenzi提议了一个实时信号的可选方法，他称之为<a href="http://www.xmailserver.org/linux-patches/nio-improve.html" target="_blank" rel="noopener">/dev/epoll&lt; /a&gt;， 该方法类似与实时信号就绪通知机制，但是结合了其它更多的事件，从而在大多数的事件获取上拥有更高的效率。</a></p>
+<p><a href="http://www.xmailserver.org/linux-patches/nio-improve.html" target="_blank" rel="noopener">epoll在将它的接口从一个/dev下的指定文件改变为系统调用sys_epoll后就合并到2.5版本的 Linux内核开发树中，另外也提供了一个为2.4老版本的内核可以使用epoll的补丁。</a></p>
+<p><a href="http://www.xmailserver.org/linux-patches/nio-improve.html" target="_blank" rel="noopener">unifying epoll, aio, 2002 年万圣节前夕的Linux内核邮件列表就</a><a href="http://marc.theaimsgroup.com/?l=linux-kernel&m=103607925020720&%20w=2" target="_blank" rel="noopener">统一epoll，aio和其它的event sources</a> 展开了很久的争论，it may yet happen，but Davide is concentrating on firming up epoll in general first.</p>
+</li>
+<li><p><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">Polyakov’s kevent</a> (Linux 2.6+) <a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">的最后新闻：2006.2.9和2006.7.9，Evgeniy Polyakov发表了融合epoll和 aio的补丁，他的目标是支持网络AIO.</a> See:</p>
+<ul>
+<li><a href="http://lwn.net/Articles/172844/" target="_blank" rel="noopener">the LWN article about kevent</a></li>
+<li><a href="http://lkml.org/lkml/2006/7/9/82" target="_blank" rel="noopener">his July announcement</a></li>
+<li><a href="http://tservice.net.ru/%7Es0mbre/old/?section=projects&item=kevent" target="_blank" rel="noopener">his kevent page</a></li>
+<li><a href="http://tservice.net.ru/%7Es0mbre/old/?section=projects&item=naio" target="_blank" rel="noopener">his naio page</a></li>
+<li><a href="http://thread.gmane.org/gmane.linux.network/37595/focus=37673" target="_blank" rel="noopener">some recent discussion</a></li>
+</ul>
+</li>
+<li><p><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">Drepper的最新网络接口</a> (proposal for Linux 2.6+)<br>在2006 OLS上，Ulrich Drepper提议了一种最新的高速异步网络API. See:</p>
+<ul>
+<li>his paper, “<a href="http://people.redhat.com/drepper/newni.pdf" target="_blank" rel="noopener">The Need for Asynchronous, Zero-Copy Network I/O</a>“</li>
+<li><a href="http://people.redhat.com/drepper/newni-slides.pdf" target="_blank" rel="noopener">his slides</a></li>
+<li><a href="http://lwn.net/Articles/192410/" target="_blank" rel="noopener">LWN article from July 22</a></li>
+</ul>
+</li>
+<li><p><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener"><strong>Realtime Signals实时信号</strong></a><br>Linux2.4内核中推荐使用的边沿触发poll.</p>
+<p>2.4的linux内核可以通过实时信号来分派套接字事件,示例如下:</p>
+<p>/* Mask off SIGIO and the signal you want to use. */ sigemptyset(&amp;sigset); sigaddset(&amp;sigset, signum); sigaddset(&amp;sigset, SIGIO); sigprocmask(SIG_BLOCK, &amp;m_sigset, NULL); /* For each file descriptor, invoke F_SETOWN, F_SETSIG, and set O_ASYNC. */ fcntl(fd, F_SETOWN, (int) getpid()); fcntl(fd, F_SETSIG, signum); flags = fcntl(fd, F_GETFL); flags |= O_NONBLOCK|O_ASYNC; fcntl(fd, F_SETFL, flags); </p>
+<p>当正常的I/O函数如read()或write()完成时，发送信号。要使用该段的话，在外层循环中编写 一个普通的poll()，在循环里面，当poll()处理完所有的描述符后，进入 <a href="http://www.opengroup.org/onlinepubs/007908799/xsh/sigwaitinfo.html" target="_blank" rel="noopener">sigwaitinfo()</a>循环。 如果sigwaitinfo()或sigtimedwait()返回了实时信号，那么siginfo.si_fd和 siginfo_si_band给出的信息和调用poll()后pollfd.fd和pollfd.revents的几乎一样。如果你处 理该I/O，那么就继续调用sigwaitinfo()。<br>如果sigwaitinfo()返回了传统的SIGIO，那么信号队列溢出了，你必须通过临时 <a href="http://www.cs.helsinki.fi/linux/linux-kernel/Year-1999/1999-41/0644.html" target="_blank" rel="noopener">改变信号处理 程序为SIG_DFL来刷新信号队列</a>，然后返回到外层的poll()循环。  </p>
+<p>See <a href="http://www.cnblogs.com/fll/admin/dkftpbench/doc/Poller_sigio.html" target="_blank" rel="noopener">Poller_sigio</a> (<a href="http://www.cnblogs.com/fll/admin/dkftpbench/dkftpbench-0.45/Poller_sigio.cc" target="_blank" rel="noopener">cc</a>, <a href="http://www.cnblogs.com/fll/admin/dkftpbench/dkftpbench-0.45/Poller_sigio.h" target="_blank" rel="noopener">h</a>) for an example of how to use rtsignals interchangeably with many other readiness notification schemes.</p>
+<p>See <a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#phhttpd" target="_blank" rel="noopener">Zach Brown’s phhttpd</a> 示例代码来如何直接使用这些特点. (Or don’t; phhttpd is a bit hard to figure out…)</p>
+<p>[<a href="http://www.citi.umich.edu/techreports/reports/citi-tr-00-7.ps.gz" target="_blank" rel="noopener">Provos, Lever, and Tweedie 2000</a>] 描述了最新的phhttp的基准测试，使用了不同的sigtimewait()和sigtimedwait4()，这些调用可以使你只用一次调用便获得多个信号。 有趣的是，sigtimedwait4()的主要好处是它允许应用程序测量系统负载(so it could <a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#overload" target="_blank" rel="noopener">behave appropriately</a>)（poll()也提供了同样的系统负载 测量）。</p>
+</li>
+<li><p><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener"><strong>Signal-per-fd</strong></a><br>Signal-per-fd是由Chandra和Mosberger提出的对实时信号的一种改进，它可以减少甚至削除实 时信号的溢出通过oalescing redundant events。然而是它的性能并没有epoll好. 论文(<a href="http://www.hpl.hp.com/techreports/2000/HPL-2000-174.html" target="_blank" rel="noopener">www.hpl.hp.com/techreports/2000/HPL-2000-174.html</a>) 比较了它和select()，/dev/poll的性能.  </p>
+<p><a href="http://boudicca.tux.org/hypermail/linux-kernel/2001week20/1353.html" target="_blank" rel="noopener">Vitaly Luban在2001.5.18公布了一个实现Signal-per-fd的补丁</a>; 授权见<a href="http://www.luban.org/GPL/gpl.html" target="_blank" rel="noopener">www.luban.org/GPL/gpl.html</a>. (到2001.9，在很重的负载情况下仍然存在稳定性问题，利用<a href="http://www.cnblogs.com/fll/admin/dkftpbench" target="_blank" rel="noopener">dkftpbench</a>测试在4500个用户时将引发问题.</p>
+<p>See <a href="http://www.cnblogs.com/fll/admin/dkftpbench/doc/Poller_sigfd.html" target="_blank" rel="noopener">Poller_sigfd</a> (<a href="http://www.cnblogs.com/fll/admin/dkftpbench/dkftpbench-0.45/Poller_sigfd.cc" target="_blank" rel="noopener">cc</a>, <a href="http://www.cnblogs.com/fll/admin/dkftpbench/dkftpbench-0.45/Poller_sigfd.h" target="_blank" rel="noopener">h</a>) for an example of how to use signal-per-fd interchangeably with many other readiness notification schemes.</p>
+</li>
+</ul>
+<h3 id="3-一个服务线程服务多个客户端，使用异步I-O"><a href="#3-一个服务线程服务多个客户端，使用异步I-O" class="headerlink" title="3. 一个服务线程服务多个客户端，使用异步I/O"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">3. 一个服务线程服务多个客户端，使用异步I/O</a></h3><p>该方法目前还没有在Unix上普遍的使用，可能因为很少的操作系统支持异步I/O，或者因为它需 要重新修改应用程序(rethinking your applications)。 在标准Unix下，异步I/O是由<a href="http://www.opengroup.org/onlinepubs/007908799/xsh/realtime.html" target="_blank" rel="noopener">“aio_“接口</a> 提供的，它把一个信号和值与每一个I/O操作关联起来。信号和其值的队列被有效地分配到用户的 进程上。异步I/O是POSIX 1003.1b实时标准的扩展，也属于Single Unix Specification,version 2.</p>
+<p>AIO使用的是边缘触发的完成时通知，例如，当一个操作完成时信号就被加入队列（也可以使用 水平触发的完成时通知，通过调用<a href="http://www.opengroup.org/onlinepubs/007908799/xsh/aio_suspend.html" target="_blank" rel="noopener">aio_suspend()</a>即可， 不过我想很少人会这么做）.</p>
+<p>glibc 2.1和后续版本提供了一个普通的实现，仅仅是为了兼容标准，而不是为了获得性能上的提高。</p>
+<p>Ben LaHaise编写的Linux AIO实现合并到了2.5.32的内核中，它并没有采用内核线程，而是使 用了一个高效的underlying api，但是目前它还不支持套接字（2.4内核也有了AIO的补丁，不过 2.5/2.6的实现有一定程序上的不同）。更多信息如下:</p>
+<ul>
+<li>The page “<a href="http://lse.sourceforge.net/io/aio.html" target="_blank" rel="noopener">Kernel Asynchronous I/O (AIO) Support for Linux</a>“ which tries to tie together all info about the 2.6 kernel’s implementation of AIO (posted 16 Sept 2003)</li>
+<li><a href="http://www.linuxsymposium.org/2002/view_txt.php?text=abstract&talk=11" target="_blank" rel="noopener">Round 3: aio vs /dev/epoll</a> by Benjamin C.R. LaHaise (presented at 2002 OLS)</li>
+<li><a href="http://archive.linuxsymposium.org/ols2003/Proceedings/All-Reprints/Reprint-Pulavarty-OLS2003.pdf" target="_blank" rel="noopener">Asynchronous I/O Suport in Linux 2.5</a>, by Bhattacharya, Pratt, Pulaverty, and Morgan, IBM; presented at OLS ‘2003</li>
+<li><a href="http://sourceforge.net/docman/display_doc.php?docid=12548&group_id=8875" target="_blank" rel="noopener">Design Notes on Asynchronous I/O (aio) for Linux</a> by Suparna Bhattacharya – compares Ben’s AIO with SGI’s KAIO and a few other AIO projects</li>
+<li><a href="http://www.kvack.org/%7Eblah/aio/" target="_blank" rel="noopener">Linux AIO home page</a> - Ben’s preliminary patches, mailing list, etc.</li>
+<li><a href="http://marc.theaimsgroup.com/?l=linux-aio" target="_blank" rel="noopener">linux-aio mailing list archives</a></li>
+<li><a href="http://www.ocfs.org/aio/" target="_blank" rel="noopener">libaio-oracle</a> - library implementing standard Posix AIO on top of libaio. <a href="http://marc.theaimsgroup.com/?l=linux-aio&m=105069158425822&w=2" target="_blank" rel="noopener">First mentioned by Joel Becker on 18 Apr 2003</a>.</li>
+</ul>
+<p>Suparma建议先看看<a href="http://www.dafscollaborative.org/tools/dafs_api.pdf" target="_blank" rel="noopener">AIO的API</a>.</p>
+<p>RedHat AS和Suse SLES都在2.4的内核中提供了高性能的实现，与2.6的内核实现相似，但并不完全一样。</p>
+<p>2006.2，在网络AIO有了一个新的尝试，具体请看Evgeniy Polyakov的基于<a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#kevent" target="_blank" rel="noopener">kevent</a>的AIO.</p>
+<p>1999， <strong><a href="http://oss.sgi.com/projects/kaio/" target="_blank" rel="noopener">SGI为Linux实现了一个高速的AIO&lt; /a&gt;</a></strong><a href="http://oss.sgi.com/projects/kaio/" target="_blank" rel="noopener">，在到1.1版本时，据说可以很好的工作于磁盘I/O和网 络套接字，且使用了内核线程。目前该实现依然对那些不能等待Ben的AIO套接字支持的人来说是 很有用的。</a></p>
+<p><a href="http://oss.sgi.com/projects/kaio/" target="_blank" rel="noopener">O’Reilly 的</a><a href="http://www.oreilly.com/catalog/posix4/" target="_blank" rel="noopener">“POSIX.4: Programming for the Real World”</a>一书对aio做了很好的介绍.</p>
+<p><a href="http://sunsite.nstu.nsk.su/sunworldonline/swol-03-1996/swol-03-aio.html" target="_blank" rel="noopener">这里</a> 有一个指南介绍了早期的非标准的aio实现，可以看看，但是请记住你得把”aioread”转换为”aio_read”。</p>
+<p>注意AIO并没有提供无阻塞的为磁盘I/O打开文件的方法，如果你在意因打开磁盘文件而引起 sleep的话，<a href="http://www.ussg.iu.edu/hypermail/linux/kernel/0102.1/0124.html" target="_blank" rel="noopener">Linus建议</a> 你在另外一个线程中调用open()而不是把希望寄托在对aio_open()系统调用上。</p>
+<p>在Windows下，异步I/O与术语”重叠I/O”和”IOCP”(I/O Completion Port,I/O完成端口)有一定联系。Microsoft的IOCP结合了 先前的如异步I/O(如aio_write)的技术，把事件完成的通知进行排队(就像使用了aio_sigevent字段的aio_write),并且它 为了保持单一IOCP线程的数量从而阻止了一部分请求。（Microsoft’s IOCP combines techniques from the prior art like asynchronous I/O (like aio_write) and queued completion notification (like when using the aio_sigevent field with aio_write) with a new idea of holding back some requests to try to keep the number of running threads associated with a single IOCP constant.） 更多信息请看 Mark russinovich在sysinternals.com上的文章 <a href="http://www.sysinternals.com/ntw2k/info/comport.shtml" target="_blank" rel="noopener">Inside I/O Completion Ports</a>， Jeffrey Richter的书”Programming Server-Side Applications for Microsoft Windows 2000” (<a href="http://www.amazon.com/exec/obidos/ASIN/0735607532" target="_blank" rel="noopener">Amazon</a>, <a href="http://www.microsoft.com/mspress/books/toc/3402.asp" target="_blank" rel="noopener">MSPress</a>), <a href="http://patft.uspto.gov/netacgi/nph-Parser?Sect1=PTO1&Sect2=HITOFF&d=PALL&p=1&u=/netahtml/srchnum.htm&r=1&f=G&l=50&s1=%276223207%27.WKU.&OS=PN/6223207&RS=PN/6223207" target="_blank" rel="noopener">U.S. patent #06223207</a>, or <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/fileio/filesio_4z1v.asp" target="_blank" rel="noopener">MSDN</a>.</p>
+<h3 id="4-一个服务线程服务一个客户端，使用阻塞I-O"><a href="#4-一个服务线程服务一个客户端，使用阻塞I-O" class="headerlink" title="4. 一个服务线程服务一个客户端，使用阻塞I/O"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">4. 一个服务线程服务一个客户端，使用阻塞I/O</a></h3><p>… 让read()和write()阻塞. 这样不好的地方在于需要为每个客户端使用一个完整的栈，从而比较浪费内存。 许多操作系统仍在处理数百个线程时存在一定的问题。如果每个线程使用2MB的栈，那么当你在32位的机器上运行 512（2^30 / 2^21=512）个线程时，你就会用光所有的1GB的用户可访问虚拟内存（Linux也是一样运行在x86上的）。 你可以减小每个线程所拥有的栈内存大小，但是由于大部分线程库在一旦线程创建后就不能增大线程栈大小，所以这样做 就意味着你必须使你的程序最小程度地使用内存。当然你也可以把你的程序运行在64位的处理器上去。</p>
+<p>Linux，FreeBSD和Solaris系统的线程库一直在更新，64位的处理器也已经开始在大部分的用户中所使用。 也许在不远的将来，这些喜欢使用一个线程来服务一个客户端的人也有能力服务于10000个客户了。 但是在目前，如果你想支持更多的客户，你最好还是使用其它的方法。</p>
+<p>For an unabashedly pro-thread viewpoint, see <a href="http://www.usenix.org/events/hotos03/tech/vonbehren.html" target="_blank" rel="noopener">Why Events Are A Bad Idea (for High-concurrency Servers)</a> by von Behren, Condit, and Brewer, UCB, presented at HotOS IX. Anyone from the anti-thread camp care to point out a paper that rebuts this one? :-)</p>
+<h4 id="LinuxThreads"><a href="#LinuxThreads" class="headerlink" title="LinuxThreads"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">LinuxThreads</a></h4><p><a href="http://pauillac.inria.fr/%7Exleroy/linuxthreads/" target="_blank" rel="noopener">LinuxTheads</a> 是标准Linux线程库的命名。 它从glibc2.0开始已经集成在glibc库中，并且高度兼容Posix标准，不过在性能和信号的支持度上稍逊一筹。</p>
+<h4 id="NGPT-Next-Generation-Posix-Threads-for-Linux下一代LinuxPosix线程"><a href="#NGPT-Next-Generation-Posix-Threads-for-Linux下一代LinuxPosix线程" class="headerlink" title="NGPT: Next Generation Posix Threads for Linux下一代LinuxPosix线程"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">NGPT: Next Generation Posix Threads for Linux下一代LinuxPosix线程</a></h4><p><a href="http://www-124.ibm.com/pthreads/" target="_blank" rel="noopener">NGPT</a>是一个由IBM发起的项目，其目的是提供更好的Posix兼容的Linux线程支持。 现在已到2.2稳定版，并且运行良好…但是NGPT team <a href="http://www-124.ibm.com/pthreads/docs/announcement" target="_blank" rel="noopener">公布</a> 他们正在把NGPT的代码基改为support-only模式，因为他们觉得这才是支持社区长久运行的最好的方式。 NGPT小组将继续改进Linux的线程支持，但主要关注NPTL方面。 (Kudos to the NGPT team for their good work and the graceful way they conceded to NPTL.)</p>
+<h4 id="NPTL-Native-Posix-Thread-Library-for-Linux-Linux本地Posix线程库"><a href="#NPTL-Native-Posix-Thread-Library-for-Linux-Linux本地Posix线程库" class="headerlink" title="NPTL: Native Posix Thread Library for Linux(Linux本地Posix线程库)"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">NPTL: Native Posix Thread Library for Linux(Linux本地Posix线程库)</a></h4><p><a href="http://people.redhat.com/drepper/nptl/" target="_blank" rel="noopener">NPTL</a>是由 <a href="http://people.redhat.com/drepper/" target="_blank" rel="noopener">Ulrich Drepper</a> ( <a href="http://www.gnu.org/software/libc/" target="_blank" rel="noopener">glibc</a>的主要维护人员)和 <a href="http://people.redhat.com/mingo/" target="_blank" rel="noopener">Ingo Molnar</a>发起的项目，目的是提供world-class的Posix Linux线程支持。</p>
+<p>2003.10.5，NPTL作为一个add-on目录（就像linuxthreads一样）被合并到glibc的cvs树中，所以很有可能随glibc的下一次release而 一起发布。</p>
+<p>Red Hat 9是最早的包含NPTL的发行版本（对一些用户来说有点不太方便，但是必须有人来打破这沉默[break the ice]…)</p>
+<p>NPTL links:</p>
+<ul>
+<li><a href="https://listman.redhat.com/mailman/listinfo/phil-list" target="_blank" rel="noopener">NPTL讨论的邮件列表</a></li>
+<li><a href="http://people.redhat.com/drepper/nptl/" target="_blank" rel="noopener">NPTL源码</a></li>
+<li><a href="http://lwn.net/Articles/10465/" target="_blank" rel="noopener">NPTL的最初发表</a></li>
+<li><a href="http://people.redhat.com/drepper/glibcthreads.html" target="_blank" rel="noopener">最初的描述NPTL目标的白皮书</a></li>
+<li><a href="http://people.redhat.com/drepper/nptl-design.pdf" target="_blank" rel="noopener">修改的NPTL的最后设计的白皮书</a></li>
+<li><a href="http://marc.theaimsgroup.com/?l=linux-kernel&m=103230439008204&w=2" target="_blank" rel="noopener">Ingo Molnar</a>最初的基准测试表明可以处理10^6个线程</li>
+<li><a href="http://marc.theaimsgroup.com/?l=linux-kernel&m=103269598000900&w=2" target="_blank" rel="noopener">Ulrich的基准测试</a> 比较了LinuxThreads，NPTL和IBM的<a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#threads.ngpt" target="_blank" rel="noopener">NGPT</a>的各自性能，结果看来NPTL比NGPT快的多。</li>
+</ul>
+<p>这是我尝试写的描述NPTL历史的文章(也可以参考<a href="http://www.onlamp.com/pub/a/onlamp/2002/11/07/linux_threads.html" target="_blank" rel="noopener">Jerry Cooperstein的文章</a>):</p>
+<p><a href="http://people.redhat.com/drepper/glibcthreads.html" target="_blank" rel="noopener">2002.3，NGPT小组的Bill Abt，glibc的维护者Ulrich Drepper 和其它人召开了个会议</a>来探讨LinuxThreads的发展，会议的一个idea就是要改进mutex的性能。 Rusty Russell <a href="http://marc.theaimsgroup.com/?l=linux-kernel&m=103284847815916&w=2" target="_blank" rel="noopener">等人</a> 随后实现了 <a href="http://marc.theaimsgroup.com/?l=linux-kernel&m=102196625921110&w=2" target="_blank" rel="noopener">fast userspace mutexes (futexes)</a>, （如今已在NGPT和NPTL中应用了）。 与会的大部分人都认为NGPT应该合并到glibc中。</p>
+<p>然而Ulrich Drepper并不怎么喜欢NGPT，他认为他可以做得更好。 (对那些曾经想提供补丁给glibc的人来说，这应该不会令他们感到惊讶:-) 于是在接下来的几个月里，Ulrich Drepper, Ingo Molnar和其它人致力于glibc和内核的改变，然后就弄出了 Native Posix Threads Library (NPTL). NPTL使用了NGPT设计的所有内核改进（kernel enhancement），并且采用了几个最新的改进。 Ingo Molnar<a href="https://listman.redhat.com/pipermail/phil-list/2002-September/000013.html" target="_blank" rel="noopener">描述了</a> 一下的几个内核改进：</p>
+<blockquote>
+<p><em>NPTL使用了三个由NGPT引入的内核特征: getpid()返回PID，CLONE_THREAD和futexes; NPTL还使用了(并依赖)也是该项目的一部分的一个更为wider的内核特征集。</em></p>
+<p><em>一些由NGPT引入内核的items也被修改，清除和扩展，例如线程组的处理(CLONE_THREAD). [the CLONE_THREAD changes which impacted NGPT’s compatibility got synced with the NGPT folks, to make sure NGPT does not break in any unacceptable way.]</em></p>
+<p><em>这些为NPTL开发的并且后来在NPTL中使用的内核特征都描述在设计白皮书中， <a href="http://people.redhat.com/drepper/nptl-design.pdf" target="_blank" rel="noopener">http://people.redhat.com/drepper/nptl-design.pdf</a> …</em></p>
+<p><em>A short list: TLS support, various clone extensions (CLONE_SETTLS, CLONE_SETTID, CLONE_CLEARTID), POSIX thread-signal handling, sys_exit() extension (release TID futex upon VM-release), the sys_exit_group() system-call, sys_execve() enhancements and support for detached threads.</em></p>
+<p><em>There was also work put into extending the PID space - eg. procfs crashed due to 64K PID assumptions, max_pid, and pid allocation scalability work. Plus a number of performance-only improvements were done as well.</em></p>
+<p><em>In essence the new features are a no-compromises approach to 1:1 threading - the kernel now helps in everything where it can improve threading, and we precisely do the minimally necessary set of context switches and kernel calls for every basic threading primitive.</em></p>
+</blockquote>
+<p>NGPT和NPTL的一个最大的不同就是NPTL是1:1的线程模型，而NGPT是M:N的编程模型(具体请看下面). 尽管这样， <a href="https://listman.redhat.com/pipermail/phil-list/2002-September/000009.html" target="_blank" rel="noopener">Ulrich的最初的基准测试</a> 还是表明NPTL比NGPT快很多。(NGPT小组期待查看Ulrich的测试程序来核实他的结果.)</p>
+<h4 id="FreeBSD线程支持"><a href="#FreeBSD线程支持" class="headerlink" title="FreeBSD线程支持"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">FreeBSD线程支持</a></h4><p>FreeBSD支持LinuxThreads和用户空间的线程库。同样，M:N的模型实现KSE在FreeBSD 5.0中引入。 具体请查看<a href="http://www.unobvious.com/bsd/freebsd-threads.html" target="_blank" rel="noopener">www.unobvious.com/bsd/freebsd-threads.html</a>.</p>
+<p>2003.3.25, <a href="http://docs.freebsd.org/cgi/getmsg.cgi?fetch=121207+0+archive/2003/freebsd-arch/20030330.freebsd-arch" target="_blank" rel="noopener">Jeff Roberson 发表于freebsd-arch</a>:</p>
+<blockquote>
+<p><em>… 感谢Julian, David Xu, Mini, Dan Eischen,和其它的每一位参加了KSE和libpthread开发的成员所提供的基础， Mini和我已经开发出了一个1：1模型的线程实现，它可以和KSE并行工作而不会带来任何影响。It actually helps bring M:N threading closer by testing out shared bits. …</em></p>
+</blockquote>
+<p>And 2006.7, <a href="http://marc.theaimsgroup.com/?l=freebsd-threads&m=115191979412894&w=2" target="_blank" rel="noopener">Robert Watson提议1:1的线程模型应该为FreeBSD 7.x的默认实现</a>:</p>
+<blockquote>
+<p><em>我知道曾经讨论过这个问题，但是我认为随着7.x的向前推进，这个问题应该重新考虑。 在很多普通的应用程序和特定的基准测试中，libthr明显的比libpthread在性能上要好得多。 libthr是在我们大量的平台上实现的，而libpthread却只有在几个平台上。 最主要的是因为我们使得Mysql和其它的大量线程的使用者转换到”libthr”，which is suggestive, also! … 所以strawman提议:让libthr成为7.x上的默认线程库。</em></p>
+</blockquote>
+<h4 id="NetBSD线程支持"><a href="#NetBSD线程支持" class="headerlink" title="NetBSD线程支持"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">NetBSD线程支持</a></h4><p>根据Noriyuki Soda的描述:</p>
+<blockquote>
+<p><em>内核支持M:N线程库是基于调度程序激活模型，合并于2003.1.18当时的NetBSD版本中。</em></p>
+</blockquote>
+<p>详情请看Nathan J. Williams, Wasabi Systems, Inc.在2002年的FREENIX上的演示 <a href="http://web.mit.edu/nathanw/www/usenix/freenix-sa/" target="_blank" rel="noopener">An Implementation of Scheduler Activations on the NetBSD Operating System</a>。</p>
+<h4 id="Solaris线程支持"><a href="#Solaris线程支持" class="headerlink" title="Solaris线程支持"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">Solaris线程支持</a></h4><p>Solaris的线程支持还在进一步提高evolving… 从Solaris 2到Solaris 8，默认的线程库使用的都是M:N模型, 但是Solaris 9却默认使用了1:1线程模型. 查看<a href="http://docs.sun.com/db/doc/805-5080" target="_blank" rel="noopener">Sun多线程编程指南</a> 和<a href="http://java.sun.com/docs/hotspot/threads/threads.html" target="_blank" rel="noopener">Sun的关于Java和Solaris线程的note</a>.</p>
+<h4 id="Java在JDK-1-3-x及更早的线程支持"><a href="#Java在JDK-1-3-x及更早的线程支持" class="headerlink" title="Java在JDK 1.3.x及更早的线程支持"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">Java在JDK 1.3.x及更早的线程支持</a></h4><p>大家都知道，Java一直到JDK1.3.x都没有支持任何处理网络连接的方法，除了一个线程服务一个客户端的模型之外。 <a href="http://www.volano.com/report/" target="_blank" rel="noopener">Volanomark</a>是一个不错的微型测试程序，可以用来测量在 某个时候不同数目的网络连接时每秒钟的信息吞吐量。在2003.5, JDK 1.3的实现实际上可以同时处理10000个连接，但是性能却严重下降了。 从<a href="http://www.volano.com/report/#nettable" target="_blank" rel="noopener">Table 4</a> 可以看出JVMs可以处理10000个连接，但是随着连接数目的增长性能也逐步下降。</p>
+<h4 id="Note-1-1-threading-vs-M-N-threading"><a href="#Note-1-1-threading-vs-M-N-threading" class="headerlink" title="Note: 1:1 threading vs. M:N threading"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">Note: 1:1 threading vs. M:N threading</a></h4><p>在实现线程库的时候有一个选择就是你可以把所有的线程支持都放到内核中（也就是所谓的1：1的模型），也可以 把一些线程移到用户空间上去（也就是所谓的M：N模型）。从某个角度来说, M:N被认为拥有更好的性能，但是由于很难被正确的编写， 所以大部分人都远离了该方法。</p>
+<ul>
+<li><a href="http://marc.theaimsgroup.com/?l=linux-kernel&m=103284879216107&%20w=2" target="_blank" rel="noopener">为什么Ingo Molnar相对于M：N更喜欢1：1</a></li>
+<li><a href="http://java.sun.com/docs/hotspot/threads/threads.html" target="_blank" rel="noopener">Sun改为1：1的模型</a></li>
+<li><a href="http://www-124.ibm.com/pthreads/" target="_blank" rel="noopener">NGPT</a>是Linux下的M：N线程库.</li>
+<li>Although <a href="http://people.redhat.com/drepper/glibcthreads.html" target="_blank" rel="noopener">Ulrich Drepper计划在新的glibc线程库中使用M：N的模型</a>, 但是还是<a href="http://people.redhat.com/drepper/nptl-design.pdf" target="_blank" rel="noopener">选用了1：1的模型.</a></li>
+<li><a href="http://developer.apple.com/technotes/tn/tn2028.html#MacOSXThreading" target="_blank" rel="noopener">MacOSX 也将使用1：1的线程.</a></li>
+<li><a href="http://people.freebsd.org/%7Ejulian/" target="_blank" rel="noopener">FreeBSD</a>和 <a href="http://web.mit.edu/nathanw/www/usenix/freenix-sa/" target="_blank" rel="noopener">NetBSD</a> 仍然将使用M：N线程，FreeBSD 7.0也倾向于使用1：1的线程（见上面描述），可能M：N线程的拥护者最后证明它是错误的。</li>
+</ul>
+<h3 id="5-把服务代码编译进内核"><a href="#5-把服务代码编译进内核" class="headerlink" title="5. 把服务代码编译进内核"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">5. 把服务代码编译进内核</a></h3><p>Novell和Microsoft都宣称已经在不同时期完成了该工作，至少NFS的实现完成了该工作。 <a href="http://www.fenrus.demon.nl/" target="_blank" rel="noopener">khttpd</a>在Linux下为静态web页面完成了该工作， Ingo Molnar完成了<a href="http://slashdot.org/comments.pl?sid=00/07/05/0211257&cid=218" target="_blank" rel="noopener">“TUX” (Threaded linUX webserver)</a> ，这是一个Linux下的快速的可扩展的内核空间的HTTP服务器。 Ingo在<a href="http://marc.theaimsgroup.com/?l=linux-kernel&m=98098648011183&w=2" target="_blank" rel="noopener">2000.9.1宣布</a> alpha版本的TUX可以在 <a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">ftp://ftp.redhat.com/pub/redhat/tux</a>下载, 并且介绍了如何加入其邮件列表来获取更多信息。<br>在Linux内核的邮件列表上讨论了该方法的好处和缺点，多数人认为不应该把web服务器放进内核中， 相反内核加入最小的钩子hooks来提高web服务器的性能，这样对其它形式的服务器就有益。 具体请看 <a href="http://www.linuxhq.com/lnxlists/linux-kernel/lk_9906_03/msg01041.html" target="_blank" rel="noopener">Zach Brown的讨论</a> 对比用户级别和内核的http服务器。 在2.4的linux内核中为用户程序提供了足够的权力（power），就像<a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#x15" target="_blank" rel="noopener">X15</a> 服务器运行的速度和TUX几乎一样，但是它没有对内核做任何改变。</p>
+<h2 id="Comments-1"><a href="#Comments-1" class="headerlink" title="Comments"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">Comments</a></h2><p>Richard Gooch曾经写了一篇讨论<a href="http://www.atnf.csiro.au/%7Ergooch/linux/docs/io-events.html" target="_blank" rel="noopener">I/O选项</a>的论文。</p>
+<p>在2001, Tim Brecht和MMichal Ostrowski为使用简单的select的服务器 <a href="http://www.hpl.hp.com/techreports/2001/HPL-2001-314.html" target="_blank" rel="noopener">做了各种策略的测度</a> 测试的数据值得看一看。</p>
+<p>在2003, Tim Brecht发表了 <a href="http://www.hpl.hp.com/research/linux/userver/" target="_blank" rel="noopener">userver的源码</a>, 该服务器是整合了Abhishek Chandra, David Mosberger, David Pariag和Michal Ostrowski所写的几个服务器而成的， 可以使用select(), poll(), epoll()和sigio.</p>
+<p>回到1999.3, <a href="http://marc.theaimsgroup.com/?l=apache-httpd-dev&m=92100977123493&w=2" target="_blank" rel="noopener">Dean Gaudet发表</a>:</p>
+<blockquote>
+<p><em>我一直在问“为什么你们不使用基于select/event的模型，它明显是最快的。”…</em></p>
+</blockquote>
+<p>他们的理由是“太难理解了，并且其中关键部分（payoff）不清晰”，但是几个月后，当该模型变得易懂时人们就开始愿意使用它了。</p>
+<p>Mark Russinovich写了 <a href="http://linuxtoday.com/stories/5499.html" target="_blank" rel="noopener">一篇评论</a>和 <a href="http://www.winntmag.com/Articles/Index.cfm?ArticleID=5048" target="_blank" rel="noopener">文章</a>讨论了在2.2的linux内核只能够I/O策略问题。 尽管某些地方似乎有点错误，不过还是值得去看。特别是他认为Linux2.2的异步I/O (请看上面的F_SETSIG) 并没有在数据准备好时通知用户进程，而只有在新的连接到达时才有。 这看起来是一个奇怪的误解。 还可以看看 <a href="http://www.dejanews.com/getdoc.xp?AN=431444525" target="_blank" rel="noopener">早期的一些comments</a>, <a href="http://www.dejanews.com/getdoc.xp?AN=472893693" target="_blank" rel="noopener">Ingo Molnar在1999.4.30所举的反例</a>, <a href="http://www.linuxhq.com/lnxlists/linux-kernel/lk_9905_01/msg00089.html" target="_blank" rel="noopener">Russinovich在1999.5.2的comments</a>, Alan Cox的 <a href="http://www.linuxhq.com/lnxlists/linux-kernel/lk_9905_01/msg00263.html" target="_blank" rel="noopener">反例</a>，和各种 <a href="http://www.dejanews.com/dnquery.xp?ST=PS&QRY=threads&DBS=1&%20format=threaded&showsort=score&maxhits=100&LNG=ALL&groups%20=fa.linux.kernel+&fromdate=jun+1+1998" target="_blank" rel="noopener">linux内核邮件</a>. 我怀疑他想说的是Linux不支持异步磁盘I/O，这在过去是正确的，但是现在SGI已经实现了<a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#aio" target="_blank" rel="noopener">KAIO</a>，它已不再正确了。</p>
+<p>查看页面 <a href="http://www.sysinternals.com/ntw2k/info/comport.shtml" target="_blank" rel="noopener">sysinternals.com</a>和 <a href="http://msdn.microsoft.com/library/techart/msdn_scalabil.htm" target="_blank" rel="noopener">MSDN</a>了解一下“完成端口”， 据说它是NT中独特的技术， 简单说，win32的”重叠I/O”被认为是太低水平而不方面使用，“完成端口”是提供了完成事件队列的封装，再加上魔法般的调度， 通过允许更多的线程来获得完成事件如果该端口上的其它已获得完成事件的线程处于睡眠中时（可能正在处理阻塞I/O），从而可以保持运行线程数目恒定（scheduling magic that tries to keep the number of running threads constant by allowing more threads to pick up completion events if other threads that had picked up completion events from this port are sleeping (perhaps doing blocking I/O).</p>
+<p>查看<a href="http://www.as400.ibm.com/developer/v4r5/api.html" target="_blank" rel="noopener">OS/400的I/O完成端口支持</a>.</p>
+<p>在1999.9，在linux内核邮件列表上<a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">曾有</a>一次非常有趣的讨论，讨论题目为 “<a href="http://www.cs.helsinki.fi/linux/linux-kernel/Year-1999/1999-36/0160.html" target="_blank" rel="noopener">15,000 Simultaneous Connections</a>“ (并且延续到<a href="http://www.cs.helsinki.fi/linux/linux-kernel/Year-1999/1999-37/0612.html" target="_blank" rel="noopener">第二周</a>). Highlights:</p>
+<ul>
+<li>Ed Hall <a href="http://www.linuxhq.com/lnxlists/linux-kernel/lk_9909_01/msg00807.html" target="_blank" rel="noopener">发表了</a>一些他自己的经验：他已经在运行Solaris的UP P2/333上完成&gt;1000个连接每秒。 他的代码使用了一个很小的线程池（每个cpu 1或者2个线程池），每个线程池使用事件模型来管理大量的客户端连接。</li>
+<li>Mike Jagdis<a href="http://www.linuxhq.com/lnxlists/linux-kernel/lk_9909_01/msg00831.html" target="_blank" rel="noopener">posted an analysis of poll/select overhead</a>, and said “The current select/poll implementation can be improved significantly, especially in the blocking case, but the overhead will still increase with the number of descriptors because select/poll does not, and cannot, remember what descriptors are interesting. This would be easy to fix with a new API. Suggestions are welcome…”</li>
+<li>Mike <a href="http://www.linuxhq.com/lnxlists/linux-kernel/lk_9909_01/msg00964.html" target="_blank" rel="noopener">posted</a> about his <a href="http://www.purplet.demon.co.uk/linux/select/" target="_blank" rel="noopener">work on improving select() and poll()</a>.</li>
+<li>Mike <a href="http://www.linuxhq.com/lnxlists/linux-kernel/lk_9909_01/msg00971.html" target="_blank" rel="noopener">posted a bit about a possible API to replace poll()/select()</a>: “How about a ‘device like’ API where you write ‘pollfd like’ structs, the ‘device’ listens for events and delivers ‘pollfd like’ structs representing them when you read it? … “</li>
+<li>Rogier Wolff <a href="http://www.linuxhq.com/lnxlists/linux-kernel/lk_9909_01/msg00979.html" target="_blank" rel="noopener">suggested</a> using “the API that the digital guys suggested”, <a href="http://www.cs.rice.edu/%7Egaurav/papers/usenix99.ps" target="_blank" rel="noopener">http://www.cs.rice.edu/~gaurav/papers/usenix99.ps</a></li>
+<li>Joerg Pommnitz <a href="http://www.linuxhq.com/lnxlists/linux-kernel/lk_9909_02/msg00001.html" target="_blank" rel="noopener">pointed out</a> that any new API along these lines should be able to wait for not just file descriptor events, but also signals and maybe SYSV-IPC. Our synchronization primitives should certainly be able to do what Win32’s WaitForMultipleObjects can, at least.</li>
+<li>Stephen Tweedie <a href="http://www.linuxhq.com/lnxlists/linux-kernel/lk_9909_02/msg01198.html" target="_blank" rel="noopener">asserted</a> that the combination of F_SETSIG, queued realtime signals, and sigwaitinfo() was a superset of the API proposed in <a href="http://www.cs.rice.edu/~gaurav/papers/usenix99.ps" target="_blank" rel="noopener">http://www.cs.rice.edu/~gaurav/papers/usenix99.ps</a>. He also mentions that you keep the signal blocked at all times if you’re interested in performance; instead of the signal being delivered asynchronously, the process grabs the next one from the queue with sigwaitinfo().</li>
+<li>Jayson Nordwick <a href="http://www.linuxhq.com/lnxlists/linux-kernel/lk_9909_03/msg00002.html" target="_blank" rel="noopener">compared</a> completion ports with the F_SETSIG synchronous event model, and concluded they’re pretty similar.</li>
+<li>Alan Cox <a href="http://www.linuxhq.com/lnxlists/linux-kernel/lk_9909_03/msg00043.html" target="_blank" rel="noopener">noted</a> that an older rev of SCT’s SIGIO patch is included in 2.3.18ac.</li>
+<li>Jordan Mendelson <a href="http://www.linuxhq.com/lnxlists/linux-kernel/lk_9909_03/msg00093.html" target="_blank" rel="noopener">posted</a> some example code showing how to use F_SETSIG.</li>
+<li>Stephen C. Tweedie <a href="http://www.linuxhq.com/lnxlists/linux-kernel/lk_9909_03/msg00095.html" target="_blank" rel="noopener">continued</a> the comparison of completion ports and F_SETSIG, and noted: “With a signal dequeuing mechanism, your application is going to get signals destined for various library components if libraries are using the same mechanism,” but the library can set up its own signal handler, so this shouldn’t affect the program (much).</li>
+<li><a href="http://www.linuxhq.com/lnxlists/linux-kernel/lk_9909_04/msg00900.html" target="_blank" rel="noopener">Doug Royer</a> noted that he’d gotten 100,000 connections on Solaris 2.6 while he was working on the Sun calendar server. Others chimed in with estimates of how much RAM that would require on Linux, and what bottlenecks would be hit.</li>
+</ul>
+<p>Interesting reading!</p>
+<h2 id="Limits-on-open-filehandles"><a href="#Limits-on-open-filehandles" class="headerlink" title="Limits on open filehandles"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">Limits on open filehandles</a></h2><ul>
+<li><p>Any Unix: the limits set by ulimit or setrlimit.</p>
+</li>
+<li><p>Solaris: see <a href="http://www.wins.uva.nl/pub/solaris/solaris2/Q3.46.html" target="_blank" rel="noopener">the Solaris FAQ, question 3.46</a> (or thereabouts; they renumber the questions periodically).</p>
+</li>
+<li><p>FreeBSD:  </p>
+<p>Edit /boot/loader.conf, add the line</p>
+<p>set kern.maxfiles=XXXX</p>
+<p>where XXXX is the desired system limit on file descriptors, and reboot. Thanks to an anonymous reader, who wrote in to say he’d achieved far more than 10000 connections on FreeBSD 4.3, and says</p>
+<blockquote>
+<p>“FWIW: You can’t actually tune the maximum number of connections in FreeBSD trivially, via sysctl…. You have to do it in the /boot/loader.conf file.<br>The reason for this is that the zalloci() calls for initializing the sockets and tcpcb structures zones occurs very early in system startup, in order that the zone be both type stable and that it be swappable.<br>You will also need to set the number of mbufs much higher, since you will (on an unmodified kernel) chew up one mbuf per connection for tcptempl structures, which are used to implement keepalive.”</p>
+</blockquote>
+<p>Another reader says</p>
+<blockquote>
+<p>“As of FreeBSD 4.4, the tcptempl structure is no longer allocated; you no longer have to worry about one mbuf being chewed up per connection.”</p>
+</blockquote>
+<p>See also:</p>
+<ul>
+<li><a href="http://www.freebsd.org/doc/en_US.ISO8859-1/books/handbook/configtuning-kernel-limits.html" target="_blank" rel="noopener">the FreeBSD handbook</a></li>
+<li><a href="http://www.freebsd.org/cgi/man.cgi?query=tuning#SYSCTL+TUNING" target="_blank" rel="noopener">SYSCTL TUNING</a>, <a href="http://www.freebsd.org/cgi/man.cgi?query=tuning#LOADER+TUNABLES" target="_blank" rel="noopener">LOADER TUNABLES</a>, and <a href="http://www.freebsd.org/cgi/man.cgi?query=tuning#KERNEL+CONFIG+TUNING" target="_blank" rel="noopener">KERNEL CONFIG TUNING</a> in ‘man tuning’</li>
+<li><a href="http://www.daemonnews.org/200108/benchmark.html" target="_blank" rel="noopener">The Effects of Tuning a FreeBSD 4.3 Box for High Performance</a>, Daemon News, Aug 2001</li>
+<li><a href="http://www.postfix.org/faq.html#moby-freebsd" target="_blank" rel="noopener">postfix.org tuning notes</a>, covering FreeBSD 4.2 and 4.4</li>
+<li><a href="http://www.measurement-factory.com/docs/FreeBSD/" target="_blank" rel="noopener">the Measurement Factory’s notes</a>, circa FreeBSD 4.3</li>
+</ul>
+</li>
+<li><p>OpenBSD: A reader says</p>
+<blockquote>
+<p>“In OpenBSD, an additional tweak is required to increase the number of open filehandles available per process: the openfiles-cur parameter in <a href="http://www.freebsd.org/cgi/man.cgi?query=login.conf&manpath=OpenBSD+3.1" target="_blank" rel="noopener">/etc/login.conf</a> needs to be increased. You can change kern.maxfiles either with sysctl -w or in sysctl.conf but it has no effect. This matters because as shipped, the login.conf limits are a quite low 64 for nonprivileged processes, 128 for privileged.”</p>
+</blockquote>
+</li>
+<li><p>Linux: See <a href="http://asc.di.fct.unl.pt/%7Ejml/mirror/Proc/" target="_blank" rel="noopener">Bodo Bauer’s /proc documentation</a>. On 2.4 kernels:</p>
+<p>echo 32768 &gt; /proc/sys/fs/file-max </p>
+<p>increases the system limit on open files, and</p>
+<p>ulimit -n 32768</p>
+<p>increases the current process’ limit.</p>
+<p>On 2.2.x kernels,</p>
+<p>echo 32768 &gt; /proc/sys/fs/file-max echo 65536 &gt; /proc/sys/fs/inode-max </p>
+<p>increases the system limit on open files, and</p>
+<p>ulimit -n 32768</p>
+<p>increases the current process’ limit.</p>
+<p>I verified that a process on Red Hat 6.0 (2.2.5 or so plus patches) can open at least 31000 file descriptors this way. Another fellow has verified that a process on 2.2.12 can open at least 90000 file descriptors this way (with appropriate limits). The upper bound seems to be available memory.<br>Stephen C. Tweedie <a href="http://www.linuxhq.com/lnxlists/linux-kernel/lk_9909_02/msg01092.html" target="_blank" rel="noopener">posted</a> about how to set ulimit limits globally or per-user at boot time using initscript and pam_limit.<br>In older 2.2 kernels, though, the number of open files per process is still limited to 1024, even with the above changes.<br>See also <a href="http://www.dejanews.com/getdoc.xp?AN=313316592" target="_blank" rel="noopener">Oskar’s 1998 post</a>, which talks about the per-process and system-wide limits on file descriptors in the 2.0.36 kernel.</p>
+</li>
+</ul>
+<h2 id="Limits-on-threads"><a href="#Limits-on-threads" class="headerlink" title="Limits on threads"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">Limits on threads</a></h2><p>On any architecture, you may need to reduce the amount of stack space allocated for each thread to avoid running out of virtual memory. You can set this at runtime with pthread_attr_init() if you’re using pthreads.</p>
+<ul>
+<li><p>Solaris: it supports as many threads as will fit in memory, I hear.</p>
+</li>
+<li><p>Linux 2.6 kernels with NPTL: /proc/sys/vm/max_map_count may need to be increased to go above 32000 or so threads. (You’ll need to use very small stack threads to get anywhere near that number of threads, though, unless you’re on a 64 bit processor.) See the NPTL mailing list, e.g. the thread with subject “<a href="https://listman.redhat.com/archives/phil-list/2003-August/msg00005.html" target="_blank" rel="noopener">Cannot create more than 32K threads?</a>“, for more info.</p>
+</li>
+<li><p>Linux 2.4: /proc/sys/kernel/threads-max is the max number of threads; it defaults to 2047 on my Red Hat 8 system. You can set increase this as usual by echoing new values into that file, e.g. “echo 4000 &gt; /proc/sys/kernel/threads-max”</p>
+</li>
+<li><p>Linux 2.2: Even the 2.2.13 kernel limits the number of threads, at least on Intel. I don’t know what the limits are on other architectures. <a href="http://www.linuxhq.com/lnxlists/linux-kernel/lk_9812_02/msg00048.html" target="_blank" rel="noopener">Mingo posted a patch for 2.1.131 on Intel</a> that removed this limit. It appears to be integrated into 2.3.20.</p>
+<p>See also <a href="http://www.volano.com/linux.html" target="_blank" rel="noopener">Volano’s detailed instructions for raising file, thread, and FD_SET limits in the 2.2 kernel</a>. Wow. This document steps you through a lot of stuff that would be hard to figure out yourself, but is somewhat dated.</p>
+</li>
+<li><p>Java: See <a href="http://www.volano.com/benchmarks.html" target="_blank" rel="noopener">Volano’s detailed benchmark info</a>, plus their <a href="http://www.volano.com/server.html" target="_blank" rel="noopener">info on how to tune various systems</a> to handle lots of threads.</p>
+</li>
+</ul>
+<h2 id="Java-issues"><a href="#Java-issues" class="headerlink" title="Java issues"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">Java issues</a></h2><p>Up through JDK 1.3, Java’s standard networking libraries mostly offered the <a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#threaded.java" target="_blank" rel="noopener">one-thread-per-client model</a>. There was a way to do nonblocking reads, but no way to do nonblocking writes.</p>
+<p>In May 2001, <a href="http://java.sun.com/j2se/1.4/" target="_blank" rel="noopener">JDK 1.4</a> introduced the package <a href="http://java.sun.com/j2se/1.4/docs/guide/nio/" target="_blank" rel="noopener">java.nio</a> to provide full support for nonblocking I/O (and some other goodies). See <a href="http://java.sun.com/j2se/1.4/relnotes.html#nio" target="_blank" rel="noopener">the release notes</a> for some caveats. Try it out and give Sun feedback!</p>
+<p>HP’s java also includes a <a href="http://www.devresource.hp.com/JavaATC/JavaPerfTune/pollapi.html" target="_blank" rel="noopener">Thread Polling API</a>.</p>
+<p>In 2000, Matt Welsh implemented nonblocking sockets for Java; his performance benchmarks show that they have advantages over blocking sockets in servers handling many (up to 10000) connections. His class library is called <a href="http://www.cs.berkeley.edu/%7Emdw/proj/java-nbio/" target="_blank" rel="noopener">java-nbio</a>; it’s part of the <a href="http://www.cs.berkeley.edu/%7Emdw/proj/sandstorm/" target="_blank" rel="noopener">Sandstorm</a> project. Benchmarks showing <a href="http://www.cs.berkeley.edu/%7Emdw/proj/sandstorm/iocore-bench/" target="_blank" rel="noopener">performance with 10000 connections</a> are available.</p>
+<p>See also <a href="http://arctic.org/%7Edean/hybrid-jvm.txt" target="_blank" rel="noopener">Dean Gaudet’s essay</a> on the subject of Java, network I/O, and threads, and the <a href="http://www.cs.berkeley.edu/%7Emdw/papers/events.pdf" target="_blank" rel="noopener">paper</a> by Matt Welsh on events vs. worker threads.</p>
+<p>Before NIO, there were several proposals for improving Java’s networking APIs:</p>
+<ul>
+<li>Matt Welsh’s <a href="http://www.cs.berkeley.edu/%7Emdw/proj/jaguar/" target="_blank" rel="noopener">Jaguar system</a> proposes preserialized objects, new Java bytecodes, and memory management changes to allow the use of asynchronous I/O with Java.</li>
+<li><a href="http://www.cs.cornell.edu/Info/People/chichao/papers.htm" target="_blank" rel="noopener">Interfacing Java to the Virtual Interface Architecture</a>, by C-C. Chang and T. von Eicken, proposes memory management changes to allow the use of asynchronous I/O with Java.</li>
+<li><a href="http://java.sun.com/aboutJava/communityprocess/jsr/jsr_051_ioapis.html" target="_blank" rel="noopener">JSR-51</a> was the Sun project that came up with the java.nio package. Matt Welsh participated (who says Sun doesn’t listen?).</li>
+</ul>
+<h2 id="Other-tips"><a href="#Other-tips" class="headerlink" title="Other tips"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">Other tips</a></h2><ul>
+<li><p><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">Zero-Copy</a><br>Normally, data gets copied many times on its way from here to there. Any scheme that eliminates these copies to the bare physical minimum is called “zero-copy”.</p>
+<ul>
+<li><p><a href="http://marc.theaimsgroup.com/?l=linux-kernel&m=104121076420067&w=2" target="_blank" rel="noopener">Thomas Ogrisegg’s zero-copy send patch</a> for mmaped files under Linux 2.4.17-2.4.20. Claims it’s faster than sendfile().</p>
+</li>
+<li><p><a href="http://www.usenix.org/publications/library/proceedings/osdi99/full_papers/pai/pai_html/pai.html" target="_blank" rel="noopener">IO-Lite</a> is a proposal for a set of I/O primitives that gets rid of the need for many copies.</p>
+</li>
+<li><p><a href="http://www.linuxhq.com/lnxlists/linux-kernel/lk_9905_01/msg00263.html" target="_blank" rel="noopener">Alan Cox noted that zero-copy is sometimes not worth the trouble</a> back in 1999. (He did like sendfile(), though.)</p>
+</li>
+<li><p>Ingo <a href="http://boudicca.tux.org/hypermail/linux-kernel/2000week36/0979.html" target="_blank" rel="noopener">implemented a form of zero-copy TCP</a> in the 2.4 kernel for TUX 1.0 in July 2000, and says he’ll make it available to userspace soon.</p>
+</li>
+<li><p><a href="http://people.freebsd.org/%7Eken/zero_copy/" target="_blank" rel="noopener">Drew Gallatin and Robert Picco have added some zero-copy features to FreeBSD</a>; the idea seems to be that if you call write() or read() on a socket, the pointer is page-aligned, and the amount of data transferred is at least a page, *and* you don’t immediately reuse the buffer, memory management tricks will be used to avoid copies. But see <a href="http://boudicca.tux.org/hypermail/linux-kernel/2000week39/0249.html" target="_blank" rel="noopener">followups to this message on linux-kernel</a> for people’s misgivings about the speed of those memory management tricks.</p>
+<p>According to a note from Noriyuki Soda:</p>
+<blockquote>
+<p><em>Sending side zero-copy is supported since NetBSD-1.6 release by specifying “SOSEND_LOAN” kernel option. This option is now default on NetBSD-current (you can disable this feature by specifying “SOSEND_NO_LOAN” in the kernel option on NetBSD_current). With this feature, zero-copy is automatically enabled, if data more than 4096 bytes are specified as data to be sent.</em></p>
+</blockquote>
+</li>
+<li><p><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">The sendfile() system call can implement zero-copy networking.</a><br>The sendfile() function in Linux and FreeBSD lets you tell the kernel to send part or all of a file. This lets the OS do it as efficiently as possible. It can be used equally well in servers using threads or servers using nonblocking I/O. (In Linux, it’s poorly documented at the moment; <a href="http://www.dejanews.com/getdoc.xp?AN=422899634" target="_blank" rel="noopener">use _syscall4 to call it</a>. Andi Kleen is writing new man pages that cover this. See also <a href="http://www.linuxgazette.com/issue91/tranter.html" target="_blank" rel="noopener">Exploring The sendfile System Call</a> by Jeff Tranter in Linux Gazette issue 91.) <a href="http://www.dejanews.com/getdoc.xp?AN=423005088" target="_blank" rel="noopener">Rumor has it</a>, ftp.cdrom.com benefitted noticeably from sendfile().</p>
+<p>A zero-copy implementation of sendfile() is on its way for the 2.4 kernel. See <a href="http://lwn.net/2001/0125/kernel.php3" target="_blank" rel="noopener">LWN Jan 25 2001</a>.</p>
+<p>One developer using sendfile() with Freebsd reports that using POLLWRBAND instead of POLLOUT makes a big difference.</p>
+<p>Solaris 8 (as of the July 2001 update) has a new system call ‘sendfilev’. <a href="http://www.cnblogs.com/fll/admin/sendfilev.txt" target="_blank" rel="noopener">A copy of the man page is here.</a>. The Solaris 8 7/01 <a href="http://www.sun.com/software/solaris/fcc/ucc-details701.html" target="_blank" rel="noopener">release notes</a> also mention it. I suspect that this will be most useful when sending to a socket in blocking mode; it’d be a bit of a pain to use with a nonblocking socket.</p>
+</li>
+</ul>
+</li>
+<li><p><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">Avoid small frames by using writev (or TCP_CORK)</a><br>A new socket option under Linux, TCP_CORK, tells the kernel to avoid sending partial frames, which helps a bit e.g. when there are lots of little write() calls you can’t bundle together for some reason. Unsetting the option flushes the buffer. Better to use writev(), though…</p>
+<p>See <a href="http://lwn.net/2001/0125/kernel.php3" target="_blank" rel="noopener">LWN Jan 25 2001</a> for a summary of some very interesting discussions on linux-kernel about TCP_CORK and a possible alternative MSG_MORE.</p>
+</li>
+<li><p><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">Behave sensibly on overload.</a><br>[<a href="http://www.citi.umich.edu/techreports/reports/citi-tr-00-7.ps.gz" target="_blank" rel="noopener">Provos, Lever, and Tweedie 2000</a>] notes that dropping incoming connections when the server is overloaded improved the shape of the performance curve, and reduced the overall error rate. They used a smoothed version of “number of clients with I/O ready” as a measure of overload. This technique should be easily applicable to servers written with select, poll, or any system call that returns a count of readiness events per call (e.g. /dev/poll or sigtimedwait4()).</p>
+</li>
+<li><p><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">Some programs can benefit from using non-Posix threads.</a><br>Not all threads are created equal. The clone() function in Linux (and its friends in other operating systems) lets you create a thread that has its own current working directory, for instance, which can be very helpful when implementing an ftp server. See Hoser FTPd for an example of the use of native threads rather than pthreads.</p>
+</li>
+<li><p><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">Caching your own data can sometimes be a win.</a><br>“Re: fix for hybrid server problems” by Vivek Sadananda Pai (vivek@ cs.rice.edu) on <a href="http://www.humanfactor.com/cgi-bin/cgi-delegate/apache-ML/nh/1999/" target="_blank" rel="noopener">new-httpd</a>, May 9th, states:</p>
+<blockquote>
+<p>“I’ve compared the raw performance of a select-based server with a multiple-process server on both FreeBSD and Solaris/x86. On microbenchmarks, there’s only a marginal difference in performance stemming from the software architecture. The big performance win for select-based servers stems from doing application-level caching. While multiple-process servers can do it at a higher cost, it’s harder to get the same benefits on real workloads (vs microbenchmarks). I’ll be presenting those measurements as part of a paper that’ll appear at the next Usenix conference. If you’ve got postscript, the paper is available at <a href="http://www.cs.rice.edu/%7Evivek/flash99/" target="_blank" rel="noopener">http://www.cs.rice.edu/~vivek/flash99/</a>“</p>
+</blockquote>
+</li>
+</ul>
+<h2 id="Other-limits"><a href="#Other-limits" class="headerlink" title="Other limits"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">Other limits</a></h2><ul>
+<li>Old system libraries might use 16 bit variables to hold file handles, which causes trouble above 32767 handles. glibc2.1 should be ok.</li>
+<li>Many systems use 16 bit variables to hold process or thread id’s. It would be interesting to port the <a href="http://www.volano.com/benchmarks.html" target="_blank" rel="noopener">Volano scalability benchmark</a> to C, and see what the upper limit on number of threads is for the various operating systems.</li>
+<li>Too much thread-local memory is preallocated by some operating systems; if each thread gets 1MB, and total VM space is 2GB, that creates an upper limit of 2000 threads.</li>
+<li>Look at the performance comparison graph at the bottom of <a href="http://www.acme.com/software/thttpd/benchmarks.html" target="_blank" rel="noopener">http://www.acme.com/software/thttpd/benchmarks.html</a>. Notice how various servers have trouble above 128 connections, even on Solaris 2.6? Anyone who figures out why, let me know.<br>Note: if the TCP stack has a bug that causes a short (200ms) delay at SYN or FIN time, as Linux 2.2.0-2.2.6 had, and the OS or http daemon has a hard limit on the number of connections open, you would expect exactly this behavior. There may be other causes.</li>
+</ul>
+<h2 id="Kernel-Issues"><a href="#Kernel-Issues" class="headerlink" title="Kernel Issues"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">Kernel Issues</a></h2><p>For Linux, it looks like kernel bottlenecks are being fixed constantly. See <a href="http://lwn.net/" target="_blank" rel="noopener">Linux Weekly News</a>, <a href="http://www.kt.opensrc.org/" target="_blank" rel="noopener">Kernel Traffic</a>, <a href="http://marc.theaimsgroup.com/?l=linux-kernel" target="_blank" rel="noopener">the Linux-Kernel mailing list</a>, and <a href="http://www.cnblogs.com/fll/admin/mindcraft_redux.html" target="_blank" rel="noopener">my Mindcraft Redux page</a>.</p>
+<p>In March 1999, Microsoft sponsored a benchmark comparing NT to Linux at serving large numbers of http and smb clients, in which they failed to see good results from Linux. See also <a href="http://www.cnblogs.com/fll/admin/mindcraft_redux.html" target="_blank" rel="noopener">my article on Mindcraft’s April 1999 Benchmarks</a> for more info.</p>
+<p>See also <a href="http://www.citi.umich.edu/projects/citi-netscape/" target="_blank" rel="noopener">The Linux Scalability Project</a>. They’re doing interesting work, including <a href="http://linuxwww.db.erau.edu/mail_archives/linux-kernel/May_99/4105.html" target="_blank" rel="noopener">Niels Provos’ hinting poll patch</a>, and some work on the <a href="http://www.citi.umich.edu/projects/linux-scalability/reports/accept.html" target="_blank" rel="noopener">thundering herd problem</a>.</p>
+<p>See also <a href="http://www.purplet.demon.co.uk/linux/select/" target="_blank" rel="noopener">Mike Jagdis’ work on improving select() and poll()</a>; here’s <a href="http://www.linuxhq.com/lnxlists/linux-kernel/lk_9909_01/msg00964.html" target="_blank" rel="noopener">Mike’s post</a> about it.</p>
+<p><a href="http://www.linuxhq.com/lnxlists/linux-kernel/lk_9910_02/msg00889.html" target="_blank" rel="noopener">Mohit Aron (aron@ cs.rice.edu) writes that rate-based clocking in TCP can improve HTTP response time over ‘slow’ connections by 80%.</a></p>
+<h2 id="Measuring-Server-Performance"><a href="#Measuring-Server-Performance" class="headerlink" title="Measuring Server Performance"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">Measuring Server Performance</a></h2><p>Two tests in particular are simple, interesting, and hard:</p>
+<ol>
+<li>raw connections per second (how many 512 byte files per second can you serve?)</li>
+<li>total transfer rate on large files with many slow clients (how many 28.8k modem clients can simultaneously download from your server before performance goes to pot?)</li>
+</ol>
+<p>Jef Poskanzer has published benchmarks comparing many web servers. See <a href="http://www.acme.com/software/thttpd/benchmarks.html" target="_blank" rel="noopener">http://www.acme.com/software/thttpd/benchmarks.html</a> for his results.</p>
+<p>I also have <a href="http://www.alumni.caltech.edu/%7Edank/fixing-overloaded-web-server.html" target="_blank" rel="noopener">a few old notes about comparing thttpd to Apache</a> that may be of interest to beginners.</p>
+<p><a href="http://linuxhq.com/lnxlists/linux-kernel/lk_9906_02/msg00248.html" target="_blank" rel="noopener">Chuck Lever keeps reminding us</a> about <a href="http://www.cs.rice.edu/CS/Systems/Web-measurement/paper/paper.html" target="_blank" rel="noopener">Banga and Druschel’s paper on web server benchmarking</a>. It’s worth a read.</p>
+<p>IBM has an excellent paper titled <a href="http://www.research.ibm.com/journal/sj/391/baylor.html" target="_blank" rel="noopener">Java server benchmarks</a> [Baylor et al, 2000]. It’s worth a read.</p>
+<h1 id="Examples"><a href="#Examples" class="headerlink" title="Examples"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">Examples</a></h1><h2 id="Interesting-select-based-servers"><a href="#Interesting-select-based-servers" class="headerlink" title="Interesting select()-based servers"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">Interesting select()-based servers</a></h2><ul>
+<li><a href="http://www.acme.com/software/thttpd/" target="_blank" rel="noopener">thttpd</a> Very simple. Uses a single process. It has good performance, but doesn’t scale with the number of CPU’s. Can also use kqueue.</li>
+<li><a href="http://mathop.diva.nl/" target="_blank" rel="noopener">mathopd</a>. Similar to thttpd.</li>
+<li><a href="http://www.fhttpd.org/" target="_blank" rel="noopener">fhttpd</a></li>
+<li><a href="http://www.boa.org/" target="_blank" rel="noopener">boa</a></li>
+<li><a href="http://www.roxen.com/" target="_blank" rel="noopener">Roxen</a></li>
+<li><a href="http://www.zeustech.net/" target="_blank" rel="noopener">Zeus</a>, a commercial server that tries to be the absolute fastest. See their <a href="http://support.zeustech.net/faq/entries/tuning.html" target="_blank" rel="noopener">tuning guide</a>.</li>
+<li>The other non-Java servers listed at <a href="http://www.acme.com/software/thttpd/benchmarks.html" target="_blank" rel="noopener">http://www.acme.com/software/thttpd/benchmarks.html</a></li>
+<li><a href="http://ca.us.mirrors.freshmeat.net/appindex/1999/02/17/919251275.html" target="_blank" rel="noopener">BetaFTPd</a></li>
+<li><a href="http://www.cs.rice.edu/%7Evivek/iol98/" target="_blank" rel="noopener">Flash-Lite</a> - web server using IO-Lite.</li>
+<li><a href="http://www.cs.rice.edu/%7Evivek/flash99/" target="_blank" rel="noopener">Flash: An efficient and portable Web server</a> – uses select(), mmap(), mincore()</li>
+<li><a href="http://www.cs.princeton.edu/%7Eyruan/debox/" target="_blank" rel="noopener">The Flash web server as of 2003</a> – uses select(), modified sendfile(), async open()</li>
+<li><a href="http://www.imatix.com/html/xitami/" target="_blank" rel="noopener">xitami</a> - uses select() to implement its own thread abstraction for portability to systems without threads.</li>
+<li><a href="http://www.nightmare.com/medusa/medusa.html" target="_blank" rel="noopener">Medusa</a> - a server-writing toolkit in Python that tries to deliver very high performance.</li>
+<li><a href="http://www.hpl.hp.com/research/linux/userver/" target="_blank" rel="noopener">userver</a> - a small http server that can use select, poll, epoll, or sigio</li>
+</ul>
+<h2 id="Interesting-dev-poll-based-servers"><a href="#Interesting-dev-poll-based-servers" class="headerlink" title="Interesting /dev/poll-based servers"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">Interesting /dev/poll-based servers</a></h2><ul>
+<li><em>N. Provos, C. Lever</em>, <a href="http://www.citi.umich.edu/techreports/reports/citi-tr-00-4.pdf" target="_blank" rel="noopener">“Scalable Network I/O in Linux,”</a> May, 2000. [FREENIX track, Proc. USENIX 2000, San Diego, California (June, 2000).] Describes a version of thttpd modified to support /dev/poll. Performance is compared with phhttpd.</li>
+</ul>
+<h2 id="Interesting-kqueue-based-servers"><a href="#Interesting-kqueue-based-servers" class="headerlink" title="Interesting kqueue()-based servers"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">Interesting kqueue()-based servers</a></h2><ul>
+<li><a href="http://www.acme.com/software/thttpd/" target="_blank" rel="noopener">thttpd</a> (as of version 2.21?)</li>
+<li>Adrian Chadd says “I’m doing a lot of work to make squid actually LIKE a kqueue IO system”; it’s an official Squid subproject; see <a href="http://squid.sourceforge.net/projects.html#commloops" target="_blank" rel="noopener">http://squid.sourceforge.net/projects.html#commloops</a>. (This is apparently newer than <a href="http://www.advogato.org/person/benno/" target="_blank" rel="noopener">Benno</a>‘s <a href="http://netizen.com.au/%7Ebenno/squid-select.tar.gz" target="_blank" rel="noopener">patch</a>.)</li>
+</ul>
+<h2 id="Interesting-realtime-signal-based-servers"><a href="#Interesting-realtime-signal-based-servers" class="headerlink" title="Interesting realtime signal-based servers"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">Interesting realtime signal-based servers</a></h2><ul>
+<li><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">Chromium’s</a> X15. This uses the 2.4 kernel’s SIGIO feature together with sendfile() and TCP_CORK, and reportedly achieves higher speed than even TUX. The <a href="http://www.chromium.com/cgi-bin/crosforum/YaBB.pl" target="_blank" rel="noopener">source is available</a> under a community source (not open source) license. See <a href="http://boudicca.tux.org/hypermail/linux-kernel/2001week21/1624.html" target="_blank" rel="noopener">the original announcement</a> by Fabio Riccardi.</li>
+<li><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">Zach Brown’s</a> <a href="http://www.zabbo.net/phhttpd/" target="_blank" rel="noopener">phhttpd</a> - “a quick web server that was written to showcase the sigio/siginfo event model. consider this code highly experimental and yourself highly mental if you try and use it in a production environment.” Uses the <a href="http://www.cnblogs.com/fll/admin/EditPosts.aspx?pg=2#nb.sigio" target="_blank" rel="noopener">siginfo</a> features of 2.3.21 or later, and includes the needed patches for earlier kernels. Rumored to be even faster than khttpd. See <a href="http://www.cs.helsinki.fi/linux/linux-kernel/Year-1999/1999-22/0453.html" target="_blank" rel="noopener">his post of 31 May 1999</a> for some notes.</li>
+</ul>
+<h2 id="Interesting-thread-based-servers"><a href="#Interesting-thread-based-servers" class="headerlink" title="Interesting thread-based servers"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">Interesting thread-based servers</a></h2><ul>
+<li><a href="http://www.zabbo.net/hftpd/" target="_blank" rel="noopener">Hoser FTPD</a>. See their <a href="http://www.zabbo.net/hftpd/bench.html" target="_blank" rel="noopener">benchmark page</a>.</li>
+<li><a href="http://ca.us.mirrors.freshmeat.net/appindex/1999/02/06/918317238.html" target="_blank" rel="noopener">Peter Eriksson’s phttpd</a> and</li>
+<li><a href="http://ca.us.mirrors.freshmeat.net/appindex/1999/02/06/918313631.html" target="_blank" rel="noopener">pftpd</a></li>
+<li>The Java-based servers listed at <a href="http://www.acme.com/software/thttpd/benchmarks.html" target="_blank" rel="noopener">http://www.acme.com/software/thttpd/benchmarks.html</a></li>
+<li>Sun’s <a href="http://jserv.javasoft.com/" target="_blank" rel="noopener">Java Web Server</a> (which has been <a href="http://archives.java.sun.com/cgi-bin/wa?A2=ind9901&L=jserv-interest&F=&S=&P=47739" target="_blank" rel="noopener">reported to handle 500 simultaneous clients</a>)</li>
+</ul>
+<h2 id="Interesting-in-kernel-servers"><a href="#Interesting-in-kernel-servers" class="headerlink" title="Interesting in-kernel servers"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">Interesting in-kernel servers</a></h2><ul>
+<li><a href="http://www.fenrus.demon.nl/" target="_blank" rel="noopener">khttpd</a></li>
+<li><a href="http://slashdot.org/comments.pl?sid=00/07/05/0211257&cid=218" target="_blank" rel="noopener">“TUX” (Threaded linUX webserver)</a> by Ingo Molnar et al. For 2.4 kernel.</li>
+</ul>
+<h2 id="Other-interesting-links"><a href="#Other-interesting-links" class="headerlink" title="Other interesting links"></a><a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">Other interesting links</a></h2><ul>
+<li><a href="http://pl.atyp.us/content/tech/servers.html" target="_blank" rel="noopener">Jeff Darcy’s notes on high-performance server design</a></li>
+<li><a href="http://www2.linuxjournal.com/lj-issues/issue91/4752.html" target="_blank" rel="noopener">Ericsson’s ARIES project</a> – benchmark results for Apache 1 vs. Apache 2 vs. Tomcat on 1 to 12 processors</li>
+<li><a href="http://nakula.rvs.uni-bielefeld.de/made/artikel/Web-Bench/web-bench.html" target="_blank" rel="noopener">Prof. Peter Ladkin’s Web Server Performance</a> page.</li>
+<li><a href="http://www.novell.com/bordermanager/ispcon4.html" target="_blank" rel="noopener">Novell’s FastCache</a> – claims 10000 hits per second. Quite the pretty performance graph.</li>
+<li>Rik van Riel’s <a href="http://linuxperf.nl.linux.org/" target="_blank" rel="noopener">Linux Performance Tuning site</a></li>
+</ul>
+<hr>
+<h2 id="Changelog"><a href="#Changelog" class="headerlink" title="Changelog"></a>Changelog</h2><p>$Log: c10k.html,v $ Revision 1.212 2006/09/02 14:52:13 dank added asio Revision 1.211 2006/07/27 10:28:58 dank Link to Cal Henderson’s book. Revision 1.210 2006/07/27 10:18:58 dank Listify polyakov links, add Drepper’s new proposal, note that FreeBSD 7 might move to 1:1 Revision 1.209 2006/07/13 15:07:03 dank link to Scale! library, updated Polyakov links Revision 1.208 2006/07/13 14:50:29 dank Link to Polyakov’s patches Revision 1.207 2003/11/03 08:09:39 dank Link to Linus’s message deprecating the idea of aio_open Revision 1.206 2003/11/03 07:44:34 dank link to userver Revision 1.205 2003/11/03 06:55:26 dank Link to Vivek Pei’s new Flash paper, mention great specweb99 score </p>
+<hr>
+<p><em>Copyright 1999-2006 Dan Kegel</em><br>dank@ kegel.com<br>Last updated: 2 Sept 2006<br><a href="http://www.kegel.com/" target="_blank" rel="noopener">[Return to www.kegel.com]</a> <img src="http://counter.csdn.net/pv.aspx?id=24" alt=""></p>
+<p>posted on 2008-05-17 20:56  <a href="https://www.cnblogs.com/fll/" target="_blank" rel="noopener">fll</a>  阅读(27889)  评论(5)  <a href="https://i.cnblogs.com/EditPosts.aspx?postid=1201540" target="_blank" rel="noopener">编辑</a>  <a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">收藏</a>  <a href="https://www.cnblogs.com/fll/archive/2008/05/17/1201540.html" target="_blank" rel="noopener">举报</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/07/13/qiwihui-pocket_readings-1152/" rel="prev" title="
+
+
+Python进阶：为什么GIL让多线程变得如此鸡肋？ ">
+      <i class="fa fa-chevron-left"></i> 
+
+
+Python进阶：为什么GIL让多线程变得如此鸡肋？ 
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/07/13/qiwihui-pocket_readings-1154/" rel="next" title="别让自己“墙”了自己 | 酷 壳 - CoolShell">
+      别让自己“墙”了自己 | 酷 壳 - CoolShell <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#The-C10K-problem翻译-fll-博客园"><span class="nav-number"></span> <span class="nav-text">The C10K problem翻译 - fll - 博客园</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#The-C10K-problem翻译"><span class="nav-number"></span> <span class="nav-text">The C10K problem翻译</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#The-C10K-problem"><span class="nav-number"></span> <span class="nav-text">The C10K problem</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Contents"><span class="nav-number"></span> <span class="nav-text">Contents</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Related-Sites"><span class="nav-number"></span> <span class="nav-text">Related Sites</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Book-to-Read-First"><span class="nav-number"></span> <span class="nav-text">Book to Read First</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#I-O框架"><span class="nav-number">1.</span> <span class="nav-text">I&#x2F;O框架</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#I-O-Strategies"><span class="nav-number"></span> <span class="nav-text">I&#x2F;O Strategies</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-一个线程服务多个客户端，使用非阻塞I-O和水平触发的就绪通知"><span class="nav-number">1.</span> <span class="nav-text">1. 一个线程服务多个客户端，使用非阻塞I&#x2F;O和水平触发的就绪通知</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-一个线程服务多个客户端，使用非阻塞I-O和就绪改变时通知"><span class="nav-number">2.</span> <span class="nav-text">2. 一个线程服务多个客户端，使用非阻塞I&#x2F;O和就绪改变时通知</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-一个服务线程服务多个客户端，使用异步I-O"><span class="nav-number">3.</span> <span class="nav-text">3. 一个服务线程服务多个客户端，使用异步I&#x2F;O</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-一个服务线程服务一个客户端，使用阻塞I-O"><span class="nav-number">4.</span> <span class="nav-text">4. 一个服务线程服务一个客户端，使用阻塞I&#x2F;O</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#LinuxThreads"><span class="nav-number">4.1.</span> <span class="nav-text">LinuxThreads</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#NGPT-Next-Generation-Posix-Threads-for-Linux下一代LinuxPosix线程"><span class="nav-number">4.2.</span> <span class="nav-text">NGPT: Next Generation Posix Threads for Linux下一代LinuxPosix线程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#NPTL-Native-Posix-Thread-Library-for-Linux-Linux本地Posix线程库"><span class="nav-number">4.3.</span> <span class="nav-text">NPTL: Native Posix Thread Library for Linux(Linux本地Posix线程库)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#FreeBSD线程支持"><span class="nav-number">4.4.</span> <span class="nav-text">FreeBSD线程支持</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#NetBSD线程支持"><span class="nav-number">4.5.</span> <span class="nav-text">NetBSD线程支持</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Solaris线程支持"><span class="nav-number">4.6.</span> <span class="nav-text">Solaris线程支持</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Java在JDK-1-3-x及更早的线程支持"><span class="nav-number">4.7.</span> <span class="nav-text">Java在JDK 1.3.x及更早的线程支持</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Note-1-1-threading-vs-M-N-threading"><span class="nav-number">4.8.</span> <span class="nav-text">Note: 1:1 threading vs. M:N threading</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-把服务代码编译进内核"><span class="nav-number">5.</span> <span class="nav-text">5. 把服务代码编译进内核</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Comments-1"><span class="nav-number"></span> <span class="nav-text">Comments</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Limits-on-open-filehandles"><span class="nav-number"></span> <span class="nav-text">Limits on open filehandles</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Limits-on-threads"><span class="nav-number"></span> <span class="nav-text">Limits on threads</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Java-issues"><span class="nav-number"></span> <span class="nav-text">Java issues</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Other-tips"><span class="nav-number"></span> <span class="nav-text">Other tips</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Other-limits"><span class="nav-number"></span> <span class="nav-text">Other limits</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Kernel-Issues"><span class="nav-number"></span> <span class="nav-text">Kernel Issues</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Measuring-Server-Performance"><span class="nav-number"></span> <span class="nav-text">Measuring Server Performance</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Examples"><span class="nav-number"></span> <span class="nav-text">Examples</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Interesting-select-based-servers"><span class="nav-number"></span> <span class="nav-text">Interesting select()-based servers</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Interesting-dev-poll-based-servers"><span class="nav-number"></span> <span class="nav-text">Interesting &#x2F;dev&#x2F;poll-based servers</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Interesting-kqueue-based-servers"><span class="nav-number"></span> <span class="nav-text">Interesting kqueue()-based servers</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Interesting-realtime-signal-based-servers"><span class="nav-number"></span> <span class="nav-text">Interesting realtime signal-based servers</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Interesting-thread-based-servers"><span class="nav-number"></span> <span class="nav-text">Interesting thread-based servers</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Interesting-in-kernel-servers"><span class="nav-number"></span> <span class="nav-text">Interesting in-kernel servers</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Other-interesting-links"><span class="nav-number"></span> <span class="nav-text">Other interesting links</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Changelog"><span class="nav-number"></span> <span class="nav-text">Changelog</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

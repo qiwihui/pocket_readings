@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="《深度剖析CPython解释器》16. Python函数机制的深度解析(第三部分): 闭包的底层实现以及调用 - 古明地盆 - 博客园">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《深度剖析CPython解释器》16. Python函数机制的深度解析(第三部分): 闭包的底层实现以及调用 - 古明地盆 - 博客园">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1012/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="《深度剖析CPython解释器》16. Python函数机制的深度解析(第三部分): 闭包的底层实现以及调用 - 古明地盆 - 博客园">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200829065426762-1258006550.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200829065435213-2141751147.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200829065442949-1280274412.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200829065450935-1586497820.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200829065459727-1555535085.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200829065507599-355200755.png">
+<meta property="article:published_time" content="2021-02-16T14:17:18.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.430Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200829065426762-1258006550.png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1012/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>《深度剖析CPython解释器》16. Python函数机制的深度解析(第三部分): 闭包的底层实现以及调用 - 古明地盆 - 博客园 | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1012/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          《深度剖析CPython解释器》16. Python函数机制的深度解析(第三部分): 闭包的底层实现以及调用 - 古明地盆 - 博客园
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-02-16 14:17:18" itemprop="dateCreated datePublished" datetime="2021-02-16T14:17:18+00:00">2021-02-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">《深度剖析CPython解释器》16. Python函数机制的深度解析(第三部分): 闭包的底层实现以及调用 - 古明地盆 - 博客园</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#19978;&#19968;&#31687;&#25105;&#20204;&#30475;&#20102;&#20989;&#25968;&#26159;&#22914;&#20309;&#35843;&#29992;&#30340;&#65292;&#36825;&#19968;&#27425;&#25105;&#20204;&#30475;&#19968;&#19979;&#20989;&#25968;&#20013;&#23616;&#37096;&#21464;&#37327;&#30340;&#35775;&#38382;&#12289;&#20197;&#21450;&#38381;&#21253;&#30456;&#20851;&#30340;&#30693;&#35782;&#12290; &#25105;&#20204;&#35828;&#36807;&#20989;&#25968;&#30340;&#21442;&#25968;&#21644;&#20989;&#25968;&#20869;&#37096;&#23450;&#20041;&#30340;&#21464;&#37327;&#37117;&#23646;&#20110;&#23616;&#37096;&#21464;&#37327;&#65292;&#25152;&#20197;&#23427;&#20063;&#19968;&#26679;&#26159;&#36890;&#36807;&#38745;&#24577;&#30340;&#26041;&#24335;&#36827;&#34892;&#35775;&#38382;&#12290;<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/2NunW15" target="_blank" rel="noopener">https://ift.tt/2NunW15</a> original site<br><br><br><br>February 16, 2021 at 10:13PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1012#issuecomment-792571389" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>3/8/2021</strong></p>
+</blockquote>
+<h2 id="《深度剖析CPython解释器》16-Python函数机制的深度解析-第三部分-闭包的底层实现以及调用-古明地盆-博客园"><a href="#《深度剖析CPython解释器》16-Python函数机制的深度解析-第三部分-闭包的底层实现以及调用-古明地盆-博客园" class="headerlink" title="《深度剖析CPython解释器》16. Python函数机制的深度解析(第三部分): 闭包的底层实现以及调用 - 古明地盆 - 博客园"></a>《深度剖析CPython解释器》16. Python函数机制的深度解析(第三部分): 闭包的底层实现以及调用 - 古明地盆 - 博客园</h2><h1 id="《深度剖析CPython解释器》16-Python函数机制的深度解析-第三部分-闭包的底层实现以及调用"><a href="#《深度剖析CPython解释器》16-Python函数机制的深度解析-第三部分-闭包的底层实现以及调用" class="headerlink" title="《深度剖析CPython解释器》16. Python函数机制的深度解析(第三部分): 闭包的底层实现以及调用"></a><a href="https://www.cnblogs.com/traditional/p/13580694.html" target="_blank" rel="noopener">《深度剖析CPython解释器》16. Python函数机制的深度解析(第三部分): 闭包的底层实现以及调用</a></h1><h2 id="楔子"><a href="#楔子" class="headerlink" title="楔子"></a>楔子</h2><p><strong>上一篇我们看了函数是如何调用的，这一次我们看一下函数中局部变量的访问、以及闭包相关的知识。</strong></p>
+<h2 id="函数中局部变量的访问"><a href="#函数中局部变量的访问" class="headerlink" title="函数中局部变量的访问"></a>函数中局部变量的访问</h2><p><strong>我们说过函数的参数和函数内部定义的变量都属于局部变量，所以它也一样是通过静态的方式进行访问。</strong></p>
+<pre><code>x = 123
+
+
+def foo():
+    global x
+    a = 1
+    b = 2
+
+
+# a和b是局部变量，x是全局变量，因此是2
+print(foo.__code__.co_nlocals)  # 2
+
+
+def bar(a, b):
+    pass
+
+
+print(bar.__code__.co_nlocals)  # 2
+
+
+def bar2(a, b):
+    a = 1
+    b = 2
+    c = 3
+
+
+print(bar2.__code__.co_nlocals)  # 3</code></pre><p><strong>因此我们看到，无论是参数还是内部新创建的变量，本质上都是局部变量。并且我们发现如果函数内部定义的变量如果和函数参数一致，那么参数就没用了，很好理解，因为本质上就相当于重新赋值罢了，此时外面无论给bar2函数的a、b参数传递什么，最终都会变成1和2。所以其实局部变量的实现机制和函数参数的实现机制是一致的。</strong></p>
+<p><strong>按照我们的理解，当访问一个全局变量的时候，会去访问 global 名字空间，而这也确实如此。但是当访问函数内的局部变量的时候，是不是访问其内部的 local 名字空间呢？ 之前我们说过 Python 变量的访问是有规则的，按照<code>本地</code>、<code>闭包</code>、<code>全局</code>、<code>内置</code>的顺序去查找，所以首当其冲当然去 local 名字空间去查找啊。但不幸的是，在调用函数期间，Python 通过 <code>_PyFrame_New_NoTrack</code> 创建 PyFrameObject 对象时，这个至关重要的 local 名字空间并没有被创建。</strong></p>
+<pre><code>//frameobject.c
+PyFrameObject* _Py_HOT_FUNCTION
+_PyFrame_New_NoTrack(PyThreadState *tstate, PyCodeObject *code,
+                     PyObject *globals, PyObject *locals)
+{
+    ...
+    ...    
+        f-&gt;f_locals = NULL;
+        f-&gt;f_trace = NULL;
+    ...
+    ...    
+    }</code></pre><p><strong>在前面对函数调用时的 global 名字空间的解析中，我们看到，当 Python 虚拟机执行 <code>xxx.py</code> 的时候，f_locals 和 f_globals 指向的是同一个 PyDictObject 对象，然而现在在函数里面 f_locals 则变成了NULL，那么的话，那些重要的符号到底存储在什么地方呢？<code>(显然我们知道是符号表co_varnames中, 但你们就装作不知道配合我一下好吧(#^.^#))</code>。别急，我们先来看看使用局部变量的函数。</strong></p>
+<pre><code>def foo(a, b):
+    c = a + b
+    print(c)
+
+
+foo(1, 2)</code></pre><p><strong>看一下它的字节码：</strong></p>
+<pre><code>  1           0 LOAD_CONST               0 (&lt;code object foo at 0x0000013E31511450, file &quot;local&quot;, line 1&gt;)
+              2 LOAD_CONST               1 (&apos;foo&apos;)
+              4 MAKE_FUNCTION            0
+              6 STORE_NAME               0 (foo)
+
+  6           8 LOAD_NAME                0 (foo)
+             10 LOAD_CONST               2 (1)
+             12 LOAD_CONST               3 (2)
+             14 CALL_FUNCTION            2
+             16 POP_TOP
+             18 LOAD_CONST               4 (None)
+             20 RETURN_VALUE
+
+Disassembly of &lt;code object foo at 0x0000013E31511450, file &quot;local&quot;, line 1&gt;:
+  2           0 LOAD_FAST                0 (a)
+              2 LOAD_FAST                1 (b)
+              4 BINARY_ADD
+              6 STORE_FAST               2 (c)
+
+  3           8 LOAD_GLOBAL              0 (print)
+             10 LOAD_FAST                2 (c)
+             12 CALL_FUNCTION            1
+             14 POP_TOP
+             16 LOAD_CONST               0 (None)
+             18 RETURN_VALUE</code></pre><p><strong>我们说 f_localsplus 这段内存虽然是连续的，但它是给四个老铁使用的，分别是：局部变量、cell对象、free对象、运行时栈，而我们看到字节码偏移量为 6 和 10 的两条指令分别是：STORE_FAST 和 LOAD_FAST，所以它和我们之前分析参数的时候是一样的，都是存储在 f_localsplus 中运行时栈前面的那段内存中。</strong></p>
+<p><strong>此时我们对局部变量 c 的藏身之处已经了然于心。但是为什么在函数的实现中没有使用 local 名字空间呢？其实函数内部的局部变量有多少，在编译的时候就已经确定了，个数是不会变的。因此编译时就能确定局部变量使用的内存空间位置，也能确定访问局部变量的字节码指令应该如何访问内存。有了这些信息，Python 就能使用静态的方法来实现局部变量的查找，而不需要借助于动态查找 PyDictObject 对象的技术，尽管 PyDictObject 是被高度优化的，但肯定没有静态的方法快啊，而且 Python 里面函数是对象，也是一等公民，并且函数使用的太普遍了。至于在后面的类的剖析中，由于类的特殊性，无论是类的实例对象、还是类对象本身，都是可以在运行时动态修改属性的，那么我们知道显然 Python 就不会再对类使用静态属性查找的方式了。</strong></p>
+<p><strong>并且我们还可以从 Python 的层面来验证这个结论：</strong></p>
+<pre><code>x = 1
+
+
+def foo():
+    globals()[&quot;x&quot;] = 2
+
+
+foo()
+
+print(x)  # 2</code></pre><p><strong>我们在函数内部访问了 global 名字空间，而 global 空间显然是全局唯一的，在 Python 层面上就是一个 dict 对象，那么我们修改 x，在外部再打印 x 肯定会变。但是，我要说但是了。</strong></p>
+<pre><code>def foo():
+    x = 1
+    locals()[&quot;x&quot;] = 2
+    print(x)
+
+
+foo()
+&quot;&quot;&quot;
+1
+&quot;&quot;&quot;</code></pre><p><strong>我们按照相同的套路，却并没有成功，这是为什么？原因就是我们刚才解释的那样，函数内部的局部变量在编译时就已经确定好了，存储在符号表 co_varnames 中，查询的时候是静态查找的，而不是从 locals() 中查找。locals() 不像 globals()，globals() 虽然和 locals() 都是一个 PyDictObject 对象，但是全局变量的访问是从 globals() 这个字典里面访问的，并且全局唯一，我们调用 globals() 就直接访问到了存放全局变量的字典，一旦做了更改，肯定会影响外面的全局变量。但是locals() 则不会，因为局部变量压根就不是从它这里访问的，尽管它和 globals() 类似，在函数中也唯一，也会随着当前的上下文动态改变。</strong></p>
+<pre><code>def foo(a, b):
+    x = 1
+    print(locals())
+    print(id(locals()))
+    y = 2
+    print(locals())
+    print(id(locals()))
+
+
+foo(1, 2)
+&quot;&quot;&quot;
+{&apos;a&apos;: 1, &apos;b&apos;: 2, &apos;x&apos;: 1}
+2459571657088
+{&apos;a&apos;: 1, &apos;b&apos;: 2, &apos;x&apos;: 1, &apos;y&apos;: 2}
+2459571657088
+&quot;&quot;&quot;
+# 我们看到真的就是类似于全局名字空间一样, 前后地址没有变化, 但是键值对的个数在增加
+# 因为 locals() 底层会执行 PyEval_GetLocals, 实际上拿到就是当前栈帧对象的 f_locals 属性
+
+# 所以这里可以看到一个比较奇特的现象
+def bar(a, b):
+    d = locals()
+    print(d)
+    print(locals())
+    print(d[&quot;d&quot;] is d[&quot;d&quot;][&quot;d&quot;] is d[&quot;d&quot;][&quot;d&quot;][&quot;d&quot;])
+
+
+bar(1, 2)
+&quot;&quot;&quot;
+{&apos;a&apos;: 1, &apos;b&apos;: 2}
+{&apos;a&apos;: 1, &apos;b&apos;: 2, &apos;d&apos;: {...}}
+True
+&quot;&quot;&quot;
+# 可能有人好奇了, d 里面不是没有 &quot;d&quot; 这个 key 吗?
+# 我们执行 d[&quot;d&quot;] 之前再次调用了 locals, 由于此时局部空间多了一个键值对 &quot;d&quot;: locals(), 所以 locals() 对应的字典被更新了
+# 但我们说 locals() 在局部空间又是唯一的, 所以 d1 指向的空间也变了
+
+# 关于字典这个现象, 其实可以类似于 globals 与 __builtins__ 之间的关系
+x = 123
+print(globals()[&quot;__builtins__&quot;].globals()[&quot;__builtins__&quot;].globals()[&quot;x&quot;])  # 123
+# 之所以能够形成这个现象, 原因就在于字典里面的 key、value 存储的都是 PyObject * 泛型指针</code></pre><p><strong>再看一个例子：</strong></p>
+<pre><code>def foo():
+    locals()[&quot;x&quot;] = 1
+    print(x)
+
+
+foo()</code></pre><p><strong>此时会得到什么结果估计不用我说了，因为内部、外部、builtin都没有变量 x。在编译的时候，没有找到类似于 <code>x = 1</code> 这样的字眼。因此尽管在locals()里面，但是我们说局部变量的值不是从它这里获取的，而是 f_localsplus 前面的那段内存里面，然后那段内存并没有，而且符号表中就没有 ‘x’ 这个符号，所以报错。</strong></p>
+<pre><code>x = 123
+
+
+def foo():
+    locals()[&quot;x&quot;] = 1
+    print(x)
+
+
+foo()  # 123</code></pre><p><strong>原因不再废话了，一句话：foo函数里面没有 x 这个变量，所以打印的是全局变量，因此输出123。</strong></p>
+<p><strong>另外关于局部变量的查找，再来看看最后一个栗子，搭配 exec 可以说明一切：</strong></p>
+<pre><code>def foo():
+    print(locals())  # {}
+    exec(&quot;x = 1&quot;)
+    print(locals())  # {&apos;x&apos;: 1}
+    try:
+        print(x)
+    except NameError as e:
+        print(e)  # name &apos;x&apos; is not defined
+
+
+foo()</code></pre><p><strong>尽管 locals() 变了，但是依旧访问不到 x，因为 Python 在将 foo 对应的 block 编译成 PyCodeObject 对象时，并不知道这是创建了一个局部变量，它只知道这是一个函数调用。而 exec(“x = 1”) 相当于创建一个变量 x = 1，但它默认影响的是当前所在的作用域，所以 exec(“x = 1”) 的效果就是改变了局部名字空间，里面多了一个 “x”: 1 键值对。但关键的是，局部变量 x 的访问不是从局部名字空间中查找的，exec 终究还是错付了人。由于函数 foo 对应的 PyCodeObject 对象的符号表中并没有 x 这个符号，所以报错了。</strong></p>
+<pre><code>exec(&quot;x = 1&quot;)
+print(x)  # 1
+# 这么做是可以的, 因为 exec 默认是影响当前作用域, 这里是全局作用域
+# 而全局变量的查找是从字典中获取的, 所以这里是可以获取的
+
+# 如果我们把上面的例子改一下
+def foo():
+    # 此时 exec 影响的就是全局名字空间
+    exec(&quot;x = 123&quot;, globals())
+    # 这里不会报错, 但是此时的 x 不是局部变量, 而是全局变量
+    print(x)
+
+
+foo()
+print(x)
+&quot;&quot;&quot;
+123
+123
+&quot;&quot;&quot;</code></pre><p><strong>但是问题又来了：</strong></p>
+<pre><code>def foo():
+    exec(&quot;x = 1&quot;)
+    print(locals()[&quot;x&quot;])
+
+foo()
+&quot;&quot;&quot;
+1
+&quot;&quot;&quot;
+
+# 上面打印 1, 显然这是没有问题的, 因为 &quot;x&quot;: 1 这个键值对已经在 local 空间中了
+# 但是, 是的我又要说但是了
+def bar():
+    exec(&quot;x = 1&quot;)
+    print(locals()[&quot;x&quot;])
+    x = 123
+
+bar()
+&quot;&quot;&quot;
+Traceback (most recent call last):
+  File .....
+    bar()
+  File .....
+    print(locals()[&quot;x&quot;])
+KeyError: &apos;x&apos;
+&quot;&quot;&quot;</code></pre><p><strong>这就比较尴尬了，为啥会出现这种效果？解决这个问题首先要明确两点：</strong></p>
+<ul>
+<li><code>1. 函数内的局部变量在编译的时候已经确定, 由语法规则所决定的, 并存储在对应的 PyCodeObject 对象的符号表 (co_varnames) 中;</code></li>
+<li><code>2. 函数内的局部变量在其整个作用域范围内都是可见的;</code></li>
+</ul>
+<p><strong>举一个常见的错误：</strong></p>
+<pre><code>x = 1
+
+def foo():
+    print(x)
+
+
+def bar():
+    print(x)
+    x = 2
+
+
+&quot;&quot;&quot;
+调用 foo 没有问题, 但调用 bar 的时候会报出如下错误 
+    UnboundLocalError: local variable &apos;x&apos; referenced before assignment
+原因就在于我们之前说的两个点, 函数内的局部变量在编译的时候已经确定, 所以对于 bar 函数而言, 符号表中是存在 &quot;x&quot; 这个符号的 
+&quot;&quot;&quot;
+print(foo.__code__.co_varnames)  # ()
+print(bar.__code__.co_varnames)  # (&apos;x&apos;,)
+&quot;&quot;&quot;
+而函数内的局部变量在整个作用域内都是可见的, 因此对于bar而言, 在 print(x) 的时候知道符号表中存在 &quot;x&quot; 这个符号
+那么它也就认为局部作用域存在 x 这个局部变量, 因此就不会去找全局变量了, 而是去找局部变量
+但是显然 print(x) 是在 x = 2 之前发生的, 所以此时 print(x) 的时候就报错了
+       UnboundLocalError: 局部变量 &apos;x&apos; 在赋值（x = 2）之前被引用（print(x)）了
+因为 print(x) 的时候, 常量池中还没有对应的值与之绑定, 或者说 x 此时还是 C 中的 NULL(空指针), 并没有指向一块合法的内存
+当 x = 2 之后, x 才会和 2 这个 PyLongObject 对象进行绑定, 只可以我们在绑定之前就使用 x 这个变量了, 显然这是不合法的
+&quot;&quot;&quot;</code></pre><p><strong>那么我们的那个问题就很好解释了：</strong></p>
+<pre><code>def foo():
+    exec(&quot;x = 1&quot;)
+    print(locals())
+
+
+def bar():
+    exec(&quot;x = 1&quot;)
+    print(locals())
+    x = 123
+
+
+foo()
+&quot;&quot;&quot;
+{&apos;x&apos;: 1}
+&quot;&quot;&quot;
+bar()
+&quot;&quot;&quot;
+{}
+&quot;&quot;&quot;
+# 对于 foo 而言, 结果符合我们的预期, 但是对于 bar 而言, 只是多了一个赋值语句, 结果局部空间就变成空字典了
+# 原因在于 &apos;x&apos; 已经在符号表当中了, exec(&quot;x = 1&quot;) 并没有往局部空间中加入这个键值对
+&quot;&quot;&quot;
+有兴趣可以查看解释器源代码: Python\bltinmodule.c 中的 builtin_exec_impl 函数, 看看 exec 底层到底是如何执行的
+因为 exec 里面的字符串实际上是作为一个独立的编译单元去执行的, 里面的可以写很多很多内容
+要是再加上它是如何影响当前作用域的, 那么背后会牵扯非常多的内容, 从头到尾分析下来需要的工作量不敢想象, 因此这里不深入展开了
+&quot;&quot;&quot;
+# 但是访问 locals() 又是在 x = 123 之前发生的, 因此打印的是空字典, locals[&apos;x&apos;] 自然就出现 KeyError 了
+# 如果将 x = 123, 改成 y = 123 的话, 显然 foo 和 bar 里面的打印结果是一样的</code></pre><h2 id="嵌套函数、闭包与decorator"><a href="#嵌套函数、闭包与decorator" class="headerlink" title="嵌套函数、闭包与decorator"></a>嵌套函数、闭包与decorator</h2><p><strong>我们之前一直反复提到了四个字，名字空间。一段代码执行的结果不光取决于代码中的符号，更多取决于代码中符号的语义，而这个运行时的语义正是由名字空间决定的。名字空间是在运行时由Python虚拟机动态维护的，但是有时我们希望将命名空间静态化。换句话说，我们希望有的代码不受命名空间变换带来的影响，始终保持一致的功能该怎么办呢？</strong></p>
+<p><strong>比如下面的例子：</strong></p>
+<pre><code>def index(name, password, nickname):
+    if not (name == &quot;satori&quot; and password == &quot;123&quot;):
+        return &quot;拜拜&quot;
+    else:
+        return f&quot;欢迎:{nickname}&quot;
+
+
+print(index(&quot;satori&quot;, &quot;123&quot;, &quot;夏色祭&quot;))  # 欢迎:夏色祭
+print(index(&quot;satori&quot;, &quot;123&quot;, &quot;白上吹雪&quot;))  # 欢迎:白上吹雪</code></pre><p><strong>我们注意到每次都需要输入username和password，于是我们可以只设置一次基准值，通过使用嵌套函数来实现：</strong></p>
+<pre><code>def wrap(name, password):
+    def index(nickname):
+        if not (name == &quot;satori&quot; and password == &quot;123&quot;):
+            return &quot;拜拜&quot;
+        else:
+            return f&quot;欢迎:{nickname}&quot;
+    return index
+
+
+index = wrap(&quot;satori&quot;, &quot;123&quot;)
+print(index(&quot;夏色祭&quot;))  # 欢迎:夏色祭
+print(index(&quot;白上吹雪&quot;))  # 欢迎:白上吹雪</code></pre><p><strong>尽管我们调用index的时候，local名字空间<code>(对应那片内存)</code>里面没有name和password，但是warp里面有。也就是说，index函数作为wrap函数的返回值被传递的时候，有一个名字空间<code>(wrap的local名字空间)</code>就已经和index紧紧地绑定在一起了，在执行内层函数index的时候，在自己的local空间找不到，就会从和自己绑定的local空间里面去找，这就是一种名字空间静态化的方法。这个名字空间和内层函数捆绑之后的结果我们就称之为闭包<code>(closure)</code></strong></p>
+<blockquote>
+<p><strong>闭包：外部作用域 + 内层函数。</strong></p>
+</blockquote>
+<p><strong>在前面我们也知道了，PyFunctionObject是Python虚拟机专门为字节码指令准备的大包袱，global名字空间，默认参数都能在PyFunctionObject中与字节码指令捆绑在一起，同样的，PyFunctionObject也是Python中闭包的具体体现。</strong></p>
+<h3 id="实现闭包的基石"><a href="#实现闭包的基石" class="headerlink" title="实现闭包的基石"></a>实现闭包的基石</h3><p><strong>闭包的创建通常是利用嵌套的函数来完成的，在PyCodeObject中，与嵌套函数相关的属性是co_cellvars和co_freevars，两者的具体含义如下：</strong></p>
+<ul>
+<li><code>co_cellvars:通常是一个tuple，保存了嵌套的作用域中使用的变量名的集合;</code></li>
+<li><code>co_freevars:通常是一个tuple，保存了使用了的外层作用域中的变量名集合;</code></li>
+</ul>
+<p><strong>光看概念的话比较抽象，实际演示一下：</strong></p>
+<pre><code>def foo():
+    name = &quot;mashiro&quot;
+    age = 16
+    gender = &quot;female&quot;
+
+    def bar():
+        nonlocal name
+        nonlocal age
+        print(gender)
+    return bar
+
+
+print(foo.__code__.co_cellvars)  # (&apos;age&apos;, &apos;gender&apos;, &apos;name&apos;)
+print(foo().__code__.co_freevars)  # (&apos;age&apos;, &apos;gender&apos;, &apos;name&apos;)
+
+print(foo.__code__.co_freevars)  # ()
+print(foo().__code__.co_cellvars)  # ()</code></pre><p><strong>我们发现无论是外层函数还是内层函数都有co_cellvars和co_freevars，但是无论是co_cellvars还是co_freevars，得到结果是一样的，都是内层函数使用nonlocal声明的变量、以及内层函数使用的外层函数的变量。只不过外层函数需要使用co_cellvars获取，内层函数需要使用co_freevars获取。如果使用外层函数获取co_freevars的话，那么得到的结果显然就是个空元组的，除非foo也作为某个函数的内层函数，并且内部有nonlocal声明、或者使用外层函数的某个变量，同理内层也是一样的道理。</strong></p>
+<p><strong>在PyFrameObject对象中，也有一个属性和闭包的实现相关，这个属性就是f_localsplus，这样一说，是不是有些隐隐约约察觉到了呢？其实在<code>_PyFrame_New_NoTrack</code>就有一行代码泄漏了天机。</strong></p>
+<pre><code>//frameobject.c
+PyFrameObject* _Py_HOT_FUNCTION
+_PyFrame_New_NoTrack(PyThreadState *tstate, PyCodeObject *code,
+                     PyObject *globals, PyObject *locals)
+{
+    ...
+    ...    
+    Py_ssize_t extras, ncells, nfrees;
+    ncells = PyTuple_GET_SIZE(code-&gt;co_cellvars);
+    nfrees = PyTuple_GET_SIZE(code-&gt;co_freevars);
+    //玄机在这里，extras正是f_localsplus指向的那片内存的大小，这里已经清晰的说明了
+    //这片内存是属于四个老铁的：运行时栈，局部变量，cell对象(对应co_cellvars)，free对象(对应co_freevars)，但是各自的顺序不是按照这个顺序来的
+    extras = code-&gt;co_stacksize + code-&gt;co_nlocals + ncells + nfrees;
+    ...
+    ...</code></pre><p><strong>虽然之前我们就见过f_localsplus的结构，但是到现在为止，其面纱才算是真正被揭开。</strong></p>
+<h3 id="闭包的实现"><a href="#闭包的实现" class="headerlink" title="闭包的实现"></a>闭包的实现</h3><p><strong>在介绍了实现闭包的基石之后，我们可以开始追踪闭包的具体实现过程了，当然还是要先看一下闭包对应的字节码，老规矩嘛。</strong></p>
+<pre><code>s = f&quot;&quot;&quot;
+def get_func():
+    value = &quot;inner&quot;
+
+    def func():
+        print(value)
+
+    return func
+
+
+show_value = get_func()
+show_value()
+&quot;&quot;&quot;
+
+if __name__ == &apos;__main__&apos;:
+    import dis
+    dis.dis(compile(s, &quot;call_function&quot;, &quot;exec&quot;))</code></pre><p><strong>首先这个py文件执行之后，肯定会打印出”inner”这个字符串，下面让我们来看看它的字节码：</strong></p>
+<pre><code>  2           0 LOAD_CONST               0 (&lt;code object get_func at 0x000001AAB6F4AB30, file &quot;call_function&quot;, line 2&gt;)
+              2 LOAD_CONST               1 (&apos;get_func&apos;)
+              4 MAKE_FUNCTION            0
+              6 STORE_NAME               0 (get_func)
+
+ 11           8 LOAD_NAME                0 (get_func)
+             10 CALL_FUNCTION            0
+             12 STORE_NAME               1 (show_value)
+
+ 12          14 LOAD_NAME                1 (show_value)
+             16 CALL_FUNCTION            0
+             18 POP_TOP
+             20 LOAD_CONST               2 (None)
+             22 RETURN_VALUE
+
+Disassembly of &lt;code object get_func at 0x000001AAB6F4AB30, file &quot;call_function&quot;, line 2&gt;:
+  3           0 LOAD_CONST               1 (&apos;inner&apos;)
+              2 STORE_DEREF              0 (value)
+
+  5           4 LOAD_CLOSURE             0 (value)
+              6 BUILD_TUPLE              1
+              8 LOAD_CONST               2 (&lt;code object func at 0x000001AAB6F51450, file &quot;call_function&quot;, line 5&gt;)
+             10 LOAD_CONST               3 (&apos;get_func.&lt;locals&gt;.func&apos;)
+             12 MAKE_FUNCTION            8 (closure)
+             14 STORE_FAST               0 (func)
+
+  8          16 LOAD_FAST                0 (func)
+             18 RETURN_VALUE
+
+Disassembly of &lt;code object func at 0x000001AAB6F51450, file &quot;call_function&quot;, line 5&gt;:
+  6           0 LOAD_GLOBAL              0 (print)
+              2 LOAD_DEREF               0 (value)
+              4 CALL_FUNCTION            1
+              6 POP_TOP
+              8 LOAD_CONST               0 (None)
+             10 RETURN_VALUE</code></pre><p><strong>相信里面大部分的指令你都认识，我们直接介绍构建闭包对应的指令、以及调用内层函数对应的指令，先来看看前者：</strong></p>
+<ul>
+<li><code>0 LOAD_CONST 1 (&#39;inner&#39;): 把字符串&#39;inner&#39;这个常量load进来;</code></li>
+<li><code>2 STORE_DEREF 0 (value): 这个STORE_DEREF是什么鬼？从功能来看应该类似于STORE_FAST,具体是啥暂时不用管;</code></li>
+<li><code>4 LOAD_CLOSURE 0 (value): 又是一条未见过的指令，不过这个我们从名字上可以看出来是load一个闭包;</code></li>
+<li><code>6 BUILD_TUPLE 1: build一个元组, 为什么? 显然是为了存储内层函数(闭包)的</code></li>
+<li><code>8 LOAD_CONST 2 (&lt;code object func...: LOAD字节码,显然是内层函数func的字节码;</code></li>
+<li><code>10 LOAD_CONST 3 (&#39;get_func.&lt;locals&gt;.func&#39;): 又是一个LOAD_CONST,我们按照之前的分析，这次LOAD的应该是外层的local名字空间;</code></li>
+<li><code>12 MAKE_FUNCTION 8 (closure): MAKE_FUNCTION,构造一个函数, 参数是8; 而且括号里面写着closure, 表示这是个闭包;</code></li>
+<li><code>14 STORE_FAST 0 (func): 调用STORE_FAST，将符号func和之前的PyFunctionObject组合成entry存储起来, 当然我们知道这里不是存在字典里面的;符号func是在符号表中, PyFunctionObject对象是在常量池中, 并且它们在各自数组中的索引是相等的;</code></li>
+<li><code>16 LOAD_FAST 0 (func): 因为我们返回了func,所以LOAD_CONST的参数是func;</code></li>
+<li><code>18 RETURN_VALUE: 返回func;</code></li>
+</ul>
+<p><strong>最后再来看看调用内层函数执行的指令：</strong></p>
+<ul>
+<li><code>0 LOAD_GLOBAL 0 (print): 首先是LOAD_GLOBAL得到print函数，这不需要多说;</code></li>
+<li><code>2 LOAD_DEREF 0 (value): 关键是这条LOAD_DEREF指令，显然和上面的STORE_DEREF是一组，关系应该是类似于LOAD_FAST和STORE_FAST之间的关系那样, 我们猜测;</code></li>
+<li><code>4 CALL_FUNCTION 1: 调用函数, 参数个数为1;</code></li>
+</ul>
+<p><strong>虽然我们看到了几个不认识的指令，不过不用慌，我们下面会顺藤摸瓜，沿着那美丽动人的曲线慢慢地、逐一探索。目前只需要知道，在Python虚拟机执行<code>8 LOAD_CONST 2 (&lt;code object func...</code>指令的时候，就已经开始为closure的实现悄悄地添砖加瓦了。</strong></p>
+<h4 id="创建closure"><a href="#创建closure" class="headerlink" title="创建closure"></a>创建closure</h4><pre><code>def get_func():
+    value = &quot;inner&quot;
+
+    def func():
+        print(value)
+
+    return func
+
+
+show_value = get_func()
+show_value()</code></pre><p><strong>我们前面介绍了，虚拟机在执行CALL_FUNCTION指令时，会进入 <em>\</em>PyFunction_FastCallDict_ 中。</strong></p>
+<pre><code>//frameobject.c
+PyObject *
+_PyFunction_FastCallDict(PyObject *func, PyObject *const *args, Py_ssize_t nargs,
+                         PyObject *kwargs)
+{
+    //......
+    if (co-&gt;co_kwonlyargcount == 0 &amp;&amp;
+        (kwargs == NULL || PyDict_GET_SIZE(kwargs) == 0) &amp;&amp;
+        (co-&gt;co_flags &amp; ~PyCF_MASK) == (CO_OPTIMIZED | CO_NEWLOCALS | CO_NOFREE))
+    //......    
+}        </code></pre><p><strong>而在 <em>\</em>PyFunction_FastCallDict_ 中，由于当前的PyCodeObject为函数get_func对应的PyCodeObject。对于有闭包的函数来说，显然这个条件是不满足的，因此不会进入快速通道，而是会进入 <em>\</em>PyEval_EvalCodeWithName_ 。而且当前的这个PyCodeObject的co_cellvars是有东西的，可能这里有人奇怪了，我们没看到代码里面使用nonlocal声明啊，其实之前说了，除了使用nonlocal声明的变量外，还有内层函数使用的外层作用域中的变量。</strong></p>
+<pre><code>def get_func():
+    value1 = &quot;inner&quot;
+    value2 = &quot;inner&quot;
+
+    def func():
+        value2 = &quot;&quot;
+        print(value1)
+        print(value2)
+
+    return func
+
+
+print(get_func.__code__.co_cellvars)  # (&apos;value1&apos;,)
+print(get_func().__code__.co_freevars)  # (&apos;value1&apos;,)</code></pre><p><strong>我们发现了内层函数自己定义了value2，所以它不再co_cellvars中，但是value1在内层函数中没有，而是使用的外层函数内部的value1变量，所以它也在co_cellvars中。因此除了那些被nonlocal关键字声明的变量之外，还有被内层函数使用的外层函数的变量。</strong></p>
+<p><strong>因此在 <em>\</em>PyEval_EvalCodeWithName_ 中，Python虚拟机会如同处理默认参数一样，将co_cellvars中的东西拷贝到新创建的PyFrameObject的f_localsplus里面。</strong></p>
+<pre><code>PyObject *
+_PyEval_EvalCodeWithName(PyObject *_co, PyObject *globals, PyObject *locals,
+           PyObject *const *args, Py_ssize_t argcount,
+           PyObject *const *kwnames, PyObject *const *kwargs,
+           Py_ssize_t kwcount, int kwstep,
+           PyObject *const *defs, Py_ssize_t defcount,
+           PyObject *kwdefs, PyObject *closure,
+           PyObject *name, PyObject *qualname)
+{
+    //......
+    for (i = 0; i &lt; PyTuple_GET_SIZE(co-&gt;co_cellvars); ++i) {
+        //声明 Cell 对象，这个 Cell 对象是什么后面就知道了
+        PyObject *c;
+        Py_ssize_t arg;
+        /* 处理被嵌套函数共享的外层函数的局部变量 */
+        if (co-&gt;co_cell2arg != NULL &amp;&amp;
+            (arg = co-&gt;co_cell2arg[i]) != CO_CELL_NOT_AN_ARG) {
+            //创建 Cell 对象
+            c = PyCell_New(GETLOCAL(arg));
+            SETLOCAL(arg, NULL);
+        }
+        else {
+            c = PyCell_New(NULL);
+        }
+        if (c == NULL)
+            goto fail;
+        SETLOCAL(co-&gt;co_nlocals + i, c);
+    }
+
+    /* 将 Cell 对象拷贝一份, 因为外层函数和内层函数都可以调用
+       只不过一个是co_cellvars、一个是co_freevars */
+    for (i = 0; i &lt; PyTuple_GET_SIZE(co-&gt;co_freevars); ++i) {
+        PyObject *o = PyTuple_GET_ITEM(closure, i);
+        Py_INCREF(o);
+        freevars[PyTuple_GET_SIZE(co-&gt;co_cellvars) + i] = o;
+    }
+    //......
+    return retval;
+}</code></pre><p><strong>因此在 <em>\</em>PyEval_EvalCodeWithName_ 中，Python虚拟机会如同处理默认参数一样，将co_cellvars中的东西拷贝到新创建的PyFrameObject的f_localsplus里面。</strong></p>
+<p><strong>嵌套函数有时候很复杂，如果嵌套的层数比较多的话：</strong></p>
+<pre><code>def foo1():
+    def foo2():
+        x = 1
+        def foo3():
+            x = 2
+            def foo4():
+                print(x)
+            return foo4
+        return foo3
+    return foo2
+
+
+foo1()()()()
+&quot;&quot;&quot;
+2
+&quot;&quot;&quot;</code></pre><p><strong>但是无论多少层，我们之前说的结论是不会变的。之前我们提到了，Cell 对象在python底层也是一个对象，那它必然也是一个PyObject，我们看一下它的定义：</strong></p>
+<pre><code>//cellobject.h
+typedef struct {
+    PyObject_HEAD
+    PyObject *ob_ref;       /* Content of the cell or NULL when empty */
+} PyCellObject;</code></pre><p><strong>这个对象似乎出乎意料的简单，仅仅维护了一个PyObject_HEAD，和一个ob_ref<code>(指向某个对象的指针)</code></strong></p>
+<pre><code>//cellobject.c
+PyObject *
+PyCell_New(PyObject *obj)
+{    
+    //声明一个PyCellObject对象
+    PyCellObject *op;
+
+    //为这个PyCellObject申请空间，类型是PyCell_Type
+    op = (PyCellObject *)PyObject_GC_New(PyCellObject, &amp;PyCell_Type);
+    if (op == NULL)
+        return NULL;
+    //这里的obj是什么呢？显然是上面_PyEval_EvalCodeWithName里面的GETLOCAL(arg)或者NULL
+    //说白了，就是我们之前说的那些被内层函数引用的外层函数的局部变量，或者NULL，如果没人引用的话就是NULL
+    op-&gt;ob_ref = obj;
+    Py_XINCREF(obj);
+
+    _PyObject_GC_TRACK(op);
+    return (PyObject *)op;
+}</code></pre><p><strong>但是实际上一开始是不知道这个ob_ref指向的是谁的，什么时候才知道呢？是在我们一开始的闭包代码中，那句<code>value = &#39;inner&#39;</code>指令指令的时候，才会真正知道ob_ref指向的是谁。随后这个cell对象被拷贝到了新创建的PyFrameObject对象的f_localsplus中，并且位置是<code>co-&gt;co_nlocals+i</code>，说明在f_localsplus中，cell对象的位置是在局部变量之后的，这完全符合我们之前说的f_localsplus的内存布局。另外图中画错了，指向应该是一个字符串 “inner”，但我不知道为啥画成了整数 10</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200829065426762-1258006550.png" alt=""></p>
+<p><strong>但是我们发现了一个奇怪的地方，那就是我们发现这个cell对象<code>(value)</code>好像没有设置名字诶。实际上这个和我们之前提到的Python虚拟机将对局部变量符号的访问方式从PyDictObject的查找变成了对PyTupleObject的索引是一个道理。在get_func这个函数执行的过程中，对value这个cell对象是通过基于索引访问在f_localsplus中完成，因此完全不需要知道cell对象的名字。这个cell对象的名字实际上是在处理被内层函数引用外层函数的默认参数是产生的。我们说参数和内部的创建的变量都是局部变量，在处理默认参数的时候，就把value这个cell对象一并处理了。</strong></p>
+<p><strong>在处理了cell对象之后，Python虚拟机将正式进入PyEval_EvalFrameEx，从而正式开始对函数get_func的调用过程。再看一下字节码：</strong></p>
+<pre><code>  3           0 LOAD_CONST               1 (&apos;inner&apos;)
+              2 STORE_DEREF              0 (value)
+
+  5           4 LOAD_CLOSURE             0 (value)
+              6 BUILD_TUPLE              1
+              8 LOAD_CONST               2 (&lt;code object func at 0x000001AAB6F51450, file &quot;call_function&quot;, line 5&gt;)
+             10 LOAD_CONST               3 (&apos;get_func.&lt;locals&gt;.func&apos;)
+             12 MAKE_FUNCTION            8 (closure)
+             14 STORE_FAST               0 (func)
+
+  8          16 LOAD_FAST                0 (func)
+             18 RETURN_VALUE
+
+Disassembly of &lt;code object func at 0x000001AAB6F51450, file &quot;call_function&quot;, line 5&gt;:
+  6           0 LOAD_GLOBAL              0 (print)
+              2 LOAD_DEREF               0 (value)
+              4 CALL_FUNCTION            1
+              6 POP_TOP
+              8 LOAD_CONST               0 (None)
+             10 RETURN_VALUE</code></pre><p><strong>我们看到执行<code>0 LOAD_CONST 1 (&#39;inner&#39;)</code>之后，会将PyUnicodeObject对象’inner’压入到运行时栈，紧接着便执行一条我们从未见过的全新的字节码指令–<code>STORE_DEREF</code></strong></p>
+<pre><code>PyObject* _Py_HOT_FUNCTION
+_PyEval_EvalFrameDefault(PyFrameObject *f, int throwflag)
+{
+    freevars = f-&gt;f_localsplus + co-&gt;co_nlocals;
+}
+
+
+        case TARGET(STORE_DEREF): {
+            //这里pop弹出的显然是运行时栈的PyUnicodeObject对象&apos;inner&apos;
+            PyObject *v = POP();
+             //获取cell，也就是闭包; 注意：这里要和之前说的cell对象区分一下，之前的cell对象是变量
+            //这里的cell则是闭包(内层函数+外层函数的局部作用域)
+            PyObject *cell = freevars[oparg];
+            //获取老的cell对象
+            PyObject *oldobj = PyCell_GET(cell);
+            //我们看到了一个PyCell_SET，那么玄机肯定就在这里面了
+            PyCell_SET(cell, v);
+            Py_XDECREF(oldobj);
+            DISPATCH();
+        }</code></pre><p><strong>因此我们发现，ob_ref指向的对象似乎就是通过PyCell_SET设置的，没错，这家伙就是干这个勾当的。</strong></p>
+<pre><code>//cellobject.h
+PyAPI_FUNC(int) PyCell_Set(PyObject *, PyObject *);
+
+//cellobject.c
+int
+PyCell_Set(PyObject *op, PyObject *obj)
+{
+    PyObject* oldobj;
+    if (!PyCell_Check(op)) {
+        PyErr_BadInternalCall();
+        return -1;
+    }
+    oldobj = PyCell_GET(op);
+    Py_XINCREF(obj);
+    PyCell_SET(op, obj);
+    Py_XDECREF(oldobj);
+    return 0;
+}</code></pre><p><strong>如此一来，f_localsplus就发生了变化。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200829065435213-2141751147.png" alt=""></p>
+<pre><code>def get_func():
+    value = &quot;inner&quot;
+
+    def func():
+        print(value)
+
+    return func
+
+
+show_value = get_func()
+show_value()</code></pre><p><strong>现在在get_func的环境中我们知道了value符号对应着一个PyUnicodeObject对象，但是closure是要将这个约束进行冻结，为了在嵌套函数func中被调用的时候还可以使用这个约束。这一次，我们的工具人PyFunctionObject就又登场了，在执行接下来的<code>def func()</code>表达式对应的字节码时，python虚拟机就会将<code>(value, &#39;inner&#39;)</code>这个约束塞到PyFunctionObject中。</strong></p>
+<pre><code>case TARGET(LOAD_CLOSURE): {
+    PyObject *cell = freevars[oparg];
+    Py_INCREF(cell);
+    PUSH(cell);
+    DISPATCH();
+}</code></pre><p><strong><code>4 LOAD_CLOSURE</code>会将刚刚放置好的PyCellObject对象取出，并压入运行时栈，紧接着<code>6 BUILD_TUPLE</code>指令将PyCellObject对象打包进一个PyTupleObject对象，显然这个PyTupleObject对象中可以存放多个PyCellObject对象，只不过我们的例子中只有一个PyCellObject对象。</strong></p>
+<p><strong>随后Python虚拟机通过<code>8 LOAD_CONST</code>和<code>10 LOAD_CONST</code>将内层函数func对应PyCodeObject和符号LOAD进来，压入运行时栈，紧接着以一个<code>12 MAKE_FUNCTION 8</code>指令完成约束和PyCodeObject之间的绑定，注意这里的字节码指令依旧是<code>MAKE_FUNCTION</code>，但是参数是8，我们再次看看<code>MAKE_FUNCTION</code>这个指令，还记得这个指令在哪里吗？没错，之前说了只要是字节码指令，都在<code>ceval.c</code>中</strong></p>
+<pre><code>TARGET(MAKE_FUNCTION) {
+    //弹出名字
+    PyObject *qualname = POP();
+    //弹出PyCodeObject
+    PyObject *codeobj = POP();
+    //根据PyCodeObject对象、global命名空间、名字构造出PyFunctionObject
+    PyFunctionObject *func = (PyFunctionObject *)
+        PyFunction_NewWithQualName(codeobj, f-&gt;f_globals, qualname);
+
+    Py_DECREF(codeobj);
+    Py_DECREF(qualname);
+    if (func == NULL) {
+        goto error;
+    }
+
+    //我们看到参数是8，因此这个条件是成立的
+    if (oparg &amp; 0x08) {
+        assert(PyTuple_CheckExact(TOP()));
+        //弹出闭包需要使用的变量信息，将该信息写入到func_closure中
+        func -&gt;func_closure = POP();
+    }
+
+    //这是处理注解的：只在python3.6+中存在
+    if (oparg &amp; 0x04) {
+        assert(PyDict_CheckExact(TOP()));
+        func-&gt;func_annotations = POP();
+    }
+
+    //处理关键字参数
+    if (oparg &amp; 0x02) {
+        assert(PyDict_CheckExact(TOP()));
+        func-&gt;func_kwdefaults = POP();
+    }
+
+    //处理默认参数
+    if (oparg &amp; 0x01) {
+        assert(PyTuple_CheckExact(TOP()));
+        func-&gt;func_defaults = POP();
+    }
+
+    //压入运行时栈
+    PUSH((PyObject *)func);
+    DISPATCH();
+}</code></pre><p><strong>此时便将约束<code>(内层函数需要使用的作用域信息)</code>和内层函数绑定在了一起。然后执行<code>14 STORE_FAST</code>将新创建的PyFunctionObject对象放置到了f_localsplus当中。这样的话，f_localsplus就又发生了变化。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200829065442949-1280274412.png" alt=""></p>
+<p><strong>从图上我们发现内层函数居然在get_func的局部变量里面，是的没有错。其实按照我们之前说的，函数即变量，所以函数和普通变量一样，都是在上一级栈帧的f_localsplus里面的。最后这个新建的PyFunctionObject对象被压入到了上一级栈帧的运行时栈中，并且被作为上一个栈帧的返回值返回了。显然有人就能猜到下一步要介绍什么了，既然拿到了闭包、或者说内层函数对应的PyFunctionObject，那么肯定要使用啊。而且估计有人猜到了，当外面拿到闭包的时候，调用，显然会找到对应的闭包，然后抽出里面的PyCodeObject对象继续创建栈帧。</strong></p>
+<h4 id="使用闭包"><a href="#使用闭包" class="headerlink" title="使用闭包"></a>使用闭包</h4><p><strong>closure是在get_func函数中被创建的，而对closure的使用，则是在inner_func中。在执行<code>show_value()</code>对应的CALL_FUNCTION指令时，因为func对应的PyCodeObject对象的co_flags域中包含了CO_NESTED，因此在 <em>\</em>PyFunction_FastCallDict_ 函数中不会进入快速通道<code>function_code_fastcall</code>，而是会进入 <em>\</em>PyEval_EvalCodeWithName_ 、<em>PyEval_EvalFrameEx</em> 、继而进入 <em>\</em>PyEval_EvalFrameDefault_ 。不过问题是，Python是怎么知道co_flags域中包含了CO_NESTED呢？</strong></p>
+<pre><code>def get_func():
+    value = &quot;inner&quot;
+
+    def func():
+        print(value)
+
+    return func
+
+
+show_value = get_func()
+print(show_value.__code__.co_flags)  # 19</code></pre><p><strong>我们看到func函数的字节码的co_flags是19，那么这个值是什么计算出来的呢？还是记得我们在介绍PyCodeObject对象和pyc文件那一章中，当时我们说，co_flags这个域主要用于mask，用来判断参数类型的。</strong></p>
+<pre><code>//code.h
+#define CO_OPTIMIZED    0x0001
+#define CO_NEWLOCALS    0x0002
+#define CO_VARARGS      0x0004
+#define CO_VARKEYWORDS  0x0008
+#define CO_NESTED       0x0010
+#define CO_GENERATOR    0x0020
+#define CO_NOFREE       0x0040
+#define CO_COROUTINE            0x0080
+#define CO_ITERABLE_COROUTINE   0x0100
+#define CO_ASYNC_GENERATOR      0x0200</code></pre><p><strong>函数没有参数，显然CO_VARARGS和CO_VARKEYWORDS是不存在的：</strong></p>
+<pre><code>print(0x0001 | 0x0002 | 0x0010)  # 19
+# 因此闭包是包含CO_NESTED这个域的</code></pre><p><strong>根据之前说了，对于闭包来说，func对应的PyCodeObject中的co_freevars里面有引用了外层作用域中的符号名，在 <em>\</em>PyEval_EvalCodeWithName_ 中就会对这个co_freevars进行处理。</strong></p>
+<pre><code>//ceval.c
+PyObject *
+_PyEval_EvalCodeWithName(PyObject *_co, PyObject *globals, PyObject *locals,
+           PyObject *const *args, Py_ssize_t argcount,
+           PyObject *const *kwnames, PyObject *const *kwargs,
+           Py_ssize_t kwcount, int kwstep,
+           PyObject *const *defs, Py_ssize_t defcount,
+           PyObject *kwdefs, PyObject *closure,
+           PyObject *name, PyObject *qualname)
+{
+    Py_ssize_t i, n;
+    /* Copy closure variables to free variables */
+    for (i = 0; i &lt; PyTuple_GET_SIZE(co-&gt;co_freevars); ++i) {
+        PyObject *o = PyTuple_GET_ITEM(closure, i);
+        Py_INCREF(o);
+        freevars[PyTuple_GET_SIZE(co-&gt;co_cellvars) + i] = o;
+    }
+    ...
+    ...
+    ...    
+}</code></pre><p><strong>其中的closure变量是作为倒数第三个参数传递进来的，我们可以看看到底传递了什么？</strong></p>
+<pre><code>//funcobject.h
+#define PyFunction_GET_CLOSURE(func) \
+        (((PyFunctionObject *)func) -&gt; func_closure)
+
+
+PyObject *
+_PyFunction_FastCallDict(PyObject *func, PyObject *const *args, Py_ssize_t nargs,
+                         PyObject *kwargs)
+{
+    //......
+    result = _PyEval_EvalCodeWithName((PyObject*)co, globals, (PyObject *)NULL,
+                                      args, nargs,
+                                      k, k != NULL ? k + 1 : NULL, nk, 2,
+                                      d, nd, kwdefs,
+                                      closure, name, qualname);
+    Py_XDECREF(kwtuple);
+    return result;
+}</code></pre><p><strong>我们看到了，是把PyFunctionObject对象的func_closure拿出来了，这个func_closure是啥还记得吗？之前说得，不记得了再看一下。</strong></p>
+<pre><code>TARGET(MAKE_FUNCTION) {
+    ...
+    if (oparg &amp; 0x08) {
+        assert(PyTuple_CheckExact(TOP()));
+        //弹出闭包需要使用的变量信息，将该信息写入到func_closure中
+        func -&gt;func_closure = POP();
+    }
+    ...
+
+}</code></pre><p><strong>显然这个func_closure就是PyFunctionObject对象中的、我们之前说得那个与对应PyCodeObject绑定的、装满了PyCellObject对象的PyTupleObject。所以在 <em>\</em>PyEval_EvalCodeWithName_ 中，进行的动作就是将这个PyTupleObject里面的PyCellObject对象一个一个的放到f_localsplus中相应的位置。在处理完之后，func对应的PyFrameObject中f_localsplus就变成了这样。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200829065450935-1586497820.png" alt=""></p>
+<p><strong>我们看到闭包使用的变量信息，被设置在了func_closure中，而这个函数是内层函数，那么我们可以通过__closure__进行获取。</strong></p>
+<pre><code>def get_func():
+    value = &quot;inner&quot;
+
+    def func():
+        print(value)
+
+    return func
+
+
+show_value = get_func()
+# cell是针对外层函数的
+# free是针对内层函数的
+# 我们看到在设置func_closure的时候是对内层函数进行设置的, 所以
+print(get_func.__closure__)  # None
+print(show_value.__closure__)  # (&lt;cell at 0x000001E07D8382B0: str object at 0x000001E07D82D3F0&gt;,)
+
+# 我们看到外层函数的__closure__为None, 内层函数的__closure__则不是None
+# 因此相当于将所有的cell对象(指针)拷贝了一份, 存在了free区域, 那么如何获取cell对象的值呢
+print(show_value.__closure__[0].cell_contents)  # inner</code></pre><p><strong>所以在func调用的过程中，当引用外层作用域的符号时，一定是到f_localsplus里面的free变量区域去获取对应PyCellObject，通过内部的ob_ref进而获取符号对应的值。这正是func函数中’print(value)’表达式对应的第一条字节码指令<code>0 LOAD_DEREF 0</code>的意义。</strong></p>
+<pre><code>case TARGET(LOAD_DEREF): {
+    PyObject *cell = freevars[oparg];  //获取PyCellObject对象   
+    PyObject *value = PyCell_GET(cell);//获取PyCellObject对象的ob_ref指向的对象 
+    if (value == NULL) {
+        format_exc_unbound(tstate, co, oparg);
+        goto error;
+    }
+    Py_INCREF(value);
+    PUSH(value);//压入运行时栈
+    DISPATCH();
+}</code></pre><p><strong>所以在func调用的过程中，当引用外层作用域的符号时，一定是到f_localsplus里面的free变量区域去获取对应PyCellObject，通过内部的ob_ref进而获取符号对应的值。这正是func函数中’print(value)’表达式对应的第一条字节码指令<code>0 LOAD_DEREF 0</code>的意义。</strong></p>
+<p><strong>此外通过闭包，我们还可以玩出一些新花样，但是工作中不要这么做。</strong></p>
+<pre><code>def get_func():
+    value = &quot;inner&quot;
+
+    def func():
+        print(value)
+
+    return func
+
+
+show_value = get_func()
+show_value()  # inner
+
+show_value.__closure__[0].cell_contents = &quot;内层函数&quot;
+show_value()  # 内层函数</code></pre><h3 id="装饰器"><a href="#装饰器" class="headerlink" title="装饰器"></a>装饰器</h3><p><strong>装饰器算是Python中一个亮点，当然其实也不算什么亮点，本质上也是使用了闭包的思想，只不过给我们提供了一个优雅的语法糖。</strong></p>
+<blockquote>
+<p><strong>装饰器的本质就是高阶函数加上闭包，至于为什么要有装饰器，我觉得有句话说的非常好，装饰器存在的最大意义就是可以在不改动原函数的代码和调用方式的情况下，为函数增加一些新的功能。</strong></p>
+</blockquote>
+<pre><code>def deco(func):
+    print(&quot;都闪开，我要开始装饰了&quot;)
+    def inner(*args, **kwargs):
+        print(&quot;开始了&quot;)
+        ret = func(*args, **kwargs)
+        print(&quot;结束&quot;)
+        return ret
+    return inner
+
+
+@ deco    # 这一步就等价于foo = deco(foo)
+def foo(a, b):
+    print(a, b)
+# 因此上来就会打印deco里面的print
+print(&quot;---------&quot;)
+
+# 此时再调用foo，已经不再是原来的foo了，而是deco里面的闭包inner
+foo(1, 2)
+
+# 整体输出如下:
+&quot;&quot;&quot;
+都闪开，我要开始装饰了
+---------
+开始了
+1 2
+结束
+&quot;&quot;&quot;
+# 根据输出的---------，我们知道deco里面的print是在装饰的时候就已经打印了</code></pre><p><strong>我们可以使用之前的方式：</strong></p>
+<pre><code>def deco(func):
+    print(&quot;都闪开，我要开始装饰了&quot;)
+    def inner(*args, **kwargs):
+        print(&quot;开始了&quot;)
+        ret = func(*args, **kwargs)
+        print(&quot;结束&quot;)
+        return ret
+    return inner
+
+
+def foo(a, b):
+    print(a, b)
+
+
+# 其实@ deco的方式就是一个语法糖，它本质上就是
+foo = deco(foo)
+print(&quot;-------&quot;)
+foo(1, 2)
+&quot;&quot;&quot;
+都闪开，我要开始装饰了
+-------
+开始了
+1 2
+结束
+&quot;&quot;&quot;</code></pre><p><strong>所以这个现象告诉我们，装饰器只是类似于<code>foo = deco(foo)</code>的一个语法糖罢了</strong></p>
+<p><strong>装饰器本质上就是使用了闭包，两者的字节码很类似，这里就不再看了。还是那句话，<code>@</code>只是个语法糖，它和我们直接调用<code>foo = deco(foo)</code>是一样的，所以理解装饰器(decorator)的关键就在于理解闭包(closure)。</strong></p>
+<blockquote>
+<p><strong>当然函数在被装饰器装饰之后，整个函数其实就已经变了，为了保留原始信息我们一般会从functools中导入一个wraps函数。当然装饰器的使用方式、以及类装饰器，这些都属于Python层级的东西了，我们就不说了。</strong></p>
+</blockquote>
+<p><strong>当然，我们知道函数可以同时被多个装饰器装饰的。如果有多个装饰器，那么它们是怎么装饰的呢？</strong></p>
+<pre><code>def deco1(func):
+    def inner():
+        return f&quot;&lt;deco1&gt;{func()}&lt;/deco1&gt;&quot;
+    return inner
+
+
+def deco2(func):
+    def inner():
+        return f&quot;&lt;deco2&gt;{func()}&lt;/deco2&gt;&quot;
+    return inner
+
+
+def deco3(func):
+    def inner():
+        return f&quot;&lt;deco3&gt;{func()}&lt;/deco3&gt;&quot;
+    return inner
+
+
+@ deco1
+@ deco2
+@ deco3
+def foo():
+    return &quot;hanser&quot;
+
+
+print(foo())</code></pre><p><strong>请问它的输出结果是什么呢？</strong></p>
+<blockquote>
+<p><strong>可以先分析，解释器还是从上到下解释，但是发现了<code>@ deco1</code>的时候，肯定要装饰了，但是发现在它下面的哥们不是函数也是一个装饰器，于是说：要不哥们，你先装饰。然后<code>@ deco2</code>发现它下面还是一个装饰器，于是重复了刚才的话，但是当<code>@ deco3</code>的时候，发现下面终于是一个普通的函数了。于是装饰了，当deco3装饰完毕之后，<code>foo = deco3(foo)</code>，然后deco2发现deco3已经装饰完毕了，然后对deco3装饰的结果再进行装饰，此时<code>foo = deco2(deco3(foo))</code>，同理再经过deco1的装饰，得到了<code>foo = deco1(deco2(deco3(foo)))</code></strong></p>
+</blockquote>
+<pre><code>print(foo())  # &lt;deco1&gt;&lt;deco2&gt;&lt;deco3&gt;hanser&lt;/deco3&gt;&lt;/deco2&gt;&lt;/deco1&gt;</code></pre><h2 id="关于函数的面试题"><a href="#关于函数的面试题" class="headerlink" title="关于函数的面试题"></a>关于函数的面试题</h2><p><strong>1. Python 中有几个名字空间，分别是什么？Python 变量以什么顺序进行查找？</strong></p>
+<p><strong>Python总共有4个名字空间：</strong></p>
+<ul>
+<li><code>局部名字空间(local)</code></li>
+<li><code>闭包名字空间(closure)</code></li>
+<li><code>全局名字空间(global)</code></li>
+<li><code>内建名字空间(builtin)</code></li>
+</ul>
+<p><strong>我们之前说过，<em>Python</em> 查找变量时，依次检查 局部 、闭包、全局、内建 这几个名字空间，直到变量被找到为止。如果几个空间都遍历完了还没找到，那么会抛出NameError。</strong></p>
+<p><strong>2. 如何在一个函数内部修改全局变量？</strong></p>
+<p><strong>在函数内部用 <em>global</em> 关键字将变量声明为全局，然后再进行修改：</strong></p>
+<pre><code>a = 1
+
+def f():
+    global a
+    a = 2
+
+print(a)  # 1
+f()
+print(a)  # 2</code></pre><p><strong>或者获取global名字空间，然后通过字典进行修改，因为全局变量是通过字典来存储的。</strong></p>
+<pre><code>a = 1
+
+def f():
+    globals()[&quot;a&quot;] = 2
+
+print(a)  # 1
+f()
+print(a)  # 2</code></pre><p><strong>3. 不使用 def 关键字的话，还有什么办法可以创建函数对象？</strong></p>
+<p><strong>根据 <em>Python</em> 对象模型，实例对象可以通过调用类型对象来创建。而函数类型对象，虽然没有直接暴露给我们，但我们可以通过函数对象找到：</strong></p>
+<pre><code>def f():
+    pass
+
+
+print(f.__class__)  # &lt;class &apos;function&apos;&gt;
+print((lambda: None).__class__)  # &lt;class &apos;function&apos;&gt;</code></pre><p><strong>事实上，<em>Python</em> 将函数类型对象暴露在 <em>types</em> 模块中，可通过模块属性 <em>FunctionType</em> 访问到：</strong></p>
+<pre><code>from types import FunctionType
+
+def f():
+    pass
+
+
+print(FunctionType)  # &lt;class &apos;function&apos;&gt;
+print(f.__class__ is FunctionType)  # True</code></pre><p><strong>然而它干的事情和我们本质上是一样的，我们看一下源码怎么实现的：</strong></p>
+<pre><code>def _f(): pass
+FunctionType = type(_f)</code></pre><p><strong>吱吱吱<del>~</del></strong></p>
+<p><strong>而创建函数的时候，可以根据PyCodeObject对象创建，我们之前已经见过了。当时我们传递了3个参数：PyCodeObject、名字空间、函数名。其实可以传递五个参数：</strong></p>
+<ul>
+<li><p><code>PyCodeObject对象</code></p>
+</li>
+<li><p><code>globals</code></p>
+</li>
+<li><p><code>name</code></p>
+</li>
+<li><p><code>argdef: 默认参数的值</code></p>
+</li>
+<li><p><code>closure: 闭包变量</code></p>
+<p>def f(v):</p>
+<pre><code>global value
+value = v </code></pre></li>
+</ul>
+<pre><code>g = {}
+# 对于new_f而言, g就是它的全局名字空间, 所以设置的全局变量value会体现在g中
+new_f = type(f)(f.__code__, g, &quot;new_f&quot;)
+
+new_f(10)
+print(g)  # {&apos;value&apos;: 10}
+
+new_f(&quot;夏色祭&quot;)
+print(g)  # {&apos;value&apos;: &apos;夏色祭&apos;}</code></pre><p><strong>是不是奇怪的知识又增加了呢？但还是那句话，这种做法没有什么实际用途，只是让我们能够更好地理解函数的机制。</strong></p>
+<p><strong>4. 请介绍装饰器的运行原理，并说说你对 @ xxxx 这种写法的理解？</strong></p>
+<p><strong>装饰器用于包装函数对象，在不修改函数源码和调用方式的前提下、达到修改函数行为的目的。它的本质是高阶函数加上闭包，而@ xxxx只是一个语法糖。</strong></p>
+<pre><code>class Deco:
+
+    def __init__(self, func):
+        self.func = func
+
+    def __call__(self, *args, **kwargs):
+        print(&quot;++++++&quot;)
+        res = self.func(*args, **kwargs)
+        print(&quot;******&quot;)
+        return res
+
+
+@ Deco
+def foo(a, b):
+    print(a + b)
+
+
+print(foo(1, 2))
+&quot;&quot;&quot;
+++++++
+3
+******
+None
+&quot;&quot;&quot;</code></pre><p><strong>还是那句话，装饰器本质是高阶函数加上闭包，而很多语言都有闭包，也可以多层函数嵌套。但是对于Python而言，装饰器显得格外的优雅。</strong></p>
+<blockquote>
+<p><strong>flask框架就用到了大量的装饰器，比如：@ app.route(“/“)，不得不说，flask的作者真的是非常喜欢使用装饰器，还有它们团队开发的、用于处理命令行参数的click模块，也是大量使用了装饰器。</strong></p>
+</blockquote>
+<p><strong>5. Python 中的闭包变量(外层作用域的变量)可以被内部函数修改吗？</strong></p>
+<p><strong>显然是可以的，有两种方式：一种是通过nonlocal关键字，另一种是通过获取闭包变量的方式。</strong></p>
+<pre><code>def f1():
+    value = 0
+    def f2():
+        return value
+    return f2
+
+
+f = f1()
+print(f())  # 0
+f.__closure__[0].cell_contents = &quot;&gt;&gt;&gt;&quot;
+print(f())  # &gt;&gt;&gt;</code></pre><p><strong>6. 请描述执行以下程序将输出什么内容？并试着解释其中的原因。</strong></p>
+<pre><code>def add(n, l=[]):
+    l.append(n)
+    return l
+
+print(add(1))  # [1]
+print(add(2))  # [1, 2]
+print(add(3))  # [1, 2, 3]</code></pre><p><strong>出现这种问题的原因就在于，<em>Python</em> 函数在创建时便完成了默认参数的初始化，并保存在函数对象的 <em>\</em>_defaults___ 字段中，并且是不变的，永远是那一个对象：</strong></p>
+<pre><code>def add(n, l=[]):
+    l.append(n)
+    return l
+
+print(add.__defaults__[0])  # []
+
+print(add(1))  # [1]
+print(add.__defaults__[0])  # [1]
+
+print(add(2))  # [1, 2]
+print(add.__defaults__[0])  # [1, 2]
+
+print(add(3))  # [1, 2, 3]
+print(add.__defaults__[0])  # [1, 2, 3]</code></pre><p><img src="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200829065459727-1555535085.png" alt=""></p>
+<p><strong>显然在函数执行的时候，如果我们没有传递参数，那么会从栈帧的f_localsplus中获取对应的默认值，当然这个默认值也在函数的__defaults__中。这个f_localsplus由局部变量、cell对象、free对象、运行时栈组成，运行时栈位于栈顶，<em>Python</em> 虚拟机负责从函数对象中取出默认参数并设置相关局部变量：</strong></p>
+<p><strong>由于列表是可变对象，因此采用append的方式，那么显然每一次都会有变化的，因为操作的是同一个列表。</strong></p>
+<p><strong>所以在设置默认参数的时候，不要设置成可变对象。如果你的IDE比较智能的话，比如pycharm，那么会给你抛出警告的。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200829065507599-355200755.png" alt=""></p>
+<p><strong>我们看到飘黄了，因为默认参数的值是一个可变对象。</strong></p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p><strong>到目前为止，我们关于函数的内容就算分析完了，可以好好体会一下函数的底层实现。我们下一篇将来分析Python中类的实现，又是一块难啃的骨头。</strong></p>
+<p>posted @  2020-08-29 06:56  <a href="https://www.cnblogs.com/traditional/" target="_blank" rel="noopener">古明地盆</a>  阅读(283)  评论(1)  <a href="https://i.cnblogs.com/EditPosts.aspx?postid=13580694" target="_blank" rel="noopener">编辑</a>  <a href="https://www.cnblogs.com/traditional/p/13580694.html" target="_blank" rel="noopener">收藏</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-1011/" rel="prev" title="《深度剖析CPython解释器》15. Python函数机制的深度解析(第二部分): 函数在底层是如何被调用的 - 古明地盆 - 博客园">
+      <i class="fa fa-chevron-left"></i> 《深度剖析CPython解释器》15. Python函数机制的深度解析(第二部分): 函数在底层是如何被调用的 - 古明地盆 - 博客园
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-1014/" rel="next" title="《深度剖析CPython解释器》18. Python类机制的深度解析(第二部分): 类的多继承与属性查找 - 古明地盆 - 博客园">
+      《深度剖析CPython解释器》18. Python类机制的深度解析(第二部分): 类的多继承与属性查找 - 古明地盆 - 博客园 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#《深度剖析CPython解释器》16-Python函数机制的深度解析-第三部分-闭包的底层实现以及调用-古明地盆-博客园"><span class="nav-number"></span> <span class="nav-text">《深度剖析CPython解释器》16. Python函数机制的深度解析(第三部分): 闭包的底层实现以及调用 - 古明地盆 - 博客园</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#《深度剖析CPython解释器》16-Python函数机制的深度解析-第三部分-闭包的底层实现以及调用"><span class="nav-number"></span> <span class="nav-text">《深度剖析CPython解释器》16. Python函数机制的深度解析(第三部分): 闭包的底层实现以及调用</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#楔子"><span class="nav-number"></span> <span class="nav-text">楔子</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#函数中局部变量的访问"><span class="nav-number"></span> <span class="nav-text">函数中局部变量的访问</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#嵌套函数、闭包与decorator"><span class="nav-number"></span> <span class="nav-text">嵌套函数、闭包与decorator</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#实现闭包的基石"><span class="nav-number">1.</span> <span class="nav-text">实现闭包的基石</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#闭包的实现"><span class="nav-number">2.</span> <span class="nav-text">闭包的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#创建closure"><span class="nav-number">2.1.</span> <span class="nav-text">创建closure</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#使用闭包"><span class="nav-number">2.2.</span> <span class="nav-text">使用闭包</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#装饰器"><span class="nav-number">3.</span> <span class="nav-text">装饰器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#关于函数的面试题"><span class="nav-number"></span> <span class="nav-text">关于函数的面试题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#小结"><span class="nav-number"></span> <span class="nav-text">小结</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

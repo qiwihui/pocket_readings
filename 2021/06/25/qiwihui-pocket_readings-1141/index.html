@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="JSON Web Tokens (JWT) are Dangerous for User Sessions—Here’s a Solution | Redis Labs">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JSON Web Tokens (JWT) are Dangerous for User Sessions—Here’s a Solution | Redis Labs">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/06/25/qiwihui-pocket_readings-1141/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="JSON Web Tokens (JWT) are Dangerous for User Sessions—Here’s a Solution | Redis Labs">
+<meta property="og:image" content="https://redislabs.com/wp-content/uploads/2021/06/Quote-1-1024x181.png">
+<meta property="og:image" content="https://redislabs.com/wp-content/uploads/2021/06/Quote-3-1024x126.png">
+<meta property="og:image" content="https://redislabs.com/wp-content/uploads/2021/06/Quote-4-1024x94.png">
+<meta property="og:image" content="https://redislabs.com/wp-content/uploads/2021/06/Quote-2-1024x206.png">
+<meta property="og:image" content="https://redislabs.com/wp-content/uploads/2021/06/Grey-2-1024x687.png">
+<meta property="og:image" content="https://redislabs.com/wp-content/uploads/2021/06/Encoded-1024x560.png">
+<meta property="og:image" content="https://redislabs.com/wp-content/uploads/2021/06/Grey-1-1024x724.png">
+<meta property="og:image" content="https://redislabs.com/wp-content/uploads/2021/06/Session-JWT-1024x771.png">
+<meta property="og:image" content="https://redislabs.com/wp-content/uploads/2021/06/Db-JWT-1024x771.png">
+<meta property="article:published_time" content="2021-06-25T01:21:32.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.414Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://redislabs.com/wp-content/uploads/2021/06/Quote-1-1024x181.png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/06/25/qiwihui-pocket_readings-1141/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>JSON Web Tokens (JWT) are Dangerous for User Sessions—Here’s a Solution | Redis Labs | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/06/25/qiwihui-pocket_readings-1141/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          JSON Web Tokens (JWT) are Dangerous for User Sessions—Here’s a Solution | Redis Labs
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-06-25 01:21:32" itemprop="dateCreated datePublished" datetime="2021-06-25T01:21:32+00:00">2021-06-25</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">JSON Web Tokens (JWT) are Dangerous for User Sessions—Here’s a Solution | Redis Labs</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Sometimes, people take technologies that are intended to solve a narrow problem and start applying them broadly. The problem may appear similar, but utilizing unique technologies to solve general issues could create unanticipated consequences.<br><br><br><br>Tags: security<br><br><br><br>via Pocket <a href="https://ift.tt/3zXl1kY" target="_blank" rel="noopener">https://ift.tt/3zXl1kY</a> original site<br><br><br><br>June 25, 2021 at 09:07AM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1141#issuecomment-868118960" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>6/25/2021</strong></p>
+</blockquote>
+<h2 id="JSON-Web-Tokens-JWT-are-Dangerous-for-User-Sessions—Here’s-a-Solution-Redis-Labs-by-redislabs"><a href="#JSON-Web-Tokens-JWT-are-Dangerous-for-User-Sessions—Here’s-a-Solution-Redis-Labs-by-redislabs" class="headerlink" title="JSON Web Tokens (JWT) are Dangerous for User Sessions—Here’s a Solution | Redis Labs by @redislabs"></a>JSON Web Tokens (JWT) are Dangerous for User Sessions—Here’s a Solution | Redis Labs by @redislabs</h2><p>Sometimes, people take technologies that are intended to solve a narrow problem and start applying them broadly. The problem may appear similar, but utilizing unique technologies to solve general issues could create unanticipated consequences. To use a metaphor, if you are a hammer, everything looks like a nail. JWT is one such technology.</p>
+<p><img src="https://redislabs.com/wp-content/uploads/2021/06/Quote-1-1024x181.png" alt="">Source: “Stop using JWT for sessions” (see reference below for links).<img src="https://redislabs.com/wp-content/uploads/2021/06/Quote-3-1024x126.png" alt="sessions">Source: “Why JWTs Are Bad for Authentication”—<a href="https://www.linkedin.com/in/rdegges/" target="_blank" rel="noopener">Randall Degges</a>, Head of Developer Advocacy, Okta.<img src="https://redislabs.com/wp-content/uploads/2021/06/Quote-4-1024x94.png" alt="not default">Source: “JWT should not be default for your sessions” (see reference below for links).<br><img src="https://redislabs.com/wp-content/uploads/2021/06/Quote-2-1024x206.png" alt="Ptacek"></p>
+<p>There are many in-depth articles and videos from SMEs of companies like Okta talking about the potential dangers and inefficiencies of using JWT tokens[1]. Yet, these warnings are overshadowed by marketers, YouTubers, bloggers, course creators, and others who knowingly or unknowingly promote it. </p>
+<p>If you look at many of these videos and articles, they all just talk about the perceived benefits of JWT and ignore the deficiency. More specifically, they just show how to use it but don’t talk about revocations and additional complexities that JWT adds in a real production environment. They also never compare it with the existing battle-tested approaches deep enough to really weigh the pros and cons. </p>
+<p>Or maybe it’s the perfect, buzzworthy, and friendly name that’s leading to its popularity. “JSON” (generally well-liked), “Web”(for web), and “Token”(implies stateless) make people think that it’s perfect for their web authentication job.</p>
+<p>So I think this is a case where the marketing has beaten engineers and security experts. But, it’s not all bad because there are regular long and passionate debates about JWT on Hacker News (see <a href="https://news.ycombinator.com/item?id=21783303" target="_blank" rel="noopener">here</a>, <a href="https://news.ycombinator.com/item?id=27136539" target="_blank" rel="noopener">her</a><a href="https://news.ycombinator.com/item?id=27136539" target="_blank" rel="noopener">e</a> and, <a href="https://news.ycombinator.com/item?id=24352360" target="_blank" rel="noopener">here</a>), so there is hope. </p>
+<p>If you think about it, these constant debates themselves should be a red flag because you should never see such debates, especially in the security realm. Security should be binary. Either technology is secure or it’s not.</p>
+<p>In any case, in this blog post, I’d like to focus on the potential dangers of using JWT and also talk about a battle-tested solution that’s been around for a decade. </p>
+<p>For further understanding, when I talk about JWT, I mean “stateless JWT,” which is the primary reason for the popularity of JWTs and the biggest reason to use a JWT in the first place. Also, I’ve listed all the other articles in the resources section down below that go into the nitty-gritty of JWT.</p>
+<p>Before we understand why it’s dangerous, let’s first understand how it works by taking an example use case.</p>
+<h3 id="The-use-case"><a href="#The-use-case" class="headerlink" title="The use case"></a>The use case</h3><p>Imagine you are using Twitter. You log in, write a tweet, like a tweet, then retweet someone else’s tweet. So you did four actions. For each action, you need to be authenticated and authorized before you can perform that specific action. </p>
+<p>Below is what happens in the traditional approach.</p>
+<h2 id="The-traditional-approach"><a href="#The-traditional-approach" class="headerlink" title="The traditional approach"></a>The traditional approach</h2><ol>
+<li>You log in with your username and password: <ol>
+<li>The server first authenticates the user.</li>
+<li>The server then creates a session token, stores that token along with the user’s info in some database. (Note: A session token is a long unidentifiable string—aka opaque string—that looks like this: fsaf12312dfsdf364351312srw12312312dasd1et3423r)</li>
+</ol>
+</li>
+<li>The server then sends you a session token to the front-end mobile or web application. <ol>
+<li>This token is then stored in the cookie or in the local storage of the app.</li>
+</ol>
+</li>
+<li>Next, say you wrote and submitted a tweet. Then along with your tweet, your app will also send the session token (through a cookie or a header) so that the server can identify who you are. But the token is just a random string, so how can the server know who you are just from the session token? </li>
+<li>When the server receives the session token, it won’t know who the user is, so it sends that to the database to retrieve (4a) the actual user’s info (like userId) from that token. </li>
+<li>If the user exists and is allowed to do that action (i.e send a tweet), the server allows them to do the action.</li>
+<li>And finally, it tells the front end that the tweet was sent.</li>
+</ol>
+<p><img src="https://redislabs.com/wp-content/uploads/2021/06/Grey-2-1024x687.png" alt="Grey 2"></p>
+<h2 id="The-main-problem-with-the-traditional-approach"><a href="#The-main-problem-with-the-traditional-approach" class="headerlink" title="The main problem with the traditional approach"></a>The main problem with the traditional approach</h2><p>The problem is that step four is slow and needs to be repeated for every single action the user does. So every single API call leads to at least two slow DB calls which can slow down the overall response time. </p>
+<h3 id="There-are-two-ways-to-solve-this-problem"><a href="#There-are-two-ways-to-solve-this-problem" class="headerlink" title="There are two ways to solve this problem"></a>There are two ways to solve this problem</h3><ol>
+<li>Somehow eliminate database lookup for users completely (i.e. eliminate step four). </li>
+<li>Make the extra database lookup much faster so that the additional hop won’t matter. </li>
+</ol>
+<h3 id="Option-1-Eliminate-database-lookup-step-4"><a href="#Option-1-Eliminate-database-lookup-step-4" class="headerlink" title="Option 1: Eliminate database lookup (step 4)"></a>Option 1: Eliminate database lookup (step 4)</h3><p>There are different ways of achieving this. </p>
+<ol>
+<li>You can store the state in the server’s memory. But this causes issues when you scale since this state is only available on a specific server. </li>
+<li>Use “sticky sessions”. Here you tell the load balancer to always direct the traffic to a specific server even after you scale up. Again this causes different scaling issues and if the server goes down (scale down), you’ll lose all the state.</li>
+<li>The third alternative is, JWT. We’ll look into this next.</li>
+</ol>
+<p>Now let’s look at the JWT way.</p>
+<h2 id="The-JWT-way"><a href="#The-JWT-way" class="headerlink" title="The JWT way"></a>The JWT way</h2><p>JWT, especially when used as a session, attempts to solve the problem by completely eliminating the database lookup. </p>
+<p>The main idea is to store the user’s info in the session token itself! So instead of some long random string, store the actual user info in the session token itself. And to secure it, have part of the token signed using a secret that’s only known to the server.</p>
+<p>So even though the client and the server can see the user info part of the token, the second part, the signed part, can only be verified by the server. </p>
+<p>In the picture below, the pink section of the token has the payload (user’s info) and can be seen by both the client or the server. </p>
+<p>But the blue part is signed using a secret string, the header, and the payload itself. And so if the client tampers with the payload (say impersonates a different user), the signature will be different and won’t be authenticated.</p>
+<p><img src="https://redislabs.com/wp-content/uploads/2021/06/Encoded-1024x560.png" alt="Encoded"></p>
+<p>Here is how our use case would look like with JWT:</p>
+<ol>
+<li>You log in with your username and password: <ol>
+<li>The server authenticates the user by querying the database</li>
+<li>The server then creates a JWT session token using the user’s info and the secret (no DB is involved)</li>
+</ol>
+</li>
+<li>The server then sends you a JWT token to the front-end application. For future activities, the user can just send the JWT token to identify the user instead of logging in every time.<ol>
+<li>A JWT token looks like this:..</li>
+</ol>
+</li>
+<li>Next, say you wrote and submitted a tweet. When you send it, along with your Tweet’s text, your app will also send the JWT token (through a cookie or a header) so that the server can identify who you are. But how can the server know who you are just from the JWT token? Well, part of the token already has the user information.</li>
+<li>So when the server receives the JWT token, It uses the secret to validate the signed part and gets the user info from the payload part. Thus eliminating the DB call.</li>
+<li>If the signature checks out, it allows them to do the action.</li>
+<li>Finally sends the frontend that the tweet was saved</li>
+</ol>
+<p>Going forward for every user action, the server simply verifies the signed part, gets the user info, and lets the user do that action. Thus completely skipping the DB call.</p>
+<p><img src="https://redislabs.com/wp-content/uploads/2021/06/Grey-1-1024x724.png" alt="Grey 1"></p>
+<h3 id="Token-expiration"><a href="#Token-expiration" class="headerlink" title="Token expiration"></a>Token expiration</h3><p>But there is one additional and important thing to know about the JWT tokens. And that is that it uses an expiration time to expire itself. It’s typically set to 5 minutes to 30 minutes. And because it’s self-contained, you can’t easily revoke/invalidate/update it. This is really where the crux of the problem lies.</p>
+<h2 id="So-why-is-JWT-dangerous-for-user-authentication"><a href="#So-why-is-JWT-dangerous-for-user-authentication" class="headerlink" title="So why is JWT dangerous for user authentication?"></a>So why is JWT dangerous for user authentication?</h2><p>The biggest problem with JWT is the token revoke problem. Since it continues to work until it expires, the server has no easy way to revoke it.</p>
+<p>Below are some use cases that’d make this dangerous.</p>
+<ol>
+<li>Logout doesn’t really log you out!</li>
+</ol>
+<p>Imagine you logged out from Twitter after tweeting. You’d think that you are logged out of the server, but that’s not the case. Because JWT is self-contained and will continue to work until it expires. This could be 5 minutes or 30 minutes or whatever the duration that’s set as part of the token. So if someone gets access to that token during that time, they can continue to access it until it expires.</p>
+<ol>
+<li>Blocking users doesn’t immediately block them.</li>
+</ol>
+<p>Imagine you are a moderator of Twitter or some online real-time game where real users are using the system. And as a moderator, you want to quickly block someone from abusing the system. You can’t, again for the same reason. Even after you block, the user will continue to have access to the server until the token expires.</p>
+<p>Imagine the user is an admin and got demoted to a regular user with fewer permissions. Again this won’t take effect immediately and the user will continue to be an admin until the token expires.</p>
+<ol>
+<li>JWT’s are often not encrypted so anyone able to perform a man-in-the-middle attack and sniff the JWT now has your authentication credentials. This is made easier because the MITM attack only needs to be completed on the connection between the server and the client. </li>
+</ol>
+<h2 id="Other-complexities-and-considerations"><a href="#Other-complexities-and-considerations" class="headerlink" title="Other complexities and considerations"></a>Other complexities and considerations</h2><h3 id="Library-and-spec-issues"><a href="#Library-and-spec-issues" class="headerlink" title="Library and spec issues:"></a>Library and spec issues:</h3><p>It’s been found that many libraries that implement JWT have had many security issues over the years and even the spec itself had security issues. Even Auth0 itself, who promotes JWT <a href="https://insomniasec.com/blog/auth0-jwt-validation-bypass" target="_blank" rel="noopener">got hit with an issue</a>.</p>
+<h3 id="Length-of-tokens"><a href="#Length-of-tokens" class="headerlink" title="Length of tokens:"></a>Length of tokens:</h3><p>In many complex real-world apps, you may need to store a ton of different information. And storing it in the JWT tokens could exceed the allowed URL length or cookie lengths causing problems. Also, you are now potentially sending a large volume of data on every request.</p>
+<h3 id="The-state-needs-to-be-maintained-anyway-for-rate-limiting-IP-whitelisting-etc"><a href="#The-state-needs-to-be-maintained-anyway-for-rate-limiting-IP-whitelisting-etc" class="headerlink" title="The state needs to be maintained anyway (for rate-limiting, IP-whitelisting, etc.)"></a>The state needs to be maintained anyway (for rate-limiting, IP-whitelisting, etc.)</h3><p>In many real-world apps, servers have to maintain the user’s IP and track APIs for rate-limiting and IP-whitelisting. So you’ll need to use a blazing fast database anyway. To think somehow your app becomes stateless with JWT is just not realistic. </p>
+<h3 id="Suggested-workarounds"><a href="#Suggested-workarounds" class="headerlink" title="Suggested workarounds"></a>Suggested workarounds</h3><p>One popular solution is to store a list of “revoked tokens” in a database and check it for every call. And if the token is part of that revoked list, then block the user from taking the next action. But then now you are making that extra call to the DB to check if the token is revoked and so deceives the purpose of JWT altogether. </p>
+<h3 id="Bottom-line"><a href="#Bottom-line" class="headerlink" title="Bottom line"></a>Bottom line</h3><p>Although JWT does eliminate the database lookup, it introduces security issues and other complexities while doing so. Security is binary—either it’s secure or it’s not. Thus making it dangerous to use JWT for user sessions.</p>
+<h3 id="Where-can-I-use-it"><a href="#Where-can-I-use-it" class="headerlink" title="Where can I use it?"></a>Where can I use it?</h3><p>There are scenarios where you are doing server-to-server (or microservice-to-microservice) communication in the backend and one service could generate a JWT token to send it to a different service for authorization purposes And other narrow places, such as reset password, where you can send a JWT token as a one-time short-lived token to verify the user’s email.</p>
+<h2 id="If-I-can’t-use-JWT-what-else-can-I-do"><a href="#If-I-can’t-use-JWT-what-else-can-I-do" class="headerlink" title="If I can’t use JWT, what else can I do?"></a>If I can’t use JWT, what else can I do?</h2><p>The solution is to not use JWT at all for session purposes. But instead, do the traditional, but battle-tested way more efficiently.</p>
+<p>I.e. make the database lookup so blazing fast (sub-millisecond) that the additional call won’t matter.</p>
+<h3 id="Option-2-Make-the-look-up-blazing-fast-that-it-won’t-matter-a-battle-tested-solution"><a href="#Option-2-Make-the-look-up-blazing-fast-that-it-won’t-matter-a-battle-tested-solution" class="headerlink" title="Option 2: Make the look up blazing fast that it won’t matter (a battle-tested solution)"></a>Option 2: Make the look up blazing fast that it won’t matter (a battle-tested solution)</h3><p>Is there any database out there so blazing fast that it can serve millions of requests in sub-milliseconds? </p>
+<p>Of course, there is. <strong>It’s called Redis!</strong> <strong>Thousands of companies that serve billions of users daily use Redis just for this exact purpose!</strong></p>
+<p>And Redis Enterprise is an enhanced version of the Redis OSS that provides 99.999% availability and can serve trillions of requests. It can be used as free software on private clouds or in the cloud on any of the top-3 clouds. </p>
+<p>What’s more? Redis Enterprise has now evolved from just being a cache or session store, to a fully-fledged multi-model database with its <a href="https://redislabs.com/modules/get-started/" target="_blank" rel="noopener">module ecosystem</a> that runs natively with core Redis.  For example, you can use <a href="https://redislabs.com/modules/redis-json/" target="_blank" rel="noopener">RedisJSON</a> (<a href="https://oss.redislabs.com/redisjson/performance/" target="_blank" rel="noopener">10x faster</a> vs. the market leader) and essentially have a real-time MongoDB-like database, or use the <a href="https://redislabs.com/modules/redis-search/" target="_blank" rel="noopener">RediSearch module</a> (<a href="https://redislabs.com/blog/search-benchmarking-redisearch-vs-elasticsearch/" target="_blank" rel="noopener">4–100x faster</a>) and implement real-time full-text search like Algolia.</p>
+<p>If you simply use Redis as a session store and some other Database as a primary database, this is how your architecture would look.  One thing to note is that Redis Enterprise provides <a href="https://redislabs.com/solutions/use-cases/caching/" target="_blank" rel="noopener">four types of caching</a>: Cache-aside (Lazy-loading), Write-Behind (Write-Back), Write-Through, and Read-replica, unlike Redis OSS which only provides one (Cache-aside).</p>
+<p>Note that the lightning emoji indicates a blazing fast speed. And the snail emoji indicates slow speed.</p>
+<p><img src="https://redislabs.com/wp-content/uploads/2021/06/Session-JWT-1024x771.png" alt="Session JWT"></p>
+<p>As mentioned earlier, you can also use Redis as a primary database for your entire data layer. In this scenario, your architecture becomes much simpler and basically, everything becomes blazing fast.</p>
+<p><img src="https://redislabs.com/wp-content/uploads/2021/06/Db-JWT-1024x771.png" alt="Db JWT"></p>
+<h2 id="Does-it-scale"><a href="#Does-it-scale" class="headerlink" title="Does it scale?"></a>Does it scale?</h2><p>Of course, companies use Redis not just as a standalone database but as a cluster of geographically distributed databases.</p>
+<h3 id="1-References"><a href="#1-References" class="headerlink" title="[1] References:"></a>[1] References:</h3>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/06/24/qiwihui-pocket_readings-1140/" rel="prev" title="Django for Startup Founders: A better software architecture for SaaS startups and consumer apps">
+      <i class="fa fa-chevron-left"></i> Django for Startup Founders: A better software architecture for SaaS startups and consumer apps
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/07/01/qiwihui-pocket_readings-1143/" rel="next" title="Typeclasses in Python">
+      Typeclasses in Python <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JSON-Web-Tokens-JWT-are-Dangerous-for-User-Sessions—Here’s-a-Solution-Redis-Labs-by-redislabs"><span class="nav-number"></span> <span class="nav-text">JSON Web Tokens (JWT) are Dangerous for User Sessions—Here’s a Solution | Redis Labs by @redislabs</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#The-use-case"><span class="nav-number">1.</span> <span class="nav-text">The use case</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#The-traditional-approach"><span class="nav-number"></span> <span class="nav-text">The traditional approach</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#The-main-problem-with-the-traditional-approach"><span class="nav-number"></span> <span class="nav-text">The main problem with the traditional approach</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#There-are-two-ways-to-solve-this-problem"><span class="nav-number">1.</span> <span class="nav-text">There are two ways to solve this problem</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Option-1-Eliminate-database-lookup-step-4"><span class="nav-number">2.</span> <span class="nav-text">Option 1: Eliminate database lookup (step 4)</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#The-JWT-way"><span class="nav-number"></span> <span class="nav-text">The JWT way</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Token-expiration"><span class="nav-number">1.</span> <span class="nav-text">Token expiration</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#So-why-is-JWT-dangerous-for-user-authentication"><span class="nav-number"></span> <span class="nav-text">So why is JWT dangerous for user authentication?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Other-complexities-and-considerations"><span class="nav-number"></span> <span class="nav-text">Other complexities and considerations</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Library-and-spec-issues"><span class="nav-number">1.</span> <span class="nav-text">Library and spec issues:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Length-of-tokens"><span class="nav-number">2.</span> <span class="nav-text">Length of tokens:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#The-state-needs-to-be-maintained-anyway-for-rate-limiting-IP-whitelisting-etc"><span class="nav-number">3.</span> <span class="nav-text">The state needs to be maintained anyway (for rate-limiting, IP-whitelisting, etc.)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Suggested-workarounds"><span class="nav-number">4.</span> <span class="nav-text">Suggested workarounds</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Bottom-line"><span class="nav-number">5.</span> <span class="nav-text">Bottom line</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Where-can-I-use-it"><span class="nav-number">6.</span> <span class="nav-text">Where can I use it?</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#If-I-can’t-use-JWT-what-else-can-I-do"><span class="nav-number"></span> <span class="nav-text">If I can’t use JWT, what else can I do?</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Option-2-Make-the-look-up-blazing-fast-that-it-won’t-matter-a-battle-tested-solution"><span class="nav-number">1.</span> <span class="nav-text">Option 2: Make the look up blazing fast that it won’t matter (a battle-tested solution)</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Does-it-scale"><span class="nav-number"></span> <span class="nav-text">Does it scale?</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-References"><span class="nav-number">1.</span> <span class="nav-text">[1] References:</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

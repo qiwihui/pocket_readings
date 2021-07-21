@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Object Detection and Tracking in 2020">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Object Detection and Tracking in 2020">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/03/10/qiwihui-pocket_readings-1045/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="Object Detection and Tracking in 2020">
+<meta property="og:image" content="https://miro.medium.com/fit/c/96/96/1*AWvjlo4NzXrYVvosiyNUuw.jpeg">
+<meta property="og:image" content="https://miro.medium.com/max/60/1*3vx79ExAnA24QnetVlkF8Q.png?q=20">
+<meta property="og:image" content="https://blog.netcetera.com/object-detection-and-tracking-in-2020-f10fb6ff9af3?gi=ba6f4ef498a3">
+<meta property="og:image" content="https://miro.medium.com/max/2150/1*3vx79ExAnA24QnetVlkF8Q.png">
+<meta property="og:image" content="https://miro.medium.com/max/60/1*0Vr0Wj9l3donYitAfwx6ng.png?q=20">
+<meta property="og:image" content="https://blog.netcetera.com/object-detection-and-tracking-in-2020-f10fb6ff9af3?gi=ba6f4ef498a3">
+<meta property="og:image" content="https://miro.medium.com/max/900/1*0Vr0Wj9l3donYitAfwx6ng.png">
+<meta property="og:image" content="https://miro.medium.com/max/60/1*D2Fc-B7__NcNvZTp_cyugA.png?q=20">
+<meta property="og:image" content="https://blog.netcetera.com/object-detection-and-tracking-in-2020-f10fb6ff9af3?gi=ba6f4ef498a3">
+<meta property="og:image" content="https://miro.medium.com/max/3692/1*D2Fc-B7__NcNvZTp_cyugA.png">
+<meta property="og:image" content="https://miro.medium.com/max/60/1*MErvmxYggkut4rrEbcfe4g.png?q=20">
+<meta property="og:image" content="https://blog.netcetera.com/object-detection-and-tracking-in-2020-f10fb6ff9af3?gi=ba6f4ef498a3">
+<meta property="og:image" content="https://miro.medium.com/max/2174/1*MErvmxYggkut4rrEbcfe4g.png">
+<meta property="og:image" content="https://miro.medium.com/max/58/1*HF8ROh1AZ9xkJG9g8GkFxw.png?q=20">
+<meta property="og:image" content="https://blog.netcetera.com/object-detection-and-tracking-in-2020-f10fb6ff9af3?gi=ba6f4ef498a3">
+<meta property="og:image" content="https://miro.medium.com/max/1082/1*HF8ROh1AZ9xkJG9g8GkFxw.png">
+<meta property="og:image" content="https://miro.medium.com/max/60/1*sSDDu_336x6LLdNqaTkflw.png?q=20">
+<meta property="og:image" content="https://blog.netcetera.com/object-detection-and-tracking-in-2020-f10fb6ff9af3?gi=ba6f4ef498a3">
+<meta property="og:image" content="https://miro.medium.com/max/2790/1*sSDDu_336x6LLdNqaTkflw.png">
+<meta property="og:image" content="https://miro.medium.com/max/60/1*rEbsc3HHCVe3U1dRfjMASQ.png?q=20">
+<meta property="og:image" content="https://blog.netcetera.com/object-detection-and-tracking-in-2020-f10fb6ff9af3?gi=ba6f4ef498a3">
+<meta property="og:image" content="https://miro.medium.com/max/2816/1*rEbsc3HHCVe3U1dRfjMASQ.png">
+<meta property="og:image" content="https://miro.medium.com/max/60/1*d8TVtKDkLu2v2ir8PgcxEg.png?q=20">
+<meta property="og:image" content="https://blog.netcetera.com/object-detection-and-tracking-in-2020-f10fb6ff9af3?gi=ba6f4ef498a3">
+<meta property="og:image" content="https://miro.medium.com/max/2464/1*d8TVtKDkLu2v2ir8PgcxEg.png">
+<meta property="og:image" content="https://miro.medium.com/max/60/1*13Mo0jyhs_9EqFSppw3ueQ.png?q=20">
+<meta property="og:image" content="https://blog.netcetera.com/object-detection-and-tracking-in-2020-f10fb6ff9af3?gi=ba6f4ef498a3">
+<meta property="og:image" content="https://miro.medium.com/max/2342/1*13Mo0jyhs_9EqFSppw3ueQ.png">
+<meta property="og:image" content="https://miro.medium.com/max/60/1*f21RTmxGsEp1U-2BGJC4Tw.png?q=20">
+<meta property="og:image" content="https://blog.netcetera.com/object-detection-and-tracking-in-2020-f10fb6ff9af3?gi=ba6f4ef498a3">
+<meta property="og:image" content="https://miro.medium.com/max/1544/1*f21RTmxGsEp1U-2BGJC4Tw.png">
+<meta property="og:image" content="https://miro.medium.com/max/60/1*aveVJA4BF572wYhF8BSjfQ.png?q=20">
+<meta property="og:image" content="https://blog.netcetera.com/object-detection-and-tracking-in-2020-f10fb6ff9af3?gi=ba6f4ef498a3">
+<meta property="og:image" content="https://miro.medium.com/max/2312/1*aveVJA4BF572wYhF8BSjfQ.png">
+<meta property="og:image" content="https://miro.medium.com/max/60/0*y0Bu1GgWJZMdmZOs?q=20">
+<meta property="og:image" content="https://blog.netcetera.com/object-detection-and-tracking-in-2020-f10fb6ff9af3?gi=ba6f4ef498a3">
+<meta property="og:image" content="https://miro.medium.com/max/926/0*y0Bu1GgWJZMdmZOs">
+<meta property="og:image" content="https://miro.medium.com/max/60/1*Bucg8YMVI8cUP8LMh1gF1Q.png?q=20">
+<meta property="og:image" content="https://blog.netcetera.com/object-detection-and-tracking-in-2020-f10fb6ff9af3?gi=ba6f4ef498a3">
+<meta property="og:image" content="https://miro.medium.com/max/2874/1*Bucg8YMVI8cUP8LMh1gF1Q.png">
+<meta property="og:image" content="https://miro.medium.com/max/60/1*vRBDJlsPzGZz2wwwcbxSww.png?q=20">
+<meta property="og:image" content="https://blog.netcetera.com/object-detection-and-tracking-in-2020-f10fb6ff9af3?gi=ba6f4ef498a3">
+<meta property="og:image" content="https://miro.medium.com/max/2728/1*vRBDJlsPzGZz2wwwcbxSww.png">
+<meta property="og:image" content="https://miro.medium.com/max/60/0*c16kCeMIF5mvOaCh?q=20">
+<meta property="og:image" content="https://blog.netcetera.com/object-detection-and-tracking-in-2020-f10fb6ff9af3?gi=ba6f4ef498a3">
+<meta property="og:image" content="https://miro.medium.com/max/956/0*c16kCeMIF5mvOaCh">
+<meta property="article:published_time" content="2021-03-10T03:21:09.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.422Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://miro.medium.com/fit/c/96/96/1*AWvjlo4NzXrYVvosiyNUuw.jpeg">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/03/10/qiwihui-pocket_readings-1045/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>Object Detection and Tracking in 2020 | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/03/10/qiwihui-pocket_readings-1045/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Object Detection and Tracking in 2020
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-03-10 03:21:09" itemprop="dateCreated datePublished" datetime="2021-03-10T03:21:09+00:00">2021-03-10</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">Object Detection and Tracking in 2020</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Choosing an object detection and tracking approach for an application nowadays might become overwhelming. This article is an endeavor to summarize the best methods and trends in these essential topics in computer vision.<br><br><br><br>Tags: deep_learning<br><br><br><br>via Pocket <a href="https://ift.tt/2Smvv9g" target="_blank" rel="noopener">https://ift.tt/2Smvv9g</a> original site<br><br><br><br>March 10, 2021 at 10:44AM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1045#issuecomment-794804009" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>3/10/2021</strong></p>
+</blockquote>
+<h2 id="Object-Detection-and-Tracking-in-2020-by-Borijan-Georgievski"><a href="#Object-Detection-and-Tracking-in-2020-by-Borijan-Georgievski" class="headerlink" title="Object Detection and Tracking in 2020 by Borijan Georgievski"></a>Object Detection and Tracking in 2020 by Borijan Georgievski</h2><h1 id="Object-Detection-and-Tracking-in-2020"><a href="#Object-Detection-and-Tracking-in-2020" class="headerlink" title="Object Detection and Tracking in 2020"></a>Object Detection and Tracking in 2020</h1><p>[<img src="https://miro.medium.com/fit/c/96/96/1*AWvjlo4NzXrYVvosiyNUuw.jpeg" alt="Borijan Georgievski">](<a href="https://medium.com/@" target="_blank" rel="noopener">https://medium.com/@</a> Borijan.Georgievski?source=post_page—–f10fb6ff9af3——————————–)</p>
+<p>[Borijan Georgievski](<a href="https://medium.com/@" target="_blank" rel="noopener">https://medium.com/@</a> Borijan.Georgievski?source=post_page—–f10fb6ff9af3——————————–)</p>
+<p><a href="https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F33e71bdc27a7&operation=register&redirect=https%3A%2F%2Fblog.netcetera.com%2Fobject-detection-and-tracking-in-2020-f10fb6ff9af3&source=post_page-33e71bdc27a7----f10fb6ff9af3---------------------follow_byline-----------" target="_blank" rel="noopener">Follow</a></p>
+<p><a href="https://blog.netcetera.com/object-detection-and-tracking-in-2020-f10fb6ff9af3?source=post_page-----f10fb6ff9af3--------------------------------" target="_blank" rel="noopener">Apr 14, 2020</a> · 15 min read</p>
+<p><a href="https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff10fb6ff9af3&operation=register&redirect=https%3A%2F%2Fblog.netcetera.com%2Fobject-detection-and-tracking-in-2020-f10fb6ff9af3&source=post_actions_header--------------------------bookmark_preview-----------" target="_blank" rel="noopener"></a></p>
+<p><img src="https://miro.medium.com/max/60/1*3vx79ExAnA24QnetVlkF8Q.png?q=20" alt="Image for post"></p>
+<p><img src="https://blog.netcetera.com/object-detection-and-tracking-in-2020-f10fb6ff9af3?gi=ba6f4ef498a3" alt="Image for post"><img src="https://miro.medium.com/max/2150/1*3vx79ExAnA24QnetVlkF8Q.png" alt="Image for post"></p>
+<p>Mask R-CNN output on <a href="https://images.pexels.com/photos/4456/people-jogger-jogging-colors.jpg" target="_blank" rel="noopener">this image</a></p>
+<p><strong>Choosing an object detection and tracking approach for an application nowadays might become overwhelming. This article is an endeavor to summarize the best methods and trends in these essential topics in computer vision.</strong></p>
+<p>Nowadays, the problem of classifying objects in an image is more or less solved, thanks to huge advances in computer vision and deep learning in general. The publicly available models trained on large amounts of data further simplifies this task. Accordingly, the computer vision researching community has shifted focus in other very interesting and challenging topics, such as adversarial image generation, neural style transfer, visual storytelling, and of course, object detection, segmentation and tracking.<br>We shall start off by paying homage to the long-established methods, and afterwards explore the current state-of-the-art.</p>
+<h1 id="The-Old-School"><a href="#The-Old-School" class="headerlink" title="The Old School"></a>The Old School</h1><p>Object detection has been around for quite a while; the traditional computer vision methods for object detection appeared in the late 90s. These approaches utilize classic feature detection, combined with a machine learning algorithm like KNN or SVM for classification, or with a description matcher like FLANN for object detection.</p>
+<p>The most notable feature detection algorithms are arguably <strong>SIFT</strong> and <strong>SURF</strong> as feature descriptors, and FAST for corner detection. The feature descriptors use a series of mathematical approximations to learn a representation of the image that is scale-invariant. Some of these old school methods could sometimes get the job done, but there is a lot more we can do.</p>
+<p><img src="https://miro.medium.com/max/60/1*0Vr0Wj9l3donYitAfwx6ng.png?q=20" alt="Image for post"></p>
+<p><img src="https://blog.netcetera.com/object-detection-and-tracking-in-2020-f10fb6ff9af3?gi=ba6f4ef498a3" alt="Image for post"><img src="https://miro.medium.com/max/900/1*0Vr0Wj9l3donYitAfwx6ng.png" alt="Image for post"></p>
+<p>SIFT feature keypoints from <a href="https://docs.opencv.org/3.4/da/df5/tutorial_py_sift_intro.html" target="_blank" rel="noopener">OpenCV</a></p>
+<p>As for object tracking, it seems like the traditional methods stood the test of time better than the object detection ones. Ideas like <strong>Kalman filtering</strong>, sparse and dense optical flow are still in widespread use. Kalman filtering entered hall of fame when it was used in the <a href="https://en.wikipedia.org/wiki/Apollo_PGNCS" target="_blank" rel="noopener">Apollo PGNCS</a> to produce an optimal position estimate for the spacecraft, based on past position measurements and new data. Its influence can be still seen today in many algorithms, such as the <a href="https://arxiv.org/abs/1602.00763" target="_blank" rel="noopener"><strong>Simple Online and Realtime Tracking (SORT)</strong></a>, which uses a combination of the <strong>Hungarian algorithm</strong> and Kalman filter to achieve decent object tracking.</p>
+<h1 id="The-Novel-Advancements-of-Object-Detection"><a href="#The-Novel-Advancements-of-Object-Detection" class="headerlink" title="The Novel Advancements of Object Detection"></a>The Novel Advancements of Object Detection</h1><h2 id="R-CNN"><a href="#R-CNN" class="headerlink" title="R-CNN"></a>R-CNN</h2><p>Back in 2014, <strong>Regions with CNN features (</strong><a href="https://arxiv.org/abs/1311.2524" target="_blank" rel="noopener"><strong>R-CNN</strong></a><strong>)</strong> was a breath of fresh air for object detection and semantic segmentation, as the previous state-of-the-art methods were considered to be the same old algorithms like SIFT, only packed into complex ensembles, demanding a lot of computation power and mostly relying on low-level features, such as edges, gradients and corners.</p>
+<p>The R-CNN system is comprised of three main modules. The foremost module extracts around 2000 region proposals using a segmentation algorithm called <a href="http://huppelen.nl/publications/selectiveSearchDraft.pdf" target="_blank" rel="noopener"><strong>selective search</strong></a>, to figure out which parts of an image are most probable to contain an object. Selective Search applies a variety of different strategies, so it can handle as many image conditions as possible. The algorithm scans the image with windows of various scales, and looks for adjacent pixels that share colors and textures, while also taking lightning conditions into an account.</p>
+<p>The second module is a <a href="https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf" target="_blank" rel="noopener">large convolutional neural network</a> that extracts a fixed-length feature vector from each proposal that is returned from the selective search. Regardless of the size or aspect ratio, the candidate region undergoes <strong>image warping</strong> to have the required input size. Lastly, the final module classifies each region with category-specific linear SVMs.</p>
+<p><img src="https://miro.medium.com/max/60/1*D2Fc-B7__NcNvZTp_cyugA.png?q=20" alt="Image for post"></p>
+<p><img src="https://blog.netcetera.com/object-detection-and-tracking-in-2020-f10fb6ff9af3?gi=ba6f4ef498a3" alt="Image for post"><img src="https://miro.medium.com/max/3692/1*D2Fc-B7__NcNvZTp_cyugA.png" alt="Image for post"></p>
+<p>R-CNN framework</p>
+<p>R-CNN is very slow to train and test, and not very accurate by today’s standards. Nevertheless, it is an essential method that paved the way for Fast R-CNN, and the current state-of-the-art Faster R-CNN and Mask R-CNN.</p>
+<h2 id="Fast-R-CNN"><a href="#Fast-R-CNN" class="headerlink" title="Fast R-CNN"></a>Fast R-CNN</h2><p><a href="https://arxiv.org/abs/1504.08083" target="_blank" rel="noopener"><strong>Fast R-CNN</strong></a> was proposed by one of the authors of R-CNN, as a worthy successor. One big improvement over R-CNN is that instead of making ~2000 forward passes for each region proposal, Fast R-CNN computes a convolutional feature map for the entire input image in a single forward pass of the network, making it much faster. Another improvement is that the architecture is trained end-to-end with a multi-task loss, resulting in simpler training.</p>
+<p>The input for Fast R-CNN is an image, along with a set of object proposals. First, they are passed through a fully convolutional network to obtain the convolutional feature map. Next, for each object proposal, a fixed-length feature vector is extracted from the feature map using a <strong>region of interest (RoI) pooling layer</strong>. Fast R-CNN maps each of these RoIs into a feature vector using fully connected layers, to finally output softmax probability and the bounding box, which are the class and position of the object, respectively.</p>
+<p><img src="https://miro.medium.com/max/60/1*MErvmxYggkut4rrEbcfe4g.png?q=20" alt="Image for post"></p>
+<p><img src="https://blog.netcetera.com/object-detection-and-tracking-in-2020-f10fb6ff9af3?gi=ba6f4ef498a3" alt="Image for post"><img src="https://miro.medium.com/max/2174/1*MErvmxYggkut4rrEbcfe4g.png" alt="Image for post"></p>
+<p>Fast R-CNN framework</p>
+<h2 id="Faster-R-CNN"><a href="#Faster-R-CNN" class="headerlink" title="Faster R-CNN"></a>Faster R-CNN</h2><p>It turns out that Fast R-CNN is still pretty slow, and that is mostly because the CNN is bottlenecked by the aforementioned region proposal algorithm, selective search. <a href="https://arxiv.org/abs/1506.01497" target="_blank" rel="noopener"><strong>Faster R-CNN</strong></a> solves this by abandoning the traditional region proposal method, and relying on a fully deep learning approach. It consists of two modules: a CNN called <strong>Region Proposal Network</strong> (RPN), and the Fast R-CNN detector. The two modules are merged into a single network and trained end-to-end.</p>
+<p>The authors of Faster R-CNN drew inspiration from the attention mechanism when they designed RPN to emphasize what is important in the input image. Creating region proposals is done by sliding a small network over the last shared convolution layer of the network. The small network requires a <em>(n x n)</em> window of the convolutional feature map as an input. Each sliding window is mapped to a lower-dimensional feature, so just like before, it is fed to two fully connected layers: a box-classification and box-regression layer.</p>
+<p>It is important to mention that the bounding boxes are parametrized relative to hand-picked reference boxes called <strong>anchors</strong>. In other words, the RPN predicts the four correction coordinates to move and resize an anchor to the right position, instead of the coordinates on the image. Faster R-CNN is using 3 scales and 3 aspect ratios by default, resulting in 9 anchors at each sliding window.</p>
+<p><img src="https://miro.medium.com/max/58/1*HF8ROh1AZ9xkJG9g8GkFxw.png?q=20" alt="Image for post"></p>
+<p><img src="https://blog.netcetera.com/object-detection-and-tracking-in-2020-f10fb6ff9af3?gi=ba6f4ef498a3" alt="Image for post"><img src="https://miro.medium.com/max/1082/1*HF8ROh1AZ9xkJG9g8GkFxw.png" alt="Image for post"></p>
+<p>Faster R-CNN framework</p>
+<p>Faster R-CNN is considered state-of-the-art, and it is certainly one of the best options for object detection. However, it does not provide segmentation on the detected objects, i.e. it is not capable of locating the exact pixels of the object, rather just the bounding box around it. In many cases this is not needed, but when it is, Mask R-CNN should be the first one to come to mind.</p>
+<h2 id="Mask-R-CNN"><a href="#Mask-R-CNN" class="headerlink" title="Mask R-CNN"></a>Mask R-CNN</h2><p>The <a href="https://arxiv.org/abs/1703.06870" target="_blank" rel="noopener"><strong>Mask R-CNN</strong></a> authors at Facebook AI Research (FAIR) extended Faster R-CNN to perform <strong>instance segmentation</strong>, along with the class and bounding box. Instance segmentation is a combination of object detection and semantic segmentation, which means that it performs both detection of all objects in an image, and segmentation of each instance while differentiating it from the rest of the instances.</p>
+<p>The first stage (region proposal) of Mask R-CNN is identical to its predecessor, while in the second stage it outputs a <strong>binary mask</strong> for each RoI in parallel to the class and bounding box. This binary mask denotes whether the pixel is part of any object, without concern for the categories. The class for the pixels would be assigned simply by the bounding box that they reside in, which makes the model a lot easier to train.</p>
+<p>Another difference in the second stage is that the RoI pooling layer (RoIPool) introduced in Fast R-CNN is replaced with <strong>RoIAlign</strong>. Performing instance segmentation with RoIPool results in many pixel-wise inaccuracies, i.e. misaligned feature map when compared to the original image. This occurs because RoIPool performs quantization of the regions of interest, which includes rounding the floating-point values to decimal values in the resulting feature map. On the other hand, the improved RoIAlign properly aligns the extracted features with the input, by avoiding any quantization altogether, rather using <strong>bilinear interpolation</strong> to compute the exact values of the input features.</p>
+<p><img src="https://miro.medium.com/max/60/1*sSDDu_336x6LLdNqaTkflw.png?q=20" alt="Image for post"></p>
+<p><img src="https://blog.netcetera.com/object-detection-and-tracking-in-2020-f10fb6ff9af3?gi=ba6f4ef498a3" alt="Image for post"><img src="https://miro.medium.com/max/2790/1*sSDDu_336x6LLdNqaTkflw.png" alt="Image for post"></p>
+<p>Mask R-CNN framework</p>
+<h2 id="YOLO"><a href="#YOLO" class="headerlink" title="YOLO"></a>YOLO</h2><p>We are now switching focus from an accuracy-oriented solution, to a speed-oriented one. <a href="https://arxiv.org/abs/1506.02640" target="_blank" rel="noopener"><strong>You Only Look Once (YOLO</strong></a><strong>)</strong> is the most popular object detection method today, with a good reason. It is capable of processing real-time videos with minimal delay, all the while retaining respectable accuracy. And as the name suggests, it only needs one forward propagation to detect all objects in an image.</p>
+<p>YOLO is designed in <strong>Darknet</strong>, an open source neural network framework written in C and CUDA, developed by the same author that created YOLO, Joseph Redmon. The last iteration is <a href="https://arxiv.org/abs/1804.02767" target="_blank" rel="noopener">YOLOv3</a>, which is bigger, more accurate on small objects, but slightly worse on larger objects when compared to the previous version. In YOLOv3, Darknet-53 (53-layer CNN with <strong>residual connections</strong>) is used, which is quite a leap from the previous Darknet-19 (19-layer CNN) for YOLOv2.</p>
+<p>Unlike the previous YOLO versions that output the bounding box, confidence and class for the box, YOLOv3 predicts bounding boxes at 3 different scales on different depths of the network. The final object detections on the image are decided using <strong>non-max suppression (NMS)</strong>, a simple method that removes bounding boxes which overlap with each other more than a predefined <strong>intersection-over-union (IoU)</strong> threshold. In such overlapping conflict, the bounding box with the largest confidence assigned by YOLO wins, while the others are discarded.</p>
+<p><img src="https://miro.medium.com/max/60/1*rEbsc3HHCVe3U1dRfjMASQ.png?q=20" alt="Image for post"></p>
+<p><img src="https://blog.netcetera.com/object-detection-and-tracking-in-2020-f10fb6ff9af3?gi=ba6f4ef498a3" alt="Image for post"><img src="https://miro.medium.com/max/2816/1*rEbsc3HHCVe3U1dRfjMASQ.png" alt="Image for post"></p>
+<p>YOLO modeling object detection as a regression problem</p>
+<p>Just like in Faster R-CNN, the box values are relative to reference anchors. However, instead of having the same handpicked anchors for any task, it uses <strong>k-means clustering</strong> on the training dataset to find the optimal anchors for the task. The default number of anchors for YOLOv3 is 9. It might also come as a surprise that softmax is not used for class prediction, but rather multiple independent logistic classifiers, trained with binary cross-entropy loss.</p>
+<h2 id="SSD"><a href="#SSD" class="headerlink" title="SSD"></a>SSD</h2><p><a href="https://arxiv.org/abs/1512.02325" target="_blank" rel="noopener"><strong>Single Shot MultiBox Detector (SSD</strong></a><strong>)</strong> came out a couple of months after YOLO as a worthy alternative. Similarly to YOLO, the object detection is done in a single forward propagation of the network. This end-to-end CNN model passes the input image through a series of convolutional layers, generating candidate bounding boxes from different scales along the way.</p>
+<p>As ground truth for training, SSD considers the labeled objects as positive examples, and any other bounding boxes that do not overlap with the positives are negative examples. It turns out that constructing the dataset this way makes it very imbalanced. For that reason, SSD applies a method called <strong>hard negative mining</strong> right after performing NMS. Hard negative mining is a method to pick only the negative examples with the highest confidence loss, so that the ratio between the positives and negatives is at most 1:3. This leads to faster optimization and a more stable training phase.</p>
+<p><img src="https://miro.medium.com/max/60/1*d8TVtKDkLu2v2ir8PgcxEg.png?q=20" alt="Image for post"></p>
+<p><img src="https://blog.netcetera.com/object-detection-and-tracking-in-2020-f10fb6ff9af3?gi=ba6f4ef498a3" alt="Image for post"><img src="https://miro.medium.com/max/2464/1*d8TVtKDkLu2v2ir8PgcxEg.png" alt="Image for post"></p>
+<p>SSD architecture</p>
+<p>In the image above that can be found in the official paper, we can see that the backbone network is <a href="https://arxiv.org/abs/1409.1556" target="_blank" rel="noopener">VGG-16</a>. However, nowadays we can often see SSD with a <a href="https://arxiv.org/abs/1512.03385" target="_blank" rel="noopener">ResNet</a>, <a href="https://arxiv.org/abs/1409.4842" target="_blank" rel="noopener">Inception</a> and even <a href="https://arxiv.org/abs/1704.04861" target="_blank" rel="noopener">MobileNet</a> backbone.</p>
+<h2 id="RetinaNet"><a href="#RetinaNet" class="headerlink" title="RetinaNet"></a>RetinaNet</h2><p><a href="https://arxiv.org/abs/1708.02002" target="_blank" rel="noopener"><strong>RetinaNet</strong></a> was proposed back in 2017 by researchers from FAIR. It is also a one-stage framework like YOLO and SSD, which trades speed for worse accuracy than the two-stage frameworks like the R-CNN variations. The RetinaNet uses a ResNet + FPN backbone to generate a rich, multi-scale convolutional feature pyramid. As usual, two subnetworks are attached on top, one for classifying anchor boxes, and another one for generating offset from the anchor boxes to the ground-truth object boxes.</p>
+<p><img src="https://miro.medium.com/max/60/1*13Mo0jyhs_9EqFSppw3ueQ.png?q=20" alt="Image for post"></p>
+<p><img src="https://blog.netcetera.com/object-detection-and-tracking-in-2020-f10fb6ff9af3?gi=ba6f4ef498a3" alt="Image for post"><img src="https://miro.medium.com/max/2342/1*13Mo0jyhs_9EqFSppw3ueQ.png" alt="Image for post"></p>
+<p>RetinaNet architecture</p>
+<p>As mentioned before, imbalance of classes during training of dense detectors overwhelms the cross entropy loss. The innovative <strong>focal loss</strong> improves accuracy focusing training on a sparse set of hard examples, while limiting the number of easy negatives. This is done by reshaping the loss function to not value easy examples as much as the hard ones.</p>
+<p><img src="https://miro.medium.com/max/60/1*f21RTmxGsEp1U-2BGJC4Tw.png?q=20" alt="Image for post"></p>
+<p><img src="https://blog.netcetera.com/object-detection-and-tracking-in-2020-f10fb6ff9af3?gi=ba6f4ef498a3" alt="Image for post"><img src="https://miro.medium.com/max/1544/1*f21RTmxGsEp1U-2BGJC4Tw.png" alt="Image for post"></p>
+<p>Focal loss definition, where α ∈ [0, 1] is a weighting factor addressing class imbalance, and γ is the focusing parameter</p>
+<p>Introducing the weighting factor α is a common method for addressing class imbalance. The authors first experimented with α=0, but this yielded worse accuracy than the alpha-balanced form. You may also notice that when γ=0, the focal loss is equivalent to cross-entropy loss.</p>
+<h1 id="The-Novel-Advancements-of-Object-Tracking"><a href="#The-Novel-Advancements-of-Object-Tracking" class="headerlink" title="The Novel Advancements of Object Tracking"></a>The Novel Advancements of Object Tracking</h1><h2 id="ROLO"><a href="#ROLO" class="headerlink" title="ROLO"></a>ROLO</h2><p>For starters, we can check out <a href="https://arxiv.org/abs/1607.05781" target="_blank" rel="noopener"><strong>Recurrent YOLO (ROLO)</strong></a>, a single object tracking method that combines object detection and recurrent neural networks. ROLO is a combination of YOLO and <a href="https://www.researchgate.net/publication/13853244_Long_Short-term_Memory" target="_blank" rel="noopener">LSTM</a>. The object detection module uses YOLO to collect visual features, along with location inference priors. At each time-step (frame), the LSTM receives an input feature vector of length 4096, and returns the location of the tracked object.</p>
+<p><img src="https://miro.medium.com/max/60/1*aveVJA4BF572wYhF8BSjfQ.png?q=20" alt="Image for post"></p>
+<p><img src="https://blog.netcetera.com/object-detection-and-tracking-in-2020-f10fb6ff9af3?gi=ba6f4ef498a3" alt="Image for post"><img src="https://miro.medium.com/max/2312/1*aveVJA4BF572wYhF8BSjfQ.png" alt="Image for post"></p>
+<p>ROLO architecture</p>
+<h2 id="SiamMask"><a href="#SiamMask" class="headerlink" title="SiamMask"></a>SiamMask</h2><p>When it comes to single object tracking, <a href="https://arxiv.org/abs/1812.05050" target="_blank" rel="noopener"><strong>SiamMask</strong></a> is an excellent choice. It is based on the charming <a href="https://blog.netcetera.com/face-recognition-using-one-shot-learning-a7cf2b91e96c" target="_blank" rel="noopener"><strong>siamese neural network</strong>, which rose in popularity with Google’s Facenet</a>. Besides producing rotated bounding boxes at 55 frames per second, it also provides class-agnostic object segmentation masks. In order to achieve this, SiamMask needs to be initialized with a single bounding box so it can track the desired object. However, this also means that multiple object tracking (<strong>MOT</strong>) is not viable with SiamMask, and modifying the model to support that will leave us with a significantly slower object detector.</p>
+<p><img src="https://miro.medium.com/max/60/0*y0Bu1GgWJZMdmZOs?q=20" alt="Image for post"></p>
+<p><img src="https://blog.netcetera.com/object-detection-and-tracking-in-2020-f10fb6ff9af3?gi=ba6f4ef498a3" alt="Image for post"><img src="https://miro.medium.com/max/926/0*y0Bu1GgWJZMdmZOs" alt="Image for post"></p>
+<p>SiamMask demo with bounding box initialization</p>
+<p>There are a couple of other notable object trackers that utilize siamese neural networks, such as <a href="https://arxiv.org/abs/1808.06048" target="_blank" rel="noopener">DaSiamRPN</a>, which won the <a href="https://www.votchallenge.net/vot2018/" target="_blank" rel="noopener">VOT-18</a> challenge (<a href="https://github.com/foolwood/DaSiamRPN" target="_blank" rel="noopener">PyTorch 0.3.1 code</a>) and <a href="https://arxiv.org/abs/1901.01660" target="_blank" rel="noopener">SiamDW</a> (<a href="https://github.com/shallowtoil/SiamDW.pytorch" target="_blank" rel="noopener">PyTorch 0.3.1 code</a>).</p>
+<h2 id="Deep-SORT"><a href="#Deep-SORT" class="headerlink" title="Deep SORT"></a>Deep SORT</h2><p>We have previously mentioned SORT as an algorithmic approach to object tracking. <a href="https://arxiv.org/abs/1703.07402" target="_blank" rel="noopener"><strong>Deep SORT</strong></a> is improving SORT by replacing the associating metric with a novel <strong>cosine metric learning</strong>, a method for learning a feature space where the cosine similarity is effectively optimized through reparametrization of the softmax regime.</p>
+<p>The track handling and Kalman filtering framework is almost identical to the original SORT, except the bounding boxes are computed using a pre-trained convolutional neural network, trained on a large-scale person re-identification dataset. This method is a great starting point for multiple object detection, as it is simple to implement, offers solid accuracy, but above all, runs in real-time.</p>
+<h2 id="TrackR-CNN"><a href="#TrackR-CNN" class="headerlink" title="TrackR-CNN"></a>TrackR-CNN</h2><p><a href="https://www.vision.rwth-aachen.de/media/papers/mots-multi-object-tracking-and-segmentation/MOTS.pdf" target="_blank" rel="noopener"><strong>TrackR-CNN</strong></a> was introduced just as a baseline for the <a href="https://www.vision.rwth-aachen.de/page/mots" target="_blank" rel="noopener">Multi Object Tracking and Segmentation (MOTS)</a> challenge, but it turns out that it is actually effective. First off, the object detection module utilizes Mask R-CNN on top of a ResNet-101 backbone. The tracker is created by integrating 3D convolutions that are applied to the backbone features, incorporating temporal context of the video. As an alternative, convolutional LSTM is considered as well, but the latter method does not yield any gains compared with the baseline.</p>
+<p>TrackR-CNN also extends Mask R-CNN by an <strong>association head</strong>, to be able to associate detections over time. This is a fully connected layer that receives region proposals and outputs an association vector for each proposal. The association head draws inspiration from siamese networks and the embedding vectors used in person re-identification. It is trained using a video sequence adaptation of <strong>batch hard triplet loss</strong>, which is a more efficient method than the original <a href="https://blog.netcetera.com/face-recognition-using-one-shot-learning-a7cf2b91e96c" target="_blank" rel="noopener">triplet loss</a>. To produce the final result, the system must decide which detections should be reported. The matching between the previous frame detections and current proposals is done using the Hungarian algorithm, while only allowing pairs of detections with association vectors smaller than some threshold.</p>
+<h2 id="Tracktor"><a href="#Tracktor" class="headerlink" title="Tracktor++"></a>Tracktor++</h2><p>The <a href="https://motchallenge.net/" target="_blank" rel="noopener">Multiple Object Tracking Benchmark</a> makes it easier to find the most recent breakthroughs in MOT, thanks to its public leaderboard. The CVPR 2019 Tracking Challenge motivated progress in both accuracy and speed of the trackers. <a href="https://arxiv.org/abs/1903.05625" target="_blank" rel="noopener"><strong>Tracktor++</strong></a> dominated the leaderboard with a very simple, yet effective approach. This model predicts the position of an object in the next frame by calculating the bounding box regression, without needing to train or optimize on tracking data whatsoever. The object detector for Tracktor++ is the usual Faster R-CNN with 101-layer ResNet and FPN, trained on the <a href="https://motchallenge.net/data/MOT17Det/" target="_blank" rel="noopener">MOT17Det</a> pedestrian detection dataset.</p>
+<p><img src="https://miro.medium.com/max/60/1*Bucg8YMVI8cUP8LMh1gF1Q.png?q=20" alt="Image for post"></p>
+<p><img src="https://blog.netcetera.com/object-detection-and-tracking-in-2020-f10fb6ff9af3?gi=ba6f4ef498a3" alt="Image for post"><img src="https://miro.medium.com/max/2874/1*Bucg8YMVI8cUP8LMh1gF1Q.png" alt="Image for post"></p>
+<p>Tracktor++ framework</p>
+<p>The main idea of Tracktor++ is to use the regression branch of Faster R-CNN for frame-to-frame tracking by extracting features from the current frame, and then using object locations from the previous frame as input for the RoI pooling process to regress their locations into the current frame. It also utilizes some motion models such as the camera motion compensation based on image registration, and short-term <strong>re-identification</strong>. The re-identification method caches deactivated tracks for a fixed number of frames, and then compares the newly detected tracks to them for possible re-identification. The distance between tracks is measured by a siamese neural network.</p>
+<h2 id="JDE"><a href="#JDE" class="headerlink" title="JDE"></a>JDE</h2><p><a href="https://arxiv.org/abs/1909.12605" target="_blank" rel="noopener"><strong>Joint Detection and Embedding (JDE)</strong></a> is a very recent proposal similar to RetinaNet that deviates from the two-stage paradigm. This single-shot detector is designed to solve a multi-task learning problem, i.e. anchor classification, bounding box regression and embedding learning. JDE uses Darknet-53 as the backbone to obtain feature maps of the input at three scales. Afterwards, the feature maps are fused together using up-sampling and residual connections. Finally, predictions heads are attached on top of the fused feature maps, which output a dense prediction map for the three tasks that were mentioned above.</p>
+<p><img src="https://miro.medium.com/max/60/1*vRBDJlsPzGZz2wwwcbxSww.png?q=20" alt="Image for post"></p>
+<p><img src="https://blog.netcetera.com/object-detection-and-tracking-in-2020-f10fb6ff9af3?gi=ba6f4ef498a3" alt="Image for post"><img src="https://miro.medium.com/max/2728/1*vRBDJlsPzGZz2wwwcbxSww.png" alt="Image for post"></p>
+<p>JDE architecture</p>
+<p>To achieve object tracking, besides bounding boxes and classes, the JDE model also outputs appearance embedding vectors when processing the frames. These appearance embeddings are compared to embeddings of previously detected objects using an affinity matrix. Finally, the good old Hungarian algorithm and Kalman filter are used for smoothing out the trajectories and predicting the locations of previously detected objects in the current frame.</p>
+<h1 id="The-Standoff"><a href="#The-Standoff" class="headerlink" title="The Standoff"></a>The Standoff</h1><p>Now let us visualize and observe the performance of the four mentioned multiple object tracking methods. The following experiments are done on a machine running Ubuntu 18.04 with an Intel Core i7–8700 CPU and NVIDIA GeForce GTX 1070 Ti GPU. The sample videos are downloaded from the <a href="https://motchallenge.net/data/MOT17/" target="_blank" rel="noopener">MOT17 test dataset</a>. The resolution of all videos is 1920x1080, with various frames per second (FPS) and lengths, while the four chosen ones for this test are recorded at 30 FPS.</p>
+<p>This test shows that there is no clear-cut winner, as it comes down to whether we want faster real-time inference, more accurate detections, or maybe additional segmentation. Additionally, it is established that the tracker performance is heavily dependent on the actual object detection module, so it is possible that we see an inferior tracker producing better results just because of its superior detector. With that being said, these are my thoughts:</p>
+<ul>
+<li>Deep SORT is the fastest of the bunch, thanks to its simplicity. It produced 16 FPS on average while still maintaining good accuracy, definitely making it a solid choice for multiple object detection.</li>
+<li>Tracktor++ is pretty accurate, but one big drawback is that it is not viable for real-time tracking. Our experiments yielded an average execution of 3 FPS. If real-time execution is not a concern, this is a great contender.</li>
+<li>TrackR-CNN is nice because it provides segmentation as a bonus. But as with Tracktor++, it is hard to utilize for real-time tracking, having an average execution of 1.6 FPS.</li>
+<li>JDE displayed decent performance of 12 FPS on average. It is important to note that the input size for the model is 1088x608, so accordingly, we should expect JDE to reach lower FPS if the model is trained on Full HD. Nevertheless, it has great accuracy and should be a good selection.</li>
+</ul>
+<h1 id="Code-for-Object-Detection"><a href="#Code-for-Object-Detection" class="headerlink" title="Code for Object Detection"></a>Code for Object Detection</h1><p><a href="https://github.com/facebookresearch/detectron2" target="_blank" rel="noopener">Detectron2</a> is the second iteration of FAIR’s framework for object detection and segmentation. It includes a lot of pretrained models, which can be found at the <a href="https://github.com/facebookresearch/detectron2/blob/master/MODEL_ZOO.md" target="_blank" rel="noopener">models zoo</a>. If you like PyTorch, I would suggest using Detectron2, it is basically plug-and-play!</p>
+<p>If you prefer TensorFlow though, you can use the official <a href="https://github.com/tensorflow/models/tree/master/research/object_detection" target="_blank" rel="noopener">TensorFlow Object Detection API</a>, where you can find the <a href="https://github.com/tensorflow/models/tree/master/research/object_detection/models" target="_blank" rel="noopener">code</a>, along with the pretrained <a href="https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md" target="_blank" rel="noopener">models zoo</a>.</p>
+<h2 id="Faster-R-CNN-1"><a href="#Faster-R-CNN-1" class="headerlink" title="Faster R-CNN"></a>Faster R-CNN</h2><ul>
+<li>PyTorch: Detectron2</li>
+<li>TensorFlow: TF Object Detection API</li>
+<li>Tensorpack: <a href="https://github.com/tensorpack/tensorpack/tree/master/examples/FasterRCNN" target="_blank" rel="noopener">link</a></li>
+</ul>
+<h2 id="Mask-R-CNN-1"><a href="#Mask-R-CNN-1" class="headerlink" title="Mask R-CNN"></a>Mask R-CNN</h2><ul>
+<li>PyTorch: Detectron2</li>
+<li>TensorFlow: TF Object Detection API or <a href="https://github.com/matterport/Mask_RCNN" target="_blank" rel="noopener">this</a></li>
+<li>Tensorpack: <a href="https://github.com/tensorpack/tensorpack/tree/master/examples/FasterRCNN" target="_blank" rel="noopener">link</a></li>
+</ul>
+<h2 id="YOLO-1"><a href="#YOLO-1" class="headerlink" title="YOLO"></a>YOLO</h2><ul>
+<li>Original, in C: <a href="https://pjreddie.com/darknet/yolo/" target="_blank" rel="noopener">link</a></li>
+<li>C (for Windows): Windows users will need to use another repository for Darknet. <a href="https://github.com/AlexeyAB/darknet" target="_blank" rel="noopener">This repo</a> is an excellent alternative, but you will need to compile it yourself (it definitely lost me some time)</li>
+<li>PyTorch: <a href="https://github.com/eriklindernoren/PyTorch-YOLOv3" target="_blank" rel="noopener">link</a></li>
+</ul>
+<h2 id="SSD-1"><a href="#SSD-1" class="headerlink" title="SSD"></a>SSD</h2><ul>
+<li>PyTorch: <a href="https://github.com/amdegroot/ssd.pytorch" target="_blank" rel="noopener">link</a></li>
+<li>TensorFlow: TF Object Detection API</li>
+</ul>
+<h2 id="RetinaNet-1"><a href="#RetinaNet-1" class="headerlink" title="RetinaNet"></a>RetinaNet</h2><ul>
+<li>PyTorch: Detectron2</li>
+<li>Keras: <a href="https://github.com/fizyr/keras-retinanet" target="_blank" rel="noopener">link</a></li>
+</ul>
+<h1 id="Code-for-Object-Tracking"><a href="#Code-for-Object-Tracking" class="headerlink" title="Code for Object Tracking"></a>Code for Object Tracking</h1><h2 id="ROLO-1"><a href="#ROLO-1" class="headerlink" title="ROLO"></a>ROLO</h2><ul>
+<li>TensorFlow: <a href="https://github.com/Guanghan/ROLO" target="_blank" rel="noopener">link</a></li>
+</ul>
+<h2 id="SiamMask-1"><a href="#SiamMask-1" class="headerlink" title="SiamMask"></a>SiamMask</h2><ul>
+<li>PyTorch 0.4.1: <a href="https://github.com/foolwood/SiamMask" target="_blank" rel="noopener">link</a></li>
+</ul>
+<h2 id="Deep-SORT-1"><a href="#Deep-SORT-1" class="headerlink" title="Deep SORT"></a>Deep SORT</h2><ul>
+<li>PyTorch ≥ 0.4.0: <a href="https://github.com/ZQPei/deep_sort_pytorch" target="_blank" rel="noopener">link</a></li>
+<li>TensorFlow ≥ 1.0: <a href="https://github.com/nwojke/deep_sort" target="_blank" rel="noopener">link</a></li>
+</ul>
+<h2 id="TrackR-CNN-1"><a href="#TrackR-CNN-1" class="headerlink" title="TrackR-CNN"></a>TrackR-CNN</h2><ul>
+<li>TensorFlow 1.13.1: <a href="https://github.com/VisualComputingInstitute/TrackR-CNN" target="_blank" rel="noopener">link</a></li>
+</ul>
+<h2 id="Tracktor-1"><a href="#Tracktor-1" class="headerlink" title="Tracktor++"></a>Tracktor++</h2><ul>
+<li>PyTorch 1.3.1: <a href="https://github.com/phil-bergmann/tracking_wo_bnw" target="_blank" rel="noopener">link</a></li>
+</ul>
+<h2 id="JDE-1"><a href="#JDE-1" class="headerlink" title="JDE"></a>JDE</h2><ul>
+<li>PyTorch ≥ 1.2.0: <a href="https://github.com/Zhongdao/Towards-Realtime-MOT" target="_blank" rel="noopener">link</a></li>
+</ul>
+<p><em>That’s all folks, thank you for reading!</em></p>
+<p><img src="https://miro.medium.com/max/60/0*c16kCeMIF5mvOaCh?q=20" alt="Image for post"></p>
+<p><img src="https://blog.netcetera.com/object-detection-and-tracking-in-2020-f10fb6ff9af3?gi=ba6f4ef498a3" alt="Image for post"><img src="https://miro.medium.com/max/956/0*c16kCeMIF5mvOaCh" alt="Image for post"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/03/09/qiwihui-pocket_readings-1044/" rel="prev" title="
+
+
+题目不让我做什么，我就偏要去做什么🤔 ">
+      <i class="fa fa-chevron-left"></i> 
+
+
+题目不让我做什么，我就偏要去做什么🤔 
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/03/15/qiwihui-pocket_readings-1046/" rel="next" title="外卖骑手盟主不见了，我们还能做什么？-尖椒部落">
+      外卖骑手盟主不见了，我们还能做什么？-尖椒部落 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Object-Detection-and-Tracking-in-2020-by-Borijan-Georgievski"><span class="nav-number"></span> <span class="nav-text">Object Detection and Tracking in 2020 by Borijan Georgievski</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Object-Detection-and-Tracking-in-2020"><span class="nav-number"></span> <span class="nav-text">Object Detection and Tracking in 2020</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#The-Old-School"><span class="nav-number"></span> <span class="nav-text">The Old School</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#The-Novel-Advancements-of-Object-Detection"><span class="nav-number"></span> <span class="nav-text">The Novel Advancements of Object Detection</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#R-CNN"><span class="nav-number"></span> <span class="nav-text">R-CNN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Fast-R-CNN"><span class="nav-number"></span> <span class="nav-text">Fast R-CNN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Faster-R-CNN"><span class="nav-number"></span> <span class="nav-text">Faster R-CNN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Mask-R-CNN"><span class="nav-number"></span> <span class="nav-text">Mask R-CNN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#YOLO"><span class="nav-number"></span> <span class="nav-text">YOLO</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SSD"><span class="nav-number"></span> <span class="nav-text">SSD</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RetinaNet"><span class="nav-number"></span> <span class="nav-text">RetinaNet</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#The-Novel-Advancements-of-Object-Tracking"><span class="nav-number"></span> <span class="nav-text">The Novel Advancements of Object Tracking</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ROLO"><span class="nav-number"></span> <span class="nav-text">ROLO</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SiamMask"><span class="nav-number"></span> <span class="nav-text">SiamMask</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Deep-SORT"><span class="nav-number"></span> <span class="nav-text">Deep SORT</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TrackR-CNN"><span class="nav-number"></span> <span class="nav-text">TrackR-CNN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Tracktor"><span class="nav-number"></span> <span class="nav-text">Tracktor++</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JDE"><span class="nav-number"></span> <span class="nav-text">JDE</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#The-Standoff"><span class="nav-number"></span> <span class="nav-text">The Standoff</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Code-for-Object-Detection"><span class="nav-number"></span> <span class="nav-text">Code for Object Detection</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Faster-R-CNN-1"><span class="nav-number"></span> <span class="nav-text">Faster R-CNN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Mask-R-CNN-1"><span class="nav-number"></span> <span class="nav-text">Mask R-CNN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#YOLO-1"><span class="nav-number"></span> <span class="nav-text">YOLO</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SSD-1"><span class="nav-number"></span> <span class="nav-text">SSD</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RetinaNet-1"><span class="nav-number"></span> <span class="nav-text">RetinaNet</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Code-for-Object-Tracking"><span class="nav-number"></span> <span class="nav-text">Code for Object Tracking</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ROLO-1"><span class="nav-number"></span> <span class="nav-text">ROLO</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SiamMask-1"><span class="nav-number"></span> <span class="nav-text">SiamMask</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Deep-SORT-1"><span class="nav-number"></span> <span class="nav-text">Deep SORT</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TrackR-CNN-1"><span class="nav-number"></span> <span class="nav-text">TrackR-CNN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Tracktor-1"><span class="nav-number"></span> <span class="nav-text">Tracktor++</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JDE-1"><span class="nav-number"></span> <span class="nav-text">JDE</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

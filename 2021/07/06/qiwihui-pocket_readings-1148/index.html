@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Python Best Practices for a New Project in 2021">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python Best Practices for a New Project in 2021">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/07/06/qiwihui-pocket_readings-1148/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="Python Best Practices for a New Project in 2021">
+<meta property="og:image" content="https://mitelman.engineering/images/blog/python-best-practice//Untitled.png">
+<meta property="og:image" content="https://mitelman.engineering/images/blog/python-best-practice/Untitled%201.png">
+<meta property="og:image" content="https://mitelman.engineering/images/blog/python-best-practice/Untitled%202.png">
+<meta property="og:image" content="https://mitelman.engineering/images/blog/python-best-practice/Untitled%203.png">
+<meta property="og:image" content="https://mitelman.engineering/images/blog/python-best-practice/Untitled%204.png">
+<meta property="og:image" content="https://mitelman.engineering/images/blog/python-best-practice/Untitled%205.png">
+<meta property="og:image" content="https://mitelman.engineering/images/blog/python-best-practice/Untitled%206.png">
+<meta property="og:image" content="https://mitelman.engineering/images/blog/python-best-practice/Untitled%207.png">
+<meta property="og:image" content="https://mitelman.engineering/images/blog/python-best-practice/Untitled%208.png">
+<meta property="og:image" content="https://mitelman.engineering/images/blog/python-best-practice/Untitled%209.png">
+<meta property="og:image" content="https://mitelman.engineering/images/blog/python-best-practice/Untitled%2010.png">
+<meta property="og:image" content="https://mitelman.engineering/images/blog/python-best-practice/Untitled%2011.png">
+<meta property="og:image" content="https://mitelman.engineering/images/blog/python-best-practice/Untitled%2012.png">
+<meta property="og:image" content="https://mitelman.engineering/images/blog/python-best-practice/Untitled%2013.png">
+<meta property="og:image" content="https://mitelman.engineering/images/blog/python-best-practice/Untitled%2014.png">
+<meta property="og:image" content="https://mitelman.engineering/images/blog/python-best-practice/Untitled%2015.png">
+<meta property="og:image" content="https://mitelman.engineering/images/blog/python-best-practice/Untitled%2016.png">
+<meta property="og:image" content="https://mitelman.engineering/images/blog/python-best-practice/Untitled%2017.png">
+<meta property="og:image" content="https://mitelman.engineering/images/blog/python-best-practice/Untitled%2018.png">
+<meta property="og:image" content="https://mitelman.engineering/images/blog/python-best-practice/Untitled%2019.png">
+<meta property="article:published_time" content="2021-07-06T04:21:15.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.406Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://mitelman.engineering/images/blog/python-best-practice//Untitled.png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/07/06/qiwihui-pocket_readings-1148/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>Python Best Practices for a New Project in 2021 | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/07/06/qiwihui-pocket_readings-1148/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Python Best Practices for a New Project in 2021
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-07-06 04:21:15" itemprop="dateCreated datePublished" datetime="2021-07-06T04:21:15+00:00">2021-07-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">Python Best Practices for a New Project in 2021</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>The goal of this tutorial is to describe Python development ecosystem. It can be helpful for someone coming to Python from another programming language.<br><br><br><br>Tags: python<br><br><br><br>via Pocket <a href="https://ift.tt/3yBsFAn" target="_blank" rel="noopener">https://ift.tt/3yBsFAn</a> original site<br><br><br><br>July 06, 2021 at 11:38AM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1148#issuecomment-874448132" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>7/6/2021</strong></p>
+</blockquote>
+<h2 id="Python-Best-Practices-for-a-New-Project-in-2021-by-Alex-Mitelman"><a href="#Python-Best-Practices-for-a-New-Project-in-2021-by-Alex-Mitelman" class="headerlink" title="Python Best Practices for a New Project in 2021 by Alex Mitelman"></a>Python Best Practices for a New Project in 2021 by Alex Mitelman</h2><h2 id="Intro"><a href="#Intro" class="headerlink" title="Intro"></a>Intro</h2><p>The goal of this tutorial is to describe Python development ecosystem. It can be helpful for someone coming to Python from another programming language.</p>
+<p>They say that you should stick to algorithms and data structures, that you can learn a new language in just a couple of weeks, that it’s just a new syntax. I completely agree that algorithms and data structures are extremely important but when it comes to language it’s slightly more than just syntax. There is an entire infrastructure of tools and best practices around it. For someone coming from a different background, it can be overwhelming to keep up with all this stuff, especially taking into consideration that sometimes information should be found in different places.</p>
+<p>This is my very opinionated attempt to compile some of the best practices on setting up a new Python environment for local development. There are also advices for integration these tools with Visual Studio Code, however, it’s not necessary to use this particular editor. I’m going to update this page as there are some changes with the underlying tools. I also plan to use it myself as a boilerplate for starting a new Python project. The tutorial is long because I explain in detail purpose and usage of the tools, however, the end result is quick set up of the new project environment that can be achieved in just a couple of minutes. See <a href="https://mitelman.engineering/#fast-track" target="_blank" rel="noopener">Fast Track</a> section.</p>
+<h2 id="How-to-manage-Python-versions-with-pyenv"><a href="#How-to-manage-Python-versions-with-pyenv" class="headerlink" title="How to manage Python versions with pyenv?"></a>How to manage Python versions with pyenv?</h2><h3 id="Why-use-pyenv"><a href="#Why-use-pyenv" class="headerlink" title="Why use pyenv?"></a>Why use pyenv?</h3><p>Many tutorials start with the same thing: go to <a href="https://python.org/" target="_blank" rel="noopener">python.org</a> and download the latest version of the language for you platform. Don’t listen to them. There is a better way. And here is why.</p>
+<p>There are different versions of Python and you would need switching between these versions while working on different projects.</p>
+<p>There is probably some version of Python already coming with your operation system. For Mac it’s 2.7, some Linux distributions already switched to version 3. Even more, there is another Python installed as a part of Anaconda package. The bottom line is: you never know for sure which Python is going to be run as you type <code>python</code> in the command line.</p>
+<p>At some point, there’s going to be a mess of different Python executables on your machine, and you will need some way of managing it. If only there was a tool for that.</p>
+<p>And there is. It’s called <code>pyenv</code> - <a href="https://github.com/pyenv/pyenv" target="_blank" rel="noopener">https://github.com/pyenv/pyenv</a></p>
+<h3 id="How-to-install-pyenv"><a href="#How-to-install-pyenv" class="headerlink" title="How to install pyenv?"></a>How to install pyenv?</h3><p>Install for Mac:</p>
+<pre><code>brew update
+brew install pyenv</code></pre><p>For Linux you’d probably better off with <code>pyenv installer</code> - <a href="https://github.com/pyenv/pyenv-installer" target="_blank" rel="noopener">https://github.com/pyenv/pyenv-installer</a>:</p>
+<pre><code>curl https://pyenv.run | bash</code></pre><p>For Windows, there is <code>pyenv for Windows</code> - <a href="https://github.com/pyenv-win/pyenv-win" target="_blank" rel="noopener">https://github.com/pyenv-win/pyenv-win</a>.</p>
+<p>But you’d probably better off with Windows Subsystem for Linux (WSL), then installing it the Linux way.</p>
+<h3 id="How-to-use-pyenv"><a href="#How-to-use-pyenv" class="headerlink" title="How to use pyenv?"></a>How to use pyenv?</h3><p>First, we can see a list of all Python executables, if any, that are installed on your machine (at least the ones <code>pyenv</code> was able to find):</p>
+<pre><code>pyenv versions
+
+
+* system (set by /Users/alex/.python-version)</code></pre><p>Above shown the output for my machine. Here asterisk indicates the current active version of Python. So if I run</p>
+<pre><code>python -V
+
+
+Python 2.7.16</code></pre><p>we can see that MacOS is still shipped with Python 2.7 as a system executable.</p>
+<p>Now let’s see all the available Python versions:</p>
+<pre><code>pyenv install --list</code></pre><p>This will output a long list of different Python versions. You will be surprised how many Pythons there are. CPython implementations default to versions like <code>3.8.5</code>, other have prefixes like <code>pypy3.6-7.3.1</code>.</p>
+<p>If you want to see only CPython version, you can run something like this:</p>
+<pre><code>pyenv install --list | grep &quot; 3\.&quot;</code></pre><p>If you are using <code>pyenv</code> for quite some time, and there is no new version in the list, you should update <code>pyenv</code> itself:</p>
+<pre><code>brew upgrade pyenv</code></pre><p>or</p>
+<pre><code>pyenv update</code></pre><p>Versions with suffix <code>-dev</code> are currently in active development.</p>
+<p>Let’s install the most new and stable Python version to the moment of writing this post</p>
+<pre><code>pyenv install 3.8.5</code></pre><p>This downloads the source code and compiles it on your machine:</p>
+<pre><code>python-build: use [email protected] from homebrew
+python-build: use readline from homebrew
+Downloading Python-3.8.5.tar.xz...
+-&gt; https://www.python.org/ftp/python/3.8.5/Python-3.8.5.tar.xz
+Installing Python-3.8.5...
+python-build: use readline from homebrew
+python-build: use zlib from xcode sdk
+Installed Python-3.8.5 to /Users/alex/.pyenv/versions/3.8.5</code></pre><p>If we run <code>pyenv versions</code> again, we see our new version in the list but it’s still not active</p>
+<pre><code>* system (set by /Users/alex/.python-version)
+  3.8.5</code></pre><p>We can verify it with <code>python -V</code>. Still</p>
+<pre><code>Python 2.7.16</code></pre><p><code>pyenv</code> allows us to set up any version of Python as a global Python interpreter but we are not going to do that. There can be some scripts or other programs that rely on the default interpreter, so we don’t want to mess that up. Instead, we are going to set up Python per project. So let’s create a project in the next section.</p>
+<p>Alternative tool: <code>asdf</code>: <a href="https://asdf-vm.com/" target="_blank" rel="noopener">https://asdf-vm.com/</a></p>
+<h2 id="Dependency-management-for-Python-with-Poetry"><a href="#Dependency-management-for-Python-with-Poetry" class="headerlink" title="Dependency management for Python with Poetry"></a>Dependency management for Python with Poetry</h2><h3 id="Why-use-Poetry"><a href="#Why-use-Poetry" class="headerlink" title="Why use Poetry?"></a>Why use Poetry?</h3><p>By default, Python packages are installed with <code>pip install</code>. In reality nobody uses it this way. It installs all your dependencies into one version of Python interpreter which messes up dependencies.</p>
+<p>It’s a good practice to install dependencies per project. So each project only contains dependencies that are required for it, and nothing more. This also prevents conflicts of versions of different packages that are required for different projects.</p>
+<p>To solve this problem, there is a concept of virtual environments. So each project has it’s own virtual environment with fixed Python version and fixed dependencies specific for this project.</p>
+<p>Virtual environments evolved from <code>venv</code>, <code>virtualenv</code>, <code>virtualenvwrapper</code> to <code>pipenv</code>, and <code>poetry</code>. <code>pipenv</code> is very popular and was a good choice for a long time. There was some controversy about <code>pipenv</code> that is greatly covered by this blog post: <a href="https://chriswarrick.com/blog/2018/07/17/pipenv-promises-a-lot-delivers-very-little/#" target="_blank" rel="noopener">Pipenv: promises a lot, delivers very little</a> by Chris Warrick. One of the biggest concerns was delay in releases - there was no new release since 2018. Although, mid 2020 <code>pipenv</code> became active again with several new updates, lots of developers made up their mind already. Poetry gained some traction, in addition it claims to <a href="https://github.com/python-poetry/poetry#what-about-pipenv" target="_blank" rel="noopener">better</a> resolve dependencies where <code>pipenv</code> fails. Also, Poetry can be helpful for open source projects as it helps publishing the package.</p>
+<p>Poetry official website: <a href="https://python-poetry.org/" target="_blank" rel="noopener">https://python-poetry.org/</a></p>
+<h3 id="How-to-install-Poetry"><a href="#How-to-install-Poetry" class="headerlink" title="How to install Poetry?"></a>How to install Poetry?</h3><p>So, let’s get it started. It is recommended to install Poetry on a system level.</p>
+<p>For MacOS, Linux, and WSL:</p>
+<pre><code>curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python</code></pre><p>If you use Powershell with Windows, there is a script for that on the <a href="https://python-poetry.org/docs/#windows-powershell-install-instructions" target="_blank" rel="noopener">official website</a> but I personally suggest just using WSL.</p>
+<p>To apply changes for your current shell session, run</p>
+<pre><code>source $HOME/.poetry/env</code></pre><p>You may add this to the auto-run shell script like <code>.bashrc</code> or <code>.zshrc</code> if <code>Poetry</code> doesn’t appear in a new shell session:</p>
+<pre><code>export PATH=&quot;$HOME/.poetry/bin:$PATH&quot;</code></pre><p>You can also enable tab completions for your shell. The process is described <a href="https://python-poetry.org/docs/#enable-tab-completion-for-bash-fish-or-zsh" target="_blank" rel="noopener">here</a>.</p>
+<h3 id="How-to-create-new-project-with-Poetry"><a href="#How-to-create-new-project-with-Poetry" class="headerlink" title="How to create new project with Poetry?"></a>How to create new project with Poetry?</h3><p>Poetry creates a folder structure for you, so make sure to change your current directory to one that is supposed to be a parent directory for the new project and then run:</p>
+<pre><code>poetry new my-project</code></pre><p>where <code>my-project</code> is the name of the project. Put a name of your project instead.</p>
+<p>Now, let’s see what <code>Poetry</code> created for us:</p>
+<pre><code>cd my-project; ls</code></pre><h3 id="How-to-set-Python-version-per-project"><a href="#How-to-set-Python-version-per-project" class="headerlink" title="How to set Python version per project?"></a>How to set Python version per project?</h3><p>We were still using old Python 2.7, remember? For our new project, we want to use modern version of Python, so we are back to <code>pyenv</code> tool. As we are still in the project directory, set Python version locally for this directory:</p>
+<pre><code>pyenv local 3.8.5</code></pre><p>If we run <code>pyenv versions</code> now, we can see that 3.8.5 is marked with asterisk, so it’s active for this directory. Note that outside of this directory Python version remains the same as before.</p>
+<pre><code>system
+* 3.8.5 (set by /Users/alex/iCloud/dev/projects/my-project/.python-version)</code></pre><p>We can double check it with <code>python -V</code>.</p>
+<pre><code>Python 3.8.5</code></pre><p>Now we make Poetry pick up current Python version:</p>
+<pre><code>poetry env use python
+
+
+Creating virtualenv my-project-PSaGJAu6-py3.8 in /Users/alex/Library/Caches/pypoetry/virtualenvs
+Using virtualenv: /Users/alex/Library/Caches/pypoetry/virtualenvs/my-project-PSaGJAu6-py3.8</code></pre><p>As the last step of setting up Python version, let’s update <code>pyproject.toml</code>. <code>[tool.poetry.dependencies]</code> should reflect that supported version of Python is 3.8 or higher:</p>
+<pre><code>[tool.poetry]
+name = &quot;my-project&quot;
+version = &quot;0.1.0&quot;
+description = &quot;&quot;
+authors = [&quot;Alex&quot;]
+
+[tool.poetry.dependencies]
+python = &quot;^3.8&quot;
+
+[tool.poetry.dev-dependencies]
+pytest = &quot;^5.2&quot;
+
+[build-system]
+requires = [&quot;poetry-core&gt;=1.0.0a5&quot;]
+build-backend = &quot;poetry.core.masonry.api&quot;</code></pre><h3 id="How-to-use-Poetry"><a href="#How-to-use-Poetry" class="headerlink" title="How to use Poetry?"></a>How to use Poetry?</h3><p>On the next step, you probably want to install your first dependency: some library or framework on top of which you plan to build the project. For example:</p>
+<pre><code>poetry add aiohttp</code></pre><p>where <code>aiohttp</code> is the framework we install.</p>
+<p>If you pull an existing project and want to install its dependencies for local development, simply run</p>
+<pre><code>poetry install</code></pre><p>To bump all the dependencies to the latest versions:</p>
+<pre><code>poetry update</code></pre><h3 id="How-to-use-Poetry-with-VS-Code"><a href="#How-to-use-Poetry-with-VS-Code" class="headerlink" title="How to use Poetry with VS Code?"></a>How to use Poetry with VS Code?</h3><p>VS Code doesn’t detect Poetry automatically. Good news though, there is a simple way to make VS Code detect virtual environment created by Poetry.</p>
+<p>First, we have to activate virtual environment:</p>
+<pre><code>poetry shell
+
+
+Spawning shell within /Users/alex/Library/Caches/pypoetry/virtualenvs/my-project-PSaGJAu6-py3.8
+➜  my-project . /Users/alex/Library/Caches/pypoetry/virtualenvs/my-project-PSaGJAu6-py3.8/bin/activate
+(my-project-PSaGJAu6-py3.8) ➜  my-project</code></pre><p>So now, as we are inside said virtual environment, we can call VS Code from it:</p>
+<pre><code>code .</code></pre><p>Install <a href="https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance" target="_blank" rel="noopener">Pylance</a> - Python language server for VS Code.</p>
+<p>As you open any Python file, VS Code immediately asks us to choose a Python interpreter</p>
+<p><img src="https://mitelman.engineering/images/blog/python-best-practice//Untitled.png" alt="/images/blog/python-best-practice/Untitled.png"></p>
+<p>So let’s do exactly what we were asked. Because we called VS Code from within the virtual environment, the right interpreter will be presented as an option and we can choose it.</p>
+<p><img src="https://mitelman.engineering/images/blog/python-best-practice/Untitled%201.png" alt="/images/blog/python-best-practice/Untitled%201.png"></p>
+<p>Notice that there are two options for 3.8.5, we should select the one that sits under virtual environment (see file path, it should contain <code>virtualenv</code>).</p>
+<p>In general, you can like this Github issue to add support for Poetry to VS Code: <a href="https://github.com/microsoft/vscode-python/issues/8372" target="_blank" rel="noopener">https://github.com/microsoft/vscode-python/issues/8372</a> to keep track of the progress. As Brett Cannon <a href="https://github.com/microsoft/vscode-python/issues/8372#issuecomment-668807397" target="_blank" rel="noopener">said</a>, VS Code team is reworking environment discovery code, so eventually Poetry will be fully supported by VS Code.</p>
+<h3 id="How-to-upgrade-Poetry"><a href="#How-to-upgrade-Poetry" class="headerlink" title="How to upgrade Poetry?"></a>How to upgrade Poetry?</h3><p>Simply running <code>poetry self update</code> will bump to the most recent version of Poetry.</p>
+<p>If you run into error</p>
+<pre><code>ImportError: No module named cleo</code></pre><p>you’d need to reinstall Poetry by removing it first:</p>
+<pre><code>curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py &gt; get-poetry.py
+python get-poetry.py --uninstall
+python get-poetry.py
+rm get-poetry.py</code></pre><h3 id="How-to-upgrade-Python-version-with-Poetry-and-pyenv"><a href="#How-to-upgrade-Python-version-with-Poetry-and-pyenv" class="headerlink" title="How to upgrade Python version with Poetry and pyenv?"></a>How to upgrade Python version with Poetry and pyenv?</h3><p>Time has passed and the new Python version was released. There are new features and bugfixes, so we want to bump Python version in our project. This is a pretty straightforward task for <code>pyenv</code> and Poetry.</p>
+<p>First, we download, compile and set up the new Python interpreter. Make sure to run this command not from virtual environment but from the project root folder. In my case, I’m going to upgrade to CPython 3.9.2 which is available at the time of writing this text but it can be any other version of CPython interpreter.</p>
+<pre><code>pyenv install 3.9.2
+pyenv local 3.9.2
+pyenv versions
+
+
+my-project pyenv versions
+  system
+  3.8.5
+* 3.9.2 (set by /Users/alex/iCloud/dev/projects/my-project/.python-version)</code></pre><p>Next, we make Poetry use this interpreter for virtual environments.</p>
+<pre><code>poetry env use python
+
+
+Creating virtualenv my-project-PSaGJAu6-py3.9 in /Users/alex.mitelman/Library/Caches/pypoetry/virtualenvs
+Using virtualenv: /Users/alex/Library/Caches/pypoetry/virtualenvs/my-project-PSaGJAu6-py3.9</code></pre><p>Notice that the project hash remains the same as before but the Python version is now 3.9.</p>
+<p>As we have a new virtual environment, we have to reinstall all the dependencies for it:</p>
+<pre><code>poetry install</code></pre><p>On the next step, we just activate virtual environment and double check that the right version of Python was picked up. We also start VS Code from within the virtual environment, so it is able to discover new environment (make sure to close VS Code before that).</p>
+<pre><code>poetry shell
+python -V
+code .</code></pre><p>Finally, at the bottom left corner click on Python and choose the updated version from the list. Make sure that you pick virtual environment version.</p>
+<p><img src="https://mitelman.engineering/images/blog/python-best-practice/Untitled%202.png" alt="/images/blog/python-best-practice/Untitled%202.png"></p>
+<p><img src="https://mitelman.engineering/images/blog/python-best-practice/Untitled%203.png" alt="/images/blog/python-best-practice/Untitled%203.png"></p>
+<blockquote>
+<p>The above images show version 3.9.0 that was used for the previous version of the article</p>
+</blockquote>
+<p>Don’t forget to update <code>[tool.poetry.dependencies]</code> section in <code>pyproject.toml</code> file to reflect the Python version support.</p>
+<p>VS Code will prompt you to choose linter, code formatter, etc. Please ignore those prompts for now. We will set them up later on in this tutorial.</p>
+<p>Alternative: <code>venv</code> - built in with Python.</p>
+<h2 id="How-to-test-with-pytest"><a href="#How-to-test-with-pytest" class="headerlink" title="How to test with pytest?"></a>How to test with pytest?</h2><h3 id="Why-use-pytest"><a href="#Why-use-pytest" class="headerlink" title="Why use pytest?"></a>Why use pytest?</h3><p>Tests are important, so first thing we do after creating the project is taking care of tests.</p>
+<p><code>pytest</code> is a popular framework that received a broad adoption. In fact, it’s so popular, that it comes as a default testing framework for Poetry. So if we open <code>[tool.poetry.dev-dependencies]</code> section in <code>pyproject.toml</code> we can see that <code>pytest</code> is already listed there as a development dependency.</p>
+<p>More than that, Poetry created tests folder structure for us.</p>
+<pre><code>cd tests; ls
+
+
+__init__.py        __pycache__        test_my_project.py</code></pre><h3 id="How-to-use-pytest-with-VS-Code"><a href="#How-to-use-pytest-with-VS-Code" class="headerlink" title="How to use pytest with VS Code?"></a>How to use pytest with VS Code?</h3><p>As an intentionally oversimplified example, let’s create and test function that multiplies two numbers. According to TDD, we create test first.</p>
+<p>Let’s open <code>test_my_project.py</code> and add import of the function and very simple test:</p>
+<pre><code>from my_project.math import multiply_two_numbers
+
+def test_multiply_two_numbers():
+    result = multiply_two_numbers(2, 3)
+    assert result == 6</code></pre><p>Instead of running our tests from the terminal, let’s take advantage of code editor. ⇧⌘P - start typing “Python: Discover Tests” and select it from the dropdown. (Keybord shortcuts here and further are for macOS)</p>
+<p><img src="https://mitelman.engineering/images/blog/python-best-practice/Untitled%204.png" alt="/images/blog/python-best-practice/Untitled%204.png"></p>
+<p>Test framework selection appears in the bottom right corner. Click the button:</p>
+<p><img src="https://mitelman.engineering/images/blog/python-best-practice/Untitled%205.png" alt="/images/blog/python-best-practice/Untitled%205.png"></p>
+<p>and select <code>pytest</code> in the dropdown:</p>
+<p><img src="https://mitelman.engineering/images/blog/python-best-practice/Untitled%206.png" alt="/images/blog/python-best-practice/Untitled%206.png"></p>
+<p>As the last step, it asks you to provide directory that contains all your tests:</p>
+<p><img src="https://mitelman.engineering/images/blog/python-best-practice/Untitled%207.png" alt="/images/blog/python-best-practice/Untitled%207.png"></p>
+<p>VS Code discovered our tests, so now it adds fancy buttons to run or debug particular test.</p>
+<p><img src="https://mitelman.engineering/images/blog/python-best-practice/Untitled%208.png" alt="/images/blog/python-best-practice/Untitled%208.png"></p>
+<p>As we run tests with VS Code, it obviously marks them red as we didn’t implement the function yet.</p>
+<p><img src="https://mitelman.engineering/images/blog/python-best-practice/Untitled%209.png" alt="/images/blog/python-best-practice/Untitled%209.png"></p>
+<p>So let’s create <code>math.py</code> file in <code>my_project</code> directory and then implement our simple function:</p>
+<pre><code>def multiply_two_numbers(a, b):
+    return a * b</code></pre><p>As we run tests again, they are marked green now</p>
+<p><img src="https://mitelman.engineering/images/blog/python-best-practice/Untitled%2010.png" alt="/images/blog/python-best-practice/Untitled%2010.png"></p>
+<p>Alternatively, you can run tests from the command line with</p>
+<pre><code>poetry run pytest</code></pre><p>or from the activated virtual environment just</p>
+<pre><code>pytest</code></pre><p>Alternative: <code>unittest</code> - included with default Python distribution. Disadvantages: non-Pythonic camelcase API, slightly harder syntax.</p>
+<h2 id="How-to-measure-tests-coverage-with-pytest-cov"><a href="#How-to-measure-tests-coverage-with-pytest-cov" class="headerlink" title="How to measure tests coverage with pytest-cov?"></a>How to measure tests coverage with pytest-cov?</h2><p>Where tests, there’s coverage. We can install <code>pytest-cov</code> plugin for <code>pytest</code> to measure tests coverage:</p>
+<pre><code>poetry add --dev pytest-cov</code></pre><p>Now running tests with an additional parameter will generate a coverage report:</p>
+<pre><code>pytest --cov=my_project tests/
+
+
+================================================= test session starts =============
+platform darwin -- Python 3.9.2, pytest-5.4.3, py-1.9.0, pluggy-0.13.1
+rootdir: /Users/alex/iCloud/dev/projects/my-project
+plugins: cov-2.10.1
+collected 2 items                                                                                                     
+
+tests/test_my_project.py ..                                                  [100%]
+
+----------- coverage: platform darwin, python 3.9.2 -----------
+Name                     Stmts   Miss  Cover
+--------------------------------------------
+my_project/__init__.py       1      0   100%
+my_project/math.py           4      0   100%
+--------------------------------------------
+TOTAL                        5      0   100%
+
+================================================== 2 passed in 0.08s ===============</code></pre><p>This also generates <code>.coverage</code> file which we don’t want in our version control, so let’s not forget to add it <code>.gitignore</code>:</p>
+<pre><code>echo &apos;.coverage&apos; &gt; .gitignore</code></pre><h2 id="How-to-run-checks-before-committing-changes-with-pre-commit"><a href="#How-to-run-checks-before-committing-changes-with-pre-commit" class="headerlink" title="How to run checks before committing changes with pre-commit?"></a>How to run checks before committing changes with pre-commit?</h2><h3 id="Use-Git"><a href="#Use-Git" class="headerlink" title="Use Git"></a>Use Git</h3><p>We didn’t talk about version control yet, and we should. Obviously, we are using Git in 2021. Install or update to the latest version. For macOS:</p>
+<pre><code>brew install git</code></pre><p>If there is no repository for the project yet, we should create it. Github creates new repositories with <code>main</code> default branch now, so let’s create it this way too:</p>
+<pre><code>git init -b main</code></pre><p>First thing first, we should have <code>.gitignore</code> file, so we don’t commit some temporary or binary files to the repo. We can manually copy-paste it from here <a href="https://github.com/github/gitignore/blob/master/Python.gitignore" target="_blank" rel="noopener">https://github.com/github/gitignore/blob/master/Python.gitignore</a> or simply run following command which will create <code>.gitignore</code> and download content of the above link into it. You must be in your project root directory.</p>
+<pre><code>curl -s https://raw.githubusercontent.com/github/gitignore/master/Python.gitignore &gt;&gt; .gitignore</code></pre><p>You may exclude VS Code settings folder from version control. In addition, we may also exclude PyCharm settings if someone uses that code editor.</p>
+<pre><code>echo &apos;.vscode/\n.idea/&apos; &gt;&gt; .gitignore</code></pre><p>Same way</p>
+<p>Now let’s add everything we have so far to version control:</p>
+<pre><code>git add .</code></pre><h3 id="Why-run-checks-before-commit"><a href="#Why-run-checks-before-commit" class="headerlink" title="Why run checks before commit?"></a>Why run checks before commit?</h3><p>As you can see (and will see further down in the tutorial), the boilerplate for the project is big. It’s easy to miss out on something or forget to apply some checks before committing your code to the remote repo. As a consequence, the code will not pass CI automation, your colleagues or maintainers may ask you to make some changes to the code during the code review. All this because of a small nitpick like absence of a newline character at the end of a file. Having newline there is a <a href="https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap03.html#tag_03_206" target="_blank" rel="noopener">POSIX standard</a>. Even if you are well aware of that, it’s very easy to forget or miss out on this. All this back and forth is just a waste of time which could be easily avoided if there was some automation before we commit a piece of code. And there is.</p>
+<p>Please welcome <a href="https://pre-commit.com/" target="_blank" rel="noopener"><code>pre-commit</code></a>. It’s a tool to run automatic checks on every git commit. It’s easy to use and it doesn’t require root access. By the way, <code>pre-commit</code> is written in Python but can be used for projects in various programming languages.</p>
+<h3 id="How-to-install-and-use-pre-commit"><a href="#How-to-install-and-use-pre-commit" class="headerlink" title="How to install and use pre-commit?"></a>How to install and use pre-commit?</h3><p><code>pre-commit</code> can be installed on a system level but we don’t want to do that exactly for the reasons we started using <code>pyenv</code> - we are going to use different Python versions and our dependencies should be in order. That’s why we install <code>pre-commit</code> as a development dependency:</p>
+<pre><code>poetry add pre-commit --dev</code></pre><p>Going forward we will put all our linters and other stuff into the pre-commit hook. For the time being, we are going to create a simple config for small stuff like end of file newline that we discussed as an example.</p>
+<p>There is a command for <code>pre-commit</code> to conveniently create a sample file for us. Executed from our project root:</p>
+<pre><code>pre-commit sample-config &gt; .pre-commit-config.yaml</code></pre><p>it creates a config file with the following content:</p>
+<pre><code># See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.4.0
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+    -   id: check-yaml
+    -   id: check-added-large-files</code></pre><p>We can see that <code>pre-commit</code> already created some handy hooks for us. Let’s see how it works. To run checks manually:</p>
+<pre><code>pre-commit run --all-files</code></pre><p>After running <code>pre-commit</code>, it already found that even file that was created by VS Code didn’t contain newline at the end!</p>
+<pre><code>Trim Trailing Whitespace.................................................Passed
+Fix End of Files.........................................................Failed
+- hook id: end-of-file-fixer
+- exit code: 1
+- files were modified by this hook
+
+Fixing my_project/math.py
+Fixing .vscode/settings.json
+Fixing tests/test_my_project.py
+
+Check Yaml...............................................................Passed
+Check for added large files..............................................Passed</code></pre><p><code>pre-commit</code> actually fixed that for us, so if we run the same command again, all checks are passed OK.</p>
+<pre><code>Trim Trailing Whitespace.................................................Passed
+Fix End of Files.........................................................Passed
+Check Yaml...............................................................Passed
+Check for added large files..............................................Passed</code></pre><p>The most important part is to make Git aware of these hooks and to run them before each commit.</p>
+<pre><code>pre-commit install
+
+
+pre-commit installed at .git/hooks/pre-commit</code></pre><p>Now, we can commit changes:</p>
+<pre><code>git commit -m &apos;Initial commit&apos;
+
+
+Trim Trailing Whitespace.................................................Passed
+Fix End of Files.........................................................Passed
+Check Yaml...............................................................Passed
+Check for added large files..............................................Passed
+[master (root-commit) 7dc335f] Initial commit
+ 11 files changed, 559 insertions(+)
+ create mode 100644 .gitignore
+ create mode 100644 .pre-commit-config.yaml
+ create mode 100644 .python-version
+ create mode 100644 .vscode/settings.json
+ create mode 100644 README.rst
+ create mode 100644 my_project/__init__.py
+ create mode 100644 my_project/math.py
+ create mode 100644 poetry.lock
+ create mode 100644 pyproject.toml
+ create mode 100644 tests/__init__.py
+ create mode 100644 tests/test_my_project.py</code></pre><p>As we can see, hooks were run before the commit. Just as planned.</p>
+<p>One last thing, we can ask <code>pre-commit</code> to keep config updated to the latest version of tools:</p>
+<pre><code>pre-commit autoupdate</code></pre><p>It immediately updates hook for me:</p>
+<pre><code>Updating https://github.com/pre-commit/pre-commit-hooks ... updating v2.4.0 -&gt; v3.2.0.</code></pre><h2 id="Code-analysis-with-Flake8-linter"><a href="#Code-analysis-with-Flake8-linter" class="headerlink" title="Code analysis with Flake8 linter"></a>Code analysis with Flake8 linter</h2><h3 id="Why-use-linter-for-Python-project"><a href="#Why-use-linter-for-Python-project" class="headerlink" title="Why use linter for Python project?"></a>Why use linter for Python project?</h3><p>Linters are on the front line of the fight with errors and bugs. They signal you even before you run the code. Obviously, IDEs support linters, so you don’t even have to run the manually. IDE with the help of linter can flag wrong code right in the moment you actually write it.</p>
+<p>In Python world, there are lots of linters but two major ones are <a href="https://flake8.pycqa.org/" target="_blank" rel="noopener">Flake8</a> and <a href="https://www.pylint.org/" target="_blank" rel="noopener">Pylint</a>.</p>
+<p>Pylint is a very strict and nit-picky linter. Google uses it for their Python projects internally according to their <a href="https://google.github.io/styleguide/pyguide.html#211-definition" target="_blank" rel="noopener">guidelines</a>. Because of it’s nature, you’ll probably spend a lot of time fighting or configuring it. Which is maybe not bad, by the way. Outcome of such strictness can be a safer code, however, as a consequence - longer development time.</p>
+<p>Most popular open source projects use Flake8. But before we start, there is another hero in the Python world we should talk about.</p>
+<h3 id="Python-Style-Guide-PEP8"><a href="#Python-Style-Guide-PEP8" class="headerlink" title="Python Style Guide - PEP8"></a>Python Style Guide - PEP8</h3><p>Python Style Guide, more famous by it’s Python Enhancement Proposal number- PEP8. Every Python developer should get themselves familiar with <a href="https://www.python.org/dev/peps/pep-0008/" target="_blank" rel="noopener">PEP8</a>, along with <a href="https://www.python.org/dev/peps/pep-0020/" target="_blank" rel="noopener">Zen of Python</a> (PEP 20).</p>
+<p>After reading through PEP8, you may wonder if there is a way to automatically check and enforce these guidelines? Flake8 does exactly this, and a bit more. It works out of the box, and can be configured in case you want to change some specific settings.</p>
+<p>While it’s not as strict as Pylint, it still does a great job on a first line of defense.</p>
+<p>That’s why I recommend sticking to Flake8. You can still use Pylint as a second linter but Flake8 is a bare minimum.</p>
+<h3 id="How-to-install-Flake8"><a href="#How-to-install-Flake8" class="headerlink" title="How to install Flake8?"></a>How to install Flake8?</h3><p>VS Code will prompt you to select linter for the project. You can also press ⇧⌘P, start typing “linter” and choose “Python: Select Linter”</p>
+<p><img src="https://mitelman.engineering/images/blog/python-best-practice/Untitled%2011.png" alt="/images/blog/python-best-practice/Untitled%2011.png"></p>
+<p>Then choose “flake8”</p>
+<p><img src="https://mitelman.engineering/images/blog/python-best-practice/Untitled%2012.png" alt="/images/blog/python-best-practice/Untitled%2012.png"></p>
+<p>VS Code should pick up your virtual environment and install Flake8 as a development dependency.</p>
+<p>If it doesn’t happen or if you want to install it from the command line, here is a way:</p>
+<pre><code>poetry add flake8 --dev</code></pre><h3 id="How-to-use-Flake8"><a href="#How-to-use-Flake8" class="headerlink" title="How to use Flake8?"></a>How to use Flake8?</h3><p>Getting back to a small portion of the code we wrote in a previous section. VS Code marks red some code that linter found problem with. By setting a pointer to that part we can see an error message, error number (that we can search on the internet), and the linter that flagged the error.</p>
+<p><img src="https://mitelman.engineering/images/blog/python-best-practice/Untitled%2013.png" alt="/images/blog/python-best-practice/Untitled%2013.png"></p>
+<p>We can also run Flake8 manually to see the same result:</p>
+<pre><code>flake8 .
+
+
+./tests/test_my_project.py:4:1: E302 expected 2 blank lines, found 1
+./tests/test_my_project.py:7:1: E302 expected 2 blank lines, found 1</code></pre><h3 id="How-to-add-Flake8-to-git-hooks"><a href="#How-to-add-Flake8-to-git-hooks" class="headerlink" title="How to add Flake8 to git hooks?"></a>How to add Flake8 to git hooks?</h3><p>Red marks in IDE is easy to ignore sometimes. It’s also easy to forget running <code>flake8</code> command before submitting our code. That’s why we have git hooks. We can add Flake8 to the hooks list, so it will check our code with linter automatically.</p>
+<p>To do this, open <code>.pre-commit-config.yaml</code> and add following:</p>
+<pre><code>-   repo: https://gitlab.com/pycqa/flake8
+    rev: 3.8.3
+    hooks:
+    -   id: flake8</code></pre><p>Pay extra attention to <code>rev</code> line. I’ve added version myself here. To figure out version of Flake8 we currently use, I opened <code>pyproject.toml</code>, found version of Flake8, and put it in the pre-commit config file as stated above.</p>
+<p>Remember, as we asked <code>pre-commit</code> to keep versions up to date, it would update Flake8 to the most recent version. But as we already use the newest version of the linter, nothing extra will be done here. <code>pre-commit</code> will download this version of Flake8 because it runs its checks in the separate environment. This means that we basically have two versions of Flake8 now, and we should make sure that they are actually the same version. Usually updating to the latest version shouldn’t be an issue but if it is, it’s recommended to turn auto update off for <code>pre-commit</code>.</p>
+<p>As we change config file, let’s stage it:</p>
+<pre><code>git add .pre-commit-config.yaml</code></pre><p>And commit:</p>
+<pre><code>git commit -m &apos;Add Flake8 to git hooks&apos;
+
+
+Trim Trailing Whitespace.................................................Passed
+Fix End of Files.........................................................Passed
+Check Yaml...............................................................Passed
+Check for added large files..............................................Passed
+flake8...............................................(no files to check)Skipped
+[master 1d25c9f] Add Flake8 to git hooks
+ 1 file changed, 4 insertions(+)</code></pre><p>Let’s try running <code>pre-commit</code> manually again to see how it picked up Flake8:</p>
+<pre><code>pre-commit run --all-files
+
+
+Trim Trailing Whitespace.................................................Passed
+Fix End of Files.........................................................Passed
+Check Yaml...............................................................Passed
+Check for added large files..............................................Passed
+flake8...................................................................Failed
+- hook id: flake8
+- exit code: 1
+
+tests/test_my_project.py:4:1: E302 expected 2 blank lines, found 1
+tests/test_my_project.py:7:1: E302 expected 2 blank lines, found 1</code></pre><p>Don’t hurry fixing this error to satisfy the linter. Computer already found the error. If it’s already of it, wouldn’t it be great to fix this error automatically?</p>
+<h2 id="Formatting-code-with-Black"><a href="#Formatting-code-with-Black" class="headerlink" title="Formatting code with Black"></a>Formatting code with Black</h2><h3 id="Why-to-format-code-with-Black"><a href="#Why-to-format-code-with-Black" class="headerlink" title="Why to format code with Black?"></a>Why to format code with Black?</h3><p>Every person writes code in their own style. Even on Python which forces you pretty much to indent blocks of code, it is very much possible to write the same thing in different ways.</p>
+<p>Sometimes, just by looking at some part of code, you could say what person wrote it. What if different people touched the same code and wrote different parts of it in their own style? It can look a bit ugly.</p>
+<p>How can we prevent it? We can argue during the code review of course. This can significantly slow down merging such pull request. Also, arguing about style is pretty much a matter of taste. At the end of the day, people will argue about the looks instead of paying attention to what the code actually does.</p>
+<p>In addition, wouldn’t it be nice if code looked the same across an entire project, just like it was written by one person?</p>
+<p>There is a solution for it, and it’s called <a href="https://black.readthedocs.io/" target="_blank" rel="noopener">Black</a>.</p>
+<p>Black formats the code in its own style, so it looks consistent. There is very little that you can customize in Black, so even this case there is no room for an argument. Just take it and use it as it is. After all, things like PEP8 and Black were created to agree on one style and just stop arguing about it.</p>
+<p>Ironically, Black violates PEP8’s line length rule. Here is a thing, PEP8 told us that the maximum line length should be no more than 79 characters. It goes deep into history of IBM punch cards and UNIX terminals. PEP8 was written in 2001, things changed since then. People started questioning this rule. “I don’t read the code from a UNIX terminal”, - they say. “I have 27” monitor for a reason”, - they say. There is a problem with that though. Some people work with code from 13” laptops. And viewing diff of two files of 79 char per line max becomes very convenient. Otherwise, you have to scroll horizontally, which is not very nice for working with code. That’s why I still think that 79 chars rule should be there.</p>
+<p>And yes, while PEP8 was created in 2001, it’s received some <a href="https://github.com/python/peps/blame/master/pep-0008.txt" target="_blank" rel="noopener">updates</a> since then but 79 char per line rule was never changed.</p>
+<p>Thankfully, this is an option that Black allows us to adjust.</p>
+<h3 id="How-to-install-Black"><a href="#How-to-install-Black" class="headerlink" title="How to install Black?"></a>How to install Black?</h3><p>In VS Code, open some Python file in our project. In my case, I have <code>test_my_project.py</code> that Flake8 was complaining about. ⇧⌘P and start typing “format”, then choose “Format Document”.</p>
+<p><img src="https://mitelman.engineering/images/blog/python-best-practice/Untitled%2014.png" alt="/images/blog/python-best-practice/Untitled%2014.png"></p>
+<p>It will ask you which formatter would you like to use.</p>
+<p><img src="https://mitelman.engineering/images/blog/python-best-practice/Untitled%2015.png" alt="/images/blog/python-best-practice/Untitled%2015.png"></p>
+<p>Click “Use black”.</p>
+<p>VS Code will detect that we use Poetry and will install Black for us automatically.</p>
+<p><img src="https://mitelman.engineering/images/blog/python-best-practice/Untitled%2016.png" alt="/images/blog/python-best-practice/Untitled%2016.png"></p>
+<p>Optionally, you can install it manually with:</p>
+<pre><code>poetry add --dev black --allow-prereleases</code></pre><p><code>--allow-prereleases</code> option is here because Black is actually still in Beta in 2021. Initially, 2019 releases were planned to be the last ones in this status but it is what it is. Many production and open source projects already use it by default to format the code, so it’s pretty safe to assume that Black is relatively stable.</p>
+<p>To configure Black, let’s open <code>pyproject.toml</code> and add following section:</p>
+<pre><code>[tool.black]
+line-length = 79
+target-version = [&apos;py38&apos;]
+include = &apos;\.pyi?$&apos;
+exclude = &apos;&apos;&apos;
+
+(
+  /(
+      \.eggs         # exclude a few common directories in the
+    | \.git          # root of the project
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+  )/
+  | foo.py           # also separately exclude a file named foo.py in
+                     # the root of the project
+)
+&apos;&apos;&apos;</code></pre><p>The most important part here is that we set max line length to 79.</p>
+<p>Also, if you use some other version of Python, make sure to update but double check that it’s supported by Black <a href="https://black.readthedocs.io/en/stable/installation_and_usage.html#command-line-options" target="_blank" rel="noopener">here</a>.</p>
+<p>We also have to suppress some error at Flake8 to make it work with Black. For this, we have to create <code>setup.cfg</code> file, which is a config file for Flake8, and put following in there:</p>
+<pre><code>[flake8]
+extend-ignore = E203</code></pre><h3 id="How-to-use-Black"><a href="#How-to-use-Black" class="headerlink" title="How to use Black?"></a>How to use Black?</h3><p>Black usage is fairly simple. Just run it, and it formats the code:</p>
+<pre><code>black .
+
+
+reformatted /projects/my-project/my_project/__init__.py
+reformatted /projects/my-project/tests/test_my_project.py
+All done! ✨ 🍰 ✨
+2 files reformatted, 2 files left unchanged.</code></pre><p>Remember Flake8 was complaining about some absent new lines? If we run our Git hook now, everything is OK.</p>
+<pre><code>pre-commit run --all-files
+
+
+Trim Trailing Whitespace.................................................Passed
+Fix End of Files.........................................................Passed
+Check Yaml...............................................................Passed
+Check for added large files..............................................Passed
+flake8...................................................................Passed</code></pre><h3 id="How-to-add-Black-to-git-hooks"><a href="#How-to-add-Black-to-git-hooks" class="headerlink" title="How to add Black to git hooks?"></a>How to add Black to git hooks?</h3><p>Same as with Flake8, it would be great to automate running Black, so we don’t have to bother. Let’s add following to <code>.pre-commit-config.yaml</code></p>
+<pre><code>-   repo: https://github.com/psf/black
+    rev: 20.8b1
+    hooks:
+      - id: black</code></pre><p>Let’s run <code>pre-commit run --all-files</code> again. We can see that it downloads Black and uses it:</p>
+<pre><code>[INFO] Initializing environment for https://github.com/psf/black.
+[INFO] Installing environment for https://github.com/psf/black.
+[INFO] Once installed this environment will be reused.
+[INFO] This may take a few minutes...
+Trim Trailing Whitespace.................................................Passed
+Fix End of Files.........................................................Passed
+Check Yaml...............................................................Passed
+Check for added large files..............................................Passed
+flake8...................................................................Passed
+black....................................................................Passed</code></pre><p>I will not describe saving changes to git. The flow is the same as for Flake8.</p>
+<p>Alternative: yapf - <a href="https://github.com/google/yapf" target="_blank" rel="noopener">https://github.com/google/yapf</a></p>
+<h3 id="Bonus"><a href="#Bonus" class="headerlink" title="Bonus"></a>Bonus</h3><p>You can add ruler to VS Code so there is a vertical line showing you the edge of 79 characters.</p>
+<p>Open <code>settings.json</code> in <code>.vscode</code> directory and add following:</p>
+<pre><code>&quot;[python]&quot;: {
+        &quot;editor.rulers&quot;: [72, 79]
+    }</code></pre><p>This will add rulers only for Python. 72 chars is for docstrings.</p>
+<h2 id="Static-typing-with-Mypy"><a href="#Static-typing-with-Mypy" class="headerlink" title="Static typing with Mypy"></a>Static typing with Mypy</h2><h3 id="Why-use-static-type-checker-with-Python"><a href="#Why-use-static-type-checker-with-Python" class="headerlink" title="Why use static type checker with Python?"></a>Why use static type checker with Python?</h3><p>Type wars started in 70s. IBM with Smalltalk against Sun with Java. As we all know, strongly typed Java won, although Smalltalk being dynamically typed language was considered as a competitive advantage by some companies due to rapid development. Of course, type reduces amount of bugs and runtime errors which can be also solved by having 100% test coverage (as <a href="https://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html" target="_blank" rel="noopener">Uncle Bob claims</a>, that’s one of the reasons of Python’s success). However, let’s not forget that not all projects have 100% coverage.</p>
+<p>But can we have best of two worlds? Can we have type safety with rapid software development? I think, with Mypy we can. Mypy is a static code analysis tool that makes sure that the code is type safe. The project became so valuable that Python creator Guido van Rossum added type annotations to Python and joined Mypy development. Using type annotations also helps IDE to provide a better code completion. As a bonus, type annotations make code more readable for humans too.</p>
+<h3 id="How-to-install-mypy"><a href="#How-to-install-mypy" class="headerlink" title="How to install mypy"></a>How to install mypy</h3><p>In VS Code, you can edit <code>settings.json</code> file in <code>.vscode</code> directory. Set <code>&quot;python.linting.mypyEnabled&quot;: true</code>. After that, open any Python file in the project, for example <code>math.py</code>. VS Code will detect that Mypy is not installed yet.</p>
+<p><img src="https://mitelman.engineering/images/blog/python-best-practice/Untitled%2017.png" alt="/images/blog/python-best-practice/Untitled%2017.png"></p>
+<p>Click install, and it will automatically install it with Poetry.</p>
+<p>Alternatively, you can install Mypy manually:</p>
+<pre><code>poetry add --dev mypy</code></pre><h3 id="How-to-use-mypy"><a href="#How-to-use-mypy" class="headerlink" title="How to use mypy?"></a>How to use mypy?</h3><p>Now we can try running this tool on our small project:</p>
+<pre><code>mypy .
+
+
+Success: no issues found in 4 source files</code></pre><p>So far so good, we didn’t even have to make any changes to our code, Mypy automatically detects types to run checks.</p>
+<p>But as we mentioned previously, having type annotations helps us better understand code, and makes IDE provide better code completions, so let’s take advantage of that.</p>
+<p>Open <code>setup.cfg</code> file and add following:</p>
+<pre><code>[mypy]
+follow_imports = silent
+strict_optional = True
+warn_redundant_casts = True
+warn_unused_ignores = True
+disallow_any_generics = True
+check_untyped_defs = True
+no_implicit_reexport = True
+disallow_untyped_defs = True
+ignore_missing_imports = True</code></pre><p>The most important line here is <code>disallow_untyped_defs = True</code>. It forces you to define functions with types. For existing legacy projects, you’d probably disable it but as we create a new project, it’s would be beneficial to make sure we never forget to add type annotations.</p>
+<p>You may want to disable Mypy for tests. Just add following config:</p>
+<pre><code>[mypy-tests.*]
+ignore_errors = True</code></pre><p>For better compatibility, there are various plugins for Mypy. For example, if you plan to use <code>pydantic</code> for data validation and serialization, config file will look like this:</p>
+<pre><code>[mypy]
+plugins = pydantic.mypy
+
+follow_imports = silent
+strict_optional = True
+warn_redundant_casts = True
+warn_unused_ignores = True
+disallow_any_generics = True
+check_untyped_defs = True
+no_implicit_reexport = True
+disallow_untyped_defs = True
+ignore_missing_imports = True
+
+[pydantic-mypy]
+init_forbid_extra = True
+init_typed = True
+warn_required_dynamic_aliases = True
+warn_untyped_fields = True</code></pre><p>Here is the output after we added new config:</p>
+<pre><code>my_project/math.py:1: error: Function is missing a type annotation
+Found 1 errors in 1 files (checked 4 source files)</code></pre><p>In addition, VS Code uses Mypy as a linter and marks incorrect parts:</p>
+<p><img src="https://mitelman.engineering/images/blog/python-best-practice/Untitled%2018.png" alt="/images/blog/python-best-practice/Untitled%2018.png"></p>
+<p>To fix it, let’s add type annotation to our function:</p>
+<pre><code>from numbers import Real
+from typing import Union
+
+def multiply_two_numbers(a: Union[int, Real], b: Union[int, Real]) -&gt; Union[int, Real]:
+    return a * b</code></pre><p>As we can see, function definition got too long. By pressing ⇧⌥F , VS Code formats code with Black to make it fit into 79 characters per line:</p>
+<pre><code>from numbers import Real
+from typing import Union
+
+def multiply_two_numbers(
+    a: Union[int, Real], b: Union[int, Real]
+) -&gt; Union[int, Real]:
+    return a * b</code></pre><p>Commit changes:</p>
+<pre><code>git commit -m &apos;Add Mypy&apos;</code></pre><h3 id="How-to-add-mypy-to-git-hooks"><a href="#How-to-add-mypy-to-git-hooks" class="headerlink" title="How to add mypy to git hooks?"></a>How to add mypy to git hooks?</h3><p>Obviously, we want to make sure that Mypy runs before committing the code. Add following to <code>.pre-commit-config.yaml</code>:</p>
+<pre><code>-   repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v0.782
+    hooks:
+        - id: mypy
+          additional_dependencies: [pydantic]  # add if use pydantic</code></pre><p>As we run <code>pre-commit run --all-files</code> it installs Mypy for pre-commits and runs checks:</p>
+<pre><code>[INFO] Installing environment for https://github.com/pre-commit/mirrors-mypy.
+[INFO] Once installed this environment will be reused.
+[INFO] This may take a few minutes...
+Trim Trailing Whitespace.................................................Passed
+Fix End of Files.........................................................Passed
+Check Yaml...............................................................Passed
+Check for added large files..............................................Passed
+flake8...................................................................Passed
+black....................................................................Passed
+mypy.....................................................................Passed</code></pre><h2 id="Sorting-imports-with-isort"><a href="#Sorting-imports-with-isort" class="headerlink" title="Sorting imports with isort"></a>Sorting imports with isort</h2><p>One last thing: imports.</p>
+<h3 id="Why-sort-imports-isort"><a href="#Why-sort-imports-isort" class="headerlink" title="Why sort imports isort?"></a>Why sort imports isort?</h3><p><a href="https://www.python.org/dev/peps/pep-0008/#imports" target="_blank" rel="noopener">PEP8 specifies</a> that imports should be sorted in the following order: standard library, third party, local. In addition we want imports to be beautiful and human friendly.</p>
+<p>And there is a tool for that. Meet <code>isort</code> which stands for “import sort”. Here is an <a href="https://pycqa.github.io/isort/" target="_blank" rel="noopener">example from official site</a> to get a sense of it.</p>
+<p>Before:</p>
+<pre><code>from my_lib import Object
+
+import os
+
+from my_lib import Object3
+
+from my_lib import Object2
+
+import sys
+
+from third_party import lib15, lib1, lib2, lib3, lib4, lib5, lib6, lib7, lib8, lib9, lib10, lib11, lib12, lib13, lib14
+
+import sys
+
+from __future__ import absolute_import
+
+from third_party import lib3</code></pre><p>After:</p>
+<pre><code>from __future__ import absolute_import
+
+import os
+import sys
+
+from third_party import (lib1, lib2, lib3, lib4, lib5, lib6, lib7, lib8,
+                         lib9, lib10, lib11, lib12, lib13, lib14, lib15)
+
+from my_lib import Object, Object2, Object3</code></pre><p>Way better, isn’t it?</p>
+<h2 id="How-to-install-use-and-add-isort-to-git-hooks"><a href="#How-to-install-use-and-add-isort-to-git-hooks" class="headerlink" title="How to install, use, and add isort to git hooks?"></a>How to install, use, and add isort to git hooks?</h2><p>VS Code (with Python extension) uses <code>isort</code> internally, so there is no additional configuration required. If you don’t plan to use it from the command line, there is even no need to install it separately because <code>pre-commit</code> installs all dependencies to its own separate environment.</p>
+<p>But if you plan to use <code>isort</code> apart from VS Code and <code>pre-commit</code>, here is how to install it:</p>
+<pre><code>poetry add --dev isort</code></pre><p>To make it works with Black correctly, we should add following to <code>pyproject.toml</code>:</p>
+<pre><code>[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+line_length = 79</code></pre><p>In VS Code, ⇧⌘P, then start typing “sort imports”. VS Code will show:</p>
+<p><img src="https://mitelman.engineering/images/blog/python-best-practice/Untitled%2019.png" alt="/images/blog/python-best-practice/Untitled%2019.png"></p>
+<p>Alternatively, if you installed it, run in the project root:</p>
+<pre><code>isort .
+
+
+Skipped 2 files</code></pre><p>As a final step, let’s add it to the hooks list in <code>.pre-commit-config.yaml</code>:</p>
+<pre><code>-   repo: https://github.com/PyCQA/isort
+    rev: 5.4.2
+    hooks:
+    -   id: isort</code></pre><p>See it works with <code>pre-commit run --all-files</code>:</p>
+<pre><code>Trim Trailing Whitespace.................................................Passed
+Fix End of Files.........................................................Passed
+Check Yaml...............................................................Passed
+Check for added large files..............................................Passed
+flake8...................................................................Passed
+black....................................................................Passed
+mypy.....................................................................Passed
+isort....................................................................Passed</code></pre><h2 id="Fast-track"><a href="#Fast-track" class="headerlink" title="Fast track"></a>Fast track</h2><p>Here is how you can create a fully configured new project in a just a couple of minutes (assuming you have <code>pyenv</code> and <code>poetry</code> installed already).</p>
+<pre><code>poetry new my-project; cd my-project; ls
+pyenv local 3.9.2
+poetry env use python
+poetry add --dev pytest-cov pre-commit flake8 mypy isort
+poetry add --dev --allow-prereleases black
+poetry shell
+code .</code></pre><p>Add config to <code>pyproject.toml</code>:</p>
+<pre><code>[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+line_length = 79
+
+[tool.black]
+line-length = 79
+target-version = [&apos;py38&apos;]
+include = &apos;\.pyi?$&apos;
+exclude = &apos;&apos;&apos;
+
+(
+  /(
+      \.eggs         # exclude a few common directories in the
+    | \.git          # root of the project
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+  )/
+  | foo.py           # also separately exclude a file named foo.py in
+                     # the root of the project
+)
+&apos;&apos;&apos;</code></pre><p>Create <code>setup.cfg</code>:</p>
+<pre><code>[flake8]
+extend-ignore = E203
+
+[mypy]
+follow_imports = silent
+strict_optional = True
+warn_redundant_casts = True
+warn_unused_ignores = True
+disallow_any_generics = True
+check_untyped_defs = True
+no_implicit_reexport = True
+disallow_untyped_defs = True
+ignore_missing_imports = True
+
+[mypy-tests.*]
+ignore_errors = True</code></pre><p>Create <code>.pre-commit-config.yaml</code>.</p>
+<pre><code>repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.4.0
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+    -   id: check-yaml
+    -   id: check-added-large-files
+-   repo: https://gitlab.com/pycqa/flake8
+    rev: 3.8.4
+    hooks:
+    -   id: flake8
+-   repo: https://github.com/psf/black
+    rev: 20.8b1
+    hooks:
+      - id: black
+-   repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v0.812
+    hooks:
+        - id: mypy
+          additional_dependencies: [pydantic]  # add if use pydantic
+-   repo: https://github.com/PyCQA/isort
+    rev: 5.7.0
+    hooks:
+    -   id: isort
+
+
+echo &apos;.coverage&apos; &gt; .gitignore
+echo &apos;.vscode/\n.idea/&apos; &gt;&gt; .gitignore
+curl -s https://raw.githubusercontent.com/github/gitignore/master/Python.gitignore &gt;&gt; .gitignore
+git init -b main
+git add .
+git commit -m &apos;Initial commit&apos;
+pre-commit install
+pre-commit autoupdate
+pre-commit run --all-files
+pre-commit run --all-files</code></pre><h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>We’ve come a long way. Congrats if you’ve made it all the way from the beginning. I get that probably it was super overwhelming. The point of doing all this work is to set up a new project once and forget about it for a long time. For any further project it will be very quick, I promise. Just skip to Fast Track section, then it’s just a couple of minutes to set up all the necessary components. Now, it’s time to get our hands dirty with some actual code.</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/07/06/qiwihui-pocket_readings-1147/" rel="prev" title="
+
+
+你真的了解 Load Balance 嘛 ">
+      <i class="fa fa-chevron-left"></i> 
+
+
+你真的了解 Load Balance 嘛 
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/07/12/qiwihui-pocket_readings-1149/" rel="next" title="
+
+
+5 分钟搞懂高性能分布式消息系统 Kafka ">
+      
+
+
+5 分钟搞懂高性能分布式消息系统 Kafka  <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Python-Best-Practices-for-a-New-Project-in-2021-by-Alex-Mitelman"><span class="nav-number"></span> <span class="nav-text">Python Best Practices for a New Project in 2021 by Alex Mitelman</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Intro"><span class="nav-number"></span> <span class="nav-text">Intro</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#How-to-manage-Python-versions-with-pyenv"><span class="nav-number"></span> <span class="nav-text">How to manage Python versions with pyenv?</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Why-use-pyenv"><span class="nav-number">1.</span> <span class="nav-text">Why use pyenv?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#How-to-install-pyenv"><span class="nav-number">2.</span> <span class="nav-text">How to install pyenv?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#How-to-use-pyenv"><span class="nav-number">3.</span> <span class="nav-text">How to use pyenv?</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Dependency-management-for-Python-with-Poetry"><span class="nav-number"></span> <span class="nav-text">Dependency management for Python with Poetry</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Why-use-Poetry"><span class="nav-number">1.</span> <span class="nav-text">Why use Poetry?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#How-to-install-Poetry"><span class="nav-number">2.</span> <span class="nav-text">How to install Poetry?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#How-to-create-new-project-with-Poetry"><span class="nav-number">3.</span> <span class="nav-text">How to create new project with Poetry?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#How-to-set-Python-version-per-project"><span class="nav-number">4.</span> <span class="nav-text">How to set Python version per project?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#How-to-use-Poetry"><span class="nav-number">5.</span> <span class="nav-text">How to use Poetry?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#How-to-use-Poetry-with-VS-Code"><span class="nav-number">6.</span> <span class="nav-text">How to use Poetry with VS Code?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#How-to-upgrade-Poetry"><span class="nav-number">7.</span> <span class="nav-text">How to upgrade Poetry?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#How-to-upgrade-Python-version-with-Poetry-and-pyenv"><span class="nav-number">8.</span> <span class="nav-text">How to upgrade Python version with Poetry and pyenv?</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#How-to-test-with-pytest"><span class="nav-number"></span> <span class="nav-text">How to test with pytest?</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Why-use-pytest"><span class="nav-number">1.</span> <span class="nav-text">Why use pytest?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#How-to-use-pytest-with-VS-Code"><span class="nav-number">2.</span> <span class="nav-text">How to use pytest with VS Code?</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#How-to-measure-tests-coverage-with-pytest-cov"><span class="nav-number"></span> <span class="nav-text">How to measure tests coverage with pytest-cov?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#How-to-run-checks-before-committing-changes-with-pre-commit"><span class="nav-number"></span> <span class="nav-text">How to run checks before committing changes with pre-commit?</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Use-Git"><span class="nav-number">1.</span> <span class="nav-text">Use Git</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Why-run-checks-before-commit"><span class="nav-number">2.</span> <span class="nav-text">Why run checks before commit?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#How-to-install-and-use-pre-commit"><span class="nav-number">3.</span> <span class="nav-text">How to install and use pre-commit?</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Code-analysis-with-Flake8-linter"><span class="nav-number"></span> <span class="nav-text">Code analysis with Flake8 linter</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Why-use-linter-for-Python-project"><span class="nav-number">1.</span> <span class="nav-text">Why use linter for Python project?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Python-Style-Guide-PEP8"><span class="nav-number">2.</span> <span class="nav-text">Python Style Guide - PEP8</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#How-to-install-Flake8"><span class="nav-number">3.</span> <span class="nav-text">How to install Flake8?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#How-to-use-Flake8"><span class="nav-number">4.</span> <span class="nav-text">How to use Flake8?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#How-to-add-Flake8-to-git-hooks"><span class="nav-number">5.</span> <span class="nav-text">How to add Flake8 to git hooks?</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Formatting-code-with-Black"><span class="nav-number"></span> <span class="nav-text">Formatting code with Black</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Why-to-format-code-with-Black"><span class="nav-number">1.</span> <span class="nav-text">Why to format code with Black?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#How-to-install-Black"><span class="nav-number">2.</span> <span class="nav-text">How to install Black?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#How-to-use-Black"><span class="nav-number">3.</span> <span class="nav-text">How to use Black?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#How-to-add-Black-to-git-hooks"><span class="nav-number">4.</span> <span class="nav-text">How to add Black to git hooks?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Bonus"><span class="nav-number">5.</span> <span class="nav-text">Bonus</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Static-typing-with-Mypy"><span class="nav-number"></span> <span class="nav-text">Static typing with Mypy</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Why-use-static-type-checker-with-Python"><span class="nav-number">1.</span> <span class="nav-text">Why use static type checker with Python?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#How-to-install-mypy"><span class="nav-number">2.</span> <span class="nav-text">How to install mypy</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#How-to-use-mypy"><span class="nav-number">3.</span> <span class="nav-text">How to use mypy?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#How-to-add-mypy-to-git-hooks"><span class="nav-number">4.</span> <span class="nav-text">How to add mypy to git hooks?</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Sorting-imports-with-isort"><span class="nav-number"></span> <span class="nav-text">Sorting imports with isort</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Why-sort-imports-isort"><span class="nav-number">1.</span> <span class="nav-text">Why sort imports isort?</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#How-to-install-use-and-add-isort-to-git-hooks"><span class="nav-number"></span> <span class="nav-text">How to install, use, and add isort to git hooks?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Fast-track"><span class="nav-number"></span> <span class="nav-text">Fast track</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Conclusion"><span class="nav-number"></span> <span class="nav-text">Conclusion</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

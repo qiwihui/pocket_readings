@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Why is modern web development so complicated? A long yet hasty explanation: Part 1! - vrk.dev">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Why is modern web development so complicated? A long yet hasty explanation: Part 1! - vrk.dev">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/02/28/qiwihui-pocket_readings-1034/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="Why is modern web development so complicated? A long yet hasty explanation: Part 1! - vrk.dev">
+<meta property="og:image" content="https://www.vrk.dev/wp-content/uploads/2019/07/edits.gif">
+<meta property="og:image" content="https://www.vrk.dev/wp-content/uploads/2019/07/Screen-Shot-2019-07-09-at-10.46.42-AM-1024x362.png">
+<meta property="og:image" content="https://www.vrk.dev/wp-content/uploads/2019/07/Screen-Shot-2019-07-09-at-11.00.34-AM-1024x779.png">
+<meta property="og:image" content="https://www.vrk.dev/wp-content/uploads/2019/07/Screen-Shot-2019-07-08-at-5.43.46-PM.png">
+<meta property="og:image" content="https://www.vrk.dev/wp-content/uploads/2019/07/Screen-Shot-2019-07-08-at-5.45.06-PM.png">
+<meta property="og:image" content="https://www.vrk.dev/wp-content/uploads/2019/07/Screen-Shot-2019-07-08-at-5.45.53-PM.png">
+<meta property="og:image" content="https://www.vrk.dev/wp-content/uploads/2019/07/upload1-1.png">
+<meta property="og:image" content="https://www.vrk.dev/wp-content/uploads/2019/07/upload2.png">
+<meta property="og:image" content="https://www.vrk.dev/wp-content/uploads/2019/07/devvsrelease-1024x673.png">
+<meta property="article:published_time" content="2021-02-28T14:21:06.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.430Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.vrk.dev/wp-content/uploads/2019/07/edits.gif">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/02/28/qiwihui-pocket_readings-1034/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>Why is modern web development so complicated? A long yet hasty explanation: Part 1! - vrk.dev | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/02/28/qiwihui-pocket_readings-1034/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Why is modern web development so complicated? A long yet hasty explanation: Part 1! - vrk.dev
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-02-28 14:21:06" itemprop="dateCreated datePublished" datetime="2021-02-28T14:21:06+00:00">2021-02-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">Why is modern web development so complicated? A long yet hasty explanation: Part 1! - vrk.dev</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Modern frontend web development is a polarizing experience: many love it, others despise it. It is a LOT to explain!<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/2Ssq4F1" target="_blank" rel="noopener">https://ift.tt/2Ssq4F1</a> original site<br><br><br><br>February 28, 2021 at 09:34PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1034#issuecomment-787460158" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>2/28/2021</strong></p>
+</blockquote>
+<h2 id="Why-is-modern-web-development-so-complicated-A-long-yet-hasty-explanation-Part-1-vrk-dev"><a href="#Why-is-modern-web-development-so-complicated-A-long-yet-hasty-explanation-Part-1-vrk-dev" class="headerlink" title="Why is modern web development so complicated? A long yet hasty explanation: Part 1! - vrk.dev"></a>Why is modern web development so complicated? A long yet hasty explanation: Part 1! - vrk.dev</h2><p>Modern frontend web development is a polarizing experience: many love it, others despise it.</p>
+<p>I am a huge fan of modern web development, though I would describe it as “magical” — and magic has its upsides and downsides:</p>
+<ul>
+<li>When you understand how to use the magical tools of web development (babel! bundlers! watchers! etc!), your development workflow is speedy, powerful, and delightful</li>
+<li>If you <strong>don’t</strong> understand the magical tools of web development, it’s terribly confusing</li>
+<li>… and trying to learn how the magic works is all-too-often miserable, unless you have someone to help guide you through the tangle of jargon, hot takes, and outdated information on the web</li>
+</ul>
+<p>Recently I’ve been needing to explain “modern web development workflows” to folks who only have a cursory of vanilla web development workflows and……</p>
+<p>It is a LOT to explain!</p>
+<p>Even a hasty explanation ends up being pretty long.</p>
+<p>So in the effort of writing more of my explanations down, here is the beginning of a long yet hasty explanation of the evolution of web development:</p>
+<p><strong>Part 1: How we got from static websites to babel</strong></p>
+<p>– – – – – – – – – – –</p>
+<h2 id="Simplest-website-Static-website"><a href="#Simplest-website-Static-website" class="headerlink" title="Simplest website: Static website"></a>Simplest website: Static website</h2><p>Let’s start from “classic” frontend web development, which I’m going to assume you-the-reader already understand.</p>
+<p>In classic frontend web development, we are directly modifying HTML/CSS/JavaScript files. To preview changes, we open the HTML file locally in the browser, and as we develop, we refresh the page for updates.</p>
+<h3 id="Development-workflow"><a href="#Development-workflow" class="headerlink" title="Development workflow"></a>Development workflow</h3><p>The development workflow looks like this:</p>
+<ol>
+<li>Edit your HTML/CSS/JavaScript files in a text editor like <a href="https://atom.io/" target="_blank" rel="noopener">Atom</a>.</li>
+<li>Save the file in your text editor.</li>
+<li>Open and reload file in the browser.</li>
+</ol>
+<p><img src="https://www.vrk.dev/wp-content/uploads/2019/07/edits.gif" alt="">Edit JavaScript, save file, refresh the page to see updates</p>
+<h3 id="Deployment"><a href="#Deployment" class="headerlink" title="Deployment"></a>Deployment</h3><p>Then when you want to publish your website to the internet, you simply upload the HTML/CSS/JavaScript files to the internet somewhere.</p>
+<p>With a service like <a href="https://www.netlify.com/" target="_blank" rel="noopener">Netlify</a>, you can just drag-and-drop the folder containing your files to publish the page to the web.</p>
+<p>Here’s an example of the published page: <a href="https://sleepy-lichterman-6811cc.netlify.com/" target="_blank" rel="noopener">https://sleepy-lichterman-6811cc.netlify.com/</a></p>
+<h2 id="That’s-so-simple-Why-did-we-make-things-complicated"><a href="#That’s-so-simple-Why-did-we-make-things-complicated" class="headerlink" title="That’s so simple! Why did we make things complicated?!"></a>That’s so simple! Why did we make things complicated?!</h2><p>So if you understand how the “classic” web development workflow works, you might ask: Gee, that’s really simple and convenient. Why did we ever deviate from that?! Why are modern web development flows so complicated?</p>
+<p>The short answer: …Ok maybe I have two short answers.</p>
+<p>Two short answers:</p>
+<ul>
+<li><strong>You don’t <em>have</em> to make it more complicated.</strong> The “classic” web development workflow is great! And is perfectly sufficient for plenty of needs! You should never add superfluous tooling, or tools whose purpose you don’t understand.</li>
+<li><strong>But for certain projects you’ll</strong> <em><strong>benefit</strong></em> <strong>from a more sophisticated workflow.</strong> Every tool that you add to your workflow is meant to solve a problem.</li>
+</ul>
+<p>In order to understand the tooling for modern web development, we have to <strong>understand the problems</strong> of web development.</p>
+<p>In this long-but-hasty journey, we’ll address each problem individually, starting with an old web dev problem that has existed for decades:.</p>
+<h2 id="An-old-problem-Limitations-in-JavaScript"><a href="#An-old-problem-Limitations-in-JavaScript" class="headerlink" title="An old problem: Limitations in JavaScript"></a>An old problem: Limitations in JavaScript</h2><p>Up until fairly recently, JavaScript and the Web APIs had a lot of limitations (for a myriad of reasons that will not be covered in this long ‘n’ hasty post).</p>
+<p>To name a few of these limitations:</p>
+<ul>
+<li>No modules</li>
+<li>No constants</li>
+<li>No Promises / async</li>
+<li>No Array.includes() (!!)</li>
+<li>Clunky syntax / missing for a lot of common primitives (no for-of, template literals, arrow function syntax, template unpacking…)</li>
+<li>(Web APIs) Countless DOM operations were needlessly complex (like adding/removing class names, hiding elements, selecting elements, removing elements…)</li>
+</ul>
+<p>Browsers are only capable of executing JavaScript, so when there are limitations in the JavaScript language, it’s not like you can just use a different language; you have to work with what you have.</p>
+<h3 id="Aside-Difference-between-JavaScript-and-Web-APIs"><a href="#Aside-Difference-between-JavaScript-and-Web-APIs" class="headerlink" title="Aside: Difference between JavaScript and Web APIs?"></a>Aside: Difference between JavaScript and Web APIs?</h3><p>You may have noticed I said “JavaScript and the Web APIs” above. These are two different things!</p>
+<p>When you write JavaScript for a web page, any API call that interacts with the web page itself is a <a href="https://developer.mozilla.org/en-US/docs/Web/API" target="_blank" rel="noopener">Web API</a> (which happens to be written in JavaScript), and not part of JavaScript the language.</p>
+<p>Some examples:</p>
+<ul>
+<li><strong>Web APIs</strong>: <code>document</code> and every method on <code>document</code>; <code>window</code> and every method on <code>window</code>; <code>Event</code>, <code>XMLHttpRequest</code>, <code>fetch</code>, etc.</li>
+<li><strong>JavaScript</strong>: functions, <code>const</code>/<code>let</code>/<code>var</code>, arrays, <code>Promise</code>, etc</li>
+</ul>
+<p>So for instance, if you’re writing a Node.js server, you’ll be writing in JavaScript, so that means you can use e.g. <code>Promise</code>s but you can’t use <code>document.querySelector</code> (nor would it make sense to do that).</p>
+<h2 id="An-old-solution-jQuery-amp-friends"><a href="#An-old-solution-jQuery-amp-friends" class="headerlink" title="An old solution: jQuery &amp; friends"></a>An old solution: jQuery &amp; friends</h2><p>Back in 2006, <a href="https://en.wikipedia.org/wiki/JQuery" target="_blank" rel="noopener">jQuery</a> was released: It’s a library that helped workaround lot of the shortcomings of JavaScript and the Web APIs.</p>
+<p>jQuery includes APIs that help dramatically with common web tasks, like DOM manipulations, async processing, cross-browser discrepancies and resource-fetching.</p>
+<p>So basically: All these things were technically possible using old-JavaScript/old-Web-APIS, but they were super annoying, tedious, and often tricky to code – so instead of having every web developer write the same tedious code to e.g. download and process and JSON file, you could instead download the jQuery library and use jQuery’s nice APIs instead.</p>
+<h2 id="A-new-solution-Let’s-improve-JavaScript-itself"><a href="#A-new-solution-Let’s-improve-JavaScript-itself" class="headerlink" title="A new solution: Let’s improve JavaScript itself"></a>A new solution: Let’s improve JavaScript itself</h2><p>A lot of time has passed since 2006, though!</p>
+<p>Since 2006, JavaScript and the Web APIs have improved <strong>tremendously</strong>. (With a lot of help from jQuery and others in paving the way!)</p>
+<p>JavaScript is an ever-evolving language. Similar to how software is updated, the JavaScript language itself is updated to different versions.</p>
+<p>You may have heard the term “ES6.” ES6 stands for “ECMAScript 6,” and refers to the 6th iteration of ECMAScript. ECMAScript is just another word for JavaScript — the only difference is a colloquial one, in that people usually use “ECMAScript” to refer to the specification itself, and “JavaScript” to refer to the language people code in.</p>
+<p>(Btw, that’s another confusing aside and pet peeve of mine: JavaScript is <strong>not</strong> an implementation/flavor/dialect of ECMAScript; that’s like calling “HTML” an implementation/flavor/dialect of the “HTML,” or, if you’re generous, the “HTML spec.” Either way, it’s wrong! <a href="https://en.wikipedia.org/wiki/ECMAScript" target="_blank" rel="noopener">Wikipedia, you’re wrong</a>! JavaScript and ECMAScript are one and the same.)</p>
+<p>Anyway! <a href="https://en.wikipedia.org/wiki/ECMAScript#6th_Edition_-_ECMAScript_2015" target="_blank" rel="noopener">ES6 (released in 2015)</a> is notable because it adds a lot of really language nice features to JavaScript, like <code>const</code>, modules, and <code>Promise</code>s. (And <a href="https://en.wikipedia.org/wiki/ECMAScript#8th_Edition_-_ECMAScript_2017" target="_blank" rel="noopener">ES8</a> introduced maybe my <a href="https://twitter.com/bictolia/status/1136441515104985089" target="_blank" rel="noopener">favorite language feature</a> ever, <code>async</code>.)</p>
+<p>In parallel, the Web APIs have also improved tremendously since 2006, like with the addition of <code>[document.querySelector](https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector)</code>, <code>[fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API)</code>, and little things like <code>[classList](https://developer.mozilla.org/en-US/docs/Web/API/Element/classList)</code> and <code>[hidden](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/hidden)</code>.</p>
+<p>So instead of using jQuery or other similar libraries, in 2019 we can, for the most part, just use JavaScript and the Web APIs directly.</p>
+<p>… sort of!</p>
+<h2 id="A-new-old-problem-Cross-browser-support"><a href="#A-new-old-problem-Cross-browser-support" class="headerlink" title="A new-old problem: Cross-browser support"></a>A new-old problem: Cross-browser support</h2><p>When there’s an update to the JavaScript language, browsers will also need to be updated to support the new language features. (Same is true for the Web APIs, but we’ll stick to just JavaScript for simplicity for now.)</p>
+<p>However, there’s a delay between:</p>
+<ol>
+<li>When the language feature is defined in JavaScript</li>
+<li>When the browsers have all implemented and shipped support for that feature</li>
+<li>When users have all upgraded to the latest version of their browser, usually via auto-updating/restarting your browser (and this sometimes doesn’t happen!).</li>
+</ol>
+<p><img src="https://www.vrk.dev/wp-content/uploads/2019/07/Screen-Shot-2019-07-09-at-10.46.42-AM-1024x362.png" alt="">The dilemma: Do we write using older JavaScript or the latest JavaScript? Both have pros and cons. (This particular code example lifted <a href="https://blog.hellojs.org/asynchronous-javascript-from-callback-hell-to-async-and-await-9b9ceb63c8e8" target="_blank" rel="noopener">from here</a>!)</p>
+<p>This causes a dilemma for JavaScript developers: We want to use modern JavaScript language features, because these improvements often make it much easier to code certain things. But we also want our websites to work for all users, regardless of when’s the last time they’ve restarted their browser to get the latest updates.</p>
+<p>This specific dilemma is commonly solved by <a href="https://babeljs.io/" target="_blank" rel="noopener">Babel</a>.</p>
+<p>Babel is a JavaScript compiler that transforms JavaScript code into … different JavaScript code! Specifically, it transforms JavaScript code written using the latest version of JavaScript into the equivalent code written using an older version JavaScript that’s supported on far more browser.</p>
+<p><img src="https://www.vrk.dev/wp-content/uploads/2019/07/Screen-Shot-2019-07-09-at-11.00.34-AM-1024x779.png" alt="">With Babel, we can enjoy the benefits of writing in the latest JavaScript without having to worry about browser compatibility.</p>
+<p>Web developers incorporate Babel into their workflow so that they can write the code using the latest JavaScript features without having to worry about browser compatibility.</p>
+<h3 id="Aside-Babel-doesn’t-include-Web-APIs"><a href="#Aside-Babel-doesn’t-include-Web-APIs" class="headerlink" title="Aside: Babel doesn’t include Web APIs"></a>Aside: Babel doesn’t include Web APIs</h3><p>For example if you use <code>fetch</code> in your JavaScript, babel will not provide fallback support (this is called “<strong>polyfill</strong>“-ing) because <code>fetch</code> is a Web API and not part of JavaScript proper. (<a href="https://github.com/babel/babel/issues/10008" target="_blank" rel="noopener">This decision is being reconsidered</a>.)</p>
+<p>So you’ll need a separate solution for polyfilling Web APIs! But we’ll get to that in a later post.</p>
+<p>* * *</p>
+<h2 id="Back-to-workflows-Static-website-babel"><a href="#Back-to-workflows-Static-website-babel" class="headerlink" title="Back to workflows: Static website + babel"></a>Back to workflows: Static website + babel</h2><p>OK, so we’ve now motivated why one might want to use babel. What does a web development workflow with babel look like?</p>
+<p>The following is the <strong>simplest</strong> babel workflow, which people <strong>don’t usually use</strong>. (That’s because a bundler like Parcel or webpack is more convenient, but we’ll get there another next time!)</p>
+<h3 id="Setup"><a href="#Setup" class="headerlink" title="Setup"></a>Setup</h3><ol>
+<li>Install* babel<br><em>(*You can follow the <a href="https://babeljs.io/setup#installation" target="_blank" rel="noopener">CLI instructions here</a>, though it assumes you understand how npm works. And they recommends that you install babel locally as an npm dev dependency for each project, vs globally on your machine.)</em></li>
+</ol>
+<h3 id="Development-workflow-1"><a href="#Development-workflow-1" class="headerlink" title="Development workflow"></a>Development workflow</h3><ol>
+<li>Develop your site like a <a href="https://www.notion.so/glitch/Proposal-Debug-Release-without-branching-a7a080fd59644e90a4f22f0a6f31b5ed#1227ca2fe74346a89bcc78e94de166d4" target="_blank" rel="noopener">normal static web page</a>.</li>
+</ol>
+<p><img src="https://www.vrk.dev/wp-content/uploads/2019/07/Screen-Shot-2019-07-08-at-5.43.46-PM.png" alt="">Example: The src directory is where your vanilla JavaScript lives</p>
+<h3 id="Deployment-1"><a href="#Deployment-1" class="headerlink" title="Deployment"></a>Deployment</h3><p>When you’re ready to publish your website to the internet, you do <strong>NOT</strong> want to upload your vanilla JavaScript files to the web, because you’ve been using JavaScript features that are not supported by all browsers.</p>
+<p>Instead, you want to:</p>
+<p>1. Compile your JavaScript using babel, to get browser-compatible code:</p>
+<p><img src="https://www.vrk.dev/wp-content/uploads/2019/07/Screen-Shot-2019-07-08-at-5.45.06-PM.png" alt=""></p>
+<p>This will create the new, compiled JavaScript file in a separate folder:</p>
+<p><img src="https://www.vrk.dev/wp-content/uploads/2019/07/Screen-Shot-2019-07-08-at-5.45.53-PM.png" alt="">Example: Babel will generate a second “script.js”, and this one has cross-browser-compatible code</p>
+<p>2. Upload the <strong>compiled</strong> JavaScript to the internet, along with your HTML and CSS:</p>
+<p><img src="https://www.vrk.dev/wp-content/uploads/2019/07/upload1-1.png" alt="">Compiled JS</p>
+<p><img src="https://www.vrk.dev/wp-content/uploads/2019/07/upload2.png" alt="">…plus your CSS and HTL</p>
+<p>Your website will* look and behave the same as in development mode, but users will be served the compiled, babel-fied JavaScript.</p>
+<ul>
+<li>This is the project without babel: <a href="https://sleepy-lichterman-6811cc.netlify.com/" target="_blank" rel="noopener">site</a> / <a href="https://sleepy-lichterman-6811cc.netlify.com/script.js" target="_blank" rel="noopener">script.js</a></li>
+<li>This is the project with babel: <a href="https://zen-lamarr-b74cd8.netlify.com/" target="_blank" rel="noopener">site</a> / <a href="https://zen-lamarr-b74cd8.netlify.com/script.js" target="_blank" rel="noopener">script.js</a></li>
+</ul>
+<p><em>(*hopefully! Sometimes there are differences in Debug vs Release builds, but those are bugs!)</em></p>
+<h2 id="Pause-to-point-out-Development-vs-Release-code"><a href="#Pause-to-point-out-Development-vs-Release-code" class="headerlink" title="Pause to point out: Development vs Release code!"></a>Pause to point out: Development vs Release code!</h2><p><img src="https://www.vrk.dev/wp-content/uploads/2019/07/devvsrelease-1024x673.png" alt=""></p>
+<p>Notice that we now have a separation between “development” code and “release” code:</p>
+<ul>
+<li>Development code: The code that you write <strong>while developing</strong> your web app.</li>
+<li>Release code: The code that you want to run <strong>when users visit</strong> your web app.</li>
+</ul>
+<p>We purposely want to keep these things separate, because:</p>
+<ul>
+<li>The development code is good for developers, but bad for users</li>
+<li>The release code is good for users, but bad for developers</li>
+</ul>
+<p>In frontend web development, not everyone will uses or needs to use babel.</p>
+<p>However! The general pattern of:</p>
+<ul>
+<li>Writing <strong>development code</strong> that does not get shown to users</li>
+<li>and is instead compiled into different <strong>release code</strong>, that <em>should</em> be shown to users</li>
+</ul>
+<p>…is not just common, but is often expected in modern frontend web development.</p>
+<p>(Note that having a separate “Debug” vs “Release” build is a general pattern in software engineering, not something new with web development. But it’s especially pertinent to frontend web development, both because of how commonplace it is, and because of how big the difference can be between Debug/Release for frontend web development in particular.)</p>
+<p>A short list of frontend technologies that expect this separation between debug and release:</p>
+<ul>
+<li>npm modules</li>
+<li>Any CSS preprocessor</li>
+<li>React/Vue/Angular/any web framework</li>
+</ul>
+<p>This is going to be a recurring pattern, so make note of it now!</p>
+<h2 id="Next-time-npm-and-bundling"><a href="#Next-time-npm-and-bundling" class="headerlink" title="Next time: npm and bundling"></a>Next time: npm and bundling</h2><p>In the next part of our journey, we’ll explore npm modules (what are they and why) and bundling (what is it and why), and how that complicates the workflow.</p>
+<p>…coming soon?! Sure, let’s say coming soon!</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/28/qiwihui-pocket_readings-1033/" rel="prev" title="写给所有需要做笔记的你：为什么我推荐你一定试试 Notion ？ - 少数派">
+      <i class="fa fa-chevron-left"></i> 写给所有需要做笔记的你：为什么我推荐你一定试试 Notion ？ - 少数派
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/03/01/qiwihui-pocket_readings-1035/" rel="next" title="内存管理设计精要 - 面向信仰编程">
+      内存管理设计精要 - 面向信仰编程 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Why-is-modern-web-development-so-complicated-A-long-yet-hasty-explanation-Part-1-vrk-dev"><span class="nav-number"></span> <span class="nav-text">Why is modern web development so complicated? A long yet hasty explanation: Part 1! - vrk.dev</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Simplest-website-Static-website"><span class="nav-number"></span> <span class="nav-text">Simplest website: Static website</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Development-workflow"><span class="nav-number">1.</span> <span class="nav-text">Development workflow</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Deployment"><span class="nav-number">2.</span> <span class="nav-text">Deployment</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#That’s-so-simple-Why-did-we-make-things-complicated"><span class="nav-number"></span> <span class="nav-text">That’s so simple! Why did we make things complicated?!</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#An-old-problem-Limitations-in-JavaScript"><span class="nav-number"></span> <span class="nav-text">An old problem: Limitations in JavaScript</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Aside-Difference-between-JavaScript-and-Web-APIs"><span class="nav-number">1.</span> <span class="nav-text">Aside: Difference between JavaScript and Web APIs?</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#An-old-solution-jQuery-amp-friends"><span class="nav-number"></span> <span class="nav-text">An old solution: jQuery &amp; friends</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#A-new-solution-Let’s-improve-JavaScript-itself"><span class="nav-number"></span> <span class="nav-text">A new solution: Let’s improve JavaScript itself</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#A-new-old-problem-Cross-browser-support"><span class="nav-number"></span> <span class="nav-text">A new-old problem: Cross-browser support</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Aside-Babel-doesn’t-include-Web-APIs"><span class="nav-number">1.</span> <span class="nav-text">Aside: Babel doesn’t include Web APIs</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Back-to-workflows-Static-website-babel"><span class="nav-number"></span> <span class="nav-text">Back to workflows: Static website + babel</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Setup"><span class="nav-number">1.</span> <span class="nav-text">Setup</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Development-workflow-1"><span class="nav-number">2.</span> <span class="nav-text">Development workflow</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Deployment-1"><span class="nav-number">3.</span> <span class="nav-text">Deployment</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Pause-to-point-out-Development-vs-Release-code"><span class="nav-number"></span> <span class="nav-text">Pause to point out: Development vs Release code!</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Next-time-npm-and-bundling"><span class="nav-number"></span> <span class="nav-text">Next time: npm and bundling</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

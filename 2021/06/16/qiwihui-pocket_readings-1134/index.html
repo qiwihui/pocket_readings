@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="如何快速掌握并使用第三方代码">
+<meta property="og:type" content="article">
+<meta property="og:title" content="
+
+
+如何快速掌握并使用第三方代码 ">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/06/16/qiwihui-pocket_readings-1134/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="如何快速掌握并使用第三方代码">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08Rbd3IwuHssibibIHRP3jia4LFea02A52BL3hkyDM6RhcRicsYVwoyfxNELtf1JOup8UMgnniaZibm0VrA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08Rbd3IwuHssibibIHRP3jia4LaGvCEnY6yAiaBmSXWB45eXnBnPLcyyLoia7X9x6kHDTOAdD6fW0gBE5A/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08Rbd3IwuHssibibIHRP3jia4Ly5FvAZpKia3CcibsoUpicuN1RibcoQzV0uiasGAjg0JpIq1wZW6GHYp5ZcQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08Rbd3IwuHssibibIHRP3jia4LMceq0NibL3GR50gja95lteAAictIHibmtEYYEnqMOhpjRRQbCvibB6kjKQ/640?wx_fmt=png">
+<meta property="article:published_time" content="2021-06-16T09:21:08.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.410Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08Rbd3IwuHssibibIHRP3jia4LFea02A52BL3hkyDM6RhcRicsYVwoyfxNELtf1JOup8UMgnniaZibm0VrA/640?wx_fmt=png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/06/16/qiwihui-pocket_readings-1134/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>
+
+
+如何快速掌握并使用第三方代码  | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/06/16/qiwihui-pocket_readings-1134/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+
+
+如何快速掌握并使用第三方代码 
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-06-16 09:21:08" itemprop="dateCreated datePublished" datetime="2021-06-16T09:21:08+00:00">2021-06-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">
+
+
+如何快速掌握并使用第三方代码 </div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#24494;&#20449;&#21495; programmer_life &#21151;&#33021;&#20171;&#32461; &#21313;&#24180;&#28459;&#28459;&#31243;&#24207;&#20154;&#29983;&#65292;&#25171;&#36807;&#21508;&#31181;&#26434;&#65292;&#20063;&#20570;&#36807;&#35753;&#25105;&#39556;&#20658;&#30340;&#36719;&#20214;&#65307;&#31649;&#29702;&#36807;&#25968;&#21313;&#20154;&#30340;&#22242;&#38431;&#65292;&#36824;&#24102;&#39046;&#19968;&#29677;&#20804;&#24351;&#22992;&#22969;&#21019;&#36807;&#19994;&#65292;&#30446;&#21069;&#22312;&#30789;&#35895;&#19968;&#23478;&#21019;&#19994;&#20844;&#21496;&#25285;&#20219; VP&#12290;&#20851;&#27880;&#31243;&#24207;&#20154;&#29983;&#65292;&#20102;&#35299;&#31243;&#24207;&#29503;&#65292;&#23398;&#20570;&#31243;&#24207;&#29503;&#65292;&#20570;&#22909;&#31243;&#24207;<br><br><br><br>Tags: engineering<br><br><br><br>via Pocket <a href="https://ift.tt/2SvI0TG" target="_blank" rel="noopener">https://ift.tt/2SvI0TG</a> original site<br><br><br><br>June 16, 2021 at 05:09PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1134#issuecomment-862199556" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>6/16/2021</strong></p>
+</blockquote>
+<h2 id="如何快速掌握并使用第三方代码-by-程序人生"><a href="#如何快速掌握并使用第三方代码-by-程序人生" class="headerlink" title="如何快速掌握并使用第三方代码 by 程序人生"></a>如何快速掌握并使用第三方代码 by 程序人生</h2><p><strong>2021-06-07</strong><br>在我们学习和工作中，一个非常重要的技能就是能够快速阅读和理解别人的代码，从而为我所用。</p>
+<p>我们如今所处的时代，是对软件开发者非常友好的时代 —— 种类繁多包罗万象的开源世界，使得你在做任何需求前，大概率能够在社区中找到大量质量还不错，可以帮你解决方方面面工作的工具，从而让你只需把精力放在主要问题的解决上。然而，这种无所不能的开源生态也有其弊端：太多的选择让人无从下手，开发者大量的精力花在了判断工具是否满足需求，孰优孰略上。因而，能够快速理解和掌握别人的代码成为我们提升自身效率的杀手锏。</p>
+<p>在我几年前的文章「<a href="http://mp.weixin.qq.com/s?__biz=MzA3NDM0ODQwMw==&mid=2649827677&idx=1&sn=c50072121269e7d11fdf23bb7b76d95a&chksm=8704ab41b073225742403e3959435205d31a388114a050e8805d5ed5defe1ae21d6b546b6288&scene=21#wechat_redirect" target="_blank" rel="noopener">如何阅读一份代码</a>」中，详细介绍了几种不同阅读源代码的策略，如果大家没有读过，建议读一读。它虽然是我自己阅读代码的方法，但多多少少会对你有所帮助。上周我做了个 Rust 培训，培训中使用到了一些第三方的库（如 Tokio 的 <code>Semaphore</code>），有同学私下问我能不能谈谈如何快速地掌握一个 crate。他的原话（片段）是：</p>
+<blockquote>
+<p>… 我感觉我虽然对 Rust 有了基本的入门，能写一些代码，官方和第三方库的例子基本都能理解。可是很多时候还是不知道该如何下手，如何使用合适的库来解决一些实际问题。…</p>
+</blockquote>
+<p>这可能是一个普遍存在的问题：语言的入门和语言的实际使用之间还有巨大的鸿沟需要跨越。这个鸿沟，是理论如何结合实践的鸿沟，或者说，在实践中如何利用现有的理论的鸿沟，跨越它，有两道障碍：</p>
+<ol>
+<li>能否找到「恰到好处」的实际问题去解决？</li>
+</ol>
+<ol start="2">
+<li>找到问题后，能够快速掌握足够知识和工具将其解决？</li>
+</ol>
+<p>本文虽然以如何掌握 Rust 的某个 crate 为例阐述，但其背后的思想适用于任何语言和工具。</p>
+<h3 id="找到「恰到好处」的问题来打怪升级"><a href="#找到「恰到好处」的问题来打怪升级" class="headerlink" title="找到「恰到好处」的问题来打怪升级"></a>找到「恰到好处」的问题来打怪升级</h3><p>大部分人的障碍都在 1。官方文档的例子适用于理解知识点，可没有一定的积累，你很难把这些点连成线，进而组织成面。如果在这个时候强行闯关，用其处理一些复杂的问题，那么效果非常差，还会让自己丧失信心。比如约摸看懂了 libp2p 的入门实例，接下来就挑战完成一个 p2p 版本的 slack，（对新手而言）里面涉及到的 知识鸿沟（knowledge gap）太大，是自讨苦吃。所以要找「恰到好处」的问题来解决。这就好比游戏，新手村出来之后，不会让你直接面对 99 级大 boss，而是一点点加难度，把挑战控制在合理的范围。工作中，我们也会对新人采用逐渐加难度的方式，帮其安然渡过最初的几个月，让其建立对工作的信心和把控力。</p>
+<p>但是开源社区里鲜有这样的过渡。以 tokio 为例，你能找到的资料，要么是新手村的入门训练（比如 tokio 自己的示例），要么是集大成的开源系统（比如 hyper），如果想做一个复杂一些的 TCP Server，连个参考都找不到，只能硬着头皮上，最后迷失在不断填补知识鸿沟的过程中。</p>
+<p>所以，我们需要学会自己来构建合适的挑战。还是以 tokio 为例，你在新手村掌握了如何用 tokio 构建一个最基本的聊天服务器（见 tokio example），它允许任何人都可以广播内容出去给参与聊天的所有人：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08Rbd3IwuHssibibIHRP3jia4LFea02A52BL3hkyDM6RhcRicsYVwoyfxNELtf1JOup8UMgnniaZibm0VrA/640?wx_fmt=png" alt=""></p>
+<p>如何在这个基础上更进一步？我们能不能允许用户加入某个特定的聊天室，在聊天室里的成员的发言只会在该聊天室内部广播？根据我们从例子中学到的经验，我们可以很快上手，把唯一的 conn table 按聊天室切分。在这个从 1 到 N 的过程，你会遭遇到很多挑战（主要来自对 channel 和 Mutex 的理解），但这些挑战的风险是可控的，经过一番搏斗，是可以解决的：  </p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08Rbd3IwuHssibibIHRP3jia4LaGvCEnY6yAiaBmSXWB45eXnBnPLcyyLoia7X9x6kHDTOAdD6fW0gBE5A/640?wx_fmt=png" alt=""></p>
+<p>下一个版本，你可能意识到相对于 <code>Arc&lt;Mutex&lt;HashMap&gt;&gt;</code>，也许自己需要一个使用起来更方便，性能更好的 concurrent map，你会把 <code>Mutex</code> 换成 <code>RwLock</code>。随后，你从网上了解到 parking_lot 性能更好，于是你把 std 下的 <code>RwLock</code> 换成 parking_lot 下的 <code>RwLock</code>。在寻找更好的锁的过程中，你也许发现了 dashmap，bingo！又一个新技能 get。  </p>
+<p>再往后，你觉得这个问题不适合用 TCP 解决，WS 是更好的选择。因为你之前使用过类似的 WS 聊天服务器（如Phoenix Channel 或者 socket.io），于是打算做点类似的事情：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08Rbd3IwuHssibibIHRP3jia4Ly5FvAZpKia3CcibsoUpicuN1RibcoQzV0uiasGAjg0JpIq1wZW6GHYp5ZcQ/640?wx_fmt=png" alt=""></p>
+<p>在这个过程中，你把原来你熟悉的知识（Phoenix Channel 或者 socket.io）平移到了 Rust 下，来构建类似的服务。为了达成这个目的，首先你需要一个合适的 websocket server（除非你想自己实现 rfc6455），于是经过一番搜索，你找到了 tokio-tungstenite，一个看上去不错的 websocket 实现。你学习了它的文档，费了一些力气（主要是填补一些 WS 知识），将其集成到自己的 chat server 中。随后，你觉得这个 chat server 不够安全，于是又补充自己对 Rustls / openssl / x509 证书的认识，让其支持了 wss 连接。  </p>
+<p>接下来是性能优化。基本的功能没有大的毛病，你希望这个服务器能够有足够好的性能。为了做 performance benchmark，你引入了 criterion，开始对 <code>broadcast</code> 这个核心功能做 benchark，为了找到性能瓶颈，你使用了 tokio-tracing，把一些关键路径上的 metrics 发到本地的 jaeger docker 里，发现几处明显的性能问题，它们或是在异步函数中运行了低效的同步函数，或是有不必要的堆内存分配。通过阅读自己的代码，你还发现因为自己搞不定 borrow checker，用于广播的消息，在系统中流动时，被过度拷贝，所以你开始着手更好的设计。。。</p>
+<p>在把玩了性能不错，工作良好的聊天服务器后，你觉得自己还能更近一步：组建服务器集群，使其可以承载更多的客户端。使用集群后，挑战一下子上来了，首要要解决的问题是：1) 客户端连接如何映射到某个节点（consistent hashing） 2) 如何对跨 server 的聊天室进行消息的转发（还是 channel）：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08Rbd3IwuHssibibIHRP3jia4LMceq0NibL3GR50gja95lteAAictIHibmtEYYEnqMOhpjRRQbCvibB6kjKQ/640?wx_fmt=png" alt=""></p>
+<p>最后，你也许决定引入 raft（比如 async-raft）来更好地处理集群的共识（consensus），或者引入 postgres（比如使用 diesel） 来存储聊天历史，引入搜索引擎（比如 Tantivy）做检索等等。  </p>
+<p>这便是从一个简单的例子不断引申，不断增强难度，使其靠近实际使用的工具的过程。每次都只比之前难一点点（这个一点点因人而异），这样循序渐进，稳步推进，把知识从一个个点，组织成一个个有连接的面。</p>
+<h3 id="快速掌握足够的知识和工具"><a href="#快速掌握足够的知识和工具" class="headerlink" title="快速掌握足够的知识和工具"></a>快速掌握足够的知识和工具</h3><p>如果前面所讲的是「道」，那么接下来的内容就是「术」。在阅读「道」的过程中，你也许听得头头是道，感觉就是这么回事，但在执行层面，可能每一步都步步惊心，走不顺畅。这是因为，上文中我们仅仅是把每次迭代的「知识鸿沟」束缚在合理的范围内，你还需要一些技巧来快速掌握需要掌握的知识，也就是如何填补「知识鸿沟」。</p>
+<p>对于 Rust 而言，当你决定尝试一个新的 crate 时，你有这些资源：</p>
+<ol>
+<li>crate 的 github/gitlab 主页（Readme）：在这里你能找到起码的概览。</li>
+</ol>
+<ol start="2">
+<li>crate 的示例代码：一般在源码的 examples 下。</li>
+</ol>
+<ol start="3">
+<li>crate 的官方文档，一般在 docs.rs：这里（应该）有详细的文档，可以提供足够完成具体任务的细节知识。</li>
+</ol>
+<ol start="4">
+<li>第三方的文档：有些著名的 crate，在网上可以找到开发者或者使用者写的博客，甚至教材。</li>
+</ol>
+<ol start="5">
+<li>crate 的测试代码：如果有 integration test，先看 integration test；之后再看相关的 unit test。</li>
+</ol>
+<ol start="6">
+<li>crate 的源代码：这是终极的 single source of truth。</li>
+</ol>
+<p>如果一个 crate 的 Readme 或者官方文档写得语焉不详，那么除非这是大牛的作品（比如无船 withoutboats 同学就经常这么干），否则不碰为好。</p>
+<p>当你开始尝试掌握一个新的 crate 时，我建议按照 1-6 的顺序展开。首先快速阅读 readme 了解其基本功能，使用场景和用法。之后直接浏览示例代码，视情况「摘抄」运行之。</p>
+<p>所谓「摘抄」，是指在阅读完示例代码，了解其用法后，你自己起一个新的测试项目，然后就着还新鲜的记忆，实现示例代码的功能。不知道用法时，可以看官方文档，如果还不明白，可以瞄一眼示例代码，把相关的部分摘抄到你的测试项目中。这样边写边抄，最终完工，效果个收获要远比读一下示例代码，然后运行一下要大得多。</p>
+<p>在做更复杂的工作时，往往需要深入官方文档的细节。比如某个类型是干什么的，它实现了哪些 trait，有什么功能等等。Rust 作为一门强类型的语言，类型自己往往就是最好的文档，很多人都忽视了这一点。在了解类型的过程中，很可能你需要跳到源代码的 test，看看主要的使用方式是什么，期待的返回是什么，会返回什么样的错误。读 test 是一个非常有益的了解接口用法的过程，尤其是 integration test，因为它是这个 crate 对外的 API 的测试。</p>
+<p>深入文档细节的过程中，第三方的文档是非常有益的补充。不过，这些文档的质量是良莠不齐的，所以，大量粗读，谨慎精读，小心求证，避免被带到坑里。</p>
+<p>很多时候，有的 crate 太小众，很难找到足够有质量的第三方文档，那么除了 1-5 步外，阅读 crate 的源代码也非常有必要。比如 syn —— Rust 用于处理过程宏的 crate，虽然它的文档不错，但因为其操作 AST 的缘故，数据结构的嵌套非常深，以至于在使用的过程中，经常需要在源码中跳来跳去，来快速掌握数据结构的关系。这时只有通过看源码，在源码中快速检视，你才能在操作 AST 时可以快速通过 pattern match 定位到你所关心的数据结构，进行所需的处理。</p>
+<p>关于如何阅读源码，这里就不详细展开，大家看「<a href="http://mp.weixin.qq.com/s?__biz=MzA3NDM0ODQwMw==&mid=2649827677&idx=1&sn=c50072121269e7d11fdf23bb7b76d95a&chksm=8704ab41b073225742403e3959435205d31a388114a050e8805d5ed5defe1ae21d6b546b6288&scene=21#wechat_redirect" target="_blank" rel="noopener">如何阅读一份代码</a>」，它足够详细了。</p>
+<p>在 1-6 的整个过程中，除了你和 crate 之间的「知识鸿沟」外，很多时候，你还会遇到 crate 外的知识。比如 <code>tokio::sync::Sempahore</code>。如果你不知道 Semaphore 的概念，你多半不知道在什么场合，以及如何正确地使用它。crate 的作者往往默认你已经了解相关的概念，顶多给你的 wikipedia 的链接了事。所以在进一步阅读文档前，你需要先补充对概念的认识。这些知识的补充可以分成两个阶段：</p>
+<ul>
+<li>先了解足够的 high-level 的知识，足够让自己继续使用涉及的 crate。</li>
+</ul>
+<ul>
+<li>等工作做完后，回过头来在进一步补充详细的知识：可以读相关的书籍（如 Semaphore 在操作系统的书里有详细介绍），可以读相关的源代码，甚至可以自己实现一个傻白甜的版本出来（就像我在培训中做的那样，实现 actor model）。你会发现，自己动手做一个性能不佳，结构简陋的基础知识的实现，远比书本上的知识来得扎实。读过的内容，隔段时间你会记不清楚，自己亲手挖坑摸索过的代码，一辈子也记得住。</li>
+</ul>
+<p>像 <code>Semaphore</code> 这样的知识，花时间将其吃透很有必要。我们经常发现，身边那些学习能力很强的人学东西好像越来越快，而自己似乎总是停滞不前，这是因为，学习能力强的人往往把基础知识夯实，在累积到一定程度时，他们的知识和技能增长的速度是呈指数级增长的：因为新知识和旧知识通过基本概念形成连接，使得新的知识只是旧知识加上一个 delta 而已。</p>
+<p>希望这篇文章对你有用。</p>
+<h3 id="贤者时刻"><a href="#贤者时刻" class="headerlink" title="贤者时刻"></a>贤者时刻</h3><p>如果你读完本文后，觉得有一些收获，但是还想有个具体的例子可以供你实践，那么你可以考虑花上 2 小时时间，参加程序君的同名讲座：「如何快速掌握并使用 crate」。在这个讲座，我们会更深入的介绍如何学习 crate，如何构造样例，如何阅读代码，最后用一到两个 live coding 来使用所涉及的 crate。</p>
+<p>目标受众：对 Rust 感兴趣，能够撰写基本的 Rust 代码（对于没有 Rust 基础的，建议学习官方文档，或者看我之前的 <a href="http://mp.weixin.qq.com/s?__biz=MzA3NDM0ODQwMw==&mid=2649829085&idx=1&sn=7f9db351f1ddb1e3d90c34c3b7bedfec&chksm=8704acc1b07325d7afd375ed32d9ac0bc258b0966dc5a3baf80e34ade8efbfd273d8608e2a76&scene=21#wechat_redirect" target="_blank" rel="noopener">Rust 培训视频</a>）。</p>
+<p>培训时间：<strong>美西时间 6/12 周六 9pm-11pm，北京时间 6/13 周日 12pm-2pm</strong>。</p>
+<p>最低费用：<strong>不限</strong>（因为 zoom 有人数上限，为避免有限的资源被浪费，所以只有赞赏才能参与，你可以将其看做是你对自己两小时时间的一个 <strong>commitment</strong>）。注意，本次培训会做屏幕录像，之后会放到 B 站和 Youtube 上。如果你不打算参与实时课程，或者不愿意付费，可以等录像版本。</p>
+<p>报名方式：<strong>打赏</strong>。我会给你回复参与链接。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/06/16/qiwihui-pocket_readings-1133/" rel="prev" title="
+
+
+如何阅读一份代码？ ">
+      <i class="fa fa-chevron-left"></i> 
+
+
+如何阅读一份代码？ 
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/06/17/qiwihui-pocket_readings-1135/" rel="next" title="Web层面上的那些拒绝服务攻击(DoS) · Chen's Blog">
+      Web层面上的那些拒绝服务攻击(DoS) · Chen's Blog <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#如何快速掌握并使用第三方代码-by-程序人生"><span class="nav-number"></span> <span class="nav-text">如何快速掌握并使用第三方代码 by 程序人生</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#找到「恰到好处」的问题来打怪升级"><span class="nav-number">1.</span> <span class="nav-text">找到「恰到好处」的问题来打怪升级</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#快速掌握足够的知识和工具"><span class="nav-number">2.</span> <span class="nav-text">快速掌握足够的知识和工具</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#贤者时刻"><span class="nav-number">3.</span> <span class="nav-text">贤者时刻</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

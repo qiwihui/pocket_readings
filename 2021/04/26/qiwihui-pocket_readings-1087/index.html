@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="【技术分享】BlackHat：HTTP 请求走私的新变体、新防御">
+<meta property="og:type" content="article">
+<meta property="og:title" content="
+
+
+【技术分享】BlackHat：HTTP 请求走私的新变体、新防御 ">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/04/26/qiwihui-pocket_readings-1087/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="【技术分享】BlackHat：HTTP 请求走私的新变体、新防御">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/Ok4fxxCpBb61ia2fTw5cwhNmic26oBrszAPnmrIdxQ3HmcAVxuk3cPwvlTDiaibZbOlxJsMcz4CJhCayFAl9LpcNOg/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb61ia2fTw5cwhNmic26oBrszAobjYZNtAeE4eEe6zf2qvAibyYiaMia8x7PkL4fxNia1cYSibxz76ibjv7ozg/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb61ia2fTw5cwhNmic26oBrszAqKUkxK7iamkEbPYpzCmyNajd9yfNEWQsxCdqDMkqo255VQfLmbDT3Qw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb61ia2fTw5cwhNmic26oBrszARDNWHKD8CI3iassF97wxjaQLiagZSIiaCsUibf4fGa98VTVaJdAzTEGPQA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6OLwHohYU7UjX5anusw3ZzxxUKM0Ert9iaakSvib40glppuwsWytjDfiaFx1T25gsIWL5c8c7kicamxw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_gif/Ok4fxxCpBb5ZMeq0JBK8AOH3CVMApDrPvnibHjxDDT1mY2ic8ABv6zWUDq0VxcQ128rL7lxiaQrE1oTmjqInO89xA/640?wx_fmt=gif">
+<meta property="article:published_time" content="2021-04-26T13:21:18.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.418Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/Ok4fxxCpBb61ia2fTw5cwhNmic26oBrszAPnmrIdxQ3HmcAVxuk3cPwvlTDiaibZbOlxJsMcz4CJhCayFAl9LpcNOg/640?wx_fmt=jpeg">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/04/26/qiwihui-pocket_readings-1087/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>
+
+
+【技术分享】BlackHat：HTTP 请求走私的新变体、新防御  | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/04/26/qiwihui-pocket_readings-1087/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+
+
+【技术分享】BlackHat：HTTP 请求走私的新变体、新防御 
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-04-26 13:21:18" itemprop="dateCreated datePublished" datetime="2021-04-26T13:21:18+00:00">2021-04-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">
+
+
+【技术分享】BlackHat：HTTP 请求走私的新变体、新防御 </div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#24494;&#20449;&#21495; anquanbobao &#21151;&#33021;&#20171;&#32461; &#25171;&#30772;&#40657;&#31665; &#23458;&#35828;&#23433;&#20840; &#24341;&#35328;HTTP&#35831;&#27714;&#36208;&#31169;&#65288;HTTP Request Smuggling&#65292;&#21448;&#21517;HTTP Desyncing&#65289;&#26159;&#19968;&#31181;&#25915;&#20987;&#25216;&#26415;&#65292;&#23427;&#21033;&#29992;&#21508;&#31181;HTTP&#35774;&#22791;&#20043;&#38388;&#23545;&#38750;&#26631;&#20934;HTTP&#35831;&#27714;&#27969;&#30340;&#19981;&#21516;&#35299;&#37322;&#65292;&#29305;&#21035;&#26159;&#23458;&#25143;&#31471;&#65288;&#25915;&#20987;&#32773;&#65289;&#21644;&#26381;&#21153;&#22120;&#65288;&#21253;&#25324;&#26381;&#21153;&#22120;&#26412;<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/3xrrhjW" target="_blank" rel="noopener">https://ift.tt/3xrrhjW</a> original site<br><br><br><br>April 26, 2021 at 08:57PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1087#issuecomment-826831003" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>4/26/2021</strong></p>
+</blockquote>
+<h2 id="【技术分享】BlackHat：HTTP-请求走私的新变体、新防御-by-安全客"><a href="#【技术分享】BlackHat：HTTP-请求走私的新变体、新防御-by-安全客" class="headerlink" title="【技术分享】BlackHat：HTTP 请求走私的新变体、新防御 by 安全客"></a>【技术分享】BlackHat：HTTP 请求走私的新变体、新防御 by 安全客</h2><p><strong>2021-04-23</strong><br><img src="https://mmbiz.qpic.cn/mmbiz_jpg/Ok4fxxCpBb61ia2fTw5cwhNmic26oBrszAPnmrIdxQ3HmcAVxuk3cPwvlTDiaibZbOlxJsMcz4CJhCayFAl9LpcNOg/640?wx_fmt=jpeg" alt=""></p>
+<p>引言</p>
+<p>HTTP请求走私（HTTP Request Smuggling，又名HTTP Desyncing）是一种攻击技术，它利用各种HTTP设备之间对非标准HTTP请求流的不同解释，特别是客户端（攻击者）和服务器（包括服务器本身）之间的关系。具体来说，攻击者操纵各种HTTP设备将流分割成单个HTTP请求的方式，就可以将恶意的HTTP请求 “偷渡 “至服务器，滥用对请求流的解释，并取消服务器与中间HTTT设备对这些流之间的差异。通过这种方式，恶意的HTTP请求可以被 “走私 “为之前HTTP请求的一部分。<br>虽然HTTP请求走私是在2005年发明的，但最近又有更多的研究出现。这个研究领域仍未被充分发掘，尤其是考虑到开源防御系统，如mod_security的社区规则集（ community rule-set，CRS），这些针对HTTP请求走私的防御系统是初级的，并不总能发挥效果。</p>
+<p>本文研究了下列产品：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb61ia2fTw5cwhNmic26oBrszAobjYZNtAeE4eEe6zf2qvAibyYiaMia8x7PkL4fxNia1cYSibxz76ibjv7ozg/640?wx_fmt=png" alt=""></p>
+<p>新的变体</p>
+<p>在本节中，我将介绍以下HTTP请求走私的新变体，并展示它们如何在各种代理-服务器（或代理-代理）的关系中发挥攻击效果：</p>
+<ul>
+<li><p>变体1：“Header SP/CR junk: …”</p>
+</li>
+<li><p>变体2：“Wait for It”</p>
+</li>
+<li><p>变体3：绕过类似 mod_security 的防御</p>
+</li>
+<li><p>变体4：“A plain solution”</p>
+</li>
+<li><p>变体5：“CR header”</p>
+</li>
+</ul>
+<p>详细payload代码可在SafeBreach Labs的GitHub库中查看: <a href="https://github.com/SafeBreach-Labs/HRS" target="_blank" rel="noopener">https://github.com/SafeBreach-Labs/HRS</a></p>
+<h3 id="变体1：“Header-SP-CR-junk-…”"><a href="#变体1：“Header-SP-CR-junk-…”" class="headerlink" title="变体1：“Header SP/CR junk: …”"></a>变体1：“Header SP/CR junk: …”</h3><p>以下是一个具体例子：</p>
+<pre><code>Content-Length abcde: 20</code></pre><p>Squid：忽略（可能当做 一个名为Header SP/CR junk的头处理）。<br>Abyss(web server, proxy)：转换为请求头，Abyss支持多个Content-Length头。</p>
+<p>假设Squid在Abyss服务器前充当反向代理的角色，以下是缓存中毒的表现：</p>
+<pre><code>POST /hello.php HTTP/1.1</code></pre><p>Squid忽略请求头Content-Length kuku，并使用Content-Length: 36，因此把第二个HTTP请求解释为GET /b.html。<br>然而，Abyss将Content-Length kuku视为一个有效的Content-Length头，并写作为最后一个Content-Length头，Abyss会使用它，并将第二个HTTP请求解释为GET /a.html。这样HTTP请求走私就实现了，Squid在URL/b.html中缓存了/a.html的内容。</p>
+<h3 id="变体2：“Wait-for-It”"><a href="#变体2：“Wait-for-It”" class="headerlink" title="变体2：“Wait for It”"></a>变体2：“Wait for It”</h3><p>在变体1中，攻击依赖于Abyss愿意接受多个Content-Length头，或者说转换为Content-Length头。这变体2中，我将使用单个无效的Content-Length头，<br>假设Squid在Abyss服务器前充当反向代理的角色，以下是缓存中毒的表现：</p>
+<pre><code>POST /hello.php HTTP/1.1</code></pre><p>这将是Squid在发送POST请求是不包含任何正文（可以认为正文长度为0）。Abyss为了一个正文长度为33 bytes的请求等待30s，然后发送一个HTTP响应。然后Squid发送GET /a.html的请求（72 bytes）。前33 bytes被Abyss认为已经占用，剩下的39 bytes将被解释为第二个请求。</p>
+<h3 id="变体3：绕过类似-mod-security-的防御"><a href="#变体3：绕过类似-mod-security-的防御" class="headerlink" title="变体3：绕过类似 mod_security 的防御"></a>变体3：绕过类似 mod_security 的防御</h3><p>变量3演示了如何使用HTTP/1.2来绕过 mod_security CRS防御。mod_security 的CRS3.2.0攻击检测规则对HTTP请求走私有一些非常基本的规则：</p>
+<p>920（协议执行）：对请求行格式（920100）的基本检查。（我的攻击不基于此）</p>
+<p>920（协议执行）：检查Content-Length值是否为所有数字（920160）。（我的攻击不基于此）</p>
+<p>920（协议执行）：“不接受有GET或HEAD请求的正文”（920170）。（我的攻击不基于此）</p>
+<p>920（协议攻击）：“要求在每个POST请求中提供Content-Length或者Transfer-Encoding”（920180）。（仅禁止变体2的攻击）</p>
+<p>921（协议攻击）：“此规则在Content-Length或Transfer-Encoding请求头中查找逗号字符”（921100）。（我的攻击不基于此）</p>
+<p>921（协议攻击）：在HTTP请求体中，CR或LF后跟HTTP动词，如GET/POST（921110）。（变体1没有这样做）</p>
+<p>921（协议攻击）：在正文或cookie的任何位置，查找CR/LF后面是 Content-Length或 Content-Type Set-Cookie Location）（921120）。（我的攻击不基于此）</p>
+<p>921（协议攻击）：“HTTP响应分割”——在正文或cookies的任何位置寻找非字母数字后跟着 HTTP/0.9 HTTP/1.9 HTTP/1.0或HTTP/1.1或&lt;html或&lt;mate（921130）。（禁止我所有的攻击）</p>
+<p>921（协议攻击）：在请求头中查找CR/LF（921140）（影响变体1和2，当使用CR时）</p>
+<p>921（协议攻击）：“检测参数名称中的换行符”（921150）。（禁止我所有的攻击）</p>
+<p>通过将违规的CRs和LFs移到一个参数值而不是一个参数名，就可以很容易绕过921150。例如，在变体1中，使用了xy=GET…，而不是barGET…。</p>
+<p>现在只剩下一个简单的规则（921130），这个规则原本是针对HTTP响应拆分请求而制定的，实际上却能阻止我所有的攻击。如果我删除这个规则，那么我就可以使用变种1(它不会被任何CRS 3.2.0规则阻止)。该规则的有效性取决于这样一个事实，即攻击者必须在请求体的某个地方放置HTTP/1.x。但大多数网络服务器会很把 HTTP/1.2请求当作 HTTP/1.1处理。</p>
+<p>IIS、Apache、nginx、node.js、Abyss将HTTP/1.2视为HTTP/1.1。Squid, HAProxy, Caddy 、Traefik 将HTTP/1.2转化为HTTP/1.1。</p>
+<p>例如，变体1包含HTTP/1.2的payload如下：</p>
+<pre><code>POST /hello.php HTTP/1.1</code></pre><p>这将触发一些应用程序级别规则（“Unix direct remote command execution”——932150），但可以通过将=符号移动到命令后面并加上<a href="http://foo.com来轻松地绕过它：">http://foo.com来轻松地绕过它：</a></p>
+<pre><code>POST /hello.php HTTP/1.1</code></pre><h3 id="变体4：“A-plain-solution”"><a href="#变体4：“A-plain-solution”" class="headerlink" title="变体4：“A plain solution”"></a>变体4：“A plain solution”</h3><p>绕过 paranoia_level≤2 检查的另一种方法是简单地使用Content-Type: text/plain：</p>
+<pre><code>POST /hello.php HTTP/1.1</code></pre><h3 id="变体5：“CR-header”"><a href="#变体5：“CR-header”" class="headerlink" title="变体5：“CR header”"></a>变体5：“CR header”</h3><p>从技术上讲，这可能是第一次涉及这个变种的成功攻击报告，它在Burp的HTTP请求走私模块中被列为 “0dwrap”。到目前为止，我还不知道有任何已发布的使用该变种的成功攻击。</p>
+<p>Spuid：忽略这个请求头<br>Abyss：认定这是一个请求头</p>
+<p>假设Squid在Abyss服务器前充当反向代理的角色，以下是例子：</p>
+<pre><code>POST /hello.php HTTP/1.1</code></pre><p>Squid忽略了该头，是的正文长度为0，则第二个请求为/a.html。Abyss在30秒后响应，内容为hello.php，然后Squid发送/a.html的请求，Abyss丢弃这个请求的前33个字节，发送内容的/b.html。通过这种方式，Squid为URL /a.html 缓存了/b.html的内容。</p>
+<h3 id="攻击的成果"><a href="#攻击的成果" class="headerlink" title="攻击的成果"></a><strong>攻击的成果</strong></h3><p>变体1：Aprelium和Squid受到影响。Aprelium在Abyss X1 v2.14中进行了修复。Spuid将CVE-2020-15810提请为issue，并给出配置上的缓解方案：</p>
+<pre><code>relaxed_header_parser=off</code></pre><p>变体2：Aprelium受到影响。Aprelium在Abyss X1 v2.14中进行了修复。</p>
+<p>变体3：OWASP CRS 收到影响。在v3.3.0-re2中修复(<a href="https://github.com/coreruleset/coreruleset/pull/1770" target="_blank" rel="noopener">https://github.com/coreruleset/coreruleset/pull/1770</a>)</p>
+<p>变体4：OWASP CRS 收到影响。在v3.3.0-re2中修复(<a href="https://github.com/coreruleset/coreruleset/pull/1771" target="_blank" rel="noopener">https://github.com/coreruleset/coreruleset/pull/1771</a>)</p>
+<p>变体5：Aprelium和Squid受到影响。Aprelium在Abyss X1 v2.14中进行了修复。Spuid将CVE-2020-15810提请为issue（同变体1），并给出配置上的缓解方案：</p>
+<pre><code>relaxed_header_parser=off</code></pre><p>新的防御</p>
+<h3 id="一些有缺陷的方法（用于代理服务器）"><a href="#一些有缺陷的方法（用于代理服务器）" class="headerlink" title="一些有缺陷的方法（用于代理服务器）"></a><strong>一些有缺陷的方法（用于代理服务器）</strong></h3><h4 id="a-HTTP出站请求的规范化"><a href="#a-HTTP出站请求的规范化" class="headerlink" title="a. HTTP出站请求的规范化"></a><strong>a. HTTP出站请求的规范化</strong></h4><p>对出站HTTP请求的规范化（由代理服务器）确实可以解决服务器后面的HTTP请求走私问题，但对代理服务器前面的HTTP请求走私问题却无能为力。</p>
+<p>例如，有一个代理服务器链(P1, P2 是代理服务器, WS 是web 服务器)：</p>
+<p>Client → P1 → P2 → WS  </p>
+<p>如果 P1 使用第一个Content-Length头，P2 使用最后一个Content-Length头（并将出站的 HTTP 请求规范化为包含一个Content-Length头的这个值），那么HTTP请求走私和缓存中毒仍然可以在 P1 和P2 之间发生。</p>
+<p>事实上，我们可以将复合的P2 → WS抽象成一个web服务器WS’，它在HTTP 请求走私方面的行为和P2一样。拓扑结构变成：Client→P1→WS’</p>
+<p>在P1使用第一个Content-Length头，而WS’使用最后一个Content-Length头的情况下，规范化并不能消除P2为HTTP请求走私提供途径的情况，就像不能消除Web服务器为HTTP请求走私提供途径的情况一样。</p>
+<h4 id="b-每个TCP连接一个HTTP出站请求"><a href="#b-每个TCP连接一个HTTP出站请求" class="headerlink" title="b.每个TCP连接一个HTTP出站请求"></a>b.每个TCP连接一个HTTP出站请求</h4><p>上面的情况也适用于每一个出站的HTTP请求对应一个 TCP连接，它解决的同样是HTTP请求走私在代理服务器后面，而不是在代理服务器前面。</p>
+<p>通过上面的论证，我们把P2和WS抽象成一个网络服务器WS’，这样就可以清楚地看到P2向WS传递请求（在WS内部），发生在P1和P2（或WS’）之间的HTTP请求走私攻击并没有被限制。</p>
+<h3 id="更加鲁邦的方法"><a href="#更加鲁邦的方法" class="headerlink" title="更加鲁邦的方法"></a><strong>更加鲁邦的方法</strong></h3><p>我们需要的是针对HTTP请求中涉及到处理请求长度、请求动作和协议的一个严格的验证，其他一切都无关紧要，不需<br>所以，我在寻找一个开源的、强大的WAF，重点是预防HTTP请求走私。在这种情况下，首选产品是mod_security，一个备受推崇的开源Web应用防火墙（WAF）。</p>
+<p>mod_security + CRS这一个开源项目，就健壮性和通用性而言，还有几个缺点：<br>1.它不提供对HTTP请求走私的完全保护。<br>2.它只适用于Apache、IIS和nginx。</p>
+<h3 id=""><a href="#" class="headerlink" title=""></a></h3><h3 id="防御HTTP-1-x形式的HTTP请求走私"><a href="#防御HTTP-1-x形式的HTTP请求走私" class="headerlink" title="防御HTTP/1.x形式的HTTP请求走私"></a><strong>防御HTTP/1.x形式的HTTP请求走私</strong></h3><p>我需要开发自己的防御方案，我希望避免增加（或改变）系统的网络配置，因此独立的WAF（消耗IP地址）是不可取的。所以，我探索的一个方向是流量嗅探，但存在两个缺点：<br>1.它容易受到IP级和TCP级的攻击(如Ptacek和Newsham 1998年的论文 “Insertion, Evasion and Denial of Service: Eluding Network Intrusion Detection”）。)<br>2.虽然这不是一个强制性的设计目标，但我希望我的解决方案能够超越HTTP请求走私的范畴。因此，更倾向于采用能够克服流量加密的解决方案(TLS/HTTPS)。</p>
+<p>为此，我重点研究了一种能够监听需要保护的服务器socket层的解决方案。最简单的方法就是将我的库注入到服务器进程中，并挂接一些socket函数。为此，我使用了一个跨平台的开源注入库——Jubo Takehiro的FuncHook。<br>我的解决方案是一个通用的C++库，它可以处理各种 协议，包括 HTTP/0.9、HTTP/1.0、HTTP/1.1、SMTP、ESMTP、FTP、POP3等。</p>
+<p>在多层上实施</p>
+<p>我的防御实现集中在HTTP/1.x上，由两个独立的层组成：<br>-Socket抽象层（SAL）<br>-HTTP/1.x请求走私防火墙</p>
+<h4 id="a-Socket抽象层（SAL）"><a href="#a-Socket抽象层（SAL）" class="headerlink" title="a. Socket抽象层（SAL）"></a><strong>a. Socket抽象层（SAL）</strong></h4><p>Socket抽象层（SAL）在套接字函数上实现了几个钩子，使该层能够收集每一个传入的网络字节。上层获得套接字的标准 “视图”（如打开/读取/关闭）和套接字端点信息（即地址和端口），不管底层的套接字实现如何（包括Windows与Linux）。SAL不缓冲任何数据。</p>
+<p>我在以下Windows 10 64位的服务器上成功测试了SAL。该表还显示了需要挂接哪些WinSock函数:</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb61ia2fTw5cwhNmic26oBrszAqKUkxK7iamkEbPYpzCmyNajd9yfNEWQsxCdqDMkqo255VQfLmbDT3Qw/640?wx_fmt=png" alt=""></p>
+<p>在Linux中，socket的操作比较直接。对于大多数服务器来说，只要挂上accept4 recv/read和shutdown就够了。</p>
+<p>Node.js使用uvlib网络库并没有调用accept/accept4（而是直接调用libc的syscall函数）。因此，对于node.js，我们需要将uvlib的uv__accept4。这里只测试了64位架构，以下是实验结果：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb61ia2fTw5cwhNmic26oBrszARDNWHKD8CI3iassF97wxjaQLiagZSIiaCsUibf4fGa98VTVaJdAzTEGPQA/640?wx_fmt=png" alt=""></p>
+<h4 id="-1"><a href="#-1" class="headerlink" title=""></a></h4><h4 id="b-HTTP-1-x请求走私防火墙-RSFW"><a href="#b-HTTP-1-x请求走私防火墙-RSFW" class="headerlink" title="b. HTTP/1.x请求走私防火墙 (RSFW)"></a><strong>b. HTTP/1.x请求走私防火墙 (RSFW)</strong></h4><p>本层通过严格遵守HTTP请求走私保护的规定，实现对HTTP/1.x 形式的HTTP请求走私的预防，它采取的是白名单方式而非黑名单方式。我测试了许多已知的攻击向量，并都被成功阻止。</p>
+<p>本质上，它解析协议线路，高速缓存内部部分线路（但仍然立即将所有数据转发到应用程序），直到形成完整线路并进行解析。它在第一次违反规则时终止连接，因此在任何给定的时间，后端应用程序(例如web服务器）看不到一个完整的违规线路。</p>
+<p>一个推荐的设计原则是，一旦检测到HTTP违规行为，立即从发现违规行为的线路上终止套接字。有违规行为的线路不应该被转发给应用程序（Web服务器）。实施的逻辑如下：</p>
+<ul>
+<li><p>严格执行请求行格式</p>
+</li>
+<li><p>严格执行HTTP头格式</p>
+</li>
+<li><p>对内容长度和传输编码头的特殊处理</p>
+</li>
+<li><p>严格执行分块编码体格式</p>
+</li>
+</ul>
+<p>下面的逻辑将于以后实现。</p>
+<ul>
+<li><p>支持非RFC-2616的HTTP动作（如WebDAV）</p>
+</li>
+<li><p>特别处理额外的敏感头，例如Host Connection</p>
+</li>
+<li><p>在分块编码中支持尾部的头文件</p>
+</li>
+</ul>
+<p>该防火墙的C++库，可以在Safebreach Labs的GitHub仓库中找到(<a href="https://github.com/SafeBreach-Labs/RSFW)。" target="_blank" rel="noopener">https://github.com/SafeBreach-Labs/RSFW)。</a></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6OLwHohYU7UjX5anusw3ZzxxUKM0Ert9iaakSvib40glppuwsWytjDfiaFx1T25gsIWL5c8c7kicamxw/640?wx_fmt=png" alt="" title="虚线阴影分割线"></p>
+<p>- End -  </p>
+<p>精彩推荐</p>
+<p><a href="http://mp.weixin.qq.com/s?__biz=MzA5ODA0NDE2MA==&mid=2649744045&idx=3&sn=c1bf85576597e7b8fa6ec6dcd2416e18&chksm=888cd2c2bffb5bd45b06b6bee2f8a59dd08b7e23f2bbb75ed5a4bfa10f4158d51e920de8db90&scene=21#wechat_redirect" target="_blank" rel="noopener">【技术分享】MSN Password Recovery 1.30 -DOS分析</a>  </p>
+<p><a href="http://mp.weixin.qq.com/s?__biz=MzA5ODA0NDE2MA==&mid=2649743975&idx=3&sn=52b3edcd9bbb381d0b0fc091ffe86076&chksm=888cd208bffb5b1ec9b4b9737f161a71b17314eac23898fa75e650a55e46250e4f516a032275&scene=21#wechat_redirect" target="_blank" rel="noopener">【技术分享】Kernel提权方法之modprobe_path覆写</a>  </p>
+<p><a href="http://mp.weixin.qq.com/s?__biz=MzA5ODA0NDE2MA==&mid=2649743918&idx=3&sn=1f8a10fe455a1cddbf505a7cbe615177&chksm=888cd241bffb5b578f7c9921fe7493c072a2234b529dec3c5176392d8955d82521ae14f6afaf&scene=21#wechat_redirect" target="_blank" rel="noopener">【技术分享】赏金$10000+的TikTok Android 1-Click RCE漏洞</a></p>
+<h2 id="-2"><a href="#-2" class="headerlink" title=""></a><img src="https://mmbiz.qpic.cn/mmbiz_gif/Ok4fxxCpBb5ZMeq0JBK8AOH3CVMApDrPvnibHjxDDT1mY2ic8ABv6zWUDq0VxcQ128rL7lxiaQrE1oTmjqInO89xA/640?wx_fmt=gif" alt=""></h2><p><strong>戳“阅读原文”查看更多内容</strong></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/04/26/qiwihui-pocket_readings-1086/" rel="prev" title="
+
+
+【技术分享】nodejs中代码执行绕过的一些技巧 ">
+      <i class="fa fa-chevron-left"></i> 
+
+
+【技术分享】nodejs中代码执行绕过的一些技巧 
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/04/26/qiwihui-pocket_readings-1088/" rel="next" title="
+
+
+【技术分享】NodeJS从零开始到原型链污染 ">
+      
+
+
+【技术分享】NodeJS从零开始到原型链污染  <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#【技术分享】BlackHat：HTTP-请求走私的新变体、新防御-by-安全客"><span class="nav-number"></span> <span class="nav-text">【技术分享】BlackHat：HTTP 请求走私的新变体、新防御 by 安全客</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#变体1：“Header-SP-CR-junk-…”"><span class="nav-number">1.</span> <span class="nav-text">变体1：“Header SP&#x2F;CR junk: …”</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#变体2：“Wait-for-It”"><span class="nav-number">2.</span> <span class="nav-text">变体2：“Wait for It”</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#变体3：绕过类似-mod-security-的防御"><span class="nav-number">3.</span> <span class="nav-text">变体3：绕过类似 mod_security 的防御</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#变体4：“A-plain-solution”"><span class="nav-number">4.</span> <span class="nav-text">变体4：“A plain solution”</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#变体5：“CR-header”"><span class="nav-number">5.</span> <span class="nav-text">变体5：“CR header”</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#攻击的成果"><span class="nav-number">6.</span> <span class="nav-text">攻击的成果</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#一些有缺陷的方法（用于代理服务器）"><span class="nav-number">7.</span> <span class="nav-text">一些有缺陷的方法（用于代理服务器）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#a-HTTP出站请求的规范化"><span class="nav-number">7.1.</span> <span class="nav-text">a. HTTP出站请求的规范化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#b-每个TCP连接一个HTTP出站请求"><span class="nav-number">7.2.</span> <span class="nav-text">b.每个TCP连接一个HTTP出站请求</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#更加鲁邦的方法"><span class="nav-number">8.</span> <span class="nav-text">更加鲁邦的方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#"><span class="nav-number">9.</span> <span class="nav-text"></span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#防御HTTP-1-x形式的HTTP请求走私"><span class="nav-number">10.</span> <span class="nav-text">防御HTTP&#x2F;1.x形式的HTTP请求走私</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#a-Socket抽象层（SAL）"><span class="nav-number">10.1.</span> <span class="nav-text">a. Socket抽象层（SAL）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#-1"><span class="nav-number">10.2.</span> <span class="nav-text"></span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#b-HTTP-1-x请求走私防火墙-RSFW"><span class="nav-number">10.3.</span> <span class="nav-text">b. HTTP&#x2F;1.x请求走私防火墙 (RSFW)</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#-2"><span class="nav-number"></span> <span class="nav-text"></span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="透过 Rust 探索系统的本原：网络篇">
+<meta property="og:type" content="article">
+<meta property="og:title" content="
+
+
+透过 Rust 探索系统的本原：网络篇 ">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/04/01/qiwihui-pocket_readings-1062/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="透过 Rust 探索系统的本原：网络篇">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08SO4VQicvvyXbaysr5M6RVXHDxcf1kianSpjHPn9QqddibS4WFia824Vtyk9dd5o9yAW6Hm1fvJyzodA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08SO4VQicvvyXbaysr5M6RVXEHlU7yvkDHcBjQziakYm7Jqy6b6DREaVC5GrFlJhrXVd05UEVrSk5iaQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08SO4VQicvvyXbaysr5M6RVXzMmH5uViclCuED7n7yxEAIoRFmibcD70Mf0Kw0g3deuVFGXnc1uhwvOQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08SO4VQicvvyXbaysr5M6RVXdjmuOFb9Nxs3E9B7n4HMbGlN9LgFZExSDkkULOGzesozbWor4X82wg/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08SO4VQicvvyXbaysr5M6RVXpHXPZtcjbS9rKibFAVMRbJbXcTbJz9KhOLfic9madX8YmYS0zmicCS0tw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08SO4VQicvvyXbaysr5M6RVXpiaZw8pucYKrDhKuqDlaxhY6IZzNrXoaddm5kY94vrkYibOPXLraLOgg/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08SO4VQicvvyXbaysr5M6RVXjvKoaWEicShkjn4LibPJaRONHusLxcnG0UA5URkq36DmDhPZOV45ZUNA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08SO4VQicvvyXbaysr5M6RVXGUL1wGRWNtibkMORKMfvVzqPMzq3Crlr2xpwZUIhib3jfMBb3iaiaoxYibw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08SO4VQicvvyXbaysr5M6RVX6lFcU3fTibGOfBVYyNV57VqVqVG4AkgDINtNvlOicNCnWEqNJxtnqWyA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08SO4VQicvvyXbaysr5M6RVXRq7LLkRBXgmGSW3oh6KthlUJTicOfd3NqxrcB5B0cmKMDH708ibgiczng/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08SO4VQicvvyXbaysr5M6RVXEkuddicKD5JGiauGeX2zY44ubsKFcaxia9SWqFDlDV09Qllvbv0iaG2o8Q/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08SO4VQicvvyXbaysr5M6RVXjHYPaLicthrrC2MuWboRVGIFl9AC08sqXVYCaUPEWevmVLFzEkBwpUg/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08SO4VQicvvyXbaysr5M6RVXAEylV5RibI7ejSgsYibkGPbmMgwN0y7TLoHS5wN9iaJAlCVjt4SzEUQyw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/SER9L29WQ08SO4VQicvvyXbaysr5M6RVXmhEsMjbiaZlFxADo8thmnawmxuJ7rFJcFr4VbYeL5fbmqDaeCtxfHKg/640?wx_fmt=jpeg">
+<meta property="article:published_time" content="2021-04-01T04:21:31.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.418Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08SO4VQicvvyXbaysr5M6RVXHDxcf1kianSpjHPn9QqddibS4WFia824Vtyk9dd5o9yAW6Hm1fvJyzodA/640?wx_fmt=png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/04/01/qiwihui-pocket_readings-1062/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>
+
+
+透过 Rust 探索系统的本原：网络篇  | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/04/01/qiwihui-pocket_readings-1062/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+
+
+透过 Rust 探索系统的本原：网络篇 
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-04-01 04:21:31" itemprop="dateCreated datePublished" datetime="2021-04-01T04:21:31+00:00">2021-04-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">
+
+
+透过 Rust 探索系统的本原：网络篇 </div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#24494;&#20449;&#21495; programmer_life &#21151;&#33021;&#20171;&#32461; &#21313;&#24180;&#28459;&#28459;&#31243;&#24207;&#20154;&#29983;&#65292;&#25171;&#36807;&#21508;&#31181;&#26434;&#65292;&#20063;&#20570;&#36807;&#35753;&#25105;&#39556;&#20658;&#30340;&#36719;&#20214;&#65307;&#31649;&#29702;&#36807;&#25968;&#21313;&#20154;&#30340;&#22242;&#38431;&#65292;&#36824;&#24102;&#39046;&#19968;&#29677;&#20804;&#24351;&#22992;&#22969;&#21019;&#36807;&#19994;&#65292;&#30446;&#21069;&#22312;&#30789;&#35895;&#19968;&#23478;&#21019;&#19994;&#20844;&#21496;&#25285;&#20219; VP&#12290;&#20851;&#27880;&#31243;&#24207;&#20154;&#29983;&#65292;&#20102;&#35299;&#31243;&#24207;&#29503;&#65292;&#23398;&#20570;&#31243;&#24207;&#29503;&#65292;&#20570;&#22909;&#31243;&#24207;<br><br><br><br>Tags: rust<br><br><br><br>via Pocket <a href="https://ift.tt/3cF5L2D" target="_blank" rel="noopener">https://ift.tt/3cF5L2D</a> original site<br><br><br><br>April 01, 2021 at 11:57AM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1062#issuecomment-811627347" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>4/1/2021</strong></p>
+</blockquote>
+<h2 id="透过-Rust-探索系统的本原：网络篇-by-程序人生"><a href="#透过-Rust-探索系统的本原：网络篇-by-程序人生" class="headerlink" title="透过 Rust 探索系统的本原：网络篇 by 程序人生"></a>透过 Rust 探索系统的本原：网络篇 by 程序人生</h2><p><strong>2021-03-29</strong><br>如今所有的应用程序几乎都离不开网络。从应用开发的角度，绝大多数应用以及其后端系统都工作在应用层：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08SO4VQicvvyXbaysr5M6RVXHDxcf1kianSpjHPn9QqddibS4WFia824Vtyk9dd5o9yAW6Hm1fvJyzodA/640?wx_fmt=png" alt=""></p>
+<p>一般来说，应用程序的网络层除了发生在客户端和服务器之间，还存在于整个后端。下图是一个典型的应用程序：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08SO4VQicvvyXbaysr5M6RVXEHlU7yvkDHcBjQziakYm7Jqy6b6DREaVC5GrFlJhrXVd05UEVrSk5iaQ/640?wx_fmt=png" alt=""></p>
+<p>客户端和服务端之间的流量会走这些网络协议：</p>
+<ol>
+<li>API 和 analytics 大多会走 HTTP(S)/1.1 或 HTTP(S)/2，以及在其之上的 websocket。</li>
+</ol>
+<ol start="2">
+<li>trace/metrics 走 UDP</li>
+</ol>
+<p>服务端内部：</p>
+<ol>
+<li>服务和服务间如果走 gRPC 的话，是 HTTP/2。</li>
+</ol>
+<ol start="2">
+<li>服务跟数据库之间走数据库自己的网络协议（一般直接建立在 TLS 之上）。</li>
+</ol>
+<ol start="3">
+<li>服务跟第三方的云服务，一般走 HTTPS。</li>
+</ol>
+<ol start="4">
+<li>服务器和 Message queue 之间，也许会走 AMQP 协议。</li>
+</ol>
+<p>大多数时候，这些网络协议都被封装好，或以 SDK 的形式，或以类库的形式供你调用，所以开发者基本不用操心协议的细节是怎么回事。顶多，把 HTTP/1.1 的状态码（200/301/302/304/400/404/429/500），方法（GET/POST/PUT/PATCH/DELETE/HEAD），常见的头字段记一记，知道什么情况下客户端该请求什么方法，返回什么状态码，什么时候数据应该放在头部，什么时候应该放在腰部（body），也就足够应付 80% 的应用场景了。</p>
+<p>不过，为了更大的吞吐量，更小的延迟，更好的用户体验，我们还需要掌握更多的细节。本文就谈谈这些内容。</p>
+<h2 id="异步处理"><a href="#异步处理" class="headerlink" title="异步处理"></a>异步处理</h2><p>提升网络性能的第一大法宝是异步处理。网络跟 I/O 相关，发送和接收数据都存在潜在的阻塞线程的风险，如果不妥善处理，会大大降低系统的吞吐量。传统的处理方式是用 non-blocking I/O，自己处理 <code>EWOULDBLOCK</code> —— 一般来说，去调度其它能执行的任务，避免线程闲置。当然，现代编程语言都有不错的异步支持，相当于帮助开发者完成这种原本需要手工完成的调度。Rust 提供了 <code>Future</code> trait，在语言核心支持了 <code>async</code> 和 <code>await</code>。相信大家对 <code>async</code> 和 <code>await</code> 并不陌生，下图对比了 sync/async File I/O：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08SO4VQicvvyXbaysr5M6RVXzMmH5uViclCuED7n7yxEAIoRFmibcD70Mf0Kw0g3deuVFGXnc1uhwvOQ/640?wx_fmt=png" alt=""></p>
+<p>（图片来自：Writing an OS in Rust - Async/Await [1]）</p>
+<p>在众多不同语言的异步实现中，Rust 的实现是独树一帜的。它的异步库（无论 Tokio/async-std）使用了 Reactor/Executor 模式[2]，一个 <code>Future</code> 只有被主动 poll（await）才会得到执行。这一点和 javascript 有本质的不同 —— 在 js 里，一个 promise 一旦生成，就会放入 event loop 里等待执行。</p>
+<p>在 Reactor/Executor 模式里， executor 就是我们常说的调度器（scheduler）。它负责调度可执行的 <code>Future</code> 的执行。每次执行意味着一次 poll，要么 poll 到整个 <code>Future</code> 结束，要么 poll 到 <code>Future</code> 直到  <code>Poll::Pending</code>。当一个 <code>Future</code> 不能做更多事情时（<code>Poll::Pending</code>），executor 不会再管它，直到有人（<code>Waker</code>）通知 executor 这个 <code>Future</code> 又重新 ready 了。这个 <code>Waker</code> 就是我们所说的 reactor。它一般会跟操作系统的 nonblocking I/O（linux 下是 epoll，bsd 下是 kqueue，以及 windows 下是 IOCP）协作，来唤醒 <code>Future</code>。下图概括了 Tokio 下 Reactor/Executor 是如何协作的：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08SO4VQicvvyXbaysr5M6RVXdjmuOFb9Nxs3E9B7n4HMbGlN9LgFZExSDkkULOGzesozbWor4X82wg/640?wx_fmt=png" alt=""></p>
+<p>（图片来自 Explained: How does async work in Rust? [3]）</p>
+<p>如果你做过多核 CPU 下的（非 ASIC）网络设备相关的开发，会发现这个过程似曾相识。我觉得未来 Rust 会在高性能网络设备领域占据一席之地，这得益于其高效强大的易步处理库。</p>
+<p>Rust 下主流的异步库有 Tokio 和 async-std。下图做了不错的总结，大家可以就着原文的讨论一起看：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08SO4VQicvvyXbaysr5M6RVXpHXPZtcjbS9rKibFAVMRbJbXcTbJz9KhOLfic9madX8YmYS0zmicCS0tw/640?wx_fmt=png" alt=""></p>
+<p>（图片来自 reddit 讨论：Diagram of Async Architectures [4]，有些旧，async-std 现在已经基于 smol 了，但整个讨论值得一读）</p>
+<p>异步开发的好处是：尽管底层的处理相当复杂，各种实现但对开发者来说，接口非常简单，只需要很少的代价就可以把一个同步的处理变成异步的处理。</p>
+<p>但是，我们要小心其中的一些陷阱：</p>
+<ul>
+<li><p>锁的使用。如果对 I/O 相关的数据结构加锁，需要使用支持异步的锁。比如你要对 TCP stream 的 writer 加锁（不建议这么做，下文会讲），那么要用异步锁。异步锁和同步锁的区别是，异步锁只是让异步任务状态变为 <code>Poll::Pending</code>，不会锁线程，等锁 ready 后异步任务重新被唤醒；而同步锁会锁线程，导致性能问题甚至死锁。</p>
+</li>
+<li><p>异步代码和高延时同步代码的混用。如果在两个异步操作之间有高延时同步代码，要么把同步代码放在前面或者后面执行，要么把同步代码异步化（分阶段 poll）。</p>
+</li>
+</ul>
+<p>对于后者，我这两天在做一个类似 Phoenix Channel[5] 的 Websocket 应用（以下简称 WS channel）时遇到了这个问题：我的 WebSocket 在 wss 连接时，每个连接要花大概 300-400ms，很奇怪。后来我用 jaeger 追踪了一下 tracing，发现客户端代码在连接时时间都耗在了 <code>new_with_rustls_cert</code> 上，真正花在 TLS handshake 上的时间只有 1.5ms：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08SO4VQicvvyXbaysr5M6RVXpiaZw8pucYKrDhKuqDlaxhY6IZzNrXoaddm5kY94vrkYibOPXLraLOgg/640?wx_fmt=png" alt=""></p>
+<p>由于我客户端做的操作是：</p>
+<ol>
+<li>TCP connect（异步）</li>
+</ol>
+<ol start="2">
+<li>准备 TLS connector（这里会做 <code>new_with_rustls_cert</code>），这是同步操作，耗时 ~300ms</li>
+</ol>
+<ol start="3">
+<li>TLS connect（异步）</li>
+</ol>
+<p>这直接导致服务端 <code>tls_accept</code> 每个新建连接的延迟奇高（因为客户端 TCP 连上了迟迟不做 handshake）：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08SO4VQicvvyXbaysr5M6RVXjvKoaWEicShkjn4LibPJaRONHusLxcnG0UA5URkq36DmDhPZOV45ZUNA/640?wx_fmt=png" alt=""></p>
+<p>解决办法：客户端准备 TLS connector 的步骤提前到第一步。之后，服务器的延迟正常了（~1ms）：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08SO4VQicvvyXbaysr5M6RVXGUL1wGRWNtibkMORKMfvVzqPMzq3Crlr2xpwZUIhib3jfMBb3iaiaoxYibw/640?wx_fmt=png" alt=""></p>
+<p>这是个有趣的 bug。<code>new_with_rustls_cert</code> 看上去是个人畜无害的纯内存操作，但因为里面有读取操作系统的受信证书的操作，所以延时高一些。其实它应该做成异步操作。</p>
+<h2 id="队列"><a href="#队列" class="headerlink" title="队列"></a>队列</h2><p>在网络开发中，最快能提升性能的工具就是队列。虽然操作系统层面，已经使用了发送队列和接收队列来提升性能，在应用层面，我们最好也构建相应的队列，来让整个服务的处理变得更顺滑，更健壮，更高效。除此之外，队列还能帮助我们解耦，让应用本身的逻辑和 I/O 分离。</p>
+<p>我们还是以上文中提到的 WS channel 为例。其产品逻辑是：客户端可以连接 websocket，然后 join/leave 某个 channel，当成功 join 某个 channel 后，客户端可以向 channel 里广播任意消息，其它连接到这个 channel 的客户端可以接收到这条消息。</p>
+<p>服务器端需要处理这样的逻辑：</p>
+<ul>
+<li>收到客户端的 join channel X 的请求后，如果验证通过，就给该客户端发送成功响应，同时给 channel X 的其它客户端发送 presence update 通知。</li>
+</ul>
+<ul>
+<li>收到客户端发往 channel Y 的消息后，验证客户端确实在 channel Y 中之后，将这条消息广播给 channel Y 中的其它客户端。</li>
+</ul>
+<ul>
+<li>收到客户端的 leave channel Z 的消息后，如果客户端在 channel Z 中，就将客户端移除，并给 channel Y 的其它客户端发送 presence update 通知。</li>
+</ul>
+<p>很简单，是不是？</p>
+<p>然而，如果把所有这些逻辑都塞在 accept socket 后的一个大的 <code>async move { loop {...} }</code> 里，代码晦涩难懂，到处耦合，不好单元测试；如果分成一个个子函数，又需要对 websocket 的 reader/writer 套上 <code>Arc&lt;RwLock&lt;...&gt;&gt;</code> 传递，啰嗦且性能不好，每个子函数还是不好单元测试（websocket reader/writer  不好构造）。</p>
+<p>最好的方式是用队列将逻辑和 I/O 分离开：event loop 只负责从 websocket 中接收数据，将其发送到接收队列中，供后续的逻辑处理；以及从发送队列中 poll 出数据，写入 websocket。整体的示意图如下：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08SO4VQicvvyXbaysr5M6RVX6lFcU3fTibGOfBVYyNV57VqVqVG4AkgDINtNvlOicNCnWEqNJxtnqWyA/640?wx_fmt=png" alt=""></p>
+<p>我们换个视角，只看一个 client，大概是这个样子：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08SO4VQicvvyXbaysr5M6RVXRq7LLkRBXgmGSW3oh6KthlUJTicOfd3NqxrcB5B0cmKMDH708ibgiczng/640?wx_fmt=png" alt=""></p>
+<p>服务器：</p>
+<ol>
+<li>accept socket，为 ws socket 创建一个本地 own 的 peer 结构和一个不在本地 own 的 client 结构。peer own socket 的 writer/reader，peer 和 client 之间建立一个双向队列。然后 spawn tokio task，处理该 peer。</li>
+</ol>
+<ol start="2">
+<li>peer 的 event loop 很简单，只处理 socket 的收发 —— 收到的消息放入 recv 队列；从 send 队列拿到要发的消息，写入 socket</li>
+</ol>
+<ol start="3">
+<li>client 在创建后会启动一个 tokio task，运行自己的 event loop：从 recv 队列收消息，根据消息类型进行相应处理（比如说 join 会和 channel 间建立队列）。如果消息需要 broadcast，将其放入 broadcast 的发送队列，由 channel 结构处理。</li>
+</ol>
+<ol start="4">
+<li>channel 从 broadcast 接收队列里收到消息后，遍历自己的所有 subscribers（排除发送者），然后将消息发送到他们的 broadcast 发送队列。</li>
+</ol>
+<p>这是理论上最佳的运作方式。实操的时候，为了节省内存，channel 可以不和 client 建立队列，直接获取 client send 队列的 rx 的浅拷贝，直接发送，省去了一层传递。</p>
+<p>使用队列之后，我们可以很方便地测试 client / channel 处理的逻辑，而无需关心 I/O 部分（I/O 的构造是 unit test 中最困难的部分）。同时，整个结构的逻辑也更清晰，效率更高（使用队列缓存减少了等待），且更平滑（队列有效地缓解了 burst 请求）。</p>
+<p>此外，我们还可以在 websocket 发送端，对 send 队列的 rx 做批处理，就像 ReactiveX 里的 Window 操作那样，让发送端在一段时间内等够一些数据再统一发送（比如：period=200ms / count=16 messages）：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08SO4VQicvvyXbaysr5M6RVXEkuddicKD5JGiauGeX2zY44ubsKFcaxia9SWqFDlDV09Qllvbv0iaG2o8Q/640?wx_fmt=png" alt=""></p>
+<p>减少内存分配和拷贝  </p>
+<p>网络应用中，数据从内核态到用户态，在用户态的多个线程之间，以及最后经过内核态把新的数据发送出去，里面免不了有很多内存的分配和拷贝。还是上面 WS Channel 的例子，我大概统计了一下在 channel  中广播一条用 protobuf 序列化的消息，应用程序自己所需要的内存分配和内存拷贝：</p>
+<ol>
+<li>首先 WebSocket 服务器收到消息后，需要把二进制的 protobuf 转化成 struct 进行一些处理。如果 protobuf 消息中含有 <code>repeated</code> （在 Rust 里对应的是 <code>Vec</code>）或者 <code>map</code> （在 Rust 里对应 <code>HashMap</code>）或者 <code>string</code> （在 Rust 里对应的是 <code>String</code>），那么都涉及到堆上的内存分配。堆上的内存的分配代价很大，切记。</li>
+</ol>
+<ol start="2">
+<li>假设 channel 里有 100 个用户，那么要做 broadcast 的话，这个 struct 需要被拷贝 100 次。</li>
+</ol>
+<ol start="3">
+<li>当要发送消息时，需要把 struct 再序列化成二进制，封装成 Websocket 消息，发送。这里面，序列化的过程涉及到承载二进制内容的 buf 的分配，如果不优化，也是在堆上进行。</li>
+</ol>
+<p>这里最多的内存分配和复制在 2。为了优化这里的拷贝，我们可以用 <code>Arc</code> 来做引用计数，避免拷贝数据本身。</p>
+<p>对于 3，我们可以使用一个全局的可增长的 ring buffer，每次需要 buf 时，从 ring buffer 里取；也可以用 slab，预先分配好相同大小的内存，然后使用之。</p>
+<p>此外，还可以使用一些零拷贝的序列化/反序列化工具，如 rkyv[8]。</p>
+<p>我在开始写 Rust 项目时往往在做应用的时候过多使用拷贝，导致辛辛苦苦编译通过的代码效率低下，有时候做同样一件事，Rust 代码的性能还不如 go 和 java。所以说，合理使用引用，避免代码中不必要的拷贝，是撰写高性能应用的必经之路。</p>
+<h2 id="降低延时"><a href="#降低延时" class="headerlink" title="降低延时"></a>降低延时</h2><p>在服务器和客户端的交互中，往往数据传输本身占据总延迟的大头。一种降低延时的方式是将数据甚至数据和计算本身都挪到网络的边缘处理，这样因为尽可能贴近用户，传输的距离大大减小，延迟就大为改观。目前很多 CDN 都支持了边缘计算（如 aws for edge）</p>
+<p>另外一种降低总延时的方式是压缩。如果原本传输完成 1MB 的数据需要 1s，压缩后只剩下 400k，那么传输完成所需要的时间也相应降低到 400ms。一般 http 服务器和客户端都支持的压缩算法有：gzip，deflate，compress 等。随着时间的推移，类似 zstd[9] 这样高性能且高压缩比的算法也会得到越来越多的使用。如果你的应用是自己的客户端（不是浏览器）和服务器交互，那么可以考虑使用 zstd —— 它有媲美 gzip 的性能，以及比 gzip 好不少的压缩比。</p>
+<h2 id="流式处理-（streaming）"><a href="#流式处理-（streaming）" class="headerlink" title="流式处理 （streaming）"></a>流式处理 （streaming）</h2><p>降低延时的另一个手段是流式处理：发送端不需准备好所有数据才发送，而接收端也无需接收到所有数据才处理。gRPC 是应用的最为广泛的支持流式处理的工具。在 Rust 里，有 tonic [10] 这个库支持高性能 gRPC 服务。</p>
+<p>流式处理虽然能大大降低延时，并让数据在系统中流动得更加自然（我们的时间是一个流式运转的世界，但大部分系统在处理起数据来，只能做批处理），但它最大的问题是使用起来不想批处理那么显而易见，更要命的是，测试起来很多时候无从下手。</p>
+<p>在 Rust 下，我们可以将 channel 和 tonic 的流式接口绑起来，使用起来比较方便。至于测试，我制作了一个 tonic-mock[11]，可以很方便地通过 prost 生成的 struct 从一个数组生成流式接口供测试使用。</p>
+<p>如果你想在 TCP 之上构建流式处理，又希望能够避免应用层上的 head-of-line blocking[12]，可以使用 yamux [13]，它是 Hashicorp 提出的一种类似 HTTP/2 的流管理的 multiplexing spec。Rust 下的实现 有 Parity 的 yamux [14]。当然，HTTP/2 或者 yamux 只能解决应用层的 head-of-line blocking，无法解决 TCP 层的问题，如果对你而言，TCP 层是瓶颈所在，那么，可以试试 HTTP/3 或者在 QUIC（目前在 draft 34）[15] 上构建你自己的应用层。Rust 下对 HTTP/3 和 QUIC 的支持有 quinn（支持到 draft 32）[16] 和 cloudflare 出品的 quiche[17]。</p>
+<h2 id="日志-追踪（logging-tracing）"><a href="#日志-追踪（logging-tracing）" class="headerlink" title="日志/追踪（logging/tracing）"></a>日志/追踪（logging/tracing）</h2><p>复杂的网络应用，在追踪问题的时候，合理的 logging/tracing 能帮助我们快速定位问题。在我用过的诸多语言的各种各样的库中，Rust 里的 tracing [18] 库是体验最佳的工具。它可以记录日志，生成 flamegraph，把数据以 opentelemetry[19] 的形式发送给第三方（比如 jaeger）。比如：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08SO4VQicvvyXbaysr5M6RVXjHYPaLicthrrC2MuWboRVGIFl9AC08sqXVYCaUPEWevmVLFzEkBwpUg/640?wx_fmt=png" alt=""></p>
+<p>上文提到，通过使用它，我解决了一个非常令人困扰的 TLS 新建连接的延迟问题。</p>
+<p>当我们构建应用的时候，最好从一开始就设计好你的 tracing infrastructure：</p>
+<ul>
+<li>日志：什么时候添置什么 level 的日志？日志要包含什么样的 metadata？</li>
+</ul>
+<ul>
+<li>追踪：什么时候添置什么 level 的 span？span 要包含什么 metadata？</li>
+</ul>
+<ul>
+<li>metrics：系统需要收集什么样的 metrics，它们可以被用作什么样的分析？比如：我想知道 WS channel 广播一条消息的 p99，需要如何收集这个 metrics。</li>
+</ul>
+<h2 id="贤者时刻"><a href="#贤者时刻" class="headerlink" title="贤者时刻"></a>贤者时刻</h2><p>下图囊括了 Rust 下面主流的和网络应用相关的库，希望能够帮助大家在合适的场合使用合适的协议和工具：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/SER9L29WQ08SO4VQicvvyXbaysr5M6RVXAEylV5RibI7ejSgsYibkGPbmMgwN0y7TLoHS5wN9iaJAlCVjt4SzEUQyw/640?wx_fmt=png" alt=""></p>
+<p>虽然这是一篇有关 Rust 的文章，和我司目前的技术栈并无关联，但我忍不住要为我司的人文关怀吹一波：  </p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/SER9L29WQ08SO4VQicvvyXbaysr5M6RVXmhEsMjbiaZlFxADo8thmnawmxuJ7rFJcFr4VbYeL5fbmqDaeCtxfHKg/640?wx_fmt=jpeg" alt=""></p>
+<p>我们目前国内团队有不少职位招募，很快我们还会启用一个一整层的独立办公室（坐标北京望京）。感兴趣的同学可以戳「阅读原文」浏览，如果感觉对某个职位感兴趣，可以直接在原文链接里投递简历，或者把简历发到：jobs.china at tubi.tv。</p>
+<p>参考资料</p>
+<p>[1] Writing an OS in Rust: <a href="https://os.phil-opp.com/async-await/" target="_blank" rel="noopener">https://os.phil-opp.com/async-await/</a></p>
+<p>[2] The Reactor-Executor Pattern: <a href="https://cfsamsonbooks.gitbook.io/epoll-kqueue-iocp-explained/appendix-1/reactor-executor-pattern" target="_blank" rel="noopener">https://cfsamsonbooks.gitbook.io/epoll-kqueue-iocp-explained/appendix-1/reactor-executor-pattern</a></p>
+<p>[3] Explained: How does async work in Rust: <a href="https://dev.to/gruberb/explained-how-does-async-work-in-rust-46f8" target="_blank" rel="noopener">https://dev.to/gruberb/explained-how-does-async-work-in-rust-46f8</a></p>
+<p>[4] Diagram of Async Architectures: <a href="https://www.reddit.com/r/rust/comments/jpcv2s/diagram\_of\_async\_architectures/" target="_blank" rel="noopener">https://www.reddit.com/r/rust/comments/jpcv2s/diagram\_of\_async\_architectures/</a></p>
+<p>[5] Phoenix channel: <a href="https://hexdocs.pm/phoenix/channels.html" target="_blank" rel="noopener">https://hexdocs.pm/phoenix/channels.html</a></p>
+<p>[6] Futures batch: <a href="https://github.com/mre/futures-batch" target="_blank" rel="noopener">https://github.com/mre/futures-batch</a></p>
+<p>[7] ReactiveX window operation: <a href="http://reactivex.io/documentation/operators/window.html" target="_blank" rel="noopener">http://reactivex.io/documentation/operators/window.html</a></p>
+<p>[8] rkyv: <a href="https://github.com/djkoloski/rkyv" target="_blank" rel="noopener">https://github.com/djkoloski/rkyv</a></p>
+<p>[9] zstd: <a href="https://facebook.github.io/zstd/" target="_blank" rel="noopener">https://facebook.github.io/zstd/</a></p>
+<p>[10] tonic: <a href="https://github.com/hyperium/tonic" target="_blank" rel="noopener">https://github.com/hyperium/tonic</a></p>
+<p>[11] tonic-mock: <a href="https://github.com/tyrchen/tonic-mock" target="_blank" rel="noopener">https://github.com/tyrchen/tonic-mock</a></p>
+<p>[12] Head-of-line blocking: <a href="https://en.wikipedia.org/wiki/Head-of-line\_blocking" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Head-of-line\_blocking</a></p>
+<p>[13] Yamux spec: <a href="https://github.com/hashicorp/yamux/blob/master/spec.md" target="_blank" rel="noopener">https://github.com/hashicorp/yamux/blob/master/spec.md</a></p>
+<p>[14] Yamux rust: <a href="https://github.com/paritytech/yamux" target="_blank" rel="noopener">https://github.com/paritytech/yamux</a></p>
+<p>[15] QUIC: <a href="https://tools.ietf.org/html/draft-ietf-quic-transport-34" target="_blank" rel="noopener">https://tools.ietf.org/html/draft-ietf-quic-transport-34</a></p>
+<p>[16] Quinn: <a href="https://github.com/quinn-rs/quinn" target="_blank" rel="noopener">https://github.com/quinn-rs/quinn</a></p>
+<p>[17] Quiche: <a href="https://github.com/cloudflare/quiche" target="_blank" rel="noopener">https://github.com/cloudflare/quiche</a></p>
+<p>[18] tracing: <a href="https://github.com/tokio-rs/tracing" target="_blank" rel="noopener">https://github.com/tokio-rs/tracing</a></p>
+<p>[19] Opentelemetry: <a href="https://opentelemetry.io/" target="_blank" rel="noopener">https://opentelemetry.io/</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/03/26/qiwihui-pocket_readings-1059/" rel="prev" title="
+
+
+为什么这次跳水不简单，深入聊聊美债，美股和通胀的关系 ">
+      <i class="fa fa-chevron-left"></i> 
+
+
+为什么这次跳水不简单，深入聊聊美债，美股和通胀的关系 
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/04/01/qiwihui-pocket_readings-1063/" rel="next" title="
+
+
+透过 Rust 探索系统的本原：安全篇 ">
+      
+
+
+透过 Rust 探索系统的本原：安全篇  <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#透过-Rust-探索系统的本原：网络篇-by-程序人生"><span class="nav-number"></span> <span class="nav-text">透过 Rust 探索系统的本原：网络篇 by 程序人生</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#异步处理"><span class="nav-number"></span> <span class="nav-text">异步处理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#队列"><span class="nav-number"></span> <span class="nav-text">队列</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#降低延时"><span class="nav-number"></span> <span class="nav-text">降低延时</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#流式处理-（streaming）"><span class="nav-number"></span> <span class="nav-text">流式处理 （streaming）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#日志-追踪（logging-tracing）"><span class="nav-number"></span> <span class="nav-text">日志&#x2F;追踪（logging&#x2F;tracing）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#贤者时刻"><span class="nav-number"></span> <span class="nav-text">贤者时刻</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

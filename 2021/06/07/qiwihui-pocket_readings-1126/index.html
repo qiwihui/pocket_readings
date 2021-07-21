@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Hacker&#39;s guide to deep-learning side-channel attacks: code walkthrough">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hacker&#39;s guide to deep-learning side-channel attacks: code walkthrough">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/06/07/qiwihui-pocket_readings-1126/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="Hacker&#39;s guide to deep-learning side-channel attacks: code walkthrough">
+<meta property="og:image" content="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-code-walkthrough/">
+<meta property="og:image" content="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-code-walkthrough/">
+<meta property="og:image" content="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-code-walkthrough/">
+<meta property="og:image" content="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-code-walkthrough/">
+<meta property="og:image" content="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-code-walkthrough/">
+<meta property="og:image" content="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-code-walkthrough/">
+<meta property="og:image" content="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-code-walkthrough/">
+<meta property="og:image" content="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-code-walkthrough/">
+<meta property="og:image" content="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-code-walkthrough/">
+<meta property="og:image" content="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-code-walkthrough/">
+<meta property="og:image" content="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-code-walkthrough/">
+<meta property="og:image" content="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-code-walkthrough/">
+<meta property="og:image" content="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-code-walkthrough/">
+<meta property="og:image" content="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-code-walkthrough/">
+<meta property="article:published_time" content="2021-06-07T06:21:28.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.410Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-code-walkthrough/">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/06/07/qiwihui-pocket_readings-1126/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>Hacker's guide to deep-learning side-channel attacks: code walkthrough | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/06/07/qiwihui-pocket_readings-1126/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Hacker's guide to deep-learning side-channel attacks: code walkthrough
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-06-07 06:21:28" itemprop="dateCreated datePublished" datetime="2021-06-07T06:21:28+00:00">2021-06-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">Hacker's guide to deep-learning side-channel attacks: code walkthrough</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>This blog post is the 2nd and final part of my series of posts dedicated to providing a clear and practical step-by-step guide on how to use deep learning to carry out side-channel attacks&mdash;one of the most powerful cryptanalysis techniques.<br><br><br><br>Tags: deep_learning, security<br><br><br><br>via Pocket <a href="https://ift.tt/34PZ7BY" target="_blank" rel="noopener">https://ift.tt/34PZ7BY</a> original site<br><br><br><br>June 07, 2021 at 01:54PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1126#issuecomment-855621269" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>6/7/2021</strong></p>
+</blockquote>
+<h2 id="Hacker’s-guide-to-deep-learning-side-channel-attacks-code-walkthrough-by-elie"><a href="#Hacker’s-guide-to-deep-learning-side-channel-attacks-code-walkthrough-by-elie" class="headerlink" title="Hacker’s guide to deep-learning side-channel attacks: code walkthrough by @elie"></a>Hacker’s guide to deep-learning side-channel attacks: code walkthrough by @elie</h2><p>This blog post is the 2nd and final part of my series of posts dedicated to providing a clear and practical step-by-step guide on how to use deep learning to carry out side-channel attacks—one of the most powerful cryptanalysis techniques. This post will walk you through how to train and use a TensorFlow model to recover an AES key from CPU power consumption traces.</p>
+<p>Over the last three years, our research team at Google, in partnership with various research groups, has been working on developing <em>deep-learning side-channels attacks (aka SCAAML Side Channels Attack Assisted with Machine Learning)</em> and countermeasures to help build more secure trusted hardware. In our experience, <strong>everything becomes much clearer when you start writing code.</strong> That’s why we thought that the best way to help you get started in the exciting field of hardware cryptanalysis would be to provide you with a <a href="https://github.com/google/scaaml/tree/master/scaaml_intro" target="_blank" rel="noopener">dataset, end-to-end code</a>, and this practical guide that shows you, step by step, how to train and use a TensorFlow model to recover AES keys from a TinyAES implementation running on an ARM CPU (STM32F415) from its power consumption traces.</p>
+<p>This tutorial is split into two parts due to the topic length:</p>
+<ul>
+<li><p><strong>Lightweight theory</strong>: The <a href="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-the-theory/" target="_blank" rel="noopener">first part (my previous post)</a> focuses on explaining the core concepts you need to know to understand how a deep-learning power-based side-channel attack works, what hardware and software setup you need to carry it out, and the advantages of using deep learning to perform an <em>SCA (side channel attack) over traditional methods such as template attacks</em>.</p>
+<p>I highly recommend that you read it, if you haven’t done so already, as it explains the many concepts we will be using during the walkthrough.</p>
+</li>
+<li><p><strong>Step-by-step recovery</strong>: The second post (this one) is a code walkthrough that explains, step by step, how to attack the TinyAES implementation running on an STM32F415 chip by training and using a Tensorflow deep-learning model. The <a href="https://github.com/google/scaaml/tree/master/scaaml_intro" target="_blank" rel="noopener">SCAAML GitHub contains all the code, models, and the dataset</a> you need to follow along and experiment.</p>
+</li>
+</ul>
+<p>If you prefer to watch a talk to learn the key concepts, Jean-Michel and I did a talk at DEFCON in 2018 on the subject. You can find <a href="https://elie.net/talk/a-hackerguide-to-deep-learning-based-side-channel-attacks/" target="_blank" rel="noopener">the DEF CON slides here</a> and the video recording here:</p>
+<p><a href="https://www.youtube.com/embed/Db8mj5KFz8E" target="_blank" rel="noopener">https://www.youtube.com/watch?v=Db8mj5KFz8E</a></p>
+<p>Overall, this walkthrough covers the following four topics in turn:</p>
+<ol>
+<li><p><strong>Setup</strong>: Where to get the code, models, and dataset you need to follow along and how the Github repository is structured</p>
+</li>
+<li><p><strong>Preparing data</strong>: How to process power traces to create a dataset suitable to apply deep-learning (optional)</p>
+</li>
+<li><p><strong>Training attack models</strong>: How to use our dataset to train the deep-learning models you will need to use to recover AES keys from power traces (optional)</p>
+</li>
+<li><p><strong>Performing the attack:</strong> How to combine models and predictions to recover a full key out of the validation dataset</p>
+</li>
+</ol>
+<p>Note: As already mentioned, this tutorial assumes that you are familiar with the concepts and terminology discussed in the first part of this series. So, if there are concepts that are not clear as you follow along, take the time to look at the first part of the tutorial, as it likely <a href="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-the-theory/" target="_blank" rel="noopener">has the answers you are looking for</a>.</p>
+<h2 id="Environment-setup"><a href="#Environment-setup" class="headerlink" title="Environment setup"></a>Environment setup</h2><p>First things first: To get started, grab <a href="https://github.com/google/scaaml" target="_blank" rel="noopener">a copy of the code from Github</a> and download the dataset we are going to be using throughout this tutorial. To make things easier and faster, in addition to the dataset and the attack code, we also provide you with the 48 pretrained models needed to attack all the attack points, so you don’t have to spend tens of GPU hours training them and can jump directly into the attack part if you wish.</p>
+<h3 id="Code"><a href="#Code" class="headerlink" title="Code"></a>Code</h3><p><img src="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-code-walkthrough/" alt="blurry image for loading"><img src="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-code-walkthrough/" alt="github screenshot"></p>
+<p>The code is available from the <a href="https://github.com/google/scaaml" target="_blank" rel="noopener">SCAAML Github</a> under the Apache 2 license, so grab a copy of it, either by cloning the repo or downloading it.</p>
+<p>The two directories you will need are:</p>
+<ol>
+<li><p><a href="https://github.com/google/scaaml/tree/master/scaaml" target="_blank" rel="noopener"><code>scaaml/</code></a>: This directory contains the SCAAML python library that we use for all the research we do around applying deep-learning to side-channel resilience. The key file we are going to discuss in-depth in this tutorial is the model file, which is under <code>scaaml/intro/model.py</code>. It contains the TensorFlow Keras model architecture we are going to use to attack TinyAES.</p>
+</li>
+<li><p><a href="https://github.com/google/scaaml/tree/master/scaaml_intro" target="_blank" rel="noopener"><code>scaaml_intro/</code></a>: This directory contains the code for this tutorial. As discussed in the README, there are two main scripts in this directory that we will use:</p>
+<ul>
+<li><a href="https://github.com/google/scaaml/blob/master/scaaml_intro/train.py" target="_blank" rel="noopener"><code>train.py</code></a> to train the model</li>
+<li><a href="https://github.com/google/scaaml/blob/master/scaaml_intro/key_recovery_demo.ipynb" target="_blank" rel="noopener"><code>key_recovery_demo.ipynb</code></a> to perform the attacks with the trained models. As mentioned earlier, you can skip running train.py, as we provide trained models.</li>
+</ul>
+</li>
+</ol>
+<p>So, to install the code, you need to:</p>
+<ol>
+<li>Grab a copy of the code, either by cloning the repo or downloading it.</li>
+<li>Install the SCAAML package as discussed in the <a href="https://github.com/google/scaaml" target="_blank" rel="noopener">repo README</a>.</li>
+</ol>
+<h3 id="Data"><a href="#Data" class="headerlink" title="Data"></a>Data</h3><p>Once you have the code at hand, you need to download the TinyAES dataset and optionally the pretrained models from the Google Cloud Bucket. The easiest way to do so is to simply click on the links for those that are listed in the <a href="https://github.com/google/scaaml/tree/master/scaaml_intro" target="_blank" rel="noopener">scaaml_intro/ README</a>.</p>
+<p><strong>Important: Make sure you extract the archive in the right directories</strong>. The code assumes that the dataset will be in <code>datasets/</code> and the models in <code>models</code>. Alternatively, you can change the code behavior, but that is out of the scope of this tutorial :)</p>
+<h3 id="Sanity-check"><a href="#Sanity-check" class="headerlink" title="Sanity check"></a>Sanity check</h3><p><img src="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-code-walkthrough/" alt="blurry image for loading">)<img src="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-code-walkthrough/" alt="scaaml-code-directories-expected-structure"></p>
+<p>Once you are done installing SCAAML and extracting the tutorial data, you should have a repository that looks like the picture above. Double-check that the data is in the right place and that the SCAAML library is correctly installed to avoid errors moving forward.</p>
+<h2 id="Preparing-the-data"><a href="#Preparing-the-data" class="headerlink" title="Preparing the data"></a>Preparing the data</h2><p>The goal of this step is to convert power traces into a dataset usable by machine learning. It includes three major operations:</p>
+<ol>
+<li><p><strong>Data mangling</strong>: We perform <a href="https://en.wikipedia.org/wiki/Feature_scaling" target="_blank" rel="noopener">feature scaling</a> to scale the power trace between -1 and 1. This is essential; otherwise most models won’t converge at all, as we discovered when we had a bug in our processing pipeline :( We also reshape the traces to add an extra dimension going from (batch_size, 20000) to (batch_size, 20000, 1). This extra dimension is needed to have a shape that is compatible with what the <a href="https://www.tensorflow.org/api_docs/python/tf/keras/layers/Conv1D" target="_blank" rel="noopener"><code>Conv1D()</code></a> layer expects. <a href="https://www.tensorflow.org/api_docs/python/tf/keras/layers/Conv1D" target="_blank" rel="noopener"><code>Conv1D()</code></a> is the Keras 1D convolution layer.</p>
+</li>
+<li><p><strong>Compute attack points</strong>: For each trace, we precompute the expected _sub_bytes_in_ and _sub_bytes_out_ values. We also perform a matrix transpose to ensure that the data is of the form <code>[byte_id][example_id]</code> as we want to be able to fetch values by byte_id as each model attacks a single key byte, as discussed in the <a href="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-the-theory/" target="_blank" rel="noopener">first part of the series</a>. Finally, we perform a <a href="https://www.tensorflow.org/api_docs/python/tf/keras/utils/to_categorical" target="_blank" rel="noopener">categorical encoding</a> of the byte value, as the model output will be a softmax over the 256 potential values.</p>
+</li>
+<li><p><strong>Package data as shard</strong>: Finally, we package the examples as shard, which contains all the examples for a given key value. This allows us to tune how many examples we want per key and ensure that the same key is not used in training and testing. It seems obvious that you should not use the same key both for training and testing, but I have seen datasets in the wild that do this, so storing data like this ensures that won’t happen to us. In our daily research, we use the <a href="https://www.tensorflow.org/api_docs/python/tf/data/Dataset" target="_blank" rel="noopener">TF.dataset</a> format for our dataset, but this format is not straightforward to use, so for this intro tutorial, I converted the shards <a href="https://numpy.org/doc/stable/reference/generated/numpy.load.html" target="_blank" rel="noopener">to the numpy format</a> to make it easier for you to use and manipulate.</p>
+</li>
+</ol>
+<p>The code that produces the shards is <strong>not provided</strong> because it is part of a complex pipeline that is meant to scale to very large datasets (think &gt;1T of traces) in TF.dataset format and run <a href="https://cloud.google.com/dataflow" target="_blank" rel="noopener">over Google DataFlow</a>. There is no easy way for me to just “extract” the relevant part, so instead we provide the dataset already processed. Nevertheless, if you reimplement the data processing part, then you can test its correctness by using some of the dataset unit tests I wrote. They are located under <code>/tests/scald/test_generator.py</code>.</p>
+<h2 id="Training-models"><a href="#Training-models" class="headerlink" title="Training models"></a>Training models</h2><p><img src="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-code-walkthrough/" alt="blurry image for loading"><img src="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-code-walkthrough/" alt="Training model"></p>
+<p>With the data at hand, it’s now time to train our models. The code used to train the model is located in <code>train.py</code>. It’s a fairly standard training code that takes as input a configuration file. Before explaining the interesting part of the training loop, let’s first discuss the config file structure and the <code>model.py</code> file, as you will need to understand this to understand how the training loop works.</p>
+<h3 id="Config-file"><a href="#Config-file" class="headerlink" title="Config file"></a>Config file</h3><p>The configuration file we will be using in this tutorial is stored in <code>config/stm32f415_tinyaes.json</code>. The reason we favor config-file-based training is for reproducibility purposes: It allows us to version the experiment and ensure that we can reproduce each experiment with its exact parameters. While, for the tutorial, it doesn’t matter, overall, configuration-based training is an important data-science practice that is worth applying every time, as it greatly improves reproducibility for the very slight overhead of parsing and maintaining a config file.</p>
+<p> 1<br> 2<br> 3<br> 4<br> 5<br> 6<br> 7<br> 8<br> 9<br>10<br>11<br>12<br>13<br>14<br>15<br>16<br>17<br>18<br>19<br>20<br>21<br>22<br>23<br>24<br>25<br>26<br>27<br>28</p>
+<p>{<br>  “model”: “cnn”,<br>  “device”: “stm32f415”,<br>  “algorithm”: “tinyaes”,<br>  “version”: “10”,<br>  “attack_points”: [ “sub_bytes_out”, “sub_bytes_in”, “key”],<br>  “attack_bytes”: [“0”, “1”, “2”, … , “14”, “15”],<br>  “max_trace_len”: 20000,<br>  “num_shards”: 256,<br>  “num_traces_per_shard”: 256,<br>  “batch_size”: 32,<br>  “epochs”: 30,<br>  “optimizer_parameters”: {<br>    “lr”: 0.001,<br>    “multi_gpu_lr”: 0.001<br>  },<br>  “model_parameters”: {<br>    “activation”: “relu”,<br>    “initial_filters”: 8,<br>    “initial_pool_size”: 4,<br>    “block_kernel_size”: 3,<br>    “blocks_stack1”: 3,<br>    “blocks_stack2”: 4,<br>    “blocks_stack3”: 4,<br>    “blocks_stack4”: 3,<br>    “dense_dropout”: 0.1<br>  }<br>}</p>
+<p>Overall, as shown above, the config file is used to stipulate four things:</p>
+<ul>
+<li><p><strong>Hardware target</strong>: Define what is attacked using the <code>device</code> and <code>algorithm</code> fields. This is used by the code to know where to name/fetch the dataset, models, and logs in a consistent manner.</p>
+</li>
+<li><p><strong>What to attack</strong>: The <code>attack_points</code> and <code>attack_bytes</code> fields define what to predict as output. As discussed in <a href="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-the-theory/" target="_blank" rel="noopener">the first part of this series</a>, there are three potential invertible <code>attack_points</code> that we can apply to the 16 bytes that make an AES 128 key. As a result, there are 3x16: 48 models that need to be trained overall.</p>
+<p>Note that the model performance across various bytes is roughly the same, so if you don’t intend to recover the full key and just want to play with the model architecture to see what works best, you can choose to test just a single byte at a time, knowing that the result will generalize well. This is what we do when we develop/refine our model architectures.</p>
+<p>In terms of <code>attack_points</code>, you can skip the <code>key</code> attack point, as it doesn’t work if you want to save time. Targeting the field <code>sub_bytes_in</code> or <code>sub_bytes_out</code> will give you roughly equivalent performance.</p>
+</li>
+<li><p><strong>How much data to load</strong>: This is defined with <code>num_shards</code> and <code>num_traces_per_shard</code>. As discussed earlier, one shard contains all the examples for a given key, so the number of shards is equivalent to the number of keys to use. The <code>num_traces_per_shard</code> represents how many distinct power traces/plaintext samples to use for a given key. Given that our data sampler is designed to uniformly sample the key and plaintext bytes at capture time using 256 shards x 256 examples (65536 examples total) should be enough to cover all keys/plaintexts pair values for a given key byte and will be enough to reliably recover the validations keys .</p>
+<p>Note that the data loader provided with the tutorial does not check for uniformity and just loads the <em>n</em> first shards—it’s not a problem here, but certainly not what I would recommend for more rigorous attacks and research.</p>
+</li>
+<li><p><strong>Model configuration</strong>: The rest of the file, as discussed below, allows us to specify how to configure the model architecture. For research, using configuration-based models is essential, because it allows you to perform architecture search via hyper-tuning. For this, we use <a href="https://keras-team.github.io/keras-tuner/" target="_blank" rel="noopener">Keras Tuner</a>, which was initially developed for this exact purpose before taking on a life of its own and becoming a core element of the <a href="https://www.tensorflow.org/tfx/guide/tuner" target="_blank" rel="noopener">TensorFlow</a> / <a href="https://keras.io/" target="_blank" rel="noopener">Keras</a> ecosystem.</p>
+<p>What the model parameters mean will be discussed in the next section.</p>
+<p>Note that there are two different learning rates specified in the file. This is because the code relies on <a href="https://www.tensorflow.org/api_docs/python/tf/distribute/Strategy" target="_blank" rel="noopener">tf.distribute.strategy</a> to distribute over multi-GPU, which requires you to increase the size of the <code>batch_size</code> linearly in the number of GPUs. If you are not familiar with multi-GPU training, don’t worry! I will highlight how we use Tensorflow distribution strategy in practice when walking you through the train loop.</p>
+</li>
+</ul>
+<h3 id="Model-architecture"><a href="#Model-architecture" class="headerlink" title="Model architecture"></a>Model architecture</h3><p>As model architecture, we are going to use a <a href="https://en.wikipedia.org/wiki/Residual_neural_network" target="_blank" rel="noopener">residual convolutional architecture</a>, as it provides good performance while training quickly. It should take less than 30 minutes to train a model (~24 hours for the 48 models) on a fairly recent GPU (20xx/30xx/ P100/v100/T4).</p>
+<p>The model architecture is defined in the file <code>scaaml/intro/model.py</code> and uses the <a href="https://keras.io/guides/functional_api/" target="_blank" rel="noopener">Keras Functional API</a>. For those who aren’t familiar with it, the Keras functional API allows you to define models with nonlinear topology, which is essential if you want to do shared layers, multiple inputs, and multiple outputs. If you are serious about deep-learning and TensorFlow, then learning how to use this API instead of the sequential one is a must.</p>
+<h4 id="General-structure"><a href="#General-structure" class="headerlink" title="General structure"></a>General structure</h4><p> 1<br> 2<br> 3<br> 4<br> 5<br> 6<br> 7<br> 8<br> 9<br>10<br>11<br>12<br>13<br>14<br>15<br>16<br>17<br>18<br>19<br>20<br>21<br>22<br>23<br>24</p>
+<p>inputs = layers.Input(shape=(input_shape))<br>x = inputs</p>
+<p># stem<br>x = layers.MaxPool1D(pool_size=pool_size)(x)</p>
+<p># trunk: stack of residual block<br>for block_idx in range(4):<br>  filters *= 2<br>  x = stack(x,<br>        filters,<br>        num_blocks[block_idx],<br>        kernel_size=block_kernel_size,<br>        activation=activation)</p>
+<p># head model: dense<br>x = layers.GlobalAveragePooling1D()(x)<br>for _ in range(1):<br>  x = layers.Dropout(dense_dropout)(x)<br>  x = layers.Dense(256)(x)<br>  x = layers.BatchNormalization()(x)<br>  x = layers.Activation(activation)(x)</p>
+<p>outputs = layers.Dense(256, activation=‘softmax’)(x)</p>
+<p>Overall, our model, depicted in the code above, is based on the <a href="https://arxiv.org/pdf/1603.05027.pdf" target="_blank" rel="noopener">preactivation version of the ResNet architecture</a> (aka V2). While testing, it became clear that this version, which puts the activation before the convolution appears to work better than the other resnet variants for our use-case. There are a few key differences between our model and the traditional <a href="https://arxiv.org/abs/1512.03385" target="_blank" rel="noopener">ResNet architecture</a>:</p>
+<ol>
+<li><p><strong>Our model uses <a href="https://www.tensorflow.org/api_docs/python/tf/keras/layers/Conv1D" target="_blank" rel="noopener"><code>Conv1D()</code></a></strong>: We are dealing with time series (batch_size, trace_len, value), not images (batch_size, width, height, channels), so our data shape is different (1D rather than 2D) and, therefore, we need to use the appropriate layers for this type of shape.</p>
+</li>
+<li><p><strong>Our model starts with <a href="https://www.tensorflow.org/api_docs/python/tf/keras/layers/GlobalMaxPool1D" target="_blank" rel="noopener"><code>layers.MaxPool1D(pool_size=pool_size)(x)</code></a></strong> because our capture was oversampled (as explained in the first post), so starting with a max pool is a sensible way to make our model smaller and converge faster. Its size is controlled with the <code>initial_pool_size</code> parameter in the config. Additionally, we don’t use an initial convolution layer, because we use the preactivation version (more on this later).</p>
+</li>
+<li><p><strong>We use a simplified “stack” of convolution growing functions</strong>, where each stack simply doubles the number of filters from the previous one. That makes for a simpler loop and reduces the number of hyper-tuning parameters. I will describe the stack structure in the next section.</p>
+</li>
+</ol>
+<p>The head of the model is fairly standard; we have a <a href="https://www.tensorflow.org/api_docs/python/tf/keras/layers/Dropout" target="_blank" rel="noopener"><code>Dropout()</code></a> to help generalize followed by a dense block where the <a href="https://www.tensorflow.org/api_docs/python/tf/keras/layers/Dense" target="_blank" rel="noopener"><code>Dense()</code></a> layer with its <a href="https://www.tensorflow.org/api_docs/python/tf/keras/layers/Activation" target="_blank" rel="noopener"><code>Activation()</code></a> layer is intertwined with a <a href="https://www.tensorflow.org/api_docs/python/tf/keras/layers/BatchNormalization" target="_blank" rel="noopener"><code>BatchNormalization()</code></a> layer to speed up convergence. I tend to favor having the batch normalization layer between the dense layer and its activation layer, even though there is a lot of debate over whether it’s the optimal way to order the layers or not. Finally, I did hard code to use only a single dense block, because that is all you need for most SCAAML attacks.</p>
+<p>Last but not least, our output layer is as expected, a <code>Dense(256)</code> layer with a <a href="https://keras.io/api/layers/activations/#softmax-function" target="_blank" rel="noopener">softmax activation</a>. It has a size of 256 because a byte has 256 potential output values and we encoded the data in a categorical function, as explained in the <a href="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-the-theory/" target="_blank" rel="noopener">initial blog post</a>. The softmax is needed to normalize the output.</p>
+<h4 id="Stack-structure"><a href="#Stack-structure" class="headerlink" title="Stack structure"></a>Stack structure</h4><p> 1<br> 2<br> 3<br> 4<br> 5<br> 6<br> 7<br> 8<br> 9<br>10</p>
+<p>x = block(x,<br>      filters,<br>      kernel_size=kernel_size,<br>      activation=activation,<br>      conv_shortcut=True)</p>
+<p>for i in range(2, blocks):<br>  x = block(x, filters, kernel_size=kernel_size, activation=activation)<br>x = block(x, filters, strides=strides, activation=activation)<br>return x</p>
+<p>The core of the model is stacks of residual blocks, and the code, shown above, starts at line 81 in the model file. Overall, the code is fairly straightforward: Each stack includes at least 4 blocks, like the standard ResNet. Increasing the number of blocks is what allows us to vary the “computing power” of the network by increasing its depth. With the ResNet architecture, you mostly want to increase the number of blocks in stacks 2 and 3, and leave stacks 1 and 4 at 3 blocks—<a href="https://arxiv.org/pdf/1603.05027.pdf" target="_blank" rel="noopener">see the original research paper</a> or <a href="https://github.com/tensorflow/tensorflow/blob/v2.5.0/tensorflow/python/keras/applications/resnet_v2.py#L28-L56" target="_blank" rel="noopener">reference implementation</a> for more detail.</p>
+<p>It’s worth mentioning that the first block uses <code>conv_shortcut</code>. This is needed to normalize the shape coming from one stack to another but should be avoided otherwise.</p>
+<h4 id="Residual-block-structure"><a href="#Residual-block-structure" class="headerlink" title="Residual block structure"></a>Residual block structure</h4><p>The core of our network consists of <a href="https://arxiv.org/pdf/1603.05027.pdf" target="_blank" rel="noopener">preactivated residual blocks</a> that are implemented starting in line 22, shown below. The preactivation version means that we start with a batch normalization and do the activation before doing the convolution. I think the reason the preactivation works better for our use case is that it greatly helps the network to start by reducing the covariance using the batch normalization. Overall, in our experience, whichever architecture we use, in most cases the batch normalization really helps models’ convergence.</p>
+<p>Additionally, as mentioned earlier, the main difference with the standard version is that we use <code>Conv1D()</code> layers instead of <code>Conv2D()</code> layers because we deal with time series.</p>
+<p>Besides those two points, there is not much to add; the model is a textbook residual architecture. It’s a good architecture for SCAAML attacks because the residual connections greatly reduce <a href="https://en.wikipedia.org/wiki/Vanishing_gradient_problem" target="_blank" rel="noopener">vanishing gradient issues</a>, which is a major issue when using deep-learning for SCA.</p>
+<p> 1<br> 2<br> 3<br> 4<br> 5<br> 6<br> 7<br> 8<br> 9<br>10<br>11<br>12<br>13<br>14<br>15<br>16<br>17<br>18<br>19<br>20<br>21<br>22</p>
+<p>x = layers.BatchNormalization()(x)<br>x = layers.Activation(activation)(x)</p>
+<p>if conv_shortcut:<br>  shortcut = layers.Conv1D(4 * filters, 1, strides=strides)(x)<br>else:<br>  if strides &gt; 1:<br>    shortcut = layers.MaxPooling1D(1, strides=strides)(x)<br>  else:<br>    shortcut = x</p>
+<p>x = layers.Conv1D(filters, 1, use_bias=False, padding=‘same’)(x)<br>x = layers.BatchNormalization()(x)<br>x = layers.Activation(activation)(x)</p>
+<p>x = layers.Conv1D(filters, kernel_size, strides=strides, use_bias=False, padding=‘same’)(x)<br>x = layers.BatchNormalization()(x)<br>x = layers.Activation(activation)(x)</p>
+<p>x = layers.Conv1D(4 * filters, 1)(x)<br>x = layers.Add()([shortcut, x])<br>return x</p>
+<h3 id="Training-loop"><a href="#Training-loop" class="headerlink" title="Training loop"></a>Training loop</h3><p>The training loop, located in the <code>scaaml_intro/train.py</code>, while fairly straightforward, includes a few interesting tidbits that are worth discussing.</p>
+<h4 id="Data-generators"><a href="#Data-generators" class="headerlink" title="Data generators"></a>Data generators</h4><p>Instead of passing the dataset directly to the model, we use generators, which essentially wrap the <a href="https://www.tensorflow.org/api_docs/python/tf/data/Dataset" target="_blank" rel="noopener">tf.data.Dataset.from_tensor_slices()</a> API while selecting the correct output value (Y_train) based on the requested _targeted_byte _and _attack_point_. The wrapper also converts the output value to its categorical representation. We do the <code>to_categorical()</code> on the fly to save disk space by storing the values as uint8.</p>
+<p>For the demo, using <a href="https://www.tensorflow.org/api_docs/python/tf/data/Dataset" target="_blank" rel="noopener">tf.data.Dataset</a> is not necessary because the dataset is very small, however I decided to still use it because it is what we use in our research pipeline and I wanted the tutorial to be as close to the real thing as possible.</p>
+<p>The reason we use this approach in our research is because it’s the most <a href="https://www.tensorflow.org/guide/data_performance" target="_blank" rel="noopener">efficient</a> (albeit a little painful and quirky in my experience) way to feed data to a Tensorflow model and scale up to TB scale datasets using the <a href="https://www.tensorflow.org/api_docs/python/tf/data/TFRecordDataset" target="_blank" rel="noopener">TFRecordDataset format</a> (which is what we do).</p>
+<p>An important gotcha with this approach, which is due to the fact that we store all the examples for the same key in the same shard, is that you need to have a large shuffle window for your dataset. We use a window of 65535 to ensure that the batches contain a good mix of various key values. Not properly shuffling data results in the models not converging properly. The relevant code is in <code>scaaml/intro/generator.py</code> at line 70/76:</p>
+<p>1<br>2<br>3<br>4<br>5<br>6<br>7<br>8</p>
+<p># make it a tf dataset<br>cprint(“building tf dataset”, ‘magenta’)<br>dataset = tf.data.Dataset.from_tensor_slices((x, y))<br>dataset.cache()<br>if is_training:<br>  dataset = dataset.shuffle(shuffle_size, reshuffle_each_iteration=True)<br>dataset = dataset.batch(batch_size).prefetch(tf.data.experimental.AUTOTUNE)<br>return dataset</p>
+<h4 id="Multi-models"><a href="#Multi-models" class="headerlink" title="Multi-models"></a>Multi-models</h4><p>The loop train multiple model sequentially covers all the requested attack points and bytes, which is why the training loop is made of two loops:</p>
+<p>1<br>2</p>
+<p>for attack_byte in config[‘attack_bytes’]:<br>  for attack_point in config[‘attack_points’]:</p>
+<h4 id="Multi-GPUs"><a href="#Multi-GPUs" class="headerlink" title="Multi-GPUs"></a>Multi-GPUs</h4><p>To use multiple GPUs, you need to multiply the batch_size by the number of GPUs. This is done during the setup phase of the code in line 34. The <code>get_num_gpu()</code> function is simply a wrapper around the <code>[tf.config.list_physical_devices()](https://www.tensorflow.org/api_docs/python/tf/config/list_physical_devices)</code> that counts how many GPUs are available.</p>
+<p>1</p>
+<p>BATCH_SIZE = config[‘batch_size’] * get_num_gpu()</p>
+<p>The other part of multi-GPU is to use the <a href="https://www.tensorflow.org/api_docs/python/tf/distribute/MirroredStrategy" target="_blank" rel="noopener">TF.distribute.MirroredStrategy()</a> API, which is the standardized way to do distributed training in TensorFlow 2.x. This is done in the code at line 75/76 by initializing the strategy and then building/training the model under the strategy scope as follows:</p>
+<p>1<br>2<br>3<br>4<br>5<br>6</p>
+<p># multi gpu<br>strategy = tf.distribute.MirroredStrategy()<br>with strategy.scope():<br>  model = get_model(input_shape, attack_point, config)<br>…<br>  model.fit(g_train, ….)</p>
+<p>Running the train loop will result in the models being saved in the <code>scaaml_intro/models/</code> directory. The models are saved, as usual, via the <code>[ModelCheckpoint()](https://www.tensorflow.org/api_docs/python/tf/keras/callbacks/ModelCheckpoint)</code> callback to ensure that we save the best possible state.</p>
+<h2 id="Recovering-test-keys"><a href="#Recovering-test-keys" class="headerlink" title="Recovering test keys"></a>Recovering test keys</h2><p><img src="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-code-walkthrough/" alt="blurry image for loading"><img src="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-code-walkthrough/" alt="scamml key recovery"></p>
+<p>Now that we have our models trained, it is time to use them to recover our evaluation keys that were not used during training. The code to do so is available in the <a href="https://jupyter.org/" target="_blank" rel="noopener">Jupyter notebook</a> <code>scaaml_intro/key_recovery_demo.ipynb</code>. The notebook is heavily documented, so instead of paraphrasing the existing explanations, I am going to use this final part as an opportunity to tie everything that has been discussed in the two posts together, to give you a cohesive picture of how the attack works end to end and leave you with a good understanding of what SCAAML attacks are, and how to perform them.</p>
+<h3 id="Setup"><a href="#Setup" class="headerlink" title="Setup"></a>Setup</h3><p>From cells 1 through 5, we start by setting up our environment. There are three attack points for AES that can be used to recover the key used for encryption, and each model is trained to predict the attack point value for a specific byte, which means that we have 48 models in total, as AES 128 uses, unsurprisingly, a 16-byte key: <em>3 attack points x 16 bytes = 48 models.</em></p>
+<p>This is why, in cell 4, we group models by attack point and verify that we have all of them, because we are going to combine the output of the 16 models, targeting the different bytes, to recover the full key. From training the models, we know that attacking TinyAES using the key attack point is not working, as the model’s accuracy stays at 0.004, which is the random baseline: 1/256 = 0.004. This leaves us with targeting either sub_bytes_out or sub_bytes_in, which will both work, given that TinyAES protects neither.</p>
+<h3 id="Single-byte-recovery"><a href="#Single-byte-recovery" class="headerlink" title="Single byte recovery"></a>Single byte recovery</h3><p>We start by recovering a single byte before we scale up to the entire key. The first thing to do is load our model <strong>(cell 6)</strong> and then, for each shard that represents a different key, we try to predict the value of the attack_point for the targeted byte <strong>(cell 7)</strong>.</p>
+<p><img src="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-code-walkthrough/" alt="blurry image for loading">)<img src="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-code-walkthrough/" alt="accumulating-traces-predictions"></p>
+<p>As our model uses a softmax output, combining the prediction results on different traces is as simple as accumulating the probabilities as illustrated in the figure above. Note that we sum the logarithm to avoid numerical errors: <code>vals = vals + np.log10(kp + 1e-22)</code></p>
+<h4 id="Model-generalization"><a href="#Model-generalization" class="headerlink" title="Model generalization"></a>Model generalization</h4><p><img src="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-code-walkthrough/" alt="blurry image for loading">)<img src="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-code-walkthrough/" alt="scaaml-byte-recovery-confusion-matrix"></p>
+<p>We can check that our model generalizes well across all possible intermediate values by plotting the confusion matrix <strong>(cell 9)</strong> and checking that we have a nice diagonal. This is an important step because, in our experience, sometimes models collapse and predict the single value 0.</p>
+<h4 id="Recovery-performance"><a href="#Recovery-performance" class="headerlink" title="Recovery performance"></a>Recovery performance</h4><p><img src="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-code-walkthrough/" alt="blurry image for loading">)<img src="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-code-walkthrough/" alt="scaaml-byte-recovery-success-rate-plot"></p>
+<p>As our model accuracy is better than random, accumulating trace predictions will ultimately ensure that the predicted byte value with the highest score will be the correct one (<a href="https://en.wikipedia.org/wiki/Condorcet%27s_jury_theorem" target="_blank" rel="noopener">Condorcet’s jury theorem</a>). TinyAES not being protected, our model has a high accuracy (45% as reported in cell 8), which means that only a few traces are needed to recover the correct byte values for the 256 test keys, as illustrated in cell 10. As shown in the chart, reproduced above, with even 2 traces we can recover over 90% of the correct values. On the most protected implementations, you usually won’t get a 100% recovery rate unless you use an inordinate number of traces.</p>
+<p>As mentioned <a href="https://elie.net/blog/security/hacker-guide-to-deep-learning-side-channel-attacks-the-theory/" target="_blank" rel="noopener">in the first part of the series</a>, there are many metrics you can use to evaluate the efficiency of an attack. In <strong>cell 11,</strong> the notebook showcases how you can compute some of the major ones, giving you:</p>
+<ul>
+<li>The minimum number of traces needed to recover a byte, which is the worst case scenario for the implementation.</li>
+<li>The maximum amount of traces needed to recover all the keys, which is the best case scenario for the implementation.</li>
+<li>The AUC (area under the curve), which is a cumulative performance metric that is super helpful to compare performance across implementation and attack techniques, as it’s a single score that measures how “fast” the bytes can be recovered. A score of 1, the perfect score, means you can recover everything with a single trace.</li>
+</ul>
+<h3 id="Full-key-recovery"><a href="#Full-key-recovery" class="headerlink" title="Full key recovery"></a>Full key recovery</h3><p>Recovering a full key is a matter of selecting a target shard (<strong>cell 12</strong>) and then iterating through the 16 trained models to recover its byte one at the time, as illustrated in <strong>cell 13.</strong> The loop is fairly straightforward: You load a model, predict the values, sum them, and take the best one.</p>
+<p>When done looping, all is left to do is to display the results to show that, indeed, the right key was recovered. This is done in <strong>cell 14.</strong> The loop takes a few minutes, so to make the wait more bearable without going crazy on the UI, <a href="https://github.com/tqdm/tqdm" target="_blank" rel="noopener">I used tqdm’s ability</a> to add an arbitrary suffix to the progress bar to show bytes as they were recovered.</p>
+<h2 id="Wrap-up"><a href="#Wrap-up" class="headerlink" title="Wrap-up"></a>Wrap-up</h2><p>The successful recovery of a full AES key using the deep-learning models we trained concludes our guide, as you now have, hopefully, all the elements you need to get started. There are many ways the attack could be improved and many avenues to explore, but this guide is already very long (over 50 pages), so we will explore those at a later stage, when I will talk about our research results.</p>
+<p>Thank you for reading this post till the end! If you found this guide useful, please take a moment to share it with people who might find it interesting too. I spent over a hundred hours creating this content, and what kept me going is the hope that it would be useful to our community, so having it shared and used really means a lot to me.</p>
+<p>To get notified when my next post is online, follow me on <a href="https://twitter.com/elie" target="_blank" rel="noopener">Twitter</a>, <a href="https://www.facebook.com/elieblog" target="_blank" rel="noopener">Facebook</a>, or <a href="https://www.linkedin.com/in/bursztein/" target="_blank" rel="noopener">LinkedIn</a>. You can also get the full posts directly in your inbox by subscribing to the mailing list or via <a href="https://feeds.feedburner.com/ebursztein" target="_blank" rel="noopener">RSS</a>.</p>
+<p>🙏 A big thanks to Celine, Francois, Emmanuel, Jean-Michel, Remi, Fabian and the insider community for their invaluable and tireless feedback - couldn’t have done it without you!</p>
+<p>A bientot 👋</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/06/04/qiwihui-pocket_readings-1125/" rel="prev" title="Best Practices Around Production Ready Web Apps with Docker Compose">
+      <i class="fa fa-chevron-left"></i> Best Practices Around Production Ready Web Apps with Docker Compose
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/06/10/qiwihui-pocket_readings-1127/" rel="next" title="NoSQL Databases: a Survey and Decision Guidance">
+      NoSQL Databases: a Survey and Decision Guidance <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Hacker’s-guide-to-deep-learning-side-channel-attacks-code-walkthrough-by-elie"><span class="nav-number"></span> <span class="nav-text">Hacker’s guide to deep-learning side-channel attacks: code walkthrough by @elie</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Environment-setup"><span class="nav-number"></span> <span class="nav-text">Environment setup</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Code"><span class="nav-number">1.</span> <span class="nav-text">Code</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Data"><span class="nav-number">2.</span> <span class="nav-text">Data</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Sanity-check"><span class="nav-number">3.</span> <span class="nav-text">Sanity check</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Preparing-the-data"><span class="nav-number"></span> <span class="nav-text">Preparing the data</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Training-models"><span class="nav-number"></span> <span class="nav-text">Training models</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Config-file"><span class="nav-number">1.</span> <span class="nav-text">Config file</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Model-architecture"><span class="nav-number">2.</span> <span class="nav-text">Model architecture</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#General-structure"><span class="nav-number">2.1.</span> <span class="nav-text">General structure</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Stack-structure"><span class="nav-number">2.2.</span> <span class="nav-text">Stack structure</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Residual-block-structure"><span class="nav-number">2.3.</span> <span class="nav-text">Residual block structure</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Training-loop"><span class="nav-number">3.</span> <span class="nav-text">Training loop</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Data-generators"><span class="nav-number">3.1.</span> <span class="nav-text">Data generators</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Multi-models"><span class="nav-number">3.2.</span> <span class="nav-text">Multi-models</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Multi-GPUs"><span class="nav-number">3.3.</span> <span class="nav-text">Multi-GPUs</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Recovering-test-keys"><span class="nav-number"></span> <span class="nav-text">Recovering test keys</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Setup"><span class="nav-number">1.</span> <span class="nav-text">Setup</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Single-byte-recovery"><span class="nav-number">2.</span> <span class="nav-text">Single byte recovery</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Model-generalization"><span class="nav-number">2.1.</span> <span class="nav-text">Model generalization</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Recovery-performance"><span class="nav-number">2.2.</span> <span class="nav-text">Recovery performance</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Full-key-recovery"><span class="nav-number">3.</span> <span class="nav-text">Full key recovery</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Wrap-up"><span class="nav-number"></span> <span class="nav-text">Wrap-up</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

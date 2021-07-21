@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="从RFC规范看如何绕过waf上传表单 上篇 - 安全客，安全资讯平台主页2消息设置关闭">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从RFC规范看如何绕过waf上传表单 上篇 - 安全客，安全资讯平台主页2消息设置关闭">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/05/24/qiwihui-pocket_readings-1109/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="从RFC规范看如何绕过waf上传表单 上篇 - 安全客，安全资讯平台主页2消息设置关闭">
+<meta property="og:image" content="https://www.anquanke.com/post/id/241265">
+<meta property="og:image" content="https://www.anquanke.com/post/id/241265">
+<meta property="og:image" content="https://www.anquanke.com/post/id/241265">
+<meta property="og:image" content="https://www.anquanke.com/post/id/241265">
+<meta property="og:image" content="https://www.anquanke.com/post/id/241265">
+<meta property="og:image" content="https://www.anquanke.com/post/id/241265">
+<meta property="og:image" content="https://www.anquanke.com/post/id/241265">
+<meta property="og:image" content="https://www.anquanke.com/post/id/241265">
+<meta property="og:image" content="https://www.anquanke.com/post/id/241265">
+<meta property="og:image" content="https://www.anquanke.com/post/id/241265">
+<meta property="og:image" content="https://www.anquanke.com/post/id/241265">
+<meta property="og:image" content="https://www.anquanke.com/post/id/241265">
+<meta property="og:image" content="https://www.anquanke.com/post/id/241265">
+<meta property="og:image" content="https://www.anquanke.com/post/id/241265">
+<meta property="og:image" content="https://www.anquanke.com/post/id/241265">
+<meta property="og:image" content="https://www.anquanke.com/post/id/241265">
+<meta property="og:image" content="https://www.anquanke.com/post/id/241265">
+<meta property="og:image" content="https://www.anquanke.com/post/id/241265">
+<meta property="og:image" content="https://www.anquanke.com/post/id/241265">
+<meta property="og:image" content="https://www.anquanke.com/post/id/241265">
+<meta property="og:image" content="https://www.anquanke.com/post/id/241265">
+<meta property="og:image" content="https://www.anquanke.com/post/id/241265">
+<meta property="og:image" content="https://www.anquanke.com/post/id/241265">
+<meta property="og:image" content="https://www.anquanke.com/post/id/241265">
+<meta property="og:image" content="https://www.anquanke.com/post/id/241265">
+<meta property="og:image" content="https://www.anquanke.com/post/id/241265">
+<meta property="og:image" content="https://www.anquanke.com/post/id/241265">
+<meta property="article:published_time" content="2021-05-24T13:21:28.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.422Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.anquanke.com/post/id/241265">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/05/24/qiwihui-pocket_readings-1109/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>从RFC规范看如何绕过waf上传表单 上篇 - 安全客，安全资讯平台主页2消息设置关闭 | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/05/24/qiwihui-pocket_readings-1109/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          从RFC规范看如何绕过waf上传表单 上篇 - 安全客，安全资讯平台主页2消息设置关闭
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-05-24 13:21:28" itemprop="dateCreated datePublished" datetime="2021-05-24T13:21:28+00:00">2021-05-24</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">从RFC规范看如何绕过waf上传表单 上篇 - 安全客，安全资讯平台主页2消息设置关闭</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#20256;&#32479;waf&#20197;&#35268;&#21017;&#21305;&#37197;&#20026;&#20027;&#65292;&#22914;&#26524;&#21482;&#26159;&#26080;&#24046;&#21035;&#30340;&#20351;&#29992;&#35268;&#21017;&#21305;&#37197;&#25972;&#20010;&#25968;&#25454;&#21253;&#65292;&#24403;&#35268;&#21017;&#25968;&#37327;&#36880;&#28176;&#21464;&#22810;&#65292;&#20250;&#36896;&#25104;&#26356;&#22810;&#24615;&#33021;&#25439;&#32791;&#65292;&#24403;&#28982;&#36824;&#20250;&#21457;&#29983;&#35823;&#25253;&#24773;&#20917;&#12290;&#20026;&#20102;&#33021;&#22815;&#35299;&#20915;&#36825;&#20123;&#38382;&#39064;&#65292;&#38656;&#35201;&#23545;&#25968;&#25454;&#21253;&#36827;&#34892;&#35299;&#26512;&#65292;&#36827;&#34892;&#31934;&#20934;&#20301;&#32622;&#30340;&#35268;&#21017;&#21305;&#37197;&#12290;<br><br><br><br>Tags: security<br><br><br><br>via Pocket <a href="https://ift.tt/3yB6V8b" target="_blank" rel="noopener">https://ift.tt/3yB6V8b</a> original site<br><br><br><br>May 24, 2021 at 08:38PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1109#issuecomment-847038994" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>5/24/2021</strong></p>
+</blockquote>
+<h2 id="从RFC规范看如何绕过waf上传表单-上篇-安全客，安全资讯平台主页2消息设置关闭"><a href="#从RFC规范看如何绕过waf上传表单-上篇-安全客，安全资讯平台主页2消息设置关闭" class="headerlink" title="从RFC规范看如何绕过waf上传表单 上篇 - 安全客，安全资讯平台主页2消息设置关闭"></a>从RFC规范看如何绕过waf上传表单 上篇 - 安全客，安全资讯平台主页2消息设置关闭</h2><p><img src="https://www.anquanke.com/post/id/241265" alt=""></p>
+<p>作者：donky16<a href="https://github.com/360" target="_blank" rel="noopener">@ 360</a>云安全</p>
+<p>本文主要讨论，利用waf和后端程序对multipart/form-data的解析差异，造成对waf的bypass。</p>
+<h2 id="背景介绍"><a href="#背景介绍" class="headerlink" title="背景介绍"></a>背景介绍</h2><p>传统waf以规则匹配为主，如果只是无差别的使用规则匹配整个数据包，当规则数量逐渐变多，会造成更多性能损耗，当然还会发生误报情况。为了能够解决这些问题，需要对数据包进行解析，进行精准位置的规则匹配。</p>
+<p>正常业务中上传表单使用普遍，不仅能够传参，还可以进行文件的上传，当然这也是一个很好的攻击点，waf想要能够精准拦截针对表单的攻击，需要进行multipart/form-data格式数据的解析，并针对每个部分，如参数值，文件名，文件内容进行针对性的规则匹配拦截。</p>
+<p>虽然RFC规范了multipart/form-data相关的格式与解析，但是由于不同后端程序的实现机制不同，而且RFC相关文档也会进行增加补充，最终导致解析方式各不相同。对于waf来说，很难做到对各个后端程序进行定制化解析，尤其是云waf更加无法实现。</p>
+<p>由于篇幅有限，此文分为上下两个部分，第一部分主要介绍multipart/form-data中boundary的格式与解析规范，并分析不同程序对boundary解析的异同，和一些造成waf解析失败或和后端解析产生差异的方法；第二部分会介绍Content-Disposition/Content-Type/Content-Transfer-Encoding的内容，介绍多种绕过waf解析的方式，并对Content-Disposition中的参数和boundary参数的解析进行比较，分析其解析不同的原因。</p>
+<p>multipart/form-data相关RFC:</p>
+<ul>
+<li>基于表单的文件上传: <a href="https://www.ietf.org/rfc/rfc1867.txt" target="_blank" rel="noopener">RFC1867</a></li>
+<li>multipart/form-data: <a href="https://tools.ietf.org/html/rfc7578" target="_blank" rel="noopener">RFC7578</a></li>
+<li>Multipart Media Type: <a href="https://tools.ietf.org/html/rfc2046#section-5.1" target="_blank" rel="noopener">RFC2046#section-5.1</a></li>
+</ul>
+<h2 id="解析环境"><a href="#解析环境" class="headerlink" title="解析环境"></a>解析环境</h2><p>Flask/Werkzeug解析环境：docker/<a href="https://github.com/postmanlabs/httpbin" target="_blank" rel="noopener">httpbin</a></p>
+<p>Java解析环境：Windows10 pro 20H2/Tomcat9.0.35/jdk1.8.0_271/commons-fileupload</p>
+<p>Java输出代码：</p>
+<pre><code>String result = &quot;&quot;;
+DiskFileItemFactory factoy = new DiskFileItemFactory();
+ServletFileUpload sfu = new ServletFileUpload(factoy);
+try {
+    List&lt;FileItem&gt; list = sfu.parseRequest(req);
+    for (FileItem fileItem : list) {
+        if (fileItem.getName() == null) {
+            result += fileItem.getFieldName() + &quot;: &quot; + fileItem.getString() + &quot;\n&quot;;
+        } else {
+            result += &quot;filename: &quot; + fileItem.getName() + &quot;  &quot; + fileItem.getFieldName() + &quot;: &quot; + fileItem.getString() + &quot;\n&quot;;
+        }
+    }
+} catch (FileUploadException e) {
+    // TODO Auto-generated catch block
+    e.printStackTrace();
+}</code></pre><p>PHP解析环境：Ubuntu18.04/Apache2.4.29/PHP7.2.24</p>
+<p>PHP输出代码：</p>
+<pre><code>&lt;?php
+var_dump($_FILES);
+var_dump($_POST);</code></pre><h2 id="基础格式"><a href="#基础格式" class="headerlink" title="基础格式"></a>基础格式</h2><pre><code>POST /post HTTP/1.1
+Host: www.example.com:8081
+Accept-Encoding: gzip, deflate
+Accept: */*
+Accept-Language: en
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.61 Safari/537.36
+Connection: close
+Content-Type: multipart/form-data; boundary=I_am_a_boundary
+Content-Length: 303
+
+--I_am_a_boundary
+Content-Disposition: form-data; name=&quot;name&quot;; filename=&quot;file.jsp&quot;
+Content-Type: text/plain;charset=UTF-8
+
+This_is_file_content.
+--I_am_a_boundary
+Content-Disposition: form-data; name=&quot;key&quot;;
+Content-Type: text/plain;charset=UTF-8
+
+This_is_a_value.
+--I_am_a_boundary--</code></pre><p>此表单数据含有一个文件，name为name，filename为file.jsp，file_content为This_is_file_content.，还有一个非文件的参数，其name为key，value为This_is_a_value.。</p>
+<p>httpbin解析结果</p>
+<pre><code>{
+  &quot;args&quot;: {}, 
+  &quot;data&quot;: &quot;&quot;, 
+  &quot;files&quot;: {
+    &quot;name&quot;: &quot;This_is_file_content.&quot;
+  }, 
+  &quot;form&quot;: {
+    &quot;key&quot;: &quot;This_is_a_value.&quot;
+  }, 
+  &quot;headers&quot;: {
+    &quot;Accept&quot;: &quot;*/*&quot;, 
+    &quot;Accept-Encoding&quot;: &quot;deflate, identity;q=0.5&quot;, 
+    &quot;Accept-Language&quot;: &quot;en&quot;, 
+    &quot;Content-Length&quot;: &quot;303&quot;, 
+    &quot;Content-Type&quot;: &quot;multipart/form-data; boundary=I_am_a_boundary&quot;, 
+    &quot;Host&quot;: &quot;www.example.com:8081&quot;, 
+    &quot;Route-Hop&quot;: &quot;1&quot;, 
+    &quot;User-Agent&quot;: &quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.61 Safari/537.36&quot;
+  }, 
+  &quot;json&quot;: null, 
+  &quot;origin&quot;: &quot;10.1.1.1&quot;, 
+  &quot;url&quot;: &quot;http://www.example.com:8081/post&quot;
+}</code></pre><h2 id="详细解析"><a href="#详细解析" class="headerlink" title="详细解析"></a>详细解析</h2><h3 id="1-Content-Type"><a href="#1-Content-Type" class="headerlink" title="1. Content-Type"></a>1. Content-Type</h3><p><code>Content-Type: multipart/form-data; boundary=I_am_a_boundary</code></p>
+<p>对于上传表单类型，Content-Type必须为<code>multipart/form-data</code>，并且后面要跟一个边界参数键值对（boundary），在表单中分割各部分使用。</p>
+<p>倘若<code>multipart/form-data</code>编写错误，或者不写<code>boundary</code>，那么后端将无法准确解析这个表单的每个具体内容。</p>
+<p><img src="https://www.anquanke.com/post/id/241265" alt=""></p>
+<h3 id="2-Boundary"><a href="#2-Boundary" class="headerlink" title="2. Boundary"></a>2. Boundary</h3><p>boundary: <a href="https://tools.ietf.org/html/rfc2046#section-5.1" target="_blank" rel="noopener">RFC2046</a></p>
+<p>boundary需要按照以下BNF巴科斯范式</p>
+<p><img src="https://www.anquanke.com/post/id/241265" alt=""></p>
+<p>简单解释就是，boundary不能以空格结束，但是其他位置都可以为空格，而且字符长度在1-70之间，此规定语法适用于所有multipart类型，当然并不是所有程序都按照这种规定来进行multipart的解析。</p>
+<p>从前面介绍的multipart基础格式可以看出来，真正作为表单各部分之间分隔边界的不仅是Content-Type中boundary的值，真正的边界是由<code>--</code>和<code>boundary</code>的值和末尾的<code>CRLF</code>组成的分隔行，当然为了能够准确解析表单各个部分的数据，需要保证分隔行不会出现在正常的表单中的文件内容或者参数值中，所以RFC也建议使用特定的算法来生成boundary值。</p>
+<p>flask解析结果</p>
+<p><img src="https://www.anquanke.com/post/id/241265" alt=""></p>
+<p>这里需要注意两个点，第一，最终表单数据最后一个分隔边界，要以<code>--</code>结尾。第二，RFC规定原文为</p>
+<p><img src="https://www.anquanke.com/post/id/241265" alt=""></p>
+<p>也就是说，整体的分隔边界可以含有<code>optional linear whitespace</code>。</p>
+<h4 id="空格"><a href="#空格" class="headerlink" title="空格"></a>空格</h4><p>注：本文使用空格的地方<code>[\r\n\t\f\v ]</code>都可以代替使用，文中只是介绍了使用空格的结果，大家可以测试其他的，waf或者后端程序在解析<code>\n</code>时，会产生很多不同结果，感兴趣可自行测试。</p>
+<p>首先使用boundary的值后面加空格进行测试，flask和php都能够正常的解析出表单内容。</p>
+<p>php解析结果</p>
+<p><img src="https://www.anquanke.com/post/id/241265" alt=""></p>
+<p>虽然boundary的值后面加了空格，但是在作为分隔行的时候并没有空格也可以正常解析，但是经测试发现如果按照RFC规定那样直接在分隔行中加入空格，效果就会不一样。</p>
+<p><img src="https://www.anquanke.com/post/id/241265" alt=""></p>
+<p>对于flask来说是按照了RFC规定实现，无论Content-Type中boundary的值后面是不加空格还是加任意空格，在表单中非结束分隔行里都可以随意加空格，都不影响表单数据解析，但是需要注意的就是，在最后的结束分隔行中，加空格会导致解析失败，下文阐述具体原因。</p>
+<p>很有意思的是php解析过程中，在非结束分隔行中不能增加空格，而在结束分隔行中增加空格，却不会影响解析。</p>
+<p><img src="https://www.anquanke.com/post/id/241265" alt=""></p>
+<p>可以看到，加了空格的分隔行内的文件内容数据没有被正确解析，而没加空格的非文件参数被解析成功，而且结束分隔行中也添加了空格。</p>
+<p>测试的时候偶然发现在如果在<code>multipart/form-data</code>和<code>;</code>之间加空格，如<code>Content-Type: multipart/form-data ; boundary=&quot;I_am_a_boundary&quot;</code>，flask会造成解析失败，php解析正常。</p>
+<p><img src="https://www.anquanke.com/post/id/241265" alt=""></p>
+<p>正常来说，通过正则进行匹配解析的flask应该不会这样，具体实现在<code>werkzeug/http.py:L406</code>。</p>
+<p><img src="https://www.anquanke.com/post/id/241265" alt=""></p>
+<p>简单来说就是将<code>Content-Type: multipart/form-data ; boundary=&quot;I_am_a_boundary&quot;</code>进行正则匹配，然后将第一组匹配结果当作mimetype，第二组作为rest，由后面处理boundary取值，看下这个正则。</p>
+<pre><code>_option_header_start_mime_type = re.compile(r&quot;,\s*([^;,\s]+)([;,]\s*.+)?&quot;)</code></pre><p>为了看着美观，使用regex101看下。</p>
+<p><img src="https://www.anquanke.com/post/id/241265" alt=""></p>
+<p>很明显，由于第一组匹配非空字符，所以到空格处就停了，但是第二组必须是<code>[;,]</code>开头，导致第二组匹配值为空，无法获取boundary，最终解析失败。</p>
+<h4 id="双引号"><a href="#双引号" class="headerlink" title="双引号"></a>双引号</h4><p>boundary的值是支持用双引号进行编写的，就像是表单中的参数值一样，这样在写分隔行的时候，就可以将双引号内的内容作为boundary的值，php和flask都支持这种写法。使用单引号是无法达到效果的，这也是符合上文提到的BNF巴科斯范式的<code>bcharsnospace</code>的。</p>
+<p><img src="https://www.anquanke.com/post/id/241265" alt=""></p>
+<p>测试一下让重复多个双引号，或者含有未闭合的双引号或者双引号前后增加其他字符会发生什么。</p>
+<p><code>Content-Type: multipart/form-data; boundary=a&quot;I_am_a_boundary&quot;</code></p>
+<p><code>Content-Type: multipart/form-data; boundary= &quot;I_am_a_boundary&quot;</code></p>
+<p><code>Content-Type: multipart/form-data; boundary= &quot;I_am_a_boundary&quot;a</code></p>
+<p><code>Content-Type: multipart/form-data; boundary=I_am_a_boundary&quot;</code></p>
+<p><code>Content-Type: multipart/form-data; boundary=&quot;I_am_a_boundary</code></p>
+<p><code>Content-Type: multipart/form-data; boundary=&quot;I_am_a_boundary&quot;aa&quot;</code></p>
+<p><code>Content-Type: multipart/form-data; boundary=&quot;&quot;I_am_a_boundary&quot;</code></p>
+<p>对于php来说相对简单，因为只要出现第一个字符不是双引号，就算是空格，都会将之作为boundary的一部分，所以前四种解析类似，当第一个字符为双引号时，会找与之对应的闭合的双引号，如果找到了，那么就会忽略之后的内容直接取双引号内内容作为boundary的值。</p>
+<p><img src="https://www.anquanke.com/post/id/241265" alt=""></p>
+<p>然而如果没有找到闭合双引号，就会导致boundary取值失败，无法解析multipart/form-data。</p>
+<p><img src="https://www.anquanke.com/post/id/241265" alt=""></p>
+<p>当然对于最后一种情况，会取一个空的boundary值，我也以为会解析失败，但是很搞笑的是，竟然boundary值为空，php也可以正常解析，当然也可以直接写成<code>Content-Type: multipart/form-data; boundary=</code>。</p>
+<p><img src="https://www.anquanke.com/post/id/241265" alt=""></p>
+<p>大多数waf应该会认为这是一个不符合规范的boundary，从而导致解析multipart/form-data失败，所以这种绕过waf的方式显得更加粗暴。</p>
+<p>对于flask来说，可以看下解析boundary的正则<code>werkzeug/http.py:L79</code>。</p>
+<pre><code>_option_header_piece_re = re.compile(
+    r&quot;&quot;&quot;
+    ;\s*,?\s*  # newlines were replaced with commas
+    (?P&lt;key&gt;
+        &quot;[^&quot;\\]*(?:\\.[^&quot;\\]*)*&quot;  # quoted string
+    |
+        [^\s;,=*]+  # token
+    )
+    (?:\*(?P&lt;count&gt;\d+))?  # *1, optional continuation index
+    \s*
+    (?:  # optionally followed by =value
+        (?:  # equals sign, possibly with encoding
+            \*\s*=\s*  # * indicates extended notation
+            (?:  # optional encoding
+                (?P&lt;encoding&gt;[^\s]+?)
+                &apos;(?P&lt;language&gt;[^\s]*?)&apos;
+            )?
+        |
+            =\s*  # basic notation
+        )
+        (?P&lt;value&gt;
+            &quot;[^&quot;\\]*(?:\\.[^&quot;\\]*)*&quot;  # quoted string
+        |
+            [^;,]+  # token
+        )?
+    )?
+    \s*
+    &quot;&quot;&quot;,</code></pre><p>这个正则可以解释本文的大多数flask解析结果产生的原因，这里看到flask对于boundary两边的空格是做了处理的，对于双引号的处理，都会取第一对双引号内的内容作为boundary的值，对于非闭合的双引号，会处理成<code>token</code>形式，将双引号作为boundary的一部分，并不会像php一样解析boundary失败。</p>
+<p><img src="https://www.anquanke.com/post/id/241265" alt=""></p>
+<p>从上面正则也能看出，对于最后一种Content-Type的情况，flask也会取空值作为boundary的值，但是这不会同过flask对boundary的正则验证，导致boundary取值失败，无法解析，下文会提及到。</p>
+<h4 id="转义符号"><a href="#转义符号" class="headerlink" title="转义符号"></a>转义符号</h4><p>以flask的正则中<code>quoted string</code>和<code>token</code>作为区分是否boundary为双引号内取值，测试两种转义符的位置会怎样影响解析。</p>
+<ul>
+<li><p>a. <code>\</code>在<code>token</code>中<code>Content-Type: multipart/form-data; boundary=I_am_a\&quot;_boundary</code></p>
+<p>这种形式的boundary，flask和php都会将<code>\</code>认定为一个字符，并不具有转义作用，并将整体的<code>I_am_a\&quot;_boundary</code>内容做作为boundary的值。</p>
+<p><img src="https://www.anquanke.com/post/id/241265" alt=""></p>
+</li>
+<li><p>b. <code>\</code>在<code>quoted string</code>中<code>Content-Type: multipart/form-data; boundary=&quot;I_am_a\&quot;_boundary&quot;</code></p>
+<p>对于flask来说，在双引号的问题上，<code>werkzeug/http.py:L431</code>中调用一个处理函数，就是取双引号之间的内容作为boundary的值。</p>
+<p><img src="https://www.anquanke.com/post/id/241265" alt=""></p>
+<p>可以看到，在取完boundary值之后还做了一个<code>value.replace(&quot;\\\\&quot;, &quot;\\&quot;).replace(&#39;\\&quot;&#39;, &#39;&quot;&#39;)</code>的操作，将转义符认定为具有转义的作用，而不是单单一个字符，所以最终boundary的值是<code>I_am_a&quot;_boundary</code>。</p>
+<p><img src="https://www.anquanke.com/post/id/241265" alt=""></p>
+<p>对于php来说，依旧和<code>token</code>类型的boundary处理机制一样，认定<code>\</code>只是一个字符，不具有转义作用，所以按照上文<code>双引号</code>中提到的，由于遇到第二个双引号就会直接闭合双引号，忽略后面内容，最终php会取<code>I_am_a\</code>作为boundary的值。</p>
+<p><img src="https://www.anquanke.com/post/id/241265" alt=""></p>
+</li>
+</ul>
+<h4 id="空格-amp-双引号"><a href="#空格-amp-双引号" class="headerlink" title="空格 &amp; 双引号"></a>空格 &amp; 双引号</h4><p>上文提到使用空格对解析的影响，既然可以使用双引号来指定boundary的值，那么如果在双引号外或者内加入空格，后端会如何解析呢？</p>
+<ul>
+<li><p>a. 双引号外对于flask来说，依旧和普通不加双引号的解析一致，会忽略双引号外（两边）的空格，直接取双引号内的内容作为boundary的值，php对于双引号后面有空格时，处理机制和flask一致，但是当双引号前面有空格时，会无法正常解析表单数据内容。</p>
+<p><img src="https://www.anquanke.com/post/id/241265" alt=""></p>
+<p>解析会和不带双引号的实现一致，此时php会将前面的空格和后面的双引号和双引号的内容作为一个整体，将之作为boundary的值，当然这虽然符合RFC规定的boundary可以以空格开头，但是把双引号当作boundary的一部分并不符合。</p>
+<p><img src="https://www.anquanke.com/post/id/241265" alt=""></p>
+</li>
+<li><p>b. 双引号内此时php会取双引号内的所有内容（非双引号）作为boundary的值，无论是以任意空格开头还是结束，其分隔行中boundary前后的空格数，要与Content-Type中双引号内boundary前后的空格个数一致，否则解析失败。</p>
+<p><img src="https://www.anquanke.com/post/id/241265" alt=""></p>
+<p>值得注意的是，flask解析的时候，如果双引号内的boundary值以空格开始，那么在分隔行中类似php只要空格个数一致，就可以成功解析，但是如果双引号内的boundary的值以空格结束，无论空格个数是否一致，都无法正常解析。</p>
+<p><img src="https://www.anquanke.com/post/id/241265" alt=""></p>
+<p>为什么出现这种状况，看下werkzeug是如何实现的，flask对boundary的验证可以在<code>werkzeug/formparser.py:L46</code>看到。</p>
+<pre><code>#: a regular expression for multipart boundaries
+_multipart_boundary_re = re.compile(&quot;^[ -~]{0,200}[!-~]$&quot;)</code></pre></li>
+</ul>
+<pre><code>这个正则是来验证boundary有效性的，比较符合RFC规定的，只不过在长度上限制更小，可以是空格开头，不能以空格结尾，但是用的不是全匹配，所以以空格结尾也会通过验证。
+
+上图使用`boundary= &quot; I_am_a_boundary &quot;`，所以boundary的值为`&quot; I_am_a_boundary &quot;`双引号内的内容，而且这个值也会通过boundary正则的验证，最终还是解析失败了，很是奇怪。上文`空格`中提到，对于flask来说，在非结束分隔行中boundary后可以加任意空格，不影响最终的解析。
+
+![](https://www.anquanke.com/post/id/241265)
+
+原因是解析multipart/form-data具体内容时，为了寻找分割行，将每一行数据都进行了一个`line.strip()`操作，这样会把CRLF去除，当然会把结尾的所有空格也给strip掉，所以当boundary不以空格结尾时，在分隔行中可以随意在结尾加空格。但是这也会导致一个问题，当不按照RFC规定，用空格结尾作为boundary值，虽然过了flask的boundary正则验证，但是在解析body时，却将结尾的空格都strip掉，导致在body中分隔行经过处理之后变为了`-- I_am_a_boundary`，这与Content-Type中获取的boundary值（结尾含有空格）并不一致，导致找不到分隔行，解析全部失败。</code></pre><h4 id="结束分隔行"><a href="#结束分隔行" class="headerlink" title="结束分隔行"></a>结束分隔行</h4><p>在上文<code>空格</code>内容中提到，php在结束分割行中的boundary后面加空格并不会影响最终的解析，其实并不是空格的问题，经测试发现，其实php根本就没把结束分隔行当回事。</p>
+<p><img src="https://www.anquanke.com/post/id/241265" alt=""></p>
+<p>可以看到，没有结束分隔行，php会根据每一分隔行来分隔各个表单部分，并根据Content-Length来进行取表单最后一部分的内容的值，然而这是极不尊重RFC规定的，一般waf会将这种没有结束分隔行的视为错误的multipart/form-data格式，从而导致整体body解析失败，那么waf可以被绕过。</p>
+<p>上文提到flask会对multipart/form-data的每一行内容进行strip操作，但是由于结束分隔行需要以<code>--CRLF</code>结尾，所以在strip的过程中只会将<code>CRLF</code>strip掉，但是在解析boundary的时候，boundary是不能以空格为结尾的，最终会导致结束分隔行是严谨的<code>--BOUNDARY--CRLF</code>，当然如果使用双引号使boundary以空格结尾，那么结束分隔行是可以正确解析的，但是非结束分隔行无法解析还是会导致整体解析失败。</p>
+<h4 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h4><p>从flask的代码能够看出来，支持参数名的<code>quoted string</code>形式，就是参数名在双引号内。</p>
+<p><img src="https://www.anquanke.com/post/id/241265" alt=""></p>
+<p>而对于Java来说，支持参数名的大小写不敏感的写法。</p>
+<p><img src="https://www.anquanke.com/post/id/241265" alt=""></p>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a href="https://github.com/postmanlabs/httpbin" target="_blank" rel="noopener">https://github.com/postmanlabs/httpbin</a></p>
+<p><a href="https://www.ietf.org/rfc/rfc1867.txt" target="_blank" rel="noopener">https://www.ietf.org/rfc/rfc1867.txt</a></p>
+<p><a href="https://tools.ietf.org/html/rfc7578" target="_blank" rel="noopener">https://tools.ietf.org/html/rfc7578</a></p>
+<p><a href="https://tools.ietf.org/html/rfc2046#section-5.1" target="_blank" rel="noopener">https://tools.ietf.org/html/rfc2046#section-5.1</a></p>
+<p><a href="https://www.php.net/manual/zh/language.variables.external.php" target="_blank" rel="noopener">https://www.php.net/manual/zh/language.variables.external.php</a></p>
+<p><a href="https://www.cnblogs.com/youxin/archive/2012/02/13/2348551.html" target="_blank" rel="noopener">https://www.cnblogs.com/youxin/archive/2012/02/13/2348551.html</a></p>
+<p><a href="https://xz.aliyun.com/t/9432" target="_blank" rel="noopener">https://xz.aliyun.com/t/9432</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/05/18/qiwihui-pocket_readings-1108/" rel="prev" title="
+
+
+你不太熟悉的犹太人和以色列历史 | E闻美政（附音频） ">
+      <i class="fa fa-chevron-left"></i> 
+
+
+你不太熟悉的犹太人和以色列历史 | E闻美政（附音频） 
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/05/24/qiwihui-pocket_readings-1110/" rel="next" title="知乎日报 - 知乎">
+      知乎日报 - 知乎 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#从RFC规范看如何绕过waf上传表单-上篇-安全客，安全资讯平台主页2消息设置关闭"><span class="nav-number"></span> <span class="nav-text">从RFC规范看如何绕过waf上传表单 上篇 - 安全客，安全资讯平台主页2消息设置关闭</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#背景介绍"><span class="nav-number"></span> <span class="nav-text">背景介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解析环境"><span class="nav-number"></span> <span class="nav-text">解析环境</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#基础格式"><span class="nav-number"></span> <span class="nav-text">基础格式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#详细解析"><span class="nav-number"></span> <span class="nav-text">详细解析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Content-Type"><span class="nav-number">1.</span> <span class="nav-text">1. Content-Type</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Boundary"><span class="nav-number">2.</span> <span class="nav-text">2. Boundary</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#空格"><span class="nav-number">2.1.</span> <span class="nav-text">空格</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#双引号"><span class="nav-number">2.2.</span> <span class="nav-text">双引号</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#转义符号"><span class="nav-number">2.3.</span> <span class="nav-text">转义符号</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#空格-amp-双引号"><span class="nav-number">2.4.</span> <span class="nav-text">空格 &amp; 双引号</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#结束分隔行"><span class="nav-number">2.5.</span> <span class="nav-text">结束分隔行</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#其他"><span class="nav-number">2.6.</span> <span class="nav-text">其他</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考链接"><span class="nav-number"></span> <span class="nav-text">参考链接</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

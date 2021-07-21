@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Web层面上的那些拒绝服务攻击(DoS) · Chen&#39;s Blog">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Web层面上的那些拒绝服务攻击(DoS) · Chen&#39;s Blog">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/06/17/qiwihui-pocket_readings-1135/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="Web层面上的那些拒绝服务攻击(DoS) · Chen&#39;s Blog">
+<meta property="og:image" content="https://chen-blog-oss.oss-cn-beijing.aliyuncs.com/2020-06-22/15911055744176.jpg">
+<meta property="og:image" content="https://chen-blog-oss.oss-cn-beijing.aliyuncs.com/2020-06-22/15911060427058.jpg">
+<meta property="og:image" content="https://chen-blog-oss.oss-cn-beijing.aliyuncs.com/2020-06-22/15911070729869.jpg">
+<meta property="og:image" content="https://chen-blog-oss.oss-cn-beijing.aliyuncs.com/2020-06-22/15911064054609.jpg">
+<meta property="og:image" content="https://chen-blog-oss.oss-cn-beijing.aliyuncs.com/2020-06-22/15911081629641.jpg">
+<meta property="og:image" content="https://chen-blog-oss.oss-cn-beijing.aliyuncs.com/2020-06-22/15911091742556.jpg">
+<meta property="og:image" content="https://chen-blog-oss.oss-cn-beijing.aliyuncs.com/2020-06-22/15911734062132.jpg">
+<meta property="og:image" content="https://chen-blog-oss.oss-cn-beijing.aliyuncs.com/2020-06-22/15911781853694.jpg">
+<meta property="og:image" content="https://chen-blog-oss.oss-cn-beijing.aliyuncs.com/2020-06-22/15911513808996.jpg">
+<meta property="og:image" content="https://chen-blog-oss.oss-cn-beijing.aliyuncs.com/2020-06-22/15912347343829.jpg">
+<meta property="og:image" content="https://chen-blog-oss.oss-cn-beijing.aliyuncs.com/2020-06-22/15912407800934.jpg">
+<meta property="og:image" content="https://chen-blog-oss.oss-cn-beijing.aliyuncs.com/2020-06-22/15913217511512.jpg">
+<meta property="og:image" content="https://chen-blog-oss.oss-cn-beijing.aliyuncs.com/2020-06-22/15912543787232.jpg">
+<meta property="og:image" content="https://chen-blog-oss.oss-cn-beijing.aliyuncs.com/2020-06-22/15912570317566.jpg">
+<meta property="og:image" content="https://chen-blog-oss.oss-cn-beijing.aliyuncs.com/2020-06-22/15912572931314.jpg">
+<meta property="og:image" content="https://chen-blog-oss.oss-cn-beijing.aliyuncs.com/2020-06-22/15912593992264.jpg">
+<meta property="article:published_time" content="2021-06-17T06:21:40.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.406Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://chen-blog-oss.oss-cn-beijing.aliyuncs.com/2020-06-22/15911055744176.jpg">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/06/17/qiwihui-pocket_readings-1135/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>Web层面上的那些拒绝服务攻击(DoS) · Chen's Blog | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/06/17/qiwihui-pocket_readings-1135/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Web层面上的那些拒绝服务攻击(DoS) · Chen's Blog
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-06-17 06:21:40" itemprop="dateCreated datePublished" datetime="2021-06-17T06:21:40+00:00">2021-06-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">Web层面上的那些拒绝服务攻击(DoS) · Chen's Blog</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#30001;&#20110;&#20256;&#25773;&#12289;&#21033;&#29992;&#27492;&#25991;&#25152;&#25552;&#20379;&#30340;&#20449;&#24687;&#32780;&#36896;&#25104;&#30340;&#20219;&#20309;&#30452;&#25509;&#25110;&#32773;&#38388;&#25509;&#30340;&#21518;&#26524;&#21450;&#25439;&#22833;&#65292;&#22343;&#30001;&#20351;&#29992;&#32773;&#26412;&#20154;&#36127;&#36131;&#65292;Vulkey_Chen(&#25140;&#22478;)&#19981;&#20026;&#27492;&#25215;&#25285;&#20219;&#20309;&#36131;&#20219;&#12290;<br><br><br><br>Tags: security<br><br><br><br>via Pocket <a href="https://ift.tt/3wAjcbB" target="_blank" rel="noopener">https://ift.tt/3wAjcbB</a> original site<br><br><br><br>June 17, 2021 at 02:00PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1135#issuecomment-862962121" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>6/17/2021</strong></p>
+</blockquote>
+<h2 id="Web层面上的那些拒绝服务攻击-DoS-·-Chen’s-Blog"><a href="#Web层面上的那些拒绝服务攻击-DoS-·-Chen’s-Blog" class="headerlink" title="Web层面上的那些拒绝服务攻击(DoS) · Chen’s Blog"></a>Web层面上的那些拒绝服务攻击(DoS) · Chen’s Blog</h2><h1 id="Web层面上的那些拒绝服务攻击-DoS"><a href="#Web层面上的那些拒绝服务攻击-DoS" class="headerlink" title="Web层面上的那些拒绝服务攻击(DoS)"></a>Web层面上的那些拒绝服务攻击(DoS)</h1><p>June 22, 2020</p>
+<h1 id="Web层面上的那些拒绝服务攻击-DoS-1"><a href="#Web层面上的那些拒绝服务攻击-DoS-1" class="headerlink" title="Web层面上的那些拒绝服务攻击(DoS)"></a>Web层面上的那些拒绝服务攻击(DoS)</h1><h2 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h2><p>由于传播、利用此文所提供的信息而造成的任何直接或者间接的后果及损失，均由使用者本人负责，Vulkey_Chen(戴城)不为此承担任何责任。</p>
+<p>Vulkey_Chen(戴城)拥有对此文章的修改和解释权。如欲转载或传播此文章，必须保证此文章的完整性，包括版权声明等全部内容。</p>
+<p>未经Vulkey_Chen(戴城)允许，不得任意修改或者增减此文章内容，不得以任何方式将其用于商业目的。</p>
+<p>本文所需一定基础知识方能顺畅的进行阅读和理解，基础知识请读者自行搜索学习。</p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>相信很多师傅都了解DDoS攻击，也就是分布式拒绝服务，但这类攻击在很多时候拼的是资源，从攻击者的角度来看进行此类攻击还是需要一定“成本”的，从受害者的角度来看防御此类攻击的“成本”更是昂贵！</p>
+<p>拒绝服务是一个老生常谈的话题，而发生在Web层面的拒绝服务风险一直不被重视；虽然其不如RCE、SQLi之类的漏洞更加直接的影响数据和服务，但令服务器宕机这类风险还是不容小视。</p>
+<p>试想如果攻击者去利用<strong>不费成本</strong>的Web层拒绝服务风险造成服务器、应用、模块…瘫痪宕机，岂不是令那些斥巨资建设/购买“DDoS防护”一脸懵～</p>
+<h2 id="原理及案例"><a href="#原理及案例" class="headerlink" title="原理及案例"></a>原理及案例</h2><h3 id="资源生成大小可控"><a href="#资源生成大小可控" class="headerlink" title="资源生成大小可控"></a>资源生成大小可控</h3><p>现在有许多资源是由服务器生成然后返回给客户端的，而此类“资源生成”接口如若有参数可以被客户端控制（可控），并没有做任何资源生成大小限制，这样就会造成拒绝服务风险。</p>
+<p>此类场景多为：图片验证码、二维码</p>
+<h4 id="实际场景"><a href="#实际场景" class="headerlink" title="实际场景"></a>实际场景</h4><p>图片验证码在登录、注册、找回密码…等功能比较常见：</p>
+<p><img src="https://chen-blog-oss.oss-cn-beijing.aliyuncs.com/2020-06-22/15911055744176.jpg" alt=""></p>
+<p>关注一下接口地址：<code>https://attack/validcode?w=130&amp;h=53</code></p>
+<p>参数值：<code>w=130&amp;h=53</code>，我们可以理解为生成的验证码大小<strong>长为130</strong>，<strong>宽为53</strong></p>
+<p>可以将<code>w=130</code>修改为<code>w=130000000000000000</code>，让服务器生成超大的图片验证码从而占用服务器资源造成拒绝服务。</p>
+<p><img src="https://chen-blog-oss.oss-cn-beijing.aliyuncs.com/2020-06-22/15911060427058.jpg" alt=""></p>
+<h3 id="Zip炸弹"><a href="#Zip炸弹" class="headerlink" title="Zip炸弹"></a>Zip炸弹</h3><p>不知道各位有没有听说过Zip炸弹，一个42KB的压缩文件(Zip)，解压完其实是个<code>4.5PB</code>的“炸弹”。</p>
+<p>先不说<code>4.5PB</code>这个惊人的大小，光解压都会占用极大的内存。</p>
+<p>该文件的下载地址：<a href="https://www.bamsoftware.com/hacks/zipbomb/42.zip" target="_blank" rel="noopener">https://www.bamsoftware.com/hacks/zipbomb/42.zip</a></p>
+<p><img src="https://chen-blog-oss.oss-cn-beijing.aliyuncs.com/2020-06-22/15911070729869.jpg" alt="-w447"></p>
+<blockquote>
+<p>解压这个<code>42.zip</code>以后会出现<code>16</code>个压缩包，每个压缩包又包含<code>16</code>个，如此循环<code>5</code>次，最后得到<code>16</code>的<code>5</code>次方个文件，也就是<code>1048576</code>个文件，这一百多万个最终文件，每个大小为<code>4.3GB</code>。 因此整个解压过程结束以后，会得到 <code>1048576 * 4.6 GB = 4508876.8 GB</code>，也就是 <code>4508876.8 ÷ 1024 ÷ 1024 = 4.5 PB</code>。</p>
+</blockquote>
+<p>通过以上说明，我们可以寻找存在解压功能的Web场景进行拒绝服务攻击，但是这里有一个前置条件就是需要解压并可以递归解压。</p>
+<p>那我们想要完成这一攻击就非常的困难了，“前辈”也提到了非递归的Zip炸弹，也就是没有嵌套Zip文件文件的，如下表格：</p>
+<p>名称</p>
+<p>解压结果</p>
+<p><a href="https://www.bamsoftware.com/hacks/zipbomb/zbsm.zip" target="_blank" rel="noopener">zbsm.zip</a></p>
+<p>42 kB → 5.5 GB</p>
+<p><a href="https://www.bamsoftware.com/hacks/zipbomb/zblg.zip" target="_blank" rel="noopener">zblg.zip</a></p>
+<p>10 MB → 281 TB</p>
+<p><a href="https://www.bamsoftware.com/hacks/zipbomb/zbxl.zip" target="_blank" rel="noopener">zbxl.zip</a></p>
+<p>46 MB → 4.5 PB (Zip64, less compatible)</p>
+<p>存在解压功能的Web场景还是比较多的，可以根据实际业务场景进行寻找。</p>
+<h4 id="实际场景-1"><a href="#实际场景-1" class="headerlink" title="实际场景"></a>实际场景</h4><p>根据实际业务场景发现一处上传模板文件功能，根据简单的测试，发现此处上传Zip文件会自动解压：</p>
+<p><img src="https://chen-blog-oss.oss-cn-beijing.aliyuncs.com/2020-06-22/15911064054609.jpg" alt="-w176"></p>
+<p><img src="https://chen-blog-oss.oss-cn-beijing.aliyuncs.com/2020-06-22/15911081629641.jpg" alt="-w400"></p>
+<p>这里我选择上传<code>zbsm.zip</code>上去，看一下服务器反应:</p>
+<p><img src="https://chen-blog-oss.oss-cn-beijing.aliyuncs.com/2020-06-22/15911091742556.jpg" alt="-w171"></p>
+<p>这里整个服务的请求都没有返回结果，成功造成拒绝服务。</p>
+<h3 id="XDoS-XML拒绝服务攻击"><a href="#XDoS-XML拒绝服务攻击" class="headerlink" title="XDoS(XML拒绝服务攻击)"></a>XDoS(XML拒绝服务攻击)</h3><p>XDoS，XML拒绝服务攻击，其就是利用DTD产生XML炸弹，当服务端去解析XML文档时，会迅速占用大量内存去解析，下面我们来看几个XML文档的例子。</p>
+<h4 id="Billion-Laughs"><a href="#Billion-Laughs" class="headerlink" title="Billion Laughs"></a>Billion Laughs</h4><p>据说这被称为<strong>十亿大笑DoS攻击</strong>，其文件内容为：</p>
+<pre><code>&lt;!DOCTYPE keyz [
+  &lt;!ENTITY key &quot;key&quot;&gt;
+  &lt;!ENTITY key2 &quot;&amp;key;&amp;key;&amp;key;&amp;key;&amp;key;&amp;key;&amp;key;&amp;key;&amp;key;&amp;key;&quot;&gt;
+  &lt;!ENTITY key3 &quot;&amp;key2;&amp;key2;&amp;key2;&amp;key2;&amp;key2;&amp;key2;&amp;key2;&amp;key2;&amp;key2;&amp;key2;&quot;&gt;
+  &lt;!ENTITY key4 &quot;&amp;key3;&amp;key3;&amp;key3;&amp;key3;&amp;key3;&amp;key3;&amp;key3;&amp;key3;&amp;key3;&amp;key3;&quot;&gt;
+  &lt;!ENTITY key5 &quot;&amp;key4;&amp;key4;&amp;key4;&amp;key4;&amp;key4;&amp;key4;&amp;key4;&amp;key4;&amp;key4;&amp;key4;&quot;&gt;
+  &lt;!ENTITY key6 &quot;&amp;key5;&amp;key5;&amp;key5;&amp;key5;&amp;key5;&amp;key5;&amp;key5;&amp;key5;&amp;key5;&amp;key5;&quot;&gt;
+  &lt;!ENTITY key7 &quot;&amp;key6;&amp;key6;&amp;key6;&amp;key6;&amp;key6;&amp;key6;&amp;key6;&amp;key6;&amp;key6;&amp;key6;&quot;&gt;
+  &lt;!ENTITY key8 &quot;&amp;key7;&amp;key7;&amp;key7;&amp;key7;&amp;key7;&amp;key7;&amp;key7;&amp;key7;&amp;key7;&amp;key7;&quot;&gt;
+  &lt;!ENTITY key9 &quot;&amp;key8;&amp;key8;&amp;key8;&amp;key8;&amp;key8;&amp;key8;&amp;key8;&amp;key8;&amp;key8;&amp;key8;&quot;&gt;
+]&gt;
+&lt;keyz&gt;&amp;key9;&lt;/keyz&gt;</code></pre><p>这是一段实体定义，从下向上观察第一层发现<code>key9</code>由10个<code>key8</code>组成，由此类推得出<code>key[n]</code>由10个<code>key[n-1]</code>组成，那么最终算下来实际上<code>key9</code>由<code>10^9</code>(1000000000)个<code>key[..]</code>组成，也算是名副其实了～</p>
+<p>本地测试解析该XML文档，大概占用内存在2.5GB左右（其他文章中出现的均为3GB左右内存）：</p>
+<p><img src="https://chen-blog-oss.oss-cn-beijing.aliyuncs.com/2020-06-22/15911734062132.jpg" alt="-w607"></p>
+<p>试想：<strong>这只是9层级炸弹，如果再多一点呢？</strong></p>
+<h4 id="External-Entity"><a href="#External-Entity" class="headerlink" title="External Entity"></a>External Entity</h4><p>外部实体引用，文档内容如下：</p>
+<pre><code>&lt;!DOCTYPE keyz [
+    &lt;!ENTITY wechat SYSTEM &quot;https://dldir1.qq.com/weixin/Windows/WeChatSetup.exe&quot;&gt;
+]&gt;
+&lt;keyz&gt;&amp;wechat;&lt;/keyz&gt;</code></pre><p>这个理解起来就很简单了，就是从外部的链接中去获取解析实体，而我们可以设置这个解析URL为一个超大文件的下载地址，以上所举例就是微信的。</p>
+<p><img src="https://chen-blog-oss.oss-cn-beijing.aliyuncs.com/2020-06-22/15911781853694.jpg" alt="-w370"></p>
+<p>当然，我们也可以设置一个不返回结果的地址，如果外部地址不返回结果，那么这个解析就会在此处一直挂起从而占用内存。</p>
+<h4 id="Internal-Entity"><a href="#Internal-Entity" class="headerlink" title="Internal Entity"></a>Internal Entity</h4><p>内部实体引用，文档内容如下：</p>
+<pre><code>&lt;!DOCTYPE keyz [
+  &lt;!ENTITY a &quot;a...a&quot;&gt;
+]&gt;
+&lt;keyz&gt;&amp;a;...&amp;a;&lt;/keyz&gt;</code></pre><p>其意思就是实体<code>a</code>的内容又臭又长，而后又N次引用这个实体内容，这就会造成解析的时候占用大量资源。</p>
+<h4 id="实际场景-2"><a href="#实际场景-2" class="headerlink" title="实际场景"></a>实际场景</h4><p><img src="https://chen-blog-oss.oss-cn-beijing.aliyuncs.com/2020-06-22/15911513808996.jpg" alt="-w455"></p>
+<p>一开始通过此处上传<code>doc</code>文档的功能，发现了一枚<code>XXE注入</code>，提交后厂商进行修复，但复测后发现其修复的结果就是黑名单<code>SYSTEM</code>关键词，没办法通过带外通道读取敏感数据了～</p>
+<p>抱着试一试的心态将<code>Billion Laughs</code>的<code>Payload</code>放入到<code>doc</code>文档中(这里与<code>XXE doc文档</code>制作方式一样修改<code>[Content_Types].xml</code>文件，重新打包即可)：</p>
+<p><img src="https://chen-blog-oss.oss-cn-beijing.aliyuncs.com/2020-06-22/15912347343829.jpg" alt="-w1274"></p>
+<p>上传之后产生的效果就是网站延时极高，至此就完成了整个测试。</p>
+<h3 id="ReDoS-正则表达式拒绝服务攻击"><a href="#ReDoS-正则表达式拒绝服务攻击" class="headerlink" title="ReDoS(正则表达式拒绝服务攻击)"></a>ReDoS(正则表达式拒绝服务攻击)</h3><p>ReDoS，正则表达式拒绝服务攻击，顾名思义，就是由正则表达式造成的拒绝服务攻击，当编写校验的正则表达式存在缺陷或者不严谨时，攻击者可以构造特殊的字符串来大量消耗服务器的系统资源，造成服务器的服务中断或停止。</p>
+<p>在正式了解ReDoS之前，我们需要先了解一下正则表达式的两类引擎：</p>
+<p>名称</p>
+<p>区别</p>
+<p>应用</p>
+<p>匹配方式</p>
+<p>DFA</p>
+<p>DFA对于文本串里的每一个字符只需扫描一次，速度快、特性少</p>
+<p>awk(大多数版本)、egrep（大多数版本）、flex、lex、MySQL、Procmail…</p>
+<p>文本比较正则</p>
+<p>NFA</p>
+<p>NFA要翻来覆去标注字符、取消标注字符，速度慢，但是特性(如:分组、替换、分割)丰富</p>
+<p>GNU Emacs、Java、grep（大多数版本）、less、more、.NET语言、PCRE library、Perl、PHP（所有三套正则库）、Python、Ruby、set（大多数版本）、vi…</p>
+<p>正则比较文本</p>
+<p>文本比较正则：看到一个子正则，就把可能匹配的文本全标注出来，然后再看正则的下一个部分，根据新的匹配结果更新标注。</p>
+<p>正则比较文本：看见一个字符，就把它跟正则比较，匹配就标注下来，然后接着往下匹配。一旦不匹配，就忽略这个字符，以此类推，直到回到上一次标注匹配的地方。</p>
+<p>那么存在ReDoS的核心就是<strong>NFA正则表达式引擎</strong>，它的多模式会让自身陷入递归险境，从而导致占用大量CPU资源，性能极差，严重则导致拒绝服务。</p>
+<h4 id="NFA-回溯"><a href="#NFA-回溯" class="headerlink" title="NFA 回溯"></a>NFA 回溯</h4><p>简单的聊一下什么是回溯，这里有一个正则表达式：</p>
+<pre><code>ke{1,3}y </code></pre><p>其意图很简单，<code>e</code>字符需要匹配1-3次，<code>k</code>、<code>y</code>匹配一次即可。</p>
+<p>现在我们遇到了两个需要匹配的字符串：</p>
+<ul>
+<li>keeey</li>
+<li>key</li>
+</ul>
+<p>字符串<code>keeey</code>的匹配过程是一气呵成的：匹配<code>k</code>完成之后，完整匹配<code>e</code>，最后是匹配<code>y</code></p>
+<p>字符串<code>key</code>的匹配过程就发生了回溯，其匹配过程如下图所示（<strong>橙色为匹配，黄色为不匹配</strong>）：</p>
+<p><img src="https://chen-blog-oss.oss-cn-beijing.aliyuncs.com/2020-06-22/15912407800934.jpg" alt="-w630"></p>
+<p>前两步属于正常，但从第3步开始就不一样了，这里字符串<code>key</code>已经有一个<code>e</code>被<code>e{1,3}</code>匹配，但它不会就此作罢，而会继续向后用正则<code>e{1,3}</code>匹配字符<code>y</code>，而当发现字符不匹配后，就忽略该字符，返回到上一次标注匹配的字符<code>e</code>再进行一次匹配，至此就发生了一次回溯，最后匹配<code>y</code>结束整个正则匹配过程。</p>
+<p>那么为什么会产生回溯呢？这跟NFA的贪婪模式有关（贪婪模式默认是开启的）。</p>
+<h4 id="NFA-贪婪"><a href="#NFA-贪婪" class="headerlink" title="NFA 贪婪"></a>NFA 贪婪</h4><p>我们想要彻底摸清楚整个过程就要抛根问底，究其原理，所以来了解一下贪婪模式～</p>
+<p>根据以上所举的案例我们可以理解贪婪模式导致的回溯其实就是：<strong>不撞南墙不回头</strong></p>
+<p>以下所列的元字符，大家应该都清楚其用法：</p>
+<p>i. <code>?</code>: 告诉引擎匹配前导字符0次或一次，事实上是表示前导字符是可选的。 ii. <code>+</code>: 告诉引擎匹配前导字符1次或多次。 iii. <code>*</code>: 告诉引擎匹配前导字符0次或多次。 iv. <code>{min, max}</code>: 告诉引擎匹配前导字符min次到max次。min和max都是非负整数。如果有逗号而max被省略了，则表示max没有限制；如果逗号和max都被省略了，则表示重复min次。</p>
+<p>默认情况下，这个几个元字符都是贪婪的，也就是说，它会根据前导字符去匹配尽可能多的内容。这也就解释了之前所举例的回溯事件了。</p>
+<h4 id="恶意正则表达式"><a href="#恶意正则表达式" class="headerlink" title="恶意正则表达式"></a>恶意正则表达式</h4><p>错误的使用以上所列的元字符就会导致拒绝服务的风险，此类称之为恶意的正则表达式，其表现形式为：</p>
+<ol>
+<li>使用重复分组构造</li>
+<li>在重复组内会出现：重复、交替重叠</li>
+</ol>
+<p>简单的表达出来就是以下几种情况(有缺陷的正则表达式会<strong>包含如下部分</strong>)：</p>
+<pre><code>(a+)+
+([a-zA-Z]+)*
+(a|aa)+
+(a|a?)+
+(.*a){x} for x &gt; 10</code></pre><h4 id="ReDoS-恶意正则检测"><a href="#ReDoS-恶意正则检测" class="headerlink" title="ReDoS 恶意正则检测"></a>ReDoS 恶意正则检测</h4><p>对于复杂的恶意正则表达式，靠人工去看难免有些许费劲，推荐一款工具：<a href="https://github.com/superhuman/rxxr2/tree/fix-multiline" target="_blank" rel="noopener">https://github.com/superhuman/rxxr2/tree/fix-multiline</a> (安装参考项目的<code>readme</code>)</p>
+<p>该工具支持大批量的正则表达式检测，并给出检测结果。</p>
+<p><img src="https://chen-blog-oss.oss-cn-beijing.aliyuncs.com/2020-06-22/15913217511512.jpg" alt="-w294"></p>
+<h4 id="实际场景-3"><a href="#实际场景-3" class="headerlink" title="实际场景"></a>实际场景</h4><p>很庆幸的是大多Web脚本语言的正则引擎都为NFA，所以也很方便我们做一些Web层面的挖掘。</p>
+<p>做测试的时候大家有没有发现过这样一个逻辑：<strong>密码中不能包含用户名</strong></p>
+<p><img src="https://chen-blog-oss.oss-cn-beijing.aliyuncs.com/2020-06-22/15912543787232.jpg" alt="-w504"></p>
+<p>这是一个用户添加的功能，其校验是通过后端的，请求包如下</p>
+<pre><code>POST /index/userAdd HTTP/1.1
+Host: [host]
+...
+
+nickname=xxx&amp;password=xxx&amp;...</code></pre><p>当<code>password</code>中包含<code>nickname</code>则提示<strong>密码中不能包含用户名</strong></p>
+<p>利用Python简单还原一下后端逻辑：</p>
+<pre><code># -*- coding: utf-8 -*-
+import sys,re
+username = sys.argv[1]
+password = sys.argv[2]
+
+regex = re.compile(username)
+if (regex.match(password)):
+    print u&apos;密码中不能包含用户名&apos;
+else:
+    print u&apos;用户添加成功&apos;</code></pre><p><img src="https://chen-blog-oss.oss-cn-beijing.aliyuncs.com/2020-06-22/15912570317566.jpg" alt="-w468"></p>
+<p>这时候用户名是一个正则，密码是一个待匹配字符串，而这时候我们都可以进行控制，也就能构建恶意的正则的表达式和字符串进行ReDoS攻击。</p>
+<p>恶意的正则表达式：<code>a(b|c+)+d</code> 字符串（我们要想让其陷入回溯模式就不能让其匹配到，所以使用<code>ac......cx</code>的格式即可）：<code>acccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccx</code></p>
+<p>如下图所示ReDoS攻击成功：</p>
+<p><img src="https://chen-blog-oss.oss-cn-beijing.aliyuncs.com/2020-06-22/15912572931314.jpg" alt="-w905"></p>
+<p>我们只需要以同样的方式替换原请求包中的参数值即可（<strong>前提是该功能没有限制字符串长度和特殊字符</strong>）～</p>
+<p>还有更多应用场景等待去发现，这里就不过多赘述了～</p>
+<h3 id="数据查询数量可控"><a href="#数据查询数量可控" class="headerlink" title="数据查询数量可控"></a>数据查询数量可控</h3><p>想必如下这类接口大家都见多了吧：</p>
+<pre><code>/api/getInfo?page=1&amp;page_size=10 ...
+/api/viewData?startTime=&amp;endTime=1591258015173 ... 
+...</code></pre><p>而这类接口通常都是调用数据的，当一个系统数据量十分大（这也是拒绝服务的前提）的时候就需要分页功能去优化性能，那我们尝试将这个可控的数据查询量的参数数值进行修改会怎么样？比如<code>page_size=10000</code>，再去请求会发现服务器明显有返回延迟（大量数据的查询展示）：</p>
+<p><img src="https://chen-blog-oss.oss-cn-beijing.aliyuncs.com/2020-06-22/15912593992264.jpg" alt="-w271"></p>
+<p>那如果是<code>page_size=100000000000</code>呢？想象一下，从查询到数据格式的处理返回展示，要占用巨大的服务器资源，我们如果尝试去多次重放此类请求，服务器终究还是无法承受这样的“力量”，最后导致宕机…</p>
+<p>时间参数<code>startTime</code>也是如此，我们可以置空或设为<code>0</code>让其查询数据的时间范围为最大…以此类推、举一反三。</p>
+<h2 id="References"><a href="#References" class="headerlink" title="References"></a>References</h2><p><a href="https://bbs.pediy.com/thread-252487.htm" target="_blank" rel="noopener">https://bbs.pediy.com/thread-252487.htm</a></p>
+<p><a href="https://www.checkmarx.com/wp-content/uploads/2015/03/ReDoS-Attacks.pdf" target="_blank" rel="noopener">https://www.checkmarx.com/wp-content/uploads/2015/03/ReDoS-Attacks.pdf</a></p>
+<p><a href="https://zhuanlan.zhihu.com/p/41800341" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/41800341</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/06/16/qiwihui-pocket_readings-1134/" rel="prev" title="
+
+
+如何快速掌握并使用第三方代码 ">
+      <i class="fa fa-chevron-left"></i> 
+
+
+如何快速掌握并使用第三方代码 
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/06/19/qiwihui-pocket_readings-1136/" rel="next" title="P99 是如何计算的">
+      P99 是如何计算的 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Web层面上的那些拒绝服务攻击-DoS-·-Chen’s-Blog"><span class="nav-number"></span> <span class="nav-text">Web层面上的那些拒绝服务攻击(DoS) · Chen’s Blog</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Web层面上的那些拒绝服务攻击-DoS"><span class="nav-number"></span> <span class="nav-text">Web层面上的那些拒绝服务攻击(DoS)</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Web层面上的那些拒绝服务攻击-DoS-1"><span class="nav-number"></span> <span class="nav-text">Web层面上的那些拒绝服务攻击(DoS)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#声明"><span class="nav-number"></span> <span class="nav-text">声明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#原理及案例"><span class="nav-number"></span> <span class="nav-text">原理及案例</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#资源生成大小可控"><span class="nav-number">1.</span> <span class="nav-text">资源生成大小可控</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#实际场景"><span class="nav-number">1.1.</span> <span class="nav-text">实际场景</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Zip炸弹"><span class="nav-number">2.</span> <span class="nav-text">Zip炸弹</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#实际场景-1"><span class="nav-number">2.1.</span> <span class="nav-text">实际场景</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#XDoS-XML拒绝服务攻击"><span class="nav-number">3.</span> <span class="nav-text">XDoS(XML拒绝服务攻击)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Billion-Laughs"><span class="nav-number">3.1.</span> <span class="nav-text">Billion Laughs</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#External-Entity"><span class="nav-number">3.2.</span> <span class="nav-text">External Entity</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Internal-Entity"><span class="nav-number">3.3.</span> <span class="nav-text">Internal Entity</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#实际场景-2"><span class="nav-number">3.4.</span> <span class="nav-text">实际场景</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ReDoS-正则表达式拒绝服务攻击"><span class="nav-number">4.</span> <span class="nav-text">ReDoS(正则表达式拒绝服务攻击)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#NFA-回溯"><span class="nav-number">4.1.</span> <span class="nav-text">NFA 回溯</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#NFA-贪婪"><span class="nav-number">4.2.</span> <span class="nav-text">NFA 贪婪</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#恶意正则表达式"><span class="nav-number">4.3.</span> <span class="nav-text">恶意正则表达式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ReDoS-恶意正则检测"><span class="nav-number">4.4.</span> <span class="nav-text">ReDoS 恶意正则检测</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#实际场景-3"><span class="nav-number">4.5.</span> <span class="nav-text">实际场景</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数据查询数量可控"><span class="nav-number">5.</span> <span class="nav-text">数据查询数量可控</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#References"><span class="nav-number"></span> <span class="nav-text">References</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

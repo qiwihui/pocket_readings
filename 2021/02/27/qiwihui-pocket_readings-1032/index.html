@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Rust ownership, the hard way">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Rust ownership, the hard way">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/02/27/qiwihui-pocket_readings-1032/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="Rust ownership, the hard way">
+<meta property="article:published_time" content="2021-02-27T17:21:16.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.422Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/02/27/qiwihui-pocket_readings-1032/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>Rust ownership, the hard way | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/02/27/qiwihui-pocket_readings-1032/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Rust ownership, the hard way
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-02-27 17:21:16" itemprop="dateCreated datePublished" datetime="2021-02-27T17:21:16+00:00">2021-02-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">Rust ownership, the hard way</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>In order to truly understand Rust, one needs to understand its crucial differentiating feature: ownership. Let&rsquo;s go through it in detail the hard way. This article is an introduction to Rust&rsquo;s concept of ownership.<br><br><br><br>Tags: rust<br><br><br><br>via Pocket <a href="https://ift.tt/3aCJrpi" target="_blank" rel="noopener">https://ift.tt/3aCJrpi</a> original site<br><br><br><br>February 28, 2021 at 01:17AM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1032#issuecomment-787105590" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>2/27/2021</strong></p>
+</blockquote>
+<h2 id="Rust-ownership-the-hard-way-by-Chris-Morgan"><a href="#Rust-ownership-the-hard-way-by-Chris-Morgan" class="headerlink" title="Rust ownership, the hard way by Chris Morgan"></a>Rust ownership, the hard way by Chris Morgan</h2><h1 id="Chris-Morgan-›-Blog"><a href="#Chris-Morgan-›-Blog" class="headerlink" title="Chris Morgan › Blog"></a><strong><a href="https://chrismorgan.info/" target="_blank" rel="noopener">Chris Morgan</a></strong> › <a href="https://chrismorgan.info/blog/" target="_blank" rel="noopener">Blog</a></h1><h1 id="Rust-ownership-the-hard-way"><a href="#Rust-ownership-the-hard-way" class="headerlink" title="Rust ownership, the hard way"></a><strong>Rust ownership, the hard way</strong></h1><p>In order to truly understand Rust, one needs to understand its crucial differentiating feature: ownership. Let’s go through it in detail the hard way.</p>
+<p><strong>Tagged:</strong> <a href="https://chrismorgan.info/blog/tags/rust/" target="_blank" rel="noopener">Rust</a><br><strong>Published:</strong> May 12, 2015<br><strong>Last updated:</strong> August 19, 2019</p>
+<p>This article is intended to teach beginnersabout the Rust programming language. Displayed compiler output is from Rust 1.38.0-nightly.</p>
+<p>This article is an introduction to Rust’s concept of ownership. It’s designed for someone who is already a programmer but who is not especially familiar (maybe even not at all familiar) with Rust. It doesn’t attempt to explain all the concepts it deals with, but for the most part it should be clear enough. If you’re a beginner you may also find that you don’t understand various parts of it; in such a case, you might like to hold the article while you go and learn more about them elsewhere; you’ll find more value in coming back to this article after.</p>
+<p>This concept of ownership is the pivotal part of Rust; it’s the part that makes its combination of efficiency and safety possible. While the rest of Rust is pretty similar to what you’ll find in mainstream languages [OK, so pattern matching and algebraic data types aren’t widespread in C-style languages, but they’re conceptually simple.], these concepts of ownership and lifetimes are different from anything in any mainstream language, so it’s likely to be the part that you’ll spend the longest trying to grok; if you don’t give up but persist, then when it all clicks, working in Rust will be a joy, and you’ll have unlocked a marvellous ability to reason about code. You’ll also probably wish you could transplant a lot of the aspects of Rust’s ownership model to other languages you deal with. [Seriously. The ownership model makes reasoning about many things <em>so</em> much easier, and I really <em>do</em> miss it when working in other languages.]</p>
+<p>This article deals with the concepts and theory of ownership and lifetimes; it doesn’t provide much in the way of practical usage examples; those you can find elsewhere. But it does explain all the rules that go to make Rust’s ownership model what it is. (It <em>is</em> called “the hard way” for a reason.)</p>
+<p>Well, on with the first of our four rules:</p>
+<ol>
+<li>Each object can be used exactly once. When you use an object it is moved to the new location and is no longer usable in the old.</li>
+</ol>
+<hr>
+<p><a href="https://chrismorgan.info/#exceptions-to-single-use" target="_blank" rel="noopener">Later on</a> we’ll deal with a couple of features that make this model more palatable, but for now we’ll skip them, considering it at the most basic level.</p>
+<pre><code>struct A;
+
+fn main() {
+    let a = A;
+    let b = a;
+    let c = a;
+}</code></pre><p><strong>error[E0382]: use of moved value: `a`</strong><br> <strong>–&gt;</strong> <anon>:6:13<br> <strong>|</strong><br><strong>4 | **    let a = A;<br> **|         - move occurs because `a` has type `A`, which does not implement the `Copy` trait</strong><br><strong>5 | **    let b = a;<br> **|         - value moved here</strong><br><strong>6 | **    let c = a;<br> **|</strong>        <strong>^ value used here after move</strong></p>
+<p><strong>error: aborting due to previous error</strong></p>
+<p>The <code>A</code> instance placed in the slot <code>a</code> is moved to <code>b</code>, rendering <code>a</code> unusable.</p>
+<ol>
+<li>When an object passes out of scope, it is destroyed and is no longer usable.</li>
+</ol>
+<hr>
+<p>All curly braces (known as <em>blocks</em>) introduce a new level of scope, and anything declared inside a block (e.g. the binding <code>x</code> in <code>**let** x = y;</code>) will live until the end of that block.</p>
+<pre><code>struct A;
+
+fn main() {
+    {
+        let a = A;
+    }
+    let b = a;
+}</code></pre><p>This example won’t work, because <code>a</code> has fallen out of scope and been destroyed by the time we try to assign it to <code>b</code>:</p>
+<p><strong>error[E0425]: cannot find value `a` in this scope</strong><br> <strong>–&gt;</strong> <anon>:7:13<br> <strong>|</strong><br><strong>7 | **    let b = a;<br> **|</strong>            <strong>^ help: a unit struct with a similar name exists: `A`</strong></p>
+<p><strong>error: aborting due to previous error</strong></p>
+<p>There are seven ways of introducing variable bindings; all use patterns, and all but <code>**let**</code> introduce a new level of scope. They are: <code>**let**</code>; match branches; <code>**for**</code>; <code>**if let**</code>; <code>**while let**</code>; function arguments; and closure arguments.</p>
+<p>When an object passes out of scope and is destroyed, if the type implements <a href="https://doc.rust-lang.org/std/ops/trait.Drop.html" target="_blank" rel="noopener"><code>Drop</code></a>, that destructor will be run. I won’t get into the details of destructors here. Types like <code>**&amp;**T</code> and <code>**&amp;mut** T</code> (immutable and mutable references) do not have destructors.</p>
+<ol>
+<li>Blocks can produce a value which goes up one level of scope.</li>
+</ol>
+<hr>
+<p>As a language feature, this is typically known as <em>expression orientation</em>, as distinct from <em>statement orientation</em>. It’s a fairly simple concept and will seem perfectly natural to users of languages like Ruby, though to users of languages like C++ and Python it may seem a little odd. (I came originally from a Python background; at first I thought it a gimmick useful only for skipping the word <code>**return**</code> on the last statement of a function, but I rapidly discovered it isn’t a gimmick at all; it’s a very useful feature, for all that it wouldn’t suit a language like Python.)</p>
+<p>The main rule is simple: the last expression in a block is the value that the block produces. (A block is thus an expression too.) There are a couple of other rules to deal with the corner cases:</p>
+<p>People with some Rust experience may be familiar with the explanation of an implied <code>()</code> after a semicolon at the end of a block; this is not accurate, <a href="https://play.rust-lang.org/?code=fn%20foo()%20-%3E%20i32%20%7B%20return%200;%20()%20%7D%0Afn%20main()%20%7B%20%7D" target="_blank" rel="noopener">as these type checking errors show</a>. The reachability check is important as it allows things like a <code>**return**</code> statement at the end of a function that returns something other than unit (even though that <em>specific</em> thing is considered bad style).</p>
+<ul>
+<li><p>An empty block produces <code>()</code> (<em>unit</em>).</p>
+</li>
+<li><p>If a block’s contents ends with a semicolon and the end of the block is reachable, the block produces <code>()</code>.</p>
+</li>
+</ul>
+<p>Here’s a simple example:</p>
+<pre><code>let a = {
+    // … do anything we like …
+    1
+};</code></pre><p>Here, <code>a</code> ends up storing the value <code>1</code>. Given these rules, you can see that putting braces around an expression changes nothing, for at each added level the block contains only a single expression, which is then its own value. Hence, <code>**let** a = { { { { 1 } } } };</code> and <code>**let** a = 1;</code> are equivalent. [They’re actually not <em>quite</em> equivalent in general, for a block expression is an <em>rvalue</em>; thus <code>string[..].is_empty()</code> works, while <code>{ string[..] }.is_empty()</code> doesn’t.]</p>
+<p>In languages without this feature, the only type of block that produces a value (if you’ll allow my sloppy terminology here) is a function; there, they have the <code>**return**</code> keyword to fill in this blank. (Rust also has the <code>**return**</code> keyword to make early return more convenient, but the language would work fine without it—​it’d just be harder to write some sorts of code.)</p>
+<pre><code>fn foo_the_c_way() -&gt; i32 {
+    return 1;
+}
+
+fn foo_the_rust_way() -&gt; i32 {
+    1
+}</code></pre><p>Because of this paradigm of expression orientation, the concept of special <em>ternary expressions</em> [<code>condition ? a : b</code> in most languages;<code>a **if** condition **else** b</code> in Python.] is not necessary in Rust, for an <code>**if**</code> expression can do the job just fine:</p>
+<pre><code>let x = if a { b } else { c };
+
+let x = if a {
+    // … do things …
+    b
+} else {
+    // … do things …
+    c
+};</code></pre><ol>
+<li>All objects have a lifetime which constrains which scopes they may be moved out of.</li>
+</ol>
+<hr>
+<p>Now we’re getting into the harder stuff, the biggest thing that’s unusual about Rust: lifetimes. Syntactically, a lifetime in Rust is any identifier with the prefix of a single quotation mark, e.g. <code>_&#39;a_</code>. Any name will do for a lifetime, but there is one special lifetime, <code>**_&#39;static_**</code>, which means that an object contains no non-static references. Most of the primitive types (<code>**i32**</code>, <code>**bool**</code>, <code>**str**</code>, <code>[T]</code>, <em>&amp;c.</em>) are static; those that are not are:</p>
+<ul>
+<li>Arrays (<code>[T; n]</code>) and slices (<code>[T]</code>) of non‐static types;</li>
+<li>Tuples with non‐static members;</li>
+<li>Non‐static references, <em>viz.</em> any <code>**&amp;**T</code> or <code>**&amp;mut** T</code> except <code>**&amp;_&#39;static_** T</code> and <code>**&amp;_&#39;static_ mut** T</code>.</li>
+</ul>
+<h3 id="Conventions"><a href="#Conventions" class="headerlink" title="Conventions"></a>Conventions</h3><p>Just as there is a widespread convention for generic type parameters with no special significance to have names following the pattern <code>T</code>, <code>U</code>, <code>V</code>, <em>&amp;c.</em>, there is a convention for generic lifetime parameters in Rust to follow the pattern <code>_&#39;a_</code>, <code>_&#39;b_</code>, <code>_&#39;c_</code>, <em>&amp;c.</em></p>
+<p>It’s also common to give them more meaningful letters or snake_case names; for example, where a key‐value pair might be <code>Pair&lt;K, V&gt;</code>, if you needed lifetime parameters corresponding to each of them individually (this is occasionally useful, though in a case like this they’ll typically have the same lifetime) you might go for <code>_&#39;k_</code> and <code>_&#39;v_</code>.</p>
+<h3 id="Lifetime-positions-in-types"><a href="#Lifetime-positions-in-types" class="headerlink" title="Lifetime positions in types"></a>Lifetime positions in types</h3><p>There are four places where a lifetime can appear in a <em>type</em>:</p>
+<ul>
+<li><code>**&amp;**_&#39;a_ Type</code>: the lifetime of an immutable reference;</li>
+<li><code>**&amp;**_&#39;a_ **mut** Type</code>: the lifetime of a mutable reference;</li>
+<li><code>Type&lt;_&#39;a_&gt;</code>: a generic lifetime parameter on a type;</li>
+<li><code>Trait + _&#39;a_</code>: a trait object’s lifetime, as with generic bounds (dealt with below).</li>
+</ul>
+<p>The first two are, I believe, fairly obvious; it’s clearly unsafe to have a reference to an object that has been freed. (By baking this into the language, we avoid the problem of <em>dangling pointers</em> that languages like C have.)</p>
+<p>The third is much the same, as all generic lifetime parameters will, somewhere down the way, be of one of the other types, and so it’s just a way of passing that constraint through the types, like this:</p>
+<pre><code>struct Ref&lt;&apos;a, T: &apos;a&gt;(&amp;&apos;a T);</code></pre><p>As you can see, this <code>Ref</code> type is basically just a wrapper around an immutable reference; as the contained field is of that lifetime, clearly the containing structure may not live any longer than it and so it must have that lifetime also. (The <code>T: _&#39;a_</code> part is a type bound, saying that the generic type <code>T</code> must live for at least <code>_&#39;a_</code>; without this it would not work, for as already discussed it clearly wouldn’t make sense to have a reference living longer than the object it refers to.)</p>
+<p>The fourth and final of these (<code>Trait + _&#39;a_</code>) is, I think, the most interesting, and it’s worth spending a short time on trait objects, because the way in which they fit into this arrangement is <em>slightly</em> different from elsewhere.</p>
+<p>Trait objects are Rust’s form of safe and convenient <em>dynamic dispatch</em>; they allow you to store arbitrary types that satisfy a trait in the one type. Because of the potential difference in size of the types implementing a trait, trait objects are only usable through a reference of some form; the owned form is thus <code>**Box**&lt;Trait&gt;</code>, and for references you can have <code>**&amp;**Trait</code> and <code>**&amp;mut** Trait</code>. This is a very brief and wholly lacking explanation of trait objects; you can find documentation of them elsewhere; a detailed explanation is out of scope for this article.</p>
+<p>As stated, a trait object may be of a variety of different types; what, then, is the lifetime of a trait object? The answer is that we must specify it, like <code>**Box**&lt;Trait + **_&#39;static_**&gt;</code>, indicating that the contained object must be <code>**_&#39;static_**</code>, and <code>**&amp;**_&#39;a_ (Trait + _&#39;a_)</code>, indicating that the contained object’s lifetime must be at least <code>_&#39;a_</code>. Now as it happens, some of these common cases like <code>+ **_&#39;static_**</code> on a boxed trait object and the duplication of the <code>_&#39;a_</code> in the reference are taken care of as default trait bounds—​<code>**Box**&lt;Trait&gt;</code> is normally equivalent to <code>**Box**&lt;Trait + **_&#39;static_**&gt;</code> and <code>**&amp;**_&#39;a_ Trait</code> to <code>**&amp;**_&#39;a_ (Trait + _&#39;a_)</code>. <a href="https://github.com/rust-lang/rfcs/blob/master/text/0599-default-object-bound.md" target="_blank" rel="noopener">RFC 599, on default object bounds</a>, treats the current rules on this subject more precisely.</p>
+<p>(Note that just as the lifetime on a trait object can be omitted due to <em>default object bounds</em>, lifetimes on the other three cases can also often be omitted; the current rules of lifetime elision are covered in <a href="https://github.com/rust-lang/rfcs/blob/master/text/0141-lifetime-elision.md" target="_blank" rel="noopener">RFC 141</a>.)</p>
+<p>But still you may wonder: why do trait object need a lifetime? I think it’s easiest to just give an example of something that would be bad if it were allowed to compile (<a href="https://play.rust-lang.org/?code=fn%20main()%20%7B%0A%20%20%20%20let%20trait_object:%20%26AsRef%3Cstr%3E%20%3D%20%7B%0A%20%20%20%20%20%20%20%20let%20string%20%3D%20%22I%20am%20a%20String%22.to_owned();%0A%20%20%20%20%20%20%20%20%26string%0A%20%20%20%20%7D;%0A%20%20%20%20println!(%22The%20string%20is%20%7B:?%7D%22%2C%20trait_object.as_ref());%0A%7D" target="_blank" rel="noopener">which it isn’t</a>):</p>
+<pre><code>fn main() {
+    let trait_object: &amp;AsRef&lt;str&gt; = {
+        let string = &quot;I am a String&quot;.to_owned();
+        &amp;string
+    };
+    println!(&quot;The string is {:?}&quot;, trait_object.as_ref());
+}</code></pre><p>By the time execution gets to the <code>_println!_</code> statement, <code>string</code> has been freed, so if this were allowed to compile, <code>trait_object</code>, which points to the contents of <code>string</code>, would also thus be pointing to freed memory, which is emphatically a Bad Thing™. To maintain memory safety, the boxed trait object cannot live longer than the string it contains a reference to.</p>
+<h3 id="Lifetime-positions-in-generic-bounds"><a href="#Lifetime-positions-in-generic-bounds" class="headerlink" title="Lifetime positions in generic bounds"></a>Lifetime positions in generic bounds</h3><p>As shown very basically above, a lifetime can also appear in <em>type parameter bounds</em> and <em>lifetime parameter bounds</em>. Here are some more examples:</p>
+<pre><code>struct Ref&lt;&apos;a, T: SomeTrait + AnotherTrait + &apos;a&gt;(&amp;&apos;a T);
+
+// Suppose we have something that is reading values from a buffer and storing
+// the decoded values, which still contain references to parts of the original
+// buffer, into a vector. For maximal generality, we have *two* lifetimes,
+// though normally one would suffice. The reference to the vector (and all its
+// items) must last at least as long as the buffer, but is not constrained to
+// *only* live that long.
+struct DecodeResult&lt;&apos;buf, &apos;decoded: &apos;buf, T: &apos;decoded&gt; {
+    buffer: &amp;&apos;buf [u8],
+    decoded: &amp;&apos;decoded mut Vec,
+}</code></pre><p>By type parameter bounds we mean the <code>T: _&#39;decoded_</code>, stating that the lifetime of the type <code>T</code> must be at least <code>_&#39;decoded_</code>.</p>
+<p>By lifetime parameter bounds we mean the <code>_&#39;decoded_: _&#39;buf_</code>, stating that the lifetime <code>_&#39;decoded_</code> must be at least as long as (must satisfy the constraint) <code>_&#39;buf_</code>. This is extremely rare.</p>
+<p>Really, these sorts of bounds are very similar to the trait object bounds: because generics can be of arbitrary types, you will often need to stipulate a minimal lifetime in order to work with a type. In the <code>DecodeResult</code> example above, <code>T</code>’s lifetime must be constrained to be at least <code>_&#39;decoded_</code>, or else the reference in the <code>decoded</code> field would not be valid. Rust could infer this sort of thing, but it would lead to surprises in various areas, so it refrains from the attempt.</p>
+<h2 id="Exceptions-to-“each-object-can-be-used-exactly-once”"><a href="#Exceptions-to-“each-object-can-be-used-exactly-once”" class="headerlink" title="Exceptions to “each object can be used exactly once”"></a>Exceptions to “each object can be used exactly once”</h2><p>There; we’ve covered the four basic rules. There remains still one point to explain. Earlier on I posited the simple rule that each object can be used exactly once; as I also said, this isn’t actually universally true. There are two exceptions to this rule.</p>
+<h3 id=""><a href="#" class="headerlink" title=""></a></h3><ol>
+<li>Copy and move semantics</li>
+</ol>
+<p>Objects of types with <em>move semantics</em> can only be used once, but this is not true of types with <em>copy semantics</em>.</p>
+<p>An object has <em>copy semantics</em> if it implements <a href="https://doc.rust-lang.org/std/marker/trait.Copy.html" target="_blank" rel="noopener"><code>Copy</code></a>. This means that a value of that type can be duplicated simply by copying the bytes of memory. <code>**i32**</code>, for example, is <code>Copy</code> because it’s just an arbitrary four bytes of data, entirely self‐contained, while <code>**Box**&lt;T&gt;</code> is not because it involves a heap allocation that it must own and so a simple copy of the bytes would cause two objects to own the data at the same time, breaking all sorts of invariants and probably eating your laundry.</p>
+<p>In the <a href="https://chrismorgan.info/#rule-one" target="_blank" rel="noopener">first code example</a>’s error, we saw the explanatory note “move occurs because <code>a</code> has type <code>A</code>, which does not implement the <code>Copy</code> trait”. <code>A</code> has move semantics; suppose we now implement the <code>Copy</code> trait, like this:</p>
+<pre><code>#[derive(Clone, Copy)]
+struct A;
+
+fn main() {
+    let a = A;
+    let b = a;
+    let c = a;
+}</code></pre><p><code>_#[derive(X)]_</code> means “hey compiler,I want to implement <code>X</code> for this type,I just want the normal implementation,so can you please do it for me?”</p>
+<p>The Rust documentation <a href="https://doc.rust-lang.org/std/clone/trait.Clone.html#derivable" target="_blank" rel="noopener">explains deriving <code>Clone</code></a> and <a href="https://doc.rust-lang.org/std/marker/trait.Copy.html#how-can-i-implement-copy" target="_blank" rel="noopener"><code>Copy</code></a>.</p>
+<p>With the addition of the <code>Copy</code> implementation for <code>A</code>, it’s changed from having move semantics to having copy semantics, and so the code now compiles.</p>
+<p>There is one final matter in this exception to the rule worth mentioning: generics. If you work with a generic type, it will have move semantics unless you specify <code>Copy</code> in its bounds. In cases where you wish to copy the value, you might wish to use <a href="https://doc.rust-lang.org/std/clone/trait.Clone.html" target="_blank" rel="noopener"><code>Clone</code></a> instead, as it is more general (and all types that implement <code>Copy</code> implement <code>Clone</code>). Don’t worry about efficiency of cloning versus copying, either; unless the writer of the type explicitly went out of their way to do so (which they should <em>never</em> do), cloning and copying will perform identically when optimised.</p>
+<p>For more information on this topic, see the <a href="https://doc.rust-lang.org/std/marker/trait.Copy.html" target="_blank" rel="noopener"><code>Copy</code> docs</a>.</p>
+<h3 id="-1"><a href="#-1" class="headerlink" title=""></a></h3><ol>
+<li>Reference reborrowing</li>
+</ol>
+<p>A particularly notable example of a type with copy semantics is <code>**&amp;**T</code>; you can have as many immutable references to an object alive as you like, so long as there are no mutable references to it at the same time. <code>**&amp;mut** T</code>, however, has move semantics, for you’re not allowed to have more than one mutable reference in scope at a time.</p>
+<p>So then, why does this example <a href="https://play.rust-lang.org/?code=fn%20take_ref%3CT%3E(_:%20%26T)%20%7B%20%7D%0Afn%20take_mut%3CT%3E(_:%20%26mut%20T)%20%7B%20%7D%0Afn%20main()%20%7B%0A%20%20%20%20let%20mut%20a%20%3D%206;%0A%20%20%20%20%7B%0A%20%20%20%20%20%20%20%20let%20a_ref%20%3D%20%26a;%0A%20%20%20%20%20%20%20%20take_ref(a_ref);%0A%20%20%20%20%20%20%20%20//%20Naturally%20this%20will%20work,%20for%20&T%20is%20Copy.%0A%20%20%20%20%20%20%20%20take_ref(a_ref);%0A%20%20%20%20%7D%0A%20%20%20%20%7B%0A%20%20%20%20%20%20%20%20let%20a_mut%20%3D%20%26mut%20a;%0A%20%20%20%20%20%20%20%20take_mut(a_mut);%0A%20%20%20%20%20%20%20%20//%20Surely%20a_mut%20should%20have%20been%20consumed%20by%20the%20line%20above?%0A%20%20%20%20%20%20%20%20take_mut(a_mut);%0A%20%20%20%20%7D%0A%7D" target="_blank" rel="noopener">work</a>?</p>
+<pre><code>fn take_ref&lt;T&gt;(_: &amp;T) { }
+fn take_mut&lt;T&gt;(_: &amp;mut T) { }
+fn main() {
+    let mut a = 6;
+    {
+        let a_ref = &amp;a;
+        take_ref(a_ref);
+        // Naturally this will work, for &amp;T is Copy.
+        take_ref(a_ref);
+    }
+    {
+        let a_mut = &amp;mut a;
+        take_mut(a_mut);
+        // Surely a_mut should have been consumed by the line above?
+        take_mut(a_mut);
+    }
+}</code></pre><p>There is another exception in play here: reference reborrowing. Where we pass <code>a_mut</code> to a function, it effectively becomes <code>**&amp;mut ***a_mut</code>. This does mean that for a time two mutable references to the same thing <em>exist</em> (one in the caller and one in the function called), but at no point are both <em>accessible</em>, so it’s OK.</p>
+<p>Note that this exception only applies in situations where the parameter is of the form <code>**&amp;mut** T</code>; if it is a generic taken by value (e.g. <code>**fn**&lt;T&gt;(x: T)</code>) then a mutable reference you pass in will <em>not</em> be reborrowed automatically. You can still use the <code>**&amp;mut ***x</code> incantation to manually reborrow it, however.</p>
+<h2 id="Summary"><a href="#Summary" class="headerlink" title="Summary"></a>Summary</h2><p>Let’s list the main points once again:</p>
+<ol>
+<li><p>Each object can be used exactly once. When you use an object it is moved to the new location and is no longer usable in the old. (<code>Copy</code> and automatic reference reborrowing are the two exceptions that make this more palatable.)</p>
+</li>
+<li><p>When an object passes out of scope, it is destroyed and is no longer usable.</p>
+</li>
+<li><p>Blocks can produce a value which goes up one level of scope. (As a language feature, this is known as <em>expression orientation</em>.)</p>
+</li>
+<li><p>All objects have a lifetime which constrains which scopes they may be moved out of.</p>
+</li>
+</ol>
+<p>These points are all that you need to understand all of Rust’s ownership model. The rules are surprisingly simple, though you can quickly get to fairly complex interactions which make things harder to reason about. Don’t worry if you haven’t understood all of this; if you are trying to learn Rust, go and do some other things for a while and come back to the article again later and you’ll probably find it makes more sense and you can understand how ownership and lifetimes work. When you finally get to that point, you’ll love Rust’s unusual ownership model.</p>
+<p>Comments? Questions? Corrections? If you want to contact me about anything in this post, email me at <a href="mailto:me@chrismorgan.info">me@chrismorgan.info</a> or <a href="https://www.reddit.com/r/rust/http://chrismorgan.info/blog/rust-ownership-the-hard-way.html" target="_blank" rel="noopener">discuss it on /r/rust</a>.</p>
+<p>Looking for more? My <a href="https://chrismorgan.info/blog/rust-fizzbuzz/" target="_blank" rel="noopener">article about FizzBuzz</a> is particularly relevant, dealing with these questions of ownership in a (slightly) practical context. If you’re a beginner, I suggest you also go through the <a href="https://doc.rust-lang.org/" target="_blank" rel="noopener">official documentation</a> with things like its <a href="https://doc.rust-lang.org/book/README.html" target="_blank" rel="noopener">book</a>. I have <a href="https://chrismorgan.info/blog/tags/rust/" target="_blank" rel="noopener">a few more posts about Rust</a> too.</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/24/qiwihui-pocket_readings-1030/" rel="prev" title="
+
+
+fbprophet方法在ueba中的应用 ">
+      <i class="fa fa-chevron-left"></i> 
+
+
+fbprophet方法在ueba中的应用 
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/28/qiwihui-pocket_readings-1033/" rel="next" title="写给所有需要做笔记的你：为什么我推荐你一定试试 Notion ？ - 少数派">
+      写给所有需要做笔记的你：为什么我推荐你一定试试 Notion ？ - 少数派 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Rust-ownership-the-hard-way-by-Chris-Morgan"><span class="nav-number"></span> <span class="nav-text">Rust ownership, the hard way by Chris Morgan</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Chris-Morgan-›-Blog"><span class="nav-number"></span> <span class="nav-text">Chris Morgan › Blog</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Rust-ownership-the-hard-way"><span class="nav-number"></span> <span class="nav-text">Rust ownership, the hard way</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Conventions"><span class="nav-number">1.</span> <span class="nav-text">Conventions</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Lifetime-positions-in-types"><span class="nav-number">2.</span> <span class="nav-text">Lifetime positions in types</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Lifetime-positions-in-generic-bounds"><span class="nav-number">3.</span> <span class="nav-text">Lifetime positions in generic bounds</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Exceptions-to-“each-object-can-be-used-exactly-once”"><span class="nav-number"></span> <span class="nav-text">Exceptions to “each object can be used exactly once”</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#"><span class="nav-number">1.</span> <span class="nav-text"></span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#-1"><span class="nav-number">2.</span> <span class="nav-text"></span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Summary"><span class="nav-number"></span> <span class="nav-text">Summary</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

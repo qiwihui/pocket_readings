@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Django for Startup Founders: A better software architecture for SaaS startups and consumer apps">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Django for Startup Founders: A better software architecture for SaaS startups and consumer apps">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/06/24/qiwihui-pocket_readings-1140/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="Django for Startup Founders: A better software architecture for SaaS startups and consumer apps">
+<meta property="article:published_time" content="2021-06-24T08:21:09.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.414Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/06/24/qiwihui-pocket_readings-1140/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>Django for Startup Founders: A better software architecture for SaaS startups and consumer apps | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/06/24/qiwihui-pocket_readings-1140/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Django for Startup Founders: A better software architecture for SaaS startups and consumer apps
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-06-24 08:21:09" itemprop="dateCreated datePublished" datetime="2021-06-24T08:21:09+00:00">2021-06-24</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">Django for Startup Founders: A better software architecture for SaaS startups and consumer apps</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>In an ideal world, startups would be easy. We’d run our idea by some potential customers, build the product, and then immediately ride that sweet exponential growth curve off into early retirement.<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/3d45jLm" target="_blank" rel="noopener">https://ift.tt/3d45jLm</a> original site<br><br><br><br>June 24, 2021 at 03:40PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1140#issuecomment-867441585" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>6/24/2021</strong></p>
+</blockquote>
+<h2 id="Django-for-Startup-Founders-A-better-software-architecture-for-SaaS-startups-and-consumer-apps"><a href="#Django-for-Startup-Founders-A-better-software-architecture-for-SaaS-startups-and-consumer-apps" class="headerlink" title="Django for Startup Founders: A better software architecture for SaaS startups and consumer apps"></a>Django for Startup Founders: A better software architecture for SaaS startups and consumer apps</h2><p>In an ideal world, startups would be easy.</p>
+<p>We’d run our idea by some potential customers, build the product, and then immediately ride that sweet exponential growth curve off into early retirement.</p>
+<p>Of course it doesn’t actually work like that. Not even a little.</p>
+<p>In real life, even startups that go on to become billion-dollar companies typically go through phases like:</p>
+<ul>
+<li>Having little or no growth for months or years on end.</li>
+<li>Spending months building features that potential customers say they’d definitely pay for, only to have them not convert.</li>
+<li>Finally getting to product-market fit, only to hire way too fast and create internal chaos.</li>
+<li>Losing a key customer or running out of funding, and having to lay off most of the team.</li>
+<li>Hiring junior developers to work on core products, often with little or no experience in the technologies being used.</li>
+</ul>
+<p>And so on.</p>
+<p>Obviously you don’t create a huge outcome without a ton of stuff going right along the way, but even at wildly successful startups the day-to-day experience is rarely glamorous.</p>
+<p>Over the last couple decades we’ve seen the majority of companies switch to using Agile and other project management methodologies that not only take these shifting contexts into account, but are entirely designed around them. What we haven’t seen though, at least not to nearly the same extent, is the same level of thought being put into architecting the software itself. That is, in the same way that Agile is designed around the assumption that both a product team’s priorities and its development velocity can — and likely will — change wildly, likewise the design patterns we use when creating software should be chosen to ensure that:</p>
+<ol>
+<li>The engineering team isn’t ever the limiting factor, even during periods of explosive growth.</li>
+<li>The business can not only keep the lights on, but can continue moving forward even if it’s down to its last (junior) developer.</li>
+</ol>
+<p>I wrote this guide to explain how to write software in a way that maximizes the number of chances your startup has to succeed — by making it easy to maintain development velocity regardless of the inevitable-but-unknowable future changes to team size, developer competence and experience, product functionality, etc. The idea is that, given the inherent uncertainty, startups can massively increase their odds of success by putting some basic systems in place to help maximize the number of ideas, features, and hypotheses they can test; in other words, maximizing “lead bullets,” to borrow the phrase from this <a href="https://a16z.com/2011/11/13/lead-bullets/" target="_blank" rel="noopener">blog post</a> by Ben Horowitz. What follows are a series of patterns and best practices for building REST APIs, designed especially for the needs of SaaS startups and consumer apps.<a href="https://alexkrupp.typepad.com/#footnote-1" target="_blank" rel="noopener">[1]</a></p>
+<p>It’s very important to understand how each technical recommendation will confer real-world benefits to your business, and the best way to do this is by discussing them in the context of the so-called <a href="https://en.wikipedia.org/wiki/List_of_system_quality_attributes" target="_blank" rel="noopener">ilities</a>. In software architecture, the ilities are the words we use to describe the characteristics of the codebase itself, unrelated to what that code is actually doing for the end user. Most existing advice on software architecture is written for $10B+ companies, and as such tends to focus on maximizing things like performance, scalability, availability, reliability, etc.<a href="https://alexkrupp.typepad.com/#footnote-2" target="_blank" rel="noopener">[2]</a></p>
+<p>This has actually created a huge problem. The issue is that, due to having studied CS in college, most engineers working at startups don’t have a ton of business training. So what often happens is that these developers decide how to implement features by just copying the first recommendation that comes up in Google or Stack Overflow without first evaluating that advice from a business perspective, and since most of this advice is geared toward either Fortune 500 companies (at one extreme) or hackathon-type hobby projects (at the other), this inevitably leads to huge unseen costs.</p>
+<p>This is bad.</p>
+<p>So how should developers and managers be making decisions instead? Basically the way to consistently make good architecture decisions for any given business is knowing which ilities will create value, making sure the team understands why they create value, and then having a system in place to ensure that code is written in a way that aligns with this understanding.</p>
+<p>When it comes to SaaS startups and consumer apps, specifically those with some users and traction but less than $100M in ARR, the key insight is that the APIs powering almost all of these businesses have the same basic characteristics:</p>
+<ul>
+<li>Between 10K and 100K lines of code.<a href="https://alexkrupp.typepad.com/#footnote-3" target="_blank" rel="noopener">[3]</a></li>
+<li>Maintained by 8 or fewer developers at any given time, or could be if they were well-architected</li>
+<li>Most of the complexity is in the business logic, rather than in advanced CS concepts</li>
+</ul>
+<p>Because most startups have similar codebases and face similar challenges, it’s usually the same set of ilities that will maximize each startup’s likelihood of success. So which ilities are the most valuable for startups? In my experience the answer is: <em>predictability</em>, <em>readability</em>, <em>simplicity</em>, and <em>upgradability</em>. For each ility, I’ll first explain how it creates value at a high level, and then give some specific patterns and rules you can apply to your own codebase. Lastly, I’ll explain why I consider these patterns and rules to collectively be the <a href="https://www.youtube.com/watch?v=ll2QRgNAdzc" target="_blank" rel="noopener"><em>mise en place</em></a> of modern web app development teams.</p>
+<ul>
+<li><p><a href="https://alexkrupp.typepad.com/#predictability" target="_blank" rel="noopener">Predictability</a></p>
+<ul>
+<li><a href="https://alexkrupp.typepad.com/#rule1" target="_blank" rel="noopener">Rule #1: Every endpoint should tell a story</a></li>
+<li><a href="https://alexkrupp.typepad.com/#rule2" target="_blank" rel="noopener">Rule #2: Keep business logic in services</a></li>
+<li><a href="https://alexkrupp.typepad.com/#rule3" target="_blank" rel="noopener">Rule #3: Make services the locus of reusability</a></li>
+<li><a href="https://alexkrupp.typepad.com/#rule4" target="_blank" rel="noopener">Rule #4: Always sanitize user input, sometimes save raw input, always escape output</a></li>
+<li><a href="https://alexkrupp.typepad.com/#rule5" target="_blank" rel="noopener">Rule #5: Don’t split files by default &amp; never split your URLs file</a></li>
+</ul>
+</li>
+<li><p><a href="https://alexkrupp.typepad.com/#readability" target="_blank" rel="noopener">Readability</a></p>
+<ul>
+<li><a href="https://alexkrupp.typepad.com/#rule6" target="_blank" rel="noopener">Rule #6: Each variable’s type or kind should be obvious from its name</a></li>
+<li><a href="https://alexkrupp.typepad.com/#rule7" target="_blank" rel="noopener">Rule #7: Assign unique names to files, classes, and functions</a></li>
+<li><a href="https://alexkrupp.typepad.com/#rule8" target="_blank" rel="noopener">Rule #8: Avoid *args and **kwargs in user code</a></li>
+<li><a href="https://alexkrupp.typepad.com/#rule9" target="_blank" rel="noopener">Rule #9: Use functions, not classes</a></li>
+<li><a href="https://alexkrupp.typepad.com/#rule10" target="_blank" rel="noopener">Rule #10: There are exactly 4 types of errors</a></li>
+</ul>
+</li>
+<li><p><a href="https://alexkrupp.typepad.com/#simplicity" target="_blank" rel="noopener">Simplicity</a></p>
+<ul>
+<li><a href="https://alexkrupp.typepad.com/#rule11" target="_blank" rel="noopener">Rule #11: URL parameters are a scam</a></li>
+<li><a href="https://alexkrupp.typepad.com/#rule12" target="_blank" rel="noopener">Rule #12: Write tests. Not too many. Mostly integration.</a></li>
+<li><a href="https://alexkrupp.typepad.com/#rule13" target="_blank" rel="noopener">Rule #13: Treat unit tests as a specialist tool</a></li>
+<li><a href="https://alexkrupp.typepad.com/#rule14" target="_blank" rel="noopener">Rule #14: Use serializers responsibly, or not at all</a></li>
+<li><a href="https://alexkrupp.typepad.com/#rule15" target="_blank" rel="noopener">Rule #15: Write admin functionality as API endpoints</a></li>
+</ul>
+</li>
+<li><p><a href="https://alexkrupp.typepad.com/#upgradability" target="_blank" rel="noopener">Upgradability</a></p>
+</li>
+<li><p><a href="https://alexkrupp.typepad.com/#rule16" target="_blank" rel="noopener">Rule #16: Your app lives until your dependencies die</a></p>
+</li>
+<li><p><a href="https://alexkrupp.typepad.com/#rule17" target="_blank" rel="noopener">Rule #17: Keep logic out of the front end</a></p>
+</li>
+<li><p><a href="https://alexkrupp.typepad.com/#rule18" target="_blank" rel="noopener">Rule #18: Don’t break core dependencies</a></p>
+</li>
+<li><p><a href="https://alexkrupp.typepad.com/#conclusion" target="_blank" rel="noopener">Why make coding easier?</a></p>
+<ul>
+<li><a href="https://alexkrupp.typepad.com/#velocity" target="_blank" rel="noopener">Velocity</a></li>
+<li><a href="https://alexkrupp.typepad.com/#optionality" target="_blank" rel="noopener">Optionality</a></li>
+<li><a href="https://alexkrupp.typepad.com/#security" target="_blank" rel="noopener">Security</a></li>
+<li><a href="https://alexkrupp.typepad.com/#diversity" target="_blank" rel="noopener">Diversity</a></li>
+</ul>
+</li>
+</ul>
+<p><em>The code snippets in this guide are written using Python, Django, and <a href="https://www.django-rest-framework.org/" target="_blank" rel="noopener">DRF</a>, but they’re purposely designed to be understandable even if you don’t know much Python or Django. I’ve created a full app using these code snippets to ensure they work, which is published <a href="https://github.com/Alex3917/django_for_startups" target="_blank" rel="noopener">here</a>. The reason for choosing Python is that it’s generally the best language for startups with less than $100M in ARR; as the so-called second-best language for everything, Python gives startups the most optionality for experimenting with different product functionality and monetization models. It’s also <a href="https://cacm.acm.org/blogs/blog-cacm/176450-python-is-now-the-most-popular-introductory-teaching-language-at-top-u-s-universities/fulltext" target="_blank" rel="noopener">easy to hire for</a>. I do discuss some issues specific to Django, but most of this advice is applicable regardless of what language and web framework you’re using.</em></p>
+<h2 id="Predictability"><a href="#Predictability" class="headerlink" title="Predictability"></a>Predictability</h2><p>Everyone knows that creating software is insanely expensive, and yet almost everyone still vastly underestimates its total cost of ownership.</p>
+<p>According to various <a href="https://scholar.google.com/scholar?q=software+maintenance+costs" target="_blank" rel="noopener">academic</a> and <a href="https://www.google.com/search?q=software+development+vs+maintenence+costs+site%3Astackoverflow.com" target="_blank" rel="noopener">industry</a> estimates, 60% - 80% of the cost associated with any given line of code is incurred as maintenance after that line is originally written. This is due to bugs, changing feature requirements, updates to dependencies, unmaintained dependencies that need to be replaced or maintained in-house, etc. As such, it should be easy to understand why the best type of code is usually the code that <a href="https://blog.codinghorror.com/the-best-code-is-no-code-at-all/" target="_blank" rel="noopener">never gets written</a> in the first place.</p>
+<p>What about the second-best type of code though?</p>
+<p>For context, it’s important to understand that in most codebases, the bulk of maintenance costs aren’t inevitable, but rather are because the existing code is written in such a way that makes it time consuming to read and understand. When developers new to a codebase are tasked with making even a basic change, it often takes days or weeks of research before the first lines of code get written or edited. This is true even for competent and experienced developers, so it’s for this reason that the next best type of code is code that’s utterly predictable.</p>
+<p>What do we mean by this?</p>
+<p>Essentially, each REST endpoint should perform the same basic steps in the same order. This way if a person has enough knowledge to understand how any one endpoint works, they should have enough knowledge to understand how <em>every</em> endpoint works. And if they’re tasked with fixing a bug or adding a feature, there should be a simple step-by-step process they can use each time to find exactly where in the codebase they need to modify or extend the code.</p>
+<h3 id="Rule-1-Every-endpoint-should-tell-a-story"><a href="#Rule-1-Every-endpoint-should-tell-a-story" class="headerlink" title="Rule #1: Every endpoint should tell a story"></a>Rule #1: Every endpoint should tell a story</h3><p>Consider how every newspaper article follows the same basic <a href="https://en.wikipedia.org/wiki/Inverted_pyramid_(journalism)" target="_blank" rel="noopener">inverted pyramid format</a>, and answers the same basic questions of <em>who</em>, <em>what</em>, <em>where</em>, <em>when</em>, <em>why</em>, and <em>how</em>. This convention doesn’t in any way limit what topics journalists can write about or put any limit on the sophistication of their ideas; it just makes newspaper articles super easy to read even for folks at a middle school reading level, and makes it easy to remember the main ideas well enough to share with your friends.</p>
+<p>This sort of clarity and lucidity is not just something we can — and should — aspire to within our code. Rather, it’s something that we can actually get 85% of the way toward achieving just by making each of our endpoints follow the same predictable pattern.</p>
+<p>What pattern is this?</p>
+<p>The key insight is that there are up to seven basic steps that any given REST endpoint will perform. For many endpoints, there are multiple different orders in which you <em>could</em> perform these steps, but there also happens to exist one specific order that always works for every endpoint. And as it turns out, there are substantial benefits to always performing these seven steps, or at least the subset that are necessary for any given endpoint, in the same way and in the same order:</p>
+<ol>
+<li><strong>Specify permissions</strong> — Who is allowed to access this endpoint?</li>
+<li><strong>Copy input to local variables</strong> — What parameters (query params or body params) does this endpoint take?</li>
+<li><strong>Sanitize user input</strong> — User input <em>must</em> always be sanitized before further processing.</li>
+<li><strong>Validate user input</strong> — Ensure the user has supplied all of the same required parameters for this endpoint in the correct format. If there are errors, aggregate all of the input validation errors into a dictionary-style response as described below.</li>
+<li><strong>Enforce business requirements</strong> — Check for cases where the user is allowed to access the endpoint and submitted all of the required parameters correctly, but they aren’t allowed to perform a specific action due to the business logic of the application. E.g. creating an account with a username that has already been taken. If there is an error, return the first error that occurs, as described below.</li>
+<li><strong>Perform business logic</strong> — Do whatever this endpoint is actually supposed to do, e.g. altering state in the database, returning data to the API consumer, sending data to a third-party processor, etc.</li>
+<li><strong>Return HTTP response</strong> — Return any data necessary for the API consumer(s), along with a status code.</li>
+</ol>
+<p>This might strike some as being overly prescriptive and formulaic. But in much the same way that no one would want to go back to the age of <a href="https://en.wikipedia.org/wiki/Heroic_medicine" target="_blank" rel="noopener">heroic medicine</a>, embracing a subtler, more prosaic style comes with many benefits — vastly reducing the total cost of ownership of your codebase and increasing developer velocity more than anything else you could possibly implement. How? Quite simply, it’s because:</p>
+<ol>
+<li>New code should never go live without first being audited for correctness and security, among other things.</li>
+<li>It’s much faster to determine whether things have been done correctly if they always happen in the same order. For example, if you see that the user input hasn’t been sanitized right at the beginning of a view, you don’t need to read through all the methods that implement the business logic to see whether it’s been done later — you already know that it’s been done incorrectly and that there is a security problem.</li>
+<li>In the future, fixing bugs, changing business logic, and doing maintenance will all require knowing where in the code to make changes. And if the implementation of each endpoint follows the same pattern, there’s no need to waste hours or days reading through code that isn’t relevant to what you need to accomplish.</li>
+</ol>
+<p>As with our newspaper example above, ensuring that each endpoint conforms to this pattern will vastly reduce the time (and cost) required each time a reader needs to uncover the <a href="https://en.wikipedia.org/wiki/Five_Ws" target="_blank" rel="noopener">Five Ws and How</a> of that endpoint, e.g. in order to make any necessary changes. Let’s look at an example code snippet for creating a new user account, written using Django and Django Rest Framework, and then walk through it step-by-step:</p>
+<pre><code>class User(APIView):</code></pre><p>So what exactly is happening here? Let’s go through this line-by-line and discuss what makes this code snippet good.</p>
+<ul>
+<li><strong>Line 2:</strong> Specify who has access to each endpoint in the view. The important thing here is that the permissions for each endpoint are explicitly specified at the top of each view, not implicitly inherited from your Django settings file. This makes it easy to understand what’s happening, audit the codebase for security issues, and make any changes if necessary in the future.</li>
+<li><strong>Lines 6 - 9:</strong> Copy each input parameter into a new variable. This makes it easy for anyone, including front-end developers and product managers, to figure out what input each endpoint is expecting — even before any documentation has been written. We prefix each variable with <code>unsafe_</code> to draw attention to the fact that they haven’t yet been sanitized.</li>
+<li><strong>Lines 11 - 13:</strong> Always sanitize user input for security vulnerabilities.<a href="https://alexkrupp.typepad.com/#footnote-4" target="_blank" rel="noopener">[4]</a> The one common exception to this rule is with passwords; they’re only stored as hashes so there isn’t an XSS vector, and accidentally stripping complexity from a password would be its own security risk. But aside from this one exception, user input should always be sanitized before doing anything else with it — validation, business logic, storage, presentation, etc. The reasons for this are explained in <a href="https://alexkrupp.typepad.com/#rule4" target="_blank" rel="noopener">Rule #4</a>.</li>
+<li><strong>Lines 16-22:</strong> What the endpoint actually does; in this case, creating a user account. This is the method we would need to dig into if we wanted to understand the implementation details of how accounts are actually created. One quick thing to note is that we’re calling <code>account_management_service.create_account(...)</code> rather than importing the service method <code>create_account</code> from <code>account_management_service</code> and calling it directly. This lets the reader immediately know which file they’d need to open to see the method’s implementation, without scrolling to the top of the current file or using IDE. Whereas when functions are called from their files, the filenames serve as advertisements for the rest of the codebase. Getting constant reminders of where each function lives makes it more likely that developers will add new code to the right places, rather than putting it in the wrong place or, even worse, duplicating code that already exists.</li>
+<li><strong>Lines 23 - 30:</strong> All of the possible errors the endpoint can return. These are discussed in more detail under <a href="https://alexkrupp.typepad.com/#rule10" target="_blank" rel="noopener">Rule #10</a>.</li>
+<li><strong>Lines 32 - 33:</strong> What the endpoint returns.</li>
+</ul>
+<p>The reason for writing our views this way is that it makes it easy to answer the Five Ws for each endpoint. That is, we can immediately see <strong>who</strong> has access to the endpoint, <strong>what</strong> input the endpoint accepts, <strong>how</strong> that input is sanitized, <strong>where</strong> the business logic is performed, <strong>what</strong> errors get returned <strong>when</strong> things go sideways, and the <strong>why</strong> of the endpoint — <strong>what</strong> a successful response looks like.</p>
+<p>Let’s contrast this to an example that’s basically straight from the <a href="https://www.django-rest-framework.org/tutorial/3-class-based-views/" target="_blank" rel="noopener">tutorial</a> for Django Rest Framework:</p>
+<pre><code>class User(APIView):</code></pre><p>There’s no way to know by looking at this who is allowed to access the endpoint, what input the endpoint accepts, whether that input is properly sanitized, what data it returns, what the possible errors are, etc. And it’s not even just a matter of looking at the code for UserSerializer to figure this out; for any real-world application the answers to these questions may well be buried multiple levels deep, and getting adequate answers may take not just hours but days.</p>
+<p>If using GenericViews, the situation is even more opaque:</p>
+<pre><code>class User(generics.CreateAPIView):</code></pre><p>Call me old fashioned, but I believe that:</p>
+<ol>
+<li>Code should be a step-by-step set of instructions that’s meant to be read in order, like a recipe</li>
+<li>You should be able to understand what code is doing by reading it, or at least have pretty good intuition about what’s happening.</li>
+</ol>
+<p>Here you’re effectively just using a weird DSL to specify behavior by setting class properties and overriding methods. This makes sense for something like the Django Admin, where you’re just configuring a GUI. But for actual application development, GenericViews are the exact opposite of what good code should be like.</p>
+<p>There may be some legitimate use cases for writing code like this, e.g. for a hackathon, or a client demo, or any other rapid prototype that won’t be deployed publicly. The problem is that a lot of developers seem to take the fact that this tooling exists as an implicit recommendation that they should be writing production code this way. This issue is then compounded by all tutorials and Stack Overflow answers contributed by folks who may be using their web frameworks merely as fun technical toys, or at least in ways that are wildly different than anything grounded in any sort of business context. Basically GenericViews are best avoided, and overall I think the Django community would benefit from moving them from core Django into a contrib package.</p>
+<h3 id="Rule-2-Keep-business-logic-in-services"><a href="#Rule-2-Keep-business-logic-in-services" class="headerlink" title="Rule #2: Keep business logic in services"></a>Rule #2: Keep business logic in services</h3><p>There are three different places where you can put business logic in Django: in models or model managers, in forms or serializers, and in services. I’m pretty strongly of the opinion that business logic should only ever go in services. I’ll explain why, but first let’s explain what services are and then walk through an example.</p>
+<p>A ‘service’ is just a file with a bunch of functions that contain all the business logic related to some part of your app. E.g. for <a href="https://www.fwdeveryone.com/" target="_blank" rel="noopener">FWD:Everyone</a>, some services we have are <code>account_management_service.py</code>, <code>thread_upload_service.py</code>, <code>content_discovery_service.py</code>, etc. Each service file usually corresponds closely with a views file, e.g. <code>account_management_views.py</code> or <code>thread_upload_views.py</code>. Services live in between the views and the models, so that the request-response lifecycle for each endpoint looks like:</p>
+<ol>
+<li>An HTTP request to a URL gets routed to a view.</li>
+<li>The view copies any query parameters or body data into local variables, sanitizes these local variables for security issues, then passes the sanitized variables to a service.</li>
+<li>The service validates user input (e.g. using serializers), enforces business requirements, performs all business logic, and then returns any output or errors to the views.</li>
+<li>The view then returns an HTTP response to the API consumer.</li>
+</ol>
+<p>As an example, let’s look at one possible implementation for <code>account_management_service.create_account</code>, the service method from the previous section:</p>
+<pre><code>def create_account(sanitized_username, sanitized_email_address, unsafe_password,</code></pre><p>At first this looks pretty long, but it’s actually only doing a handful of things:</p>
+<ul>
+<li><strong>Lines 4 - 11:</strong> Validate that user input is in the correct format. E.g. ensure that the password has enough characters, the email address looks at least something like an email address, etc. In this case I’m doing this using DRF’s serializer classes. I’ll discuss the pros and cons of using serializers later. If there is at least one validation error, raise an error whose value is a dictionary containing all the validation errors returned by the serializer validation.</li>
+<li><strong>Line 13 - 17:</strong> Normalize any Unicode text that needs to be normalized, e.g. so that things like usernames and email addresses can be stored as both NFC and NFKC. Basically NFC is how you normalize text that’s meant to be displayed to a user on the web, and NFKC is how you normalize text that’s used for searching and guaranteeing uniqueness.</li>
+<li><strong>Lines 19 - 26:</strong> Raise the first business logic error that occurs, if there are any. You can wrap the atomic transaction block in a <code>try</code> statement if you care about delivering a proper error message in the event of a race condition; in most cases though, it’s better to just make your peace with delivering non-specific error messages during race conditions, in favor of easier-to-read code.</li>
+<li><strong>Lines 28 - 44:</strong> Persist the data to the database.</li>
+<li><strong>Line 51:</strong> Return a successful response to the view.</li>
+</ul>
+<p>The reason I like putting the business logic into services is that it maximizes for lucidity. As with our views, every service method should tell a story about the most important things that are happening. There are some places where listing out the full step-by-step minutiae would take away from the story by making it more difficult to understand; we prevent this from happening by using helper methods to encapsulate the details. An example of this is the private helper method <code>_is_account_being_created_automatically</code>, where we purposely excluded the details from the main service method so as to help to make the big picture more clear. Note that it gets exponentially harder to understand code that descends through function after function, so try to avoid having your helper functions call other helper functions. For endpoints with thousands of lines of business logic, this is sometimes unavoidable, or at least the least-worst way forward. But if the percentage of endpoints with deeply nested logic starts to get non-trivial, there may be a serious architecture problem that should be remediated.</p>
+<p>So why use services rather than putting the business logic into <a href="https://django-best-practices.readthedocs.io/en/latest/applications.html" target="_blank" rel="noopener">fat models</a>, or model managers?</p>
+<p>As you can see above, very little of the business logic has to do with the database. In theory we could put only that part of the logic on the user model, but we shouldn’t — that’s the most important part of the story, and we don’t want to hide it inside another function! Why not copy-paste this entire function onto the model? For a few reasons:</p>
+<ul>
+<li>The way you configure Django models is by setting properties and overriding methods. When you mix business logic with Django configuration, it gets super difficult to know which is which. E.g. when you’re looking at a property on the class, is that a configuration option for the model that comes from Django, or just some variable that the application is using to hold state? Mixing application code with Django code is confusing, especially for anyone without multiple years of Django experience.</li>
+<li>There’s no good way to interact with more than one model in a single endpoint. Here is a <a href="https://news.ycombinator.com/item?id=23325113" target="_blank" rel="noopener">must-read explanation</a> of this problem. Consider that in the code above, not only are we creating the user model, but we’re also storing the email address in a second model, and storing the notification preferences in a third model. The way we wrote the business logic in our service is crisp and logical, whereas trying to do the same thing using a “fat models” approach would immediately break encapsulation, lead to tons of duplicated code, and just generally make the codebase much more difficult to understand and work with.</li>
+</ul>
+<p>Putting the business logic in serializers (called forms in vanilla Django) has more-or-less the same problems as putting business logic in models, but even worse. First, DRF serializers are more difficult to understand than models to begin with just due to having a weird API — adding business logic into the mix makes it that much harder to understand both what the serializer is doing and what the business logic is doing. You also lose most of the potential for your business logic to be reusable by coupling it with the code the validates the user input for a specific endpoint, as explained in the next section.</p>
+<p>This Hacker News <a href="https://news.ycombinator.com/item?id=23322880" target="_blank" rel="noopener">comment</a> summarizes the situation well:</p>
+<blockquote>
+<p>The “Fat Models” recommendation is one of the most destructive in my opinion, along with Django Rest Framework “Model Serializers”. A JSON serializer that talks directly to the database is just madness.</p>
+</blockquote>
+<h3 id="Rule-3-Make-services-the-locus-of-reusability"><a href="#Rule-3-Make-services-the-locus-of-reusability" class="headerlink" title="Rule #3: Make services the locus of reusability"></a>Rule #3: Make services the locus of reusability</h3><p>Service methods should be reused across your project wherever the same functionality is needed — e.g. in other views, services, and the Django Admin.</p>
+<p>For example, in <code>account_management_service.create_account</code>, there was a call to the <code>communication_service.set_default_communication_preferences</code> method. For most SaaS startups, there are going to be many places and ways that communication preferences can be created or updated, and lots of business logic related to sending out emails, SMS, RCS, etc. We don’t want developers to duplicate code each time they need to perform one of these business actions, nor should they need to understand the implementation details of the communications infrastructure in order to update preferences, send messages, etc.</p>
+<p>Given these considerations, it makes sense to encapsulate all of this logic in one place, e.g. <code>communication_service.py</code>. Once we’ve made the decision to encapsulate our communication logic this way, we wouldn’t then want to directly interact with the <code>CommunicationPreference</code> model from <code>account_management_service.create_account</code>, because this would break that encapsulation. Rather, we treat each service as a public interface that hides the implementation details.</p>
+<p>Note that I’m definitely not saying that each model’s state should only ever be read or modified by one service file. To give a real example of a case where one model is updated by many different services, in the code for FWD:Everyone there are several places where an <code>EmailThreadModel</code> is retrieved or updated:</p>
+<ul>
+<li>In <code>upload_thread_service.py</code>, which contains the business logic involved with uploading a new email thread.</li>
+<li>In <code>read_thread_service.py</code>, which contains the business logic for retrieving a thread from the database and displaying it to the user.</li>
+<li>In <code>content_discovery_service.py</code>, which recommends email threads that users might be interested in reading.</li>
+</ul>
+<p>The reason this is works is that each of these services is purposely encapsulating some subset of the business logic for interacting with a <code>EmailThreadModel</code>, rather than breaking encapsulation.</p>
+<p>What you don’t ever want to happen, and what services help us avoid, is needlessly duplicating large chunks of business logic multiple times. E.g. if your app also allows user accounts to be created using the Django admin, we wouldn’t want to do this by recreating some version of the logic from <code>create_user</code>. Instead, users should be created using exactly the same code, so as to keep the code maintainable, not introduce bugs, and not require testing in multiple places. If there are some slight differences in the required business logic for when a user account is created via the website vs. using the admin, then the <code>create_user</code> method should take some extra keyword arguments to account for this.</p>
+<p>Similarly, if there were no <code>communication_service.py</code> then it would be fine to put the methods for setting communications preferences in <code>account_management_service.py</code>; but once we’ve already created <code>communication_service.py</code> then that’s where this business logic should live, and we shouldn’t needlessly duplicate it elsewhere.</p>
+<h3 id="Rule-4-Always-sanitize-user-input-sometimes-save-raw-input-always-escape-output"><a href="#Rule-4-Always-sanitize-user-input-sometimes-save-raw-input-always-escape-output" class="headerlink" title="Rule #4: Always sanitize user input, sometimes save raw input, always escape output"></a>Rule #4: Always sanitize user input, sometimes save raw input, always escape output</h3><p>Always sanitize user input before doing anything else with it — validation, business logic, storage, presentation, etc.</p>
+<p>What exactly does this mean? Let’s start by going over some basic definitions for terms relating to cleaning unsafe data: filtering, escaping, sanitization, and validation.</p>
+<p>By way of example, as a kid I was always told that it’s never safe to put metal in the microwave. But as an adult with entirely too much Internet access, I now know that, strictly speaking, this isn’t true; it’s ok to put steel bowls in the microwave if they don’t have sharp edges, they aren’t touching the sides, and they’re filled with water or food. Some definitions:</p>
+<ul>
+<li><strong>Filtering</strong> removes unwanted components from user input to prevent them from entering a system. In our microwave example, a filtering strategy might be to check each item going into the microwave to ensure that it isn’t metal. In a web application, an example of filtering would be using a security library like <a href="https://github.com/mozilla/bleach" target="_blank" rel="noopener">bleach</a> to remove any HTML tags and attributes that haven’t been allowlisted. Filtering is not reversible; once we’ve discarded user input, it’s lost for good, except for where we’ve opted to save raw input before filtering.</li>
+<li><strong>Escaping</strong> means to <a href="https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html#rule-1-html-encode-before-inserting-untrusted-data-into-html-element-content" target="_blank" rel="noopener">encode</a> user input to make it safe to use within a given context. Granted encoding is kind of a tricky concept to understand on its own, but essentially it’s a way to mitigate the risk of dangerous content that wasn’t removed via filtering. With respect to safely using a microwave, an escaping strategy might be to always ensure that containers don’t have sharp edges, that they’re filled with water or food, and that they aren’t touching the sides of the microwave regardless of what the’re made of. In the context of web applications, escaping most often means encoding user data so that it’s safe to insert into the contents of HTML elements. Escaping is reversible, so there’s no risk of data loss.</li>
+<li><strong>Sanitization</strong> is a combination of filtering and escaping. Specifically, it means to first filter user input and then escape it. It’s not reversible, since it involves filtering.</li>
+<li><strong>Validation</strong> refers to enforcing business rules that are unrelated to security. E.g. we might have a rule that the microwave should only be used to heat up hot chocolate, but this is unrelated to microwave safety. Similarly, in web applications we might validate that usernames should only be comprised of letters and numbers. Validation rules often prevent certain types of security problems, but even in cases where they would prevent an attack from succeeding, there are good reasons (explained below) why validation shouldn’t be used as a replacement for sanitization.</li>
+</ul>
+<p>There’s a lot of nuance here that you need to understand; start with the <a href="https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">XSS Prevention Cheat Sheet</a>. But hopefully you now have some basic understanding of what these terms mean.</p>
+<p>So, why is it so important to sanitize input before doing anything else? For three reasons:</p>
+<ol>
+<li>So that you don’t forget to sanitize it later.</li>
+<li>It’s much faster (read: costs less money) to audit the codebase for XSS and other security vulnerabilities — if the data isn’t sanitized in the first couple lines of code then we can just say it’s a security issue that needs to be remediated, no need to read any further. Reading code is slow (expensive), so aggressively minimizing the amount of code we need to read to know whether user input has been sanitized correctly can save a ton of money over the lifetime of our projects.</li>
+<li>If there’s ever a mistake where someone uses unsanitized data in a context where it needs to be sanitized, it will be immediately obvious because of our convention of prepending <code>unsafe_</code> to all variables storing user input before that data has been sanitized. Joel Spolsky discusses the value of this convention in his blog post <a href="https://www.joelonsoftware.com/2005/05/11/making-wrong-code-look-wrong/" target="_blank" rel="noopener">Making Wrong Code Look Wrong</a>.</li>
+</ol>
+<p>Some people argue that you should <a href="https://benhoyt.com/writings/dont-sanitize-do-escape/" target="_blank" rel="noopener">escape output</a> rather than sanitizing input. The basic arguments for this position are that:</p>
+<ul>
+<li>Ensuring user input is safe only makes sense with respect to where that data is used. For example, text being displayed within an HTML element needs to be sanitized differently than text being used within a command-line program. Because of this, data should be escaped as close to where it is used as possible.</li>
+<li>Sanitizing data is lossy, and you should never get rid of user data in case you make a mistake or want to use it differently later.</li>
+</ul>
+<p>Both of these arguments are correct, so there’s no doubt that in a perfect world it would make more sense to escape output rather than sanitizing input. But in the real world, I don’t find these benefits compelling enough to outweigh the risk of forgetting to clean data or the increased costs of auditing code; for startups, and for web applications specifically, the most-common areas where user data gets used (and needs to be sanitized) are:</p>
+<ul>
+<li>HTML element content</li>
+<li>JavaScript data values</li>
+<li>CSS property values</li>
+<li>URL parameter values</li>
+<li>HTML attribute values</li>
+<li>Command-line tools</li>
+<li>Email headers and bodies</li>
+</ul>
+<p>But most startups, 99% of the time you’ll only be doing the first two, so just sanitizing data to be used within HTML elements and in between script tags is enough. In the exceedingly rare cases where we might want to allow a user to customize their CSS or the subject of an email or whatever, user data should be escaped separately for that purpose. Perhaps there is some increased risk of ending up with <a href="https://en.wikipedia.org/wiki/Mojibake" target="_blank" rel="noopener">Mojibake</a> in your output due to accidentally double escaping your data. But as per this <a href="https://www.inanimatt.com/php-output-escaping.html" target="_blank" rel="noopener">blog post</a>, “double-escaping is embarrassing, but not escaping at all can be deadly.”</p>
+<p>And with respect to the risk of losing user data due to sanitizing it incorrectly or later needing to sanitize it for a different context where the original data would have been useful, go ahead and save raw input in the specific cases where it’s likely to be needed — I’d just recommend against saving it in every case by default. But do so in a way that that preserves the ability to cheaply audit your codebase, e.g. by storing it in a different table that can’t be read from in production.</p>
+<p>Again, the one common exception to this rule is with passwords; they’re only stored as hashes so there isn’t any possible XSS vector, now or in the future, and accidentally stripping complexity from a password would be its own security risk.</p>
+<p>See also: <a href="https://kevinsmith.io/sanitize-your-inputs" target="_blank" rel="noopener">Sanitize your inputs?</a></p>
+<h3 id="Rule-5-Don’t-split-files-by-default-amp-never-split-your-URLs-file"><a href="#Rule-5-Don’t-split-files-by-default-amp-never-split-your-URLs-file" class="headerlink" title="Rule #5: Don’t split files by default &amp; never split your URLs file"></a>Rule #5: Don’t split files by default &amp; never split your URLs file</h3><p>For those who don’t use Django, all of the code that shares the same configuration settings is called a <em>project</em>. This usually means your entire website or API, or else multiple different websites or APIs that are hosted together on the same servers and use the same configuration. Within a project, one approach to managing your codebase is to split your source code into multiple <em>apps</em>, which are basically just folders dedicated to different chunks of functionality — e.g. user account management, sending emails and SMS, completing a purchase, etc.</p>
+<p>Here is an example of what that might look like:</p>
+<pre><code>project/</code></pre><p>The second approach is to just put all of your Django code into one big app that has different subfolders for views, services, tests, and whatever other types of file types (e.g. models, admin, etc.) get long enough to justify splitting into multiple files, like so:</p>
+<pre><code>project/</code></pre><p>The idea here is that <code>views/account_management_views.py</code> contains the views that would otherwise be in <code>users/account_management_views.py</code>, <code>services/account_management_service.py</code> contains the service methods that would otherwise be in <code>users/account_management_service.py</code>, etc. From a technical perspective, there is zero difference between these two approaches.</p>
+<p>So is one approach better, and does it matter which one you choose?</p>
+<p>The answer is that either approach can be definitively better, depending on the size and complexity of the codebase. For brand new apps, I usually recommend putting all your code into one big app. The reason is that structuring a new startup into multiple apps right from the beginning results in dozens of files that each have little or no code. Dividing code across multiple files for no good reason wastes enormous amounts of developer time and confers no benefits — not only is it harder to find the code you’re looking for, it’s also harder to keep everything in your head when every task requires remembering what’s in each of many different open tabs. It’s a literal memory leak.</p>
+<p>As an example of how this wastes developer time, consider the perspective of a developer who has just been tasked with solving an API bug in a codebase they’ve never worked with. The first thing they need to do is to locate the source of the bug. The process for doing so usually looks something like:</p>
+<ol>
+<li>Go to the page on your website that has the bug.</li>
+<li>Open up the Network tab Chrome’s Developer Tools.</li>
+<li>Find the endpoint that’s returning incorrect results.</li>
+<li>Locate that URL in your backend code.</li>
+<li>Find the view that corresponds with that URL.</li>
+</ol>
+<p>If you just have one file with all the URLs for your entire project then this process should be seamless, and you are hopefully able to find the right URL almost immediately. Whereas if a project’s URLs are spread across dozens of files that each have only a handful of URLs, then at best there is no good way to get an overview of the entire project, and at worst it may end up taking hours looking through different files just to find the right view. Even if you have hundreds of endpoints, there is rarely a good reason to split your URLs across multiple files; there is no advantage and it just ends up wasting tons of developer time over the course of a year. Instead, just have one <code>urls.py</code> file for the entire project, with a blank line between the URLs for each views file, e.g.:</p>
+<pre><code>view1/endpoint1</code></pre><p>For brand new projects, put all your Django code into one big app, and split your views, services, tests, etc., across multiple files when necessary.</p>
+<p>So, now that we’ve seen the downsides of prematurely dividing your project into multiple apps, what are the benefits of eventually doing so? Grouping large chunks of functionality into apps can make it easier to:</p>
+<ul>
+<li>Understand how complex codebases work</li>
+<li>Find all the files related to an app’s functionality</li>
+<li>Have discussions and make decisions about encapsulation and reusability</li>
+</ul>
+<p>It’s important to understand though that just because you split a project into multiple apps, it doesn’t mean that these apps are automatically encapsulated and reusable. Rather, this is something you need to purposely design and work toward, not something that comes automatically from typing <code>python manage.py startapp</code>. This is a common misconception, and it’s important to call out so that we make well-informed decisions based on each approach’s actual pros and cons.</p>
+<p>So when should you start to split up your project into multiple apps? I think the best proxy to use is your <code>models.py</code> file. Once this is big enough that you need to start splitting out chunks of your models into their own files, at that point it might make sense to start moving the views, services, and tests associated with those models into their own app. This isn’t an absolute rule, rather it’s just an observation that may be useful to keep in mind. Another situation where splitting code into its own apps is useful is when you have copy-pasted code with slight variations for different customers. In this case, it can be useful to isolate any forked models and functions that will now be mantained independently, in order to minimize confusion.</p>
+<p>But even when you do eventually divide your project into multiple apps, it’s almost never a good idea to split your URLs file.</p>
+<h2 id="Readability"><a href="#Readability" class="headerlink" title="Readability"></a>Readability</h2><p>When development velocity grinds to a halt because of “technical debt,” this is almost always just a euphemism for developers not being able to read each other’s code.</p>
+<p>In fact this is by far the biggest technical problem that most startups face, one that most style guides at best don’t sufficiently address, and at worst actively encourage. To quote Google’s style guide: “Assume the person reading the code knows Python better than you do.”<a href="https://alexkrupp.typepad.com/#footnote-5" target="_blank" rel="noopener">[5]</a> This might be good advice if your company is literally Google, but for most startups this kind of thinking is a surefire recipe for running out of money before achieving product-market fit. Even if every developer working on your project right now is a “world’s-best” developer, this may well not be true of the folks that inherit the codebase in a few years.</p>
+<p>I’d strongly recommend that if anything, startups should follow the exact opposite approach to coding: Code should be written for the least technical person in the office. Assume the next person to read your code will be a junior developer, it’s their first day in the office, and they have more-or-less no idea what the business actually does.</p>
+<p>Because very often, this is actually the case.</p>
+<p>The best way to prevent development velocity from slowly grinding to a halt is taking an intellectually honest inventory of all the little things that can make code slow to work with, and then preventing these things from happening within your codebase.</p>
+<h3 id="Rule-6-Each-variable’s-type-or-kind-should-be-obvious-from-its-name"><a href="#Rule-6-Each-variable’s-type-or-kind-should-be-obvious-from-its-name" class="headerlink" title="Rule #6: Each variable’s type or kind should be obvious from its name"></a>Rule #6: Each variable’s type or kind should be obvious from its name</h3><p>When you have a variable with a name like <code>user_profiles</code>, how do you know whether it’s a list, a dictionary, a set, an object, or something else entirely?</p>
+<p>The answer is you can’t. Determining the kind of thing a variable contains should be the easiest and most trivial task in the world. But for code that isn’t well-architected, there’s no upper limit on the number of billable developer hours this can waste. In the best-case scenario, you just need to scroll up to see where in the function that variable is defined, or look at the type hint in the function signature. Even though this is easy, it still wastes time and makes the code much more difficult to read by needlessly adding cognitive overhead.</p>
+<p>And that’s the best-case scenario.</p>
+<p>The problem gets much worse when a variable wasn’t declared locally, but was instead passed into the function as a parameter with no type hint. The first thing to try is dropping a debugger into the code and running the tests. But if that code doesn’t have test coverage, you then need to figure out where the function you’re reading is being called from; this is often difficult, and sometimes needs to be done recursively. The problem compounds when you have lots of variables whose types aren’t clear or intuitive, because it’s easy to get caught in a loop of forgetting variable types you’ve already traced out while trying to make sense of the next one.</p>
+<p>The point is that, even in the best case you’re needlessly adding cognitive overhead. And in the worst case, you’re adding hours or even days to what might otherwise be trivial tasks.</p>
+<p>You can ameliorate this situation by using type hints, but these are still half-baked; right now <a href="http://mypy-lang.org/" target="_blank" rel="noopener">mypy</a> doesn’t have official stubs for most libraries, and using community-contributed stubs risks making it difficult or impossible to later update your dependencies. And if you don’t use something like mypy and are just using Python type hints without validating them, you risk writing them incorrectly. This is something you might not realize until years later when you’ve already made a mess of your codebase. And Python type hints aren’t even a great solution. They’re nice for simple built-in types like string or int, but as soon as you need to start passing around instances of more complicated objects and classes the code can get super messy and unreadable.</p>
+<p>Much better to just entirely avoid this problem in the first place. The solution that works well in my experience is just enforcing some basic naming rules for variables. These rules use a version of Hungarian Notation for the most-commonly used <em>types</em> and <em>kinds</em> in web development. Joel Spolsky has a more in-depth <a href="https://www.joelonsoftware.com/2005/05/11/making-wrong-code-look-wrong/" target="_blank" rel="noopener">explanation</a> of types and kinds, as well as the benefits of Hungarian notation, but as a quick overview:</p>
+<p><strong>Types —</strong> primitives and data structures that correspond directly to concepts from mathematics and computer science. The most-common examples in Python are the built-in primitives (e.g. int, string) and the built-in data structures (e.g. lists, dicts). Of course types don’t have to be built-ins, e.g. a trie would be a type, even though tries aren’t part of the Python standard library.</p>
+<p><strong>Kinds —</strong> objects that encapsulate related functionality or business logic. You should create naming conventions for the kinds within your codebase whenever A) you have many objects that have the same or similar functionality B) these objects are all instances of the same class, or else their classes are all subclasses of some common ancestor class. For example, commonly used kinds in Django include models and querysets.</p>
+<p>When a variable is a commonly-used kind, the kind should be obvious from that variable’s name. And when a variable is a type (but not a kind), its type should be obvious from its name.</p>
+<h4 id="Rules-for-naming-kinds"><a href="#Rules-for-naming-kinds" class="headerlink" title="Rules for naming kinds"></a>Rules for naming kinds</h4><ul>
+<li>All Django model instances should end in <code>_model</code>, for example <code>user_model</code><ul>
+<li>If you have a function with multiple model instances of the same type, just name each one something logical that follows the same general scheme. For example, for a social network endpoint that allows users to follow one another, good variable name choices might be something like <code>following_user_model</code> and <code>followed_user_model</code></li>
+<li>All variables containing a Django model id should end with <code>_model_id</code>. For example, <code>user_model_id</code></li>
+</ul>
+</li>
+<li>All Django querysets should end in <code>_queryset</code>, for example <code>active_user_queryset</code></li>
+<li>Instances of serializers should end in <code>_serializer</code>, for example <code>email_address_serializer</code>.</li>
+<li>Date fields on models should start with <code>date_</code>, for example <code>date_user_last_logged_in</code>. Datetime fields on models should start with <code>datetime_</code>.</li>
+</ul>
+<h4 id="Rules-for-naming-types"><a href="#Rules-for-naming-types" class="headerlink" title="Rules for naming types"></a>Rules for naming types</h4><ul>
+<li>Python lists should end in <code>_list</code>. This should be prepended by the type of variable the list contains, for example <code>user_model_list</code></li>
+<li>Python sets should end in <code>_set</code>.</li>
+<li>Python dicts should end in <code>_dict</code>. This should be prepended by what the dict is mapping, for example <code>username_to_user_profile_dict</code><ul>
+<li>If you can’t think of a logical name for your dict, consider choosing something different for your keys or values, even if it means passing around some unused data</li>
+</ul>
+</li>
+<li>Booleans (and functions that return booleans) should start with some form of the verb <em>to be</em>, for example <code>is_public</code> or <code>has_disposable_email_address</code></li>
+</ul>
+<p>For one-off classes that aren’t types or kinds, instances of <code>MyPythonClass</code> should be called <code>my_python_class_instance</code>.</p>
+<p>These naming rules aren’t meant to cover 100% of cases, rather they’re meant to make the majority of your code easier to read. For the variables whose names aren’t covered by these rules or where it’s ambiguous, just use your best judgment. The goal is to be obsequious to your future self and your coworkers by making your code easy as possible to understand.</p>
+<p>I find that it’s rarely difficult to figure out what’s a string, int, or float, since those usually have names like <code>username</code> or <code>DAYS_PER_WEEK</code>; because they aren’t pluralized collections, there isn’t nearly as much room for ambiguity. But for cases where it’s not obvious, follow the same pattern and append <code>_str</code>, <code>_int</code>, or <code>_float</code>. This is often useful in cases where the colloquial name for some concept is actively trying to trick you. For example, because serial numbers are generally strings rather than numbers, consider using <code>serial_number_str</code> instead of <code>serial_number</code>. It might be weird seeing variables like <code>phone_number_str</code> or <code>confirmation_number_str</code> in your codebase, but it’s better than having the next person waste a bunch of time trying to figure out why the code is failing when they pass it an integer.</p>
+<p>Although most variables can (and should) be named in a very straightforward way, there’s more room for creativity when naming features, apps, services, methods, models, model fields, etc. If you’re going to fight about anything as a team, you should fight about what things should be called. Different words have different meanings and connotations to different people, and if what people think something does is different than what it actually does then that costs money.</p>
+<p>It’s always worth having everyone give their thoughts on names for high-level features during architecture discussions. And then during code reviews, have the reviewer(s) just flag everything they disagree with; then in cases where the code author disagrees with the reviewer, have a meeting every week or two to go through all of the names that people have disagreed about in person. Spending the nominal amount of time it takes to make sure things are named in a way that actually means something to people is one of the highest-ROI activities you can do together as a team.</p>
+<h3 id="Rule-7-Assign-unique-names-to-files-classes-and-functions"><a href="#Rule-7-Assign-unique-names-to-files-classes-and-functions" class="headerlink" title="Rule #7: Assign unique names to files, classes, and functions"></a>Rule #7: Assign unique names to files, classes, and functions</h3><p>With the exception of local variables inside functions and methods, each named entity in your codebase should have a unique name.</p>
+<p>Why?</p>
+<p>Let’s explain by way of some examples. First, imagine your project has a <code>users</code> app that contains a file called <code>test_account_management_views.py</code>. If you want to run the tests in that file (super common), you can do so from the command line by typing <code>python manage.py test test_account_management_views</code>.</p>
+<p>Easy, right?</p>
+<p>Now let’s contrast that workflow with what performing the same task might look like if each of your apps has a file named <code>test_views.py</code>:</p>
+<ol>
+<li>Scroll through several different open tabs at the top of your text editor called <code>test_views.py</code> while looking for the right one.</li>
+<li>Hover your mouse over the tab so that you can see the full path to the file.</li>
+<li>Tab back and forth between your text editor and the command line a couple times where trying to type out the full path to the file so that you can run the tests: <code>python manage.py test users.tests.test_views</code></li>
+</ol>
+<p>Different IDEs sometimes attempt to ameliorate the problem of having multiple tabs with the same name, but each approach has some inherent drawbacks:</p>
+<ol>
+<li>If your IDE does nothing and each tab shows only the filename, you’ll have a bunch of open tabs with the same name. This means that either A) you don’t know which tab is which or B) you need to waste mental bandwidth remembering</li>
+<li>Whereas if your IDE prepends part of the file path to give each tab a unique name, e.g. <code>users.tests.views.py</code> and <code>communications.tests.views.py</code>, then these ridiculously long names cause your other open tabs to get truncated or hidden.</li>
+</ol>
+<p>Many text editors do let you manually rename tabs, but this wastes time and mental bandwidth each time you open your files.</p>
+<p>Either way, it’s a lose-lose situation. Much better to just give your files names like <code>user_tests.py</code> and <code>communication_tests.py</code>, so that way you have complete control over how they appear in your text editor. This might seem weird if you’ve split your project into multiple apps, since each filename then starts by repeating the name of its parent folder. But it’s better than wasting a ton of time each day looking through irrelevant code because your tabs aren’t properly named, needing to type out the full path of a file just to run its tests, etc.</p>
+<p>And that’s before you even consider that if your files don’t have unique names, it’s harder to even open them in the first place by using filename search.</p>
+<p>The reason for not having classes with the same name is greppability. Whenever I encounter a new class in a codebase that I’m not familiar with, the first thing I want to see is a list of all the places where that class is being used. Not only is this essential for knowing whether there might be an opportunity for refactoring, just being able to see the different contexts where a class is used is often helpful for understanding what it does in the first place. And as I’ll explain later (<a href="https://alexkrupp.typepad.com/#rule9" target="_blank" rel="noopener">rule #9</a>), classes in Python aren’t properly encapsulated. So being able to easily trace the chain-of-custody for an object, from its creation to wherever you first encounter it in the code, is essential for understanding its state and properties.</p>
+<p>When I do Cmd-Shft-F in Sublime and type in the name of a class, the only things I want to see are where that class is defined and then all the places where it’s used. Having ten other classes with the same name, each defined in different files, makes this much harder; it adds a little complexity to finding where the class you want to look up is defined, and then a whole lot of complexity to figuring out where it’s used versus where you’re just seeing other different classes with the same name in the search results.</p>
+<p>Identically named functions are even worse. Not only can you have functions with identical names defined in different files, but in some languages you can even have multiple functions with the same name in a single file, just with slightly different function signatures. Especially as a junior developer, it was often bewildering to look at overloaded function calls and then try to remember all the rules governing the interactions between different argument types, in order to figure out which of the functions in question was being called. You can’t always just drop a print function or a debugger in the code to figure it out. And once you do figure it out, that’s now just one more thing you need to keep in memory.</p>
+<p>Frankly, even variables, classes, and functions with <em>similar</em> names can be confusing. After all, who among us hasn’t gotten into an awkward situation after forgetting the difference between androgyny, anadromy, andragogy, and a dromedary. This is one of the reasons that for pluralized variables, I like names like <code>user_model_list</code> rather than <code>user_models</code>, because the latter is too similar to <code>user_model</code>.</p>
+<p>The big picture is that once you need to start devoting mental bandwidth to sorting out these situations in the codebase, this quickly replaces the underlying business problem as the thing you’re now trying to solve.</p>
+<p>There are certain situations where it does make sense for class methods to have the same name; for example, if there are multiple child classes that inherit from a common parent and share a common interface. And with things like <code>__init__.py</code>, you don’t have any choice. But for the most part, even if you’re purposely trying to draw attention to some aspect of parallelism in the codebase there are better ways to do it, and enforcing unique names for files, classes, methods, and functions results in a cost-free improvement in productivity.</p>
+<h3 id="Rule-8-Avoid-args-and-kwargs-in-user-code"><a href="#Rule-8-Avoid-args-and-kwargs-in-user-code" class="headerlink" title="Rule #8: Avoid *args and **kwargs in user code"></a>Rule #8: Avoid *args and **kwargs in user code</h3><p>Whenever calling a function, prefer named keyword arguments over positional variables, and prefer positional variables over dynamic arguments. As an example of what I mean, consider three possible ways to call a service method:</p>
+<p><strong>Good function call:</strong> <code>account_management_service.get_user_profile(include_profile_image=True, include_email_address=False)</code><br><strong>Bad function call:</strong> <code>account_management_service.get_user_profile(True, False)</code><br><strong>Terrible function call:</strong> <code>account_management_service.get_user_profile(**request.data)</code></p>
+<p>The second and third function calls are not only less readable, but also less secure; if you accidentally mix up the two boolean parameters, it’s impossible to see the mistake from where the function is called. This makes it much more likely that private data will accidentally get exposed. In contrast, if we see a call that looks like <code>my_service.my_function(include_private_information=True)</code>, and we know that private information isn’t supposed to be getting returned in this context, then anyone can immediately see that there’s a problem just by glancing at the code.</p>
+<p>As a general rule, always pass function parameters via named keyword arguments, with the one possible exception being cases where doing so would make the code less readable. And when defining functions that have parameters with privacy or security implications, always use python’s <a href="https://www.vegardstikbakke.com/python-keyword-only/" target="_blank" rel="noopener">keyword-only feature</a> to enforce that these parameters can only be specified as keyword arguments.</p>
+<p>The reasons you should generally prefer keyword arguments are that they:</p>
+<ol>
+<li>Make it clear what variables are being passed to the function. When this isn’t clear from reading only the function call, your developers need to waste time figuring it out and then waste cognitive capacity keeping this knowledge in working memory, both of which substantially slow down development velocity.</li>
+<li>Make it easier to see whether parameters have been sanitized for XSS and other vulnerabilities.</li>
+<li>Maximize the likelihood of your tests breaking if the wrong parameters get passed to the function, e.g. if a bug gets introduced on the front end or if the implementation of the function changes such that it now requires different parameters. Remember, if your application is broken then you <em>want</em> your tests to fail, that’s literally what they’re there for.</li>
+</ol>
+<p>That said, there are some settings where it’s entirely appropriate to use <code>*args</code> and <code>**kwargs</code>. One example is when you’re actually doing something dynamic, such as dynamically setting model attributes:</p>
+<pre><code>def _save_model_attributes_dynamically(model_instance, **kwargs):</code></pre><p>More good use cases for <code>*args</code> and <code>**kwargs</code> include when subclassing an object in a library to change some behavior, or when building a library that allows for behavior to be customized by end users. These are powerful features of Python and it’s great that they’re there, but if you’re using them then make sure you have a real reason; don’t just use them everywhere because you think it makes the code look cool. Using these advanced features unnecessarily wastes a ton of time and money, both in terms of slowing down development velocity in the short term and in the time it will take to remediate the problem later.</p>
+<p>See also items 19 and 21 in <a href="https://github.com/SigmaQuan/Better-Python-59-Ways" target="_blank" rel="noopener">Effective Python</a>, for some additional rules and perspective.</p>
+<h3 id="Rule-9-Use-functions-not-classes"><a href="#Rule-9-Use-functions-not-classes" class="headerlink" title="Rule #9: Use functions, not classes"></a>Rule #9: Use functions, not classes</h3><p>Unlike languages like Java and Swift, which were designed from the ground up around object-oriented programming, in Python OOP feels like more of an afterthought. All of the things that make Python a great language make working with classes and objects in Python bad.</p>
+<p>Why?</p>
+<p>In non-OOP contexts, Python’s approach of being <a href="https://stackoverflow.com/questions/11328920/is-python-strongly-typed" target="_blank" rel="noopener">strongly, dynamically typed</a> works pretty well. Clearly the language would have been better had there been support for optional static typing from the beginning, rather than having it added as a kludgy hack decades later. But even if we don’t get the full benefits of static typing (more useful IDEs, better performance, eliminating certain classes of errors, etc.), at least we mostly don’t have to deal with the insane errors that you get with implicit type coercion in JavaScript.</p>
+<p>In Python, most of the <a href="https://www.destroyallsoftware.com/talks/wat" target="_blank" rel="noopener">wat issues</a> that exist have to do with <a href="https://livecodestream.dev/post/2020-06-21-4-coding-mistakes-i-did-when-i-was-learning-python/" target="_blank" rel="noopener">scope and mutability</a>; a good example is the well-known gotcha involving the use of <a href="https://docs.python-guide.org/writing/gotchas/" target="_blank" rel="noopener">mutable default arguments</a> in function definitions.</p>
+<p>So what exactly does this have to do with classes?</p>
+<p>In Python, classes and objects are too dynamic and mutable for their own good. For example, consider <a href="https://python-3-patterns-idioms-test.readthedocs.io/en/latest/Metaprogramming.html" target="_blank" rel="noopener">this snippet</a>:</p>
+<pre><code>&gt;&gt;&gt; class Foo: pass</code></pre><p>In this case it’s easy to understand what’s going on. But that’s because each of these state changes happens in only one place in the codebase, immediately after the class is defined and the object is instantiated, so the entirety of the code involving this class and its objects can be read and understood in a simple linear order. Once you start adding in confounding factors like:</p>
+<ul>
+<li>Multiple inheritance, multilevel inheritance, and multiple multilevel inheritance.</li>
+<li>Objects that are instantiated in one module and then imported into other modules.</li>
+<li>Classes or instances being monkey patched, including invisibly via the import process, audit hooks, the <code>exec</code> function, etc.</li>
+<li>Quirks introduced by <code>@ classmethod</code>, <code>@ staticmethod</code>, <code>@ property</code>, magic methods, etc.</li>
+</ul>
+<p>When someone inherits a large codebase that can’t be understood by reading the code in a linear, step-by-step way, then that combined with the fact that classes and object state can be modified arbitrarily leaves us with no clear way to grep the code to find the source of state changes; this often makes it time-consuming to find the bugs, change functionality, add features, etc. The design of OOP in Python makes it very easy to get into a goat-stuck-in-the-tree situation, where it can be much easier to make a mess of something than to fix it. Unfortunately it’s super easy to write Python code that’s impossible for anyone else to understand, because the relationships between all the files and functions and objects and classes are too complicated to fit into anyone’s working memory.</p>
+<p>The Django documentation on <a href="https://docs.djangoproject.com/en/dev/topics/testing/overview/" target="_blank" rel="noopener">testing</a> is rather telling:</p>
+<blockquote>
+<p>You may reverse the execution order inside groups using the <code>test --reverse</code> option. This can help with ensuring your tests are independent from each other.</p>
+</blockquote>
+<p>If you actually stop to think about it, the fact that this even needs to exist is pretty messed up. Especially when you realize that most experienced Django developers have probably run into this issue and have had to use this feature, and that it may even be considered a best practice to run your tests both forwards and backwards each time on CI.</p>
+<p>Thinking about it, many of the problems that people have <a href="http://wiki.c2.com/?GlobalVariablesAreBad" target="_blank" rel="noopener">noted</a> with using global variables also apply to Python classes:</p>
+<ol>
+<li><strong>Non-locality</strong> — Source code is easiest to understand when the scope of its individual elements are limited. Global variables can be read or modified by any part of the program, making it difficult to remember or reason about every possible use.</li>
+<li><strong>No Access Control or Constraint Checking</strong> — A global variable can be get or set by any part of the program, and any rules regarding its use can be easily broken or forgotten.</li>
+<li><strong>Testing and Confinement</strong> — source that utilizes globals is somewhat more difficult to test because one cannot readily set up a ‘clean’ environment between runs.</li>
+</ol>
+<p>If there were a way to reliably prevent people from using Python classes in crazy ways, even just some shared cultural expectation, then this would certainly help. But frankly there isn’t.</p>
+<p>So what should we do?</p>
+<p>Just use functions. If you stick to writing all your business logic using functions then you can’t have any of these problems. There are no weird inheritance issues, no way to change their internal state, etc. And because they inherently read in a linear, step-by-step way, no matter how badly they’re written there is generally at least some upper bound on how hard they are to understand and refactor.</p>
+<p>There are some situations where it’s completely appropriate to adopt an object-oriented style, like if you’re creating a library or a framework. But hopefully those with enough experience to create popular libraries and frameworks also have good enough judgment not to completely abuse the tools. Whereas within the context of startups, you need experienced contributors to create guardrails to prevent these kinds of problems from happening. The other time it may make sense to adopt OOP is if you have several dozen developers working on the same codebase; as I said though this is a guide for startups, and usually at around $100M ARR is when companies start thinking about rewriting some of their app’s core components using Golang or one of the JVM languages.</p>
+<p>If you want to read more criticisms of OOP generally (i.e. unrelated to Python), there is no shortage of opinions on this, e.g.:</p>
+<ul>
+<li><a href="https://dpc.pw/the-faster-you-unlearn-oop-the-better-for-you-and-your-software" target="_blank" rel="noopener">The faster you unlearn OOP, the better for you and your software</a></li>
+<li><a href="http://harmful.cat-v.org/software/OO_programming/" target="_blank" rel="noopener">Object Oriented Programming is Inherently Harmful</a></li>
+<li><a href="https://www.youtube.com/watch?v=_CEBG_s92P8" target="_blank" rel="noopener">Zed A. Shaw - The Web Will Die When OOP Dies</a></li>
+</ul>
+<p>What I’ll say is that, to whatever extent there are benefits OOP, those benefits seem to rarely manifest themselves when using Python.</p>
+<h3 id="Rule-10-There-are-exactly-4-types-of-errors"><a href="#Rule-10-There-are-exactly-4-types-of-errors" class="headerlink" title="Rule #10: There are exactly 4 types of errors"></a>Rule #10: There are exactly 4 types of errors</h3><p>There are exactly four types of errors that any REST API can return:</p>
+<ol>
+<li><p><strong>Upstream errors:</strong> Errors that happen upstream of our user code, e.g. in the authentication package we’re using, or in our other middleware. The main thing to know about these errors is that you should leave them alone. Don’t try to rewrite errors from upstream middleware to make them look like the kind of errors we throw in our user code, because that will make it very difficult to update our external dependencies later.</p>
+</li>
+<li><p><strong>Validation errors:</strong> Errors that occur when a user has permission to access an endpoint, but they supply syntactically invalid input. For example, if they enter a username longer than the maximum allowed length or don’t enter an email address. The way to handle these is that if there is at least one field with an error, return a dictionary with all validation errors for that endpoint, e.g.:</p>
+<pre><code>{</code></pre><p>The idea behind <code>display_error</code> is that often APIs will be accessed by a user using a form on a webpage, and sometimes you want to display an overarching error for the entire form that’s separate from the errors associated with any individual field. And because sticking with this webform metaphor makes it easier to intuit what each component of the error response data will be used for, we refer to any parameter errors as ‘field_errors’ regardless of whether or not the specific input parameters being sanitized are associated with form fields.</p>
+</li>
+<li><p><strong>Business requirement errors</strong>: Errors that occur when a user has permission to access an endpoint and they enter input in the correct format, but there are business requirements that prevent us from doing the thing they want. For example, if there is a business requirement to not allow users to access private information belonging to other users, or to not allow users to create multiple accounts using the same email address, then these would be business requirements errors. Return the first business requirement error that occurs, there is no need to check for or return multiple errors.<a href="https://alexkrupp.typepad.com/#footnote-6" target="_blank" rel="noopener">[6]</a>Business requirements errors can take the form of:</p>
+<pre><code>{</code></pre><p>The <code>internal_error_code</code> is a unique 5-digit number associated with each business logic error, whose first three digits are always the same as the HTTP status code. The idea is that developers looking at errors returned to the front end can use this unique number to quickly Command-Shift-F to find the exact line in the backend where the error is raised, which eliminates the time that would otherwise be wasted trying to figure out where in the backend an error is occurring.</p>
+</li>
+<li><p><strong>500 errors:</strong> Errors that happen when your application randomly bombs out due to a bug in the code. Just let these happen, don’t try to catch them and re-raise them as other types of error because it’s important to be able to find these errors when (and where) they’re happening in whatever APM software you’re using to monitor the health of your application.</p>
+</li>
+</ol>
+<p>As a general piece of life advice, avoid using the same HTTP status codes as the errors thrown by your authentication middleware; doing so makes it harder to write reliable front-end middleware to do things like redirecting logged-out users to the landing page. So, for example, if your auth middleware returns <code>401</code> and <code>403</code> errors, don’t create errors with these status codes in your application code.</p>
+<h2 id="Simplicity"><a href="#Simplicity" class="headerlink" title="Simplicity"></a>Simplicity</h2><p>If on average it takes several months for a new engineer to get reasonably close to full productivity, they work at your company for two years, and they spend their last couple months training their replacement, then what does this mean for your business?</p>
+<p>It means that onboarding and knowledge transfer constitute perhaps 30% - 40% of what you’re paying each engineer to do, an absolutely enormous expense. Training and knowledge transfer are obviously essential, but it certainly raises the question of whether there might be more cost-efficient ways to get the same benefits. This problem is clearly under-addressed, given that if you Google “knowledge transfer software” there’s nothing relevant that comes up. This lack of adequate knowledge transfer software is one of the reasons we built <a href="https://www.fwdeveryone.com/" target="_blank" rel="noopener">FWD:Everyone</a>, now the leading platform for sharing and publishing email conversations. While doing consulting we realized that many of the most important discussions about software architecture and business requirements were had via email, but that as employees left our clients’ companies, all of this valuable knowledge was being lost — so we created a way to make this knowledge permanently accessible, searchable, and shareable.</p>
+<p>That said, software isn’t the only way to make knowledge transfer more efficient, and it certainly isn’t the best way. The best way to reduce the costs of onboarding is to minimize the amount of knowledge it takes to productively contribute in the first place.</p>
+<p>What does this mean in practice?</p>
+<p>Minimize the pages of documentation a new developer needs to read before having a good working knowledge of all your frameworks, libraries, third-party packages, etc. Don’t add dependencies unless the value they add significantly outweighs the costs of both your current and future developers needing to read whatever documentation they would need to read in order to understand them. Be aware of the cognitive overhead and productivity slippage that’s added by introducing each new dependency. When it does make sense to add a dependency, don’t just automatically use all the features; for each dependency, document not only the features that your team uses, but also the ones your team doesn’t — and shouldn’t — use, so that way new developers don’t waste time reading documentation for functionality the team isn’t even using. Be smart; don’t use every last feature of Python, Django, Rest Framework, etc., just because they’re there. And maintain documentation to serve as guardrails to prevent non-purposeful dependency creep.</p>
+<p>Knowledge isn’t inherently valuable, and is rarely free; the costs of acquiring required knowledge should never outweigh the utility.</p>
+<p>The best way to minimized requisite knowledge is through standardization. When it comes to things like sanitizing input, writing business logic, testing code, etc., there should be one way of doing things. And that should generally be the simplest way that meets our needs.</p>
+<h3 id="Rule-11-URL-parameters-are-a-scam"><a href="#Rule-11-URL-parameters-are-a-scam" class="headerlink" title="Rule #11: URL parameters are a scam"></a>Rule #11: URL parameters are a scam</h3><p>One of the concepts behind REST is that each time you create a new API endpoint, the URL for that endpoint should correspond to a unique resource that’s being created, read, updated, or deleted. The definition of a resource is pretty loose: “any information that can be named.” Resources sometimes correspond to a single table in your database, sometimes correspond to multiple tables, and sometimes correspond to no tables at all. (You could think of the resources in the second and third cases as being “virtual resources.”) The key takeaway is that REST provides broad latitude to define resources in whatever way makes sense for your app.</p>
+<p>When interacting with API endpoints, you often need to pass data to your views in order to:</p>
+<ol>
+<li>Specify the unique resource that you’re interacting with, e.g. if you’re interacting with a message that has a unique message ID.</li>
+<li>Perform the necessary business logic.</li>
+</ol>
+<p>Data can be passed in one of three ways:</p>
+<ul>
+<li>Via query parameters, like <code>GET https://api.fwdeveryone.com/user/profile?username=alex3917</code></li>
+<li>Via URL parameters, like <code>GET https://api.fwdeveryone.com/user/profile/&lt;str:username&gt;/</code></li>
+<li>Via request body data, like <code>POST https://api.fwdeveryone.com/account { &#39;username&#39;: &#39;alex3917&#39;, &#39;password&#39;: &#39;hunter2&#39; }</code></li>
+</ul>
+<p>So how <em>should</em> you pass data to endpoints? Easy.</p>
+<p>For GET and DELETE actions, use only query parameters. For POST and PUT actions, use only request body data. And never use URL parameters.</p>
+<p>Why not?</p>
+<p>Some people like using URL parameters to specify resources that can be modeled hierarchically, like <code>GET /email_thread/&lt;str:thread_id&gt;/email_message/&lt;str:message_id&gt;/</code>. The problem is that not all resource relationships can be modeled hierarchically. For example, imagine requesting an outfit. It wouldn’t make sense to request <code>GET /clothing/shirt/&lt;str:shirt_id&gt;/pants/&lt;str:pants_id&gt;/</code>, because pants aren’t children of shirts; having a URL structure like that would be confusing and misleading. Instead, you would want to use something like <code>GET /clothing?shirt_id=1&amp;pants_id=2</code>.</p>
+<p>Even for resources that can be nicely represented by hierarchical URLs, you’ll still need query parameters to configure the output. For example, when retrieving a user’s profile, there might be a query parameter that allows you to specify whether or not you want to include the user’s profile image, e.g.: <code>GET /user/&lt;str:username&gt;/profile?include_profile_image=true</code>.</p>
+<p>Why does this matter?</p>
+<p>Since some requests involve non-hierarchical resources, we can’t use URL parameters for every endpoint, and so we shouldn’t use them at all.</p>
+<p>Why? Because having multiple ways of doing things adds cognitive overhead. And since every endpoint can just as easily accept data via only query parameters or only body parameters, there’s no reason to incur the overhead of learning and remembering a third way of accepting data. What happens when you have a codebase that uses URL parameters is that there ends up being three different ways to:</p>
+<ul>
+<li>Create URLs</li>
+<li>Write integration tests</li>
+<li>Call URLs from the front end</li>
+<li>Trigger endpoints using Postman</li>
+<li>Mock API calls in your front-end tests</li>
+</ul>
+<p>And so on.</p>
+<p>When having two different ways (URL parameters and body data) is entirely sufficient, and is already complicated enough to learn and remember.</p>
+<p>Having URLs with parameters also makes it more time-consuming to go from knowing the URL of an endpoint to actually finding the view that the URL corresponds with. Even though each of these things individually isn’t hard per se, cumulatively this is a constant source of bugs and a huge waste of time for something that confers no benefits. Limiting yourself to only using query parameters will easily save at least one full day per developer per year, and probably more. These are exactly the sort of cost-free wins that we should take wherever we can get them.</p>
+<h3 id="Rule-12-Write-tests-Not-too-many-Mostly-integration"><a href="#Rule-12-Write-tests-Not-too-many-Mostly-integration" class="headerlink" title="Rule #12: Write tests. Not too many. Mostly integration."></a>Rule #12: Write tests. Not too many. Mostly integration.</h3><p>In my first 18 months as a professional software developer, I wrote exactly zero tests.</p>
+<p>Despite taking an entire MOOC on software testing, I couldn’t figure out how to actually use any of the test frameworks we had installed. And besides, I didn’t really understand the point. After all, the mid-level developer who sat next to me was constantly taking down the entire website because he’d deploy his code as soon as his tests passed without even looking at the product to see if it was working. Whereas I always tested the site manually before and after each deploy, so I almost never made the same mistakes. This meant that my approach must clearly have been better, right?</p>
+<p>Well, not exactly.</p>
+<p>Software testing is often sold as something that gives us confidence that our code is working correctly, which never made a lot of sense to me. After all, if we can <em>look</em> at the product to see if it’s working correctly, then deploying to production just on the basis of seeing the tests pass seemed frankly irresponsible. But after years of doing this for a living and watching real products break in countless different ways, I’ve come to see some common patterns in how this happens. And as part of this, I’ve come to understand that whether the code is working as intended is largely orthogonal to whether the product is working correctly; no amount of test coverage, at least that any startup can afford, can ever instill complete confidence that the product itself is working. But knowing that your code is still working as intended is hugely valuable in and of itself, for reasons largely unrelated to product availability.</p>
+<p>So, what exactly are the benefits of testing? There are many potential benefits, which depend on the type of tests one writes, the level of test coverage, and a bunch of other factors. So let’s work backwards; in the context of startups, the most important benefits that testing can confer are as follows:</p>
+<p><strong>Development speed</strong> — At the most basic level, an integration test is just a snippet of code that passes some data to whatever endpoint you’re testing, and then compares that endpoint’s response against some hard-coded expected value. The most immediate benefit to writing a test case, as opposed to just triggering whatever API code you’re writing via your web browser, is that running a test is much faster. You can literally configure your development environment so that the relevant tests are run after every single line of code you write, and within a second or two you’ll know if you’re on the right path or if you’ve made some mistake. That’s much better than writing out twenty or thirty lines of code each time in between manually checking to see if the endpoint is working, and then wasting a bunch of time trying to figure out where the inevitable errors are happening.</p>
+<p><strong>Security</strong> — There are many reasons why, when it comes to SaaS startups, having a <a href="https://en.wikipedia.org/wiki/Single-page_application" target="_blank" rel="noopener">SPA</a> front end that’s powered by a REST API is better than having a monolith where the front end is a mix of templates and javascript. Of these, I think the biggest benefit is that there’s a clear demarcation line between the front end and the backend; the backend starts where the API receives an HTTP request, and it ends where the JSON response is returned. This split architecture makes REST APIs the perfect match for testing almost entirely via integration tests on your views. If you get back the right JSON response for a given request, your API worked correctly. If you get back the wrong JSON response, it didn’t. This makes it easy to ensure that you’re never leaking private data, just by always just asserting exactly what the JSON response should look like for any given input. As the sign on President Truman’s desk said, “The buck stops here!”.</p>
+<p><strong>Documentation</strong> — One of the most important functions of tests is to serve as documentation. Not only is this necessary for efficiently onboarding future developers, it’s also important just for ensuring the productivity of our future selves. This is so important that the best practice is to write the code for our test cases in a way that’s completely different than the way in which we write all of our other code, as described in this <a href="https://mtlynch.io/good-developers-bad-tests/" target="_blank" rel="noopener">blog post</a> by Michael Lynch. The reason we do all these things is to make the tests as readable as humanly possible. Tests are at their most valuable when they break, and when they break it’s important to immediately be able to understand exactly what’s broken, even if the code that’s broken is something we previously knew nothing about. Ideally it should be possible to know what’s broken just by reading the name of the test case, without even having to look at the code for that test case. Conversely, any test where you can’t understand what’s being tested, even after looking at its code, isn’t conferring any value and should probably be deleted.</p>
+<p>So in the context of these benefits, what kind of tests confer the best ROI?</p>
+<p>Integration tests. On your views.</p>
+<p>Since the line between unit testing and integration testing can be blurry, I’ll give my definition: tests where you make a request to a view and get back a JSON response. These tests should execute all of the business logic for the endpoint, including making real requests to your database, caches, etc. The only things that should be mocked are requests to third-party services, e.g. sending emails via an email service provider (ESP).</p>
+<p>Here are a few examples of integration tests written using DRF:</p>
+<pre><code>class UserTestCase(TestCase):</code></pre><p>Pretty straightforward. The one thing to note is that you should always use Django’s <code>assertNumQueries</code> context manager when calling your views. This will make it immediately obvious if you accidentally do something that causes the ORM to make unnecessary database calls.</p>
+<p>In general, every endpoint should perform the same tests in the same order:</p>
+<ol>
+<li><strong>Permissions</strong> — Always test the permissions for each endpoint. For example, if a view should only allow authenticated users, the first test should be ensuring that the endpoint throws an error for unauthenticated users.</li>
+<li><strong>Validation errors</strong> — Have one test for each validation error. For example, if a username can’t be more than 15 characters, test that it returns the correct error message. Also test multiple validation errors at once to ensure that the error messages are aggregated correctly.</li>
+<li><strong>Business requirement errors</strong> — Have at least one test that triggers each business requirement error. For example, if an endpoint requires that a user’s account be at least two weeks old to submit content, have a test for that.</li>
+<li><strong>Success conditions</strong> — Have at least one test for each way you can call an endpoint and receive an HTTP 2xx or 3xx response.</li>
+</ol>
+<p>That’s it.</p>
+<p>If you work for a large company or make airplanes or something then obviously none of the above advice applies, because as companies get bigger the value of unit testing increases relative to the value of integration testing. I discuss this more in the section below.</p>
+<p>See also: Kent C. Dodd’s <a href="https://kentcdodds.com/blog/write-tests" target="_blank" rel="noopener">eponymous blog post</a>.</p>
+<h3 id="Rule-13-Treat-unit-tests-as-a-specialist-tool"><a href="#Rule-13-Treat-unit-tests-as-a-specialist-tool" class="headerlink" title="Rule #13: Treat unit tests as a specialist tool"></a>Rule #13: Treat unit tests as a specialist tool</h3><p>In contrast to integration tests, I’ll define a unit test as a test that’s testing just one function or method within your app, e.g. a single service method, helper method, or utility function. Like integration tests, unit tests also mock calls to third-party service providers, like ESPs. Additionally, unit tests sometimes also mock calls to internal services databases or caches, depending on what’s being tested.</p>
+<p>For large companies, unit tests are the bread and butter of test coverage. This is because when you have hundreds of engineers working on complex systems, most individual engineers aren’t working on across the entire request-response cycle, and often don’t understand the whole system. Developers at large companies often work at the level of individual classes and methods, so they’re primarily responsible for testing the small components they create to ensure they’re working to spec.</p>
+<p>In contrast, for your typical SaaS startup, unit tests are more of a specialist tool. Whereas integration tests do the bulk of the work to ensure your app or service is working as intended, unit tests are used in specific situations where integrations would be clunky, so something more lightweight is needed. Some examples:</p>
+<ul>
+<li>Testing code that processes user-generated data, or that processes data from a third-party service. For example, testing a function that linkifies plaintext hyperlinks in email messages.</li>
+<li>Testing code with privacy or security implications, especially where there are lots of variables that can potentially interact in ways that need to be accounted for.</li>
+<li>Testing endpoints with lots of validation rules. For example, if your system only supports English then you might only have 20 or 30 validation rules for your account creation endpoint, each of which can be tested with an integration test. But if you support dozens of languages then you might potentially have hundreds of different validation rules, which all need to be tested.</li>
+</ul>
+<p>The basic theme here is that unit tests are most appropriate when:</p>
+<ol>
+<li>You have a specific algorithm that needs to be tested against lots of different input, but where there are only small differences in the input for each test case</li>
+<li>Testing the full request-response cycle for each minor variation of input would add lots of boilerplate code and/or substantially slow down the run time of the test suite, but you wouldn’t be getting much additional confidence that the system is working correctly.</li>
+</ol>
+<p>The important thing to understand is that, at least in the context of startups, unit tests and integration tests are non-fungible; asking why you might need unit tests if you already have integration tests is like, as <a href="https://mtlynch.io/" target="_blank" rel="noopener">Michael Lynch</a> observes, “asking why you need a neurosurgeon if your general practitioner is competent. Unit tests and integration tests have different benefits and drawbacks, so you should use them for different purposes.”</p>
+<p>So, why not just always write unit tests for every endpoint, in addition to integration tests?</p>
+<p>Because they aren’t free. They come with a real cost, and not just in terms of writing them; having too many doesn’t just result in diminishing returns, it’s arguably worse than having no tests at all. I’ve seen multiple companies fail or come close to failing due to over-testing. The biggest risks are:</p>
+<ul>
+<li>Spending months or years writing tests for a product no one is using as a way to avoid launching or talking with prospective customers.</li>
+<li>Having thousands of test cases where it’s not easy to understand what’s being tested, so when they break they don’t confer any benefit. But because everyone is afraid to just delete them, developers waste enormous amounts of time fixing broken tests that they don’t even understand, often when the actual product isn’t even broken.</li>
+<li>Having a slow test suite. As an example, I worked at a startup where each time someone was ready to merge a branch, it took 45 minutes for the CI tests to run. And since the CI tests sometimes failed even when the tests passed locally, it could easily take a full day or more to merge even the smallest changes into the codebase.</li>
+</ul>
+<p>A colleague had a good metaphor that sums up the problem with over-testing. Imagine you have a door with a lock. Adding a second lock makes your apartment more secure. But adding 100 locks doesn’t make it any more secure than having two locks, because at that point a robber would just kick down the door or go through the window. But it does make it take 100 times longer for the actual owner to get into their apartment.</p>
+<p>Basically if you’re going to unit test a piece of code, make sure the unit tests are A) doing something of value B) doing something that wouldn’t be better done via integration tests.</p>
+<p>Some miscellaneous final thoughts on testing:</p>
+<ul>
+<li>Don’t write model tests. The only reason you would ever need to test your models is if you have business logic in them, which you shouldn’t.</li>
+<li>Smoke test your templates, e.g. if you’re using Django templates to send out transactional emails. You don’t need to go crazy here, just make sure they render without throwing any errors.</li>
+<li>So as not to be hypocritical, if you’re a junior developer with less than two years of experience and you’re not working on something that’s security-sensitive, you get a free pass for not writing any tests. If you know how to write tests then that’s great, but if not then just build your app first. It’s hard enough just learning how to build features, so it’s fine to focus on that and test your code manually, and then go back and learn how to write tests later. You’re not going to write a ton of code in your first couple of years anyway, so it’s not going to take a ton of time to go back later and fix things.</li>
+<li>Make sure your test suite passes when the WiFi is turned off. If your tests are making network requests, something wasn’t mocked correctly. C.f. this guide to <a href="https://www.fugue.co/blog/2016-02-11-python-mocking-101" target="_blank" rel="noopener">mocking in Python</a>.</li>
+</ul>
+<h3 id="Rule-14-Use-serializers-responsibly-or-not-at-all"><a href="#Rule-14-Use-serializers-responsibly-or-not-at-all" class="headerlink" title="Rule #14: Use serializers responsibly, or not at all"></a>Rule #14: Use serializers responsibly, or not at all</h3><p>In computing, serialization is the process of converting a more complex object into a simpler object. The two most common examples in Django development are:</p>
+<ul>
+<li>Converting Django models into Python dictionaries</li>
+<li>Converting Python dictionaries into stringified JSON</li>
+</ul>
+<p>In contrast, deserialization is the process of converting simpler objects into more complex objects. The most common examples in Django are:</p>
+<ul>
+<li>Converting stringified JSON into Python dictionaries</li>
+<li>Converting Python dictionaries into Django models</li>
+</ul>
+<p>The reason this is relevant is that there are many third-party libraries in Python that offer something called Serializers.</p>
+<p>What exactly are they?</p>
+<p>Essentially they’re classes that A) offer tools that can be configured to perform common tasks that relate to serialization and deserialization, and B) provide a way to organize whatever additional code you need to write for things relating to serialization and deserialization that these classes themselves don’t provide for.</p>
+<p>The biggest benefit of Serializers (called forms in vanilla Django) is that they provide a nice way to organize the code for raising and coalescing validation errors, e.g. when a user’s password doesn’t have enough characters or their email address is invalid. As an example, consider how you might otherwise return input-related errors to the front end without serializers:</p>
+<pre><code>try:</code></pre><p>Django’s <code>[full_clean](https://docs.djangoproject.com/en/3.1/ref/models/instances/#validating-objects)</code> method validates each model field, validates the model as a whole, and validates the uniqueness constraints of model fields.</p>
+<p>By adding error handling around <code>full_clean</code>, we can generate validation errors to return to the front end by using the <code>message_dict</code> that’s attached to the <code>ValidationError</code>. We can specify which validation errors the <code>full_clean</code> method should raise by using Django’s <a href="https://docs.djangoproject.com/en/3.1/ref/validators/#built-in-validators" target="_blank" rel="noopener">built-in validators</a>, combined with our own <a href="https://docs.djangoproject.com/en/3.1/ref/validators/#writing-validators" target="_blank" rel="noopener">custom validators</a> on any given model field. The <code>full_clean</code> method will then add all of these errors to the <code>message_dict</code> on the <code>ValidationError</code>.</p>
+<p>This pattern works reasonably well if:</p>
+<ul>
+<li>Each of your models is only changed by one endpoint.</li>
+<li>Each of your endpoints only changes one model.</li>
+<li>Each of the validation errors you want to raise is related to a model or a model field.</li>
+</ul>
+<p>When these assumptions stop being true, things quickly start to get messy. E.g. consider the hypothetical validation error handling component of this partially implemented function to create user accounts:</p>
+<pre><code>def create_account(sanitized_username, sanitized_email_address, unsafe_password, </code></pre><p>I’ve written a lot of Django error handling code this way, and it’s not a terrible pattern by any means; if our models are supposed to be the single source of truth, then intuitively it makes sense that validation should be happening as close to this source of truth as possible. The downside is that if you have endpoints that update four or five different models, or if you need to raise validation errors that aren’t related to any specific model, things get messy because you need to coalesce errors coming from lots of different sources. The pattern also leaves your error handling tightly coupled to your models, which makes your models more difficult to understand. It also adds complexity in cases where you have multiple endpoints that each have their own rules for persisting state on a single model.</p>
+<p>Serializers ostensibly make your code cleaner and easier to understand by A) tying error handling to each endpoint rather than each model, and B) encapsulating the process of raising and coalescing errors.</p>
+<p>That said, I’ve found that the serializers built into DRF have many downsides of their own:</p>
+<ul>
+<li>They add almost 20,000 words of documentation that each new developer needs to read as part of their onboarding</li>
+<li>It often takes hours to figure out how to do things that you could otherwise do in 30 seconds with a single line of Python.</li>
+<li>They can get unreadable very fast, especially when:<ul>
+<li>Using nested serializers</li>
+<li>Mixing code for serialization with code for deserialization</li>
+<li>Performing business logic unrelated to serialization</li>
+</ul>
+</li>
+<li>They can introduce security and performance issues that developers would be unlikely to otherwise introduce</li>
+</ul>
+<p>DRF also encourages developers to put all of the business logic for an entire endpoint within the serializers, not just the logic related to serialization; this includes the logic for creating and updating Django models. Unfortunately, almost inevitably the business logic gets buried under several layers of unnecessary misdirection, such that the endpoint no longer tells a story and it’s much easier for bugs and security vulnerabilities to get introduced and then go unnoticed.</p>
+<p>In my experience, these issues often make code written using DRF serializers significantly worse than code that doesn’t use serializers at all.</p>
+<p>Fortunately, there are now some very good alternatives to the DRF serializers. Specifically, I’d recommend using <a href="https://marshmallow.readthedocs.io/en/stable/" target="_blank" rel="noopener">Marshmallow</a>. Compared with DRF serializers, it has: clearer and more concise documentation, a more intuitive API, and doesn’t encourage the use of serializers to store unrelated business logic or to perform CRUD operations. As a nice bonus, it also has significantly better performance.</p>
+<p>Currently, I think the cleanest way to approach error handling is using Marshmallow to validate incoming user data, and then manually serializing responses using pure Python. Here is an example of using Marshmallow to validate user input:</p>
+<pre><code>class AccountCreationValidator(Schema):</code></pre><p>And then manually serializing output using pure Python might look something like:</p>
+<pre><code>def get_user_profile_from_user_model(user_model):</code></pre><p>This pattern gets you the benefit of having error handling that’s nicely encapsulated and isn’t tightly coupled to your models, while avoiding the problem where serializers get super difficult to create and understand when serialization and deserializion code is mixed together. And, ironically, serializers don’t really confer any benefits for serialization — the pure python function we have here is much faster to write, and much easier to understand.</p>
+<p>With respect to using model validators to safeguard your source of truth, you can use validators on the models in addition to in the serializers; the validators on the serializers are responsible for generating the user-facing errors, and then you just need to make your peace with losing proper error messages for race conditions. This is a good compromise because it ensures data integrity, and the downside is negligible because having proper error handling on race conditions isn’t going to meaningfully affect your conversion numbers.</p>
+<p>So while I won’t claim that this is the perfect design pattern by any means, I think it’s pretty good, and it’s probably the best out of all alternative ways that we could write the above code instead.</p>
+<h3 id="Rule-15-Write-admin-functionality-as-API-endpoints"><a href="#Rule-15-Write-admin-functionality-as-API-endpoints" class="headerlink" title="Rule #15: Write admin functionality as API endpoints"></a>Rule #15: Write admin functionality as API endpoints</h3><p>Django comes with a powerful set of tools that make it easy to build an internal admin site for your project. This admin site allows superusers and staff members to directly view the contents of the database, make changes as necessary, and perform any other tasks related to running a website — for example, sending a user a password reset email.</p>
+<p>The way you configure the Django Admin is that, for each model in your project, you:</p>
+<ol>
+<li>Subclass one of the Admin classes, usually ModelAdmin. So if your project has a model called <code>EmailAddress</code>, you would make <code>class EmailAddressAdmin(admin.ModelAdmin)</code></li>
+<li>Register the ModelAdmin subclass in a way that ties it to the model; in this case, via <code>admin.site.register(EmailAddress, EmailAddressAdmin)</code>. This gives you a basic interface to view the contents of the model and perform basic CRUD actions</li>
+<li>Configure the presentation and behavior of that model’s admin interface by overriding any combination of around 150 different options (class variables) and methods.</li>
+</ol>
+<p>This system is extraordinarily powerful and efficient, and is one of the biggest benefits of using Django. It works right out of the box with just two lines of code, so even if you know you’re going to make more customizations later, you’re not forced to do that work upfront before it’s needed.</p>
+<p>The one caveat is that if you start adding lots of business logic directly to your admin classes, then things tend to go off the rails super fast; it quickly gets difficult to tell which methods and variables are directly interacting with Django in some prescribed way, versus which are user-defined properties and helper methods that are indirectly interacting with some other predefined hook. This becomes even more of an issue if you’re using third-party packages to add more customization options to the admin, or if you’re <a href="https://docs.djangoproject.com/en/3.0/ref/contrib/admin/#overriding-vs-replacing-an-admin-template" target="_blank" rel="noopener">replacing or overriding templates</a>.</p>
+<p>So, is there anything we can do to keep our admin code from becoming a complete nightmare?</p>
+<p>The trick is something you’ve almost certainly heard before: “don’t mix business logic with presentation.” We normally think of this as front-end advice, e.g. as the reason why styles should be defined in CSS rather than in HTML. But as it turns out, this is also good advice when writing Django admin code.</p>
+<p>So how should we structure the business logic in our admin code?</p>
+<p>The answer is simple: exactly the same way that we structure all of our other code.</p>
+<p>For each action that you want a superuser or staff member to be able to perform, just make an API endpoint with the appropriate DRF <a href="https://www.django-rest-framework.org/api-guide/permissions/" target="_blank" rel="noopener">permissions</a>, e.g. <code>IsAdminUser</code>. Then write your views and service methods the same way you would for any other endpoint. You should expose these actions as API endpoints even if you intend to only trigger the functionality in question via the Django Admin.</p>
+<p>Why?</p>
+<p>The benefit is <em>simplicity</em>.</p>
+<p>Again, one of our key goals is that “if a person has enough knowledge to understand how any one endpoint works, they should have enough knowledge to understand how <em>every</em> endpoint works.” By expressing our admin functionality through views and services and tests, the same way that we write all of our other views and services and tests, we avoid introducing a second way of doing things and doubling the amount of knowledge one needs to understand the codebase and productively contribute.</p>
+<p>So how do we integrate these admin-scoped API endpoints with the Django Admin?</p>
+<p>Easy. Just take the service methods you’ve created for these endpoints, and reuse them to perform any business logic inside the <a href="https://docs.djangoproject.com/en/3.0/ref/contrib/admin/actions/" target="_blank" rel="noopener">Admin Actions</a> in your admin code. This way these services can be tested exactly the same way as the tests for every other endpoint; there isn’t any need to learn a new style or syntax for writing tests. When you write your admin business logic the same way as all your other business logic, you don’t need to worry about developers not writing tests because doing so would require figuring out how to write tests in an unfamiliar way, nor do you need to worry about new developers not being able to understand pre-existing admin code or its test cases.</p>
+<p>Wondering why it’s so important to test your admin functionality when most likely only a handful of folks will have access to it? Think of it this way: your staff are going to have access to vastly more powerful tools than your regular website users, so if anything it’s even more critical that this functionality be thoroughly tested than it is for your user-facing endpoints.</p>
+<p>On that note, a common pattern for startups is having the dev team maintain their own test suite with white box tests, and then having a separate QA team that uses something like Postman to do black-box testing. Exposing your admin logic via endpoints will allow an external QA team to test this functionality as well. Even if your startup isn’t big enough to have a QA team right now, this practice doesn’t cost anything, so it’s a free option for adding one in the future.</p>
+<h2 id="Upgradability"><a href="#Upgradability" class="headerlink" title="Upgradability"></a>Upgradability</h2><p>If only creating software were like building a megalith, where once all the stones have been quarried and arranged into their fated alignments, they can just stay there, unaltered, silently watching civilizations rise and fall for the next ten thousand years.</p>
+<p>If only.</p>
+<p>In the best case, creating software is more like building a bridge or a public water system, where if it’s not constantly maintained then it quickly stops working optimally and eventually just stops working entirely. And on bad days, keeping software up and running feels more like <a href="https://www.youtube.com/watch?v=_y0nsN4px10" target="_blank" rel="noopener">the scene</a> of Lucy and Ethel eating chocolate off the assembly line.</p>
+<p>In some ways, it’s a good problem. Each year hardware gets faster, computer scientists make new foundational discoveries, and software libraries get updated to take advantage of both. As long as you keep updating your dependencies each year, you reap enormous benefits over time from the hard work of others outside of your organization.</p>
+<p>But these benefits aren’t free.</p>
+<p>Just keeping your dependencies up-to-date can easily take 25% of the year. And as soon as you decide to stop updating them, or you no longer have enough resources to do so, the grim reaper is never far behind. First your dependencies develop minor bugs, then unpatched security issues, and eventually they just stop working entirely. And when they do, any apps built on top of them die as well.</p>
+<h3 id="Rule-16-Your-app-lives-until-your-dependencies-die"><a href="#Rule-16-Your-app-lives-until-your-dependencies-die" class="headerlink" title="Rule #16: Your app lives until your dependencies die"></a>Rule #16: Your app lives until your dependencies die</h3><p>The reason codebases eventually get thrown out usually isn’t that the business logic has gotten so convoluted that no one can understand any individual endpoint, but rather because there are one or more keystone dependencies that can no longer be updated.</p>
+<p>A good example comes from a consulting project I worked on recently; this startup had 3,500 tests that were written using a test framework that had been abandoned for over five years. There wasn’t any good path to upgrade from Python 2 to Python 3. And since most libraries were dropping support for Python 2, this meant that we’d no longer be able to upgrade to the latest versions of Django and all other dependencies.</p>
+<p>In short, we’d soon be out of security compliance, we’d no longer be able to benefit from all the hard work that people outside our organization had been doing to improve the tools that we used on a daily basis, and we risked that at some point the app would stop working entirely and there would be no way to fix it.</p>
+<p>The decision was made to rewrite the codebase from scratch, with everyone being fully aware that big rewrites fail 90% of the time. In this case the rewrite was successful, fixed a bunch of other architectural problems, and left the startup in a much better place overall. But even though in this specific case it worked out well, for most startups doing a rewrite is an existential risk; given the narrow pathway to success, it’s not a great position to be in.</p>
+<p>The key insight is that your codebase is only as upgradable as your least-maintained dependency. Each of your core dependencies is going to interact with the others in thousands of places throughout the codebase, so as soon as one can’t be upgraded, it won’t be long until the rest can’t be upgraded either. And if it gets to the point where the only way forward is a rewrite, then unless you have the resources to attempt this multiple times, there’s a 90% chance your startup is going out of business.</p>
+<p>The stakes that come with choosing the right dependencies can’t be overstated.</p>
+<p>So what can we do? Is there some process we can put in place to ensure that this kind of thing doesn’t happen to our startup?</p>
+<p>There aren’t any guarantees, but here are some guidelines that require zero technical knowledge to implement. For junior developers and product managers, these are an excellent place to start:</p>
+<ul>
+<li>Look for libraries with lots of stars on Github, downloads on PyPI, recent commits, etc.<ul>
+<li><a href="https://openbase.io/" target="_blank" rel="noopener">Openbase</a> is a neat tool for quantitatively evaluating JavaScript libraries; hopefully there will be support for Python shortly.</li>
+</ul>
+</li>
+<li>Make sure any Python dependencies are compatible with the most recent version of Python, and any Django dependencies are compatible with the most recent version of Django. It’s normal if it takes two or three months after a new version of Python or Django is released for packages to add support, but if it’s been six months or more then this is a major red flag.<ul>
+<li>Always start new projects using the most recent versions of Python and Django that are stable enough for production, and update them as soon as is feasible, so as to purposely make it difficult for anyone to introduce dependencies that aren’t being actively maintained.</li>
+</ul>
+</li>
+<li>Look at the distribution of commits. If all the recent code in a project is being contributed by a tiny handful of people, then this means the dependency has a high bus factor, especially if it hasn’t yet been widely adopted by commercially successful companies.</li>
+<li>Make sure your dependencies have clear, easy-to-read documentation. Not only because this will reduce the onboarding cost for each future developer you hire and decrease the amount of time it will take to build each new feature, but also because projects with good documentation tend to become more popular over time.</li>
+</ul>
+<p>Don’t add dependencies unless they’re either likely to be maintained for at least a decade, or they’re small enough and well-written enough that they’ll be easy to fork and maintain internally.</p>
+<p>For more experienced developers, these are all still good rules to follow. But at some point we should also be able to use our technical skills and domain expertise to identify good dependencies earlier in the product adoption lifecycle, rather than just looking for signal from others. For example, it’s always good when the creators of some library have taken the time to deeply understand any prior art, and have taken a thoughtful approach when making improvements. An example of this that’s pretty easy to see is if you read the documentation for <a href="https://vuejs.org/" target="_blank" rel="noopener">Vue.js</a>. However, this often takes some experience to spot because critiques of earlier libraries are often subtle and indirect — it’s generally considered poor form to criticize others who are giving away their work for free, and even people who make competing libraries depend on there being a core group of motivated open source contributors creating software for their chosen language. But once you’ve used a bunch of the previous solutions, it’s a lot easier to pick up on the significance of certain design decisions and to understand whether or not some new thing is a real improvement that’s likely to get adoption.</p>
+<p>The other thing more experienced developers should be able to do is actually, you know, read the code. Whereas for junior developers the difference between good and bad code might be understanding mostly nothing vs. understanding absolutely nothing, more experienced developers should hopefully be able to say something about the code quality, how easy it would be to contribute new features and maintain existing ones, etc.</p>
+<h3 id="Rule-17-Keep-logic-out-of-the-front-end"><a href="#Rule-17-Keep-logic-out-of-the-front-end" class="headerlink" title="Rule #17: Keep logic out of the front end"></a>Rule #17: Keep logic out of the front end</h3><p>If this guide had been written 15 years ago, a lot of the advice here would probably revolve around mistakes in database schema design. Back then the average database could do less than 30 HDD queries per second, so developers went to great lengths to make the most of each query by putting all sorts of completely unrelated data in the same tables. When done right this was a necessary evil, but when done wrong it was a huge source of technical debt that could take down entire companies. Of course now thanks to solid-state disks, today even large databases can handle tens of thousands of queries per second. So for codebases started in the last ten years, having to deal with questionable denormalization decisions is much less common.</p>
+<p>These days, the biggest problem in web development is that JavaScript frameworks become obsolete so fast that as soon as you’re done building your front end, you pretty much need to throw it away and start over. Whereas any Python code you write today will probably run just fine in ten years with only a nominal amount of maintenance, you’d be lucky to get three years from your SPA before whatever framework you used becomes deprecated and then unmaintained.</p>
+<p>Some people say that the reason for the constant churn in JS frameworks is because we’re seeing substantial improvements each year in computer hardware, browser technology, and networking protocols, that these improvements can only be fully realized if front-end frameworks are rebuilt from the ground up, and that this framework churn is necessary because any website that doesn’t incorporate these fundamental improvements into their products will cease to be competitive. Other people say it’s because front-end developers are a bunch of shiftless ne’er-do-wells.</p>
+<p>I’m not here to take sides.</p>
+<p>What I would say though is that if we’re going to have to rewrite our SPAs every few years for the forseeable future, we should do everything we can to minimize the time and cost of doing so by keeping as much business logic as possible out of the front end. How do we do this? By putting it in the backend, even if it doesn’t logically belong there. Think of this as the new database denormalization.</p>
+<p>A good example of something that normally would belong to the front end is date formatting. The best practice <em>should</em> always be just returning ISO 8601 dates to the front end, since the same dates are likely to be formatted differently depending on where in the app they’re being used, whether the user is on desktop or mobile, etc. In the ideal world, doing this formatting should always be the job of the front end. But in practice, given the choice between rewriting all the date formatting logic in three years or just doing it on the backend, in many cases the latter is probably the least worst option. This same logic also applies sorting, string formatting, error messages, etc.</p>
+<p>In terms of what this should actually look like, I think the solution is still returning the same front-end agnostic response that you “should” be returning, but then also appending an extra JSON object with pre-digested values based on the current needs of your specific front end. This might look something like:</p>
+<pre><code>{</code></pre><p>It feels wrong, and it is kind of wrong, but it’s better than having it take an extra year to rewrite your front end.</p>
+<h3 id="Rule-18-Don’t-break-core-dependencies"><a href="#Rule-18-Don’t-break-core-dependencies" class="headerlink" title="Rule #18: Don’t break core dependencies"></a>Rule #18: Don’t break core dependencies</h3><p>Avoid breaking functionality in your core dependencies.</p>
+<p>What do I mean by this?</p>
+<p>As an example, using SQLAlchemy instead of Django’s ORM, at the expense of no longer being able to (easily) use Django for user management, access control, building an admin dashboard, etc. Similarly, using Django with MongoDB is technically possible, but at the expense of losing all the SQL- and Postgres-specific functionality that Django provides. (And being stuck with Mongo.)</p>
+<p>There are even cases where using functionality within a library or framework can break other parts of the same library or framework. An excellent example is with <a href="https://lukeplant.me.uk/blog/posts/avoid-django-genericforeignkey/" target="_blank" rel="noopener">GenericForeignKey considered harmful</a>, where using that one part of Django means giving up some of the data-integrity guarantees provided by Postgres, makes certain ORM queries impossible, causes performance issues, breaks the admin, etc.</p>
+<p>This issue doesn’t come up all the time, but when it does it can cause problems that are catastrophically expensive to fix. Regardless of the problem you’re trying to solve, breaking core dependencies is rarely a good trade-off in the long run. Over time you tend to lose out on increasingly more functionality in whatever dependency you broke, often new functionality that ameliorates whatever issue you were trying to fix in the first place. As more functionality from third-party packages gets baked into core dependencies, what happens is that these peripheral solutions stop being maintained. But by this point you usually can’t just rip them out and replace them with something else; now you have the same problem as with any other unmaintained dependency, except usually worse because you also have weird patterns in your code as a result of needing to work around the functionality in your core dependencies that you broke. Usually the end result here is just needing to do a complete rewrite, which again is something that you never want to have to do.</p>
+<h2 id="Why-make-coding-easier"><a href="#Why-make-coding-easier" class="headerlink" title="Why make coding easier?"></a>Why make coding easier?</h2><p>The above rules reflect the patterns and anti-patterns I’ve observed at startups over the years that have had the biggest impact on productivity. To the extent that there’s a common theme connecting them, it’s what pg describes in his <a href="http://www.paulgraham.com/gh.html" target="_blank" rel="noopener">Great Hackers</a> essay:</p>
+<blockquote>
+<p>Several friends mentioned hackers’ ability to concentrate— their ability, as one put it, to “tune out everything outside their own heads.” I’ve certainly noticed this. And I’ve heard several hackers say that after drinking even half a beer they can’t program at all. So maybe hacking does require some special ability to focus. Perhaps great hackers can load a large amount of context into their head, so that when they look at a line of code, they see not just that line but the whole program around it. John McPhee wrote that Bill Bradley’s success as a basketball player was due partly to his extraordinary peripheral vision. “Perfect” eyesight means about 47 degrees of vertical peripheral vision. Bill Bradley had 70; he could see the basket when he was looking at the floor. Maybe great hackers have some similar inborn ability. (I cheat by using a very dense language, which shrinks the court.)</p>
+</blockquote>
+<p>Paul Graham is right. Figuring out how to get the absolute maximum out of your working memory is the key to being a good developer. His personal method for doing this is using Lisp. But interestingly, he now recommends to would-be technical founders that they learn Python or Ruby instead, presumably at least in part due to seeing that many folks who attempted to learn Lisp as a first language and use it to build a startup weren’t sufficiently successful.</p>
+<p>For most entrepreneurs, the fact that Python is easy-to-read and easy-to-learn and has a huge open-source ecosystem makes it a clear win over using more powerful languages that lack these advantages.</p>
+<p>That said, maximizing the amount of context we can fit into our heads is still critically important. But choosing a very dense language isn’t the only way to do this; we can get most of the same benefits by purposely choosing software architecture patterns that are aligned with how our minds actually work.</p>
+<p>When you design your software such that it’s predictable, readable, simple, and upgradeable, there are countless benefits that accrue. And some of the most important benefits aren’t entirely tangible; when developers don’t have problems reading each other’s code and doing their assigned tasks, people are less defensive about their own work and less abrasive toward others. People are less stressed, their days are better, the culture benefits, and recruiting gets easier.</p>
+<p>But, you might be asking, how does all this fit into my team hitting the metrics we need to raise our next round? Let’s look at the impact this praxis will have on: velocity, optionality, security, and diversity.</p>
+<p><strong>Velocity</strong></p>
+<p>Your developers are wasting millions of dollars every year by writing code that other people on your team can’t read, and it’s slowly destroying your business. And it’s not because their line lengths are longer than 80 characters, or their class names used the wrong type of camel casing, or they didn’t indent their docstrings properly.<a href="https://alexkrupp.typepad.com/#footnote-7" target="_blank" rel="noopener">[7]</a></p>
+<p>When velocity grinds to a halt, it’s because your developers are wasting their time and cognitive bandwidth:</p>
+<ol>
+<li>Reading irrelevant code unnecessarily. This is like missing the index on a database lookup and needing to do a full table scan, except for that it wastes hours or days. This happens because:<ul>
+<li>There isn’t a repeatable, step-by-step process that developers can follow to locate the sections of code that are relevant to the problems they need to solve.</li>
+<li>There isn’t enough documentation, or the documentation is out of date.</li>
+<li>There’s dead code in the codebase, but it’s not obvious which code is dead.</li>
+<li>The names of variables, functions, files, and/or classes don’t accurately reflect what they contain or do.</li>
+<li>Complex sections of code haven’t been properly encapsulated to make it easy to skim over them with only a high-level understanding of what’s happening.</li>
+</ul>
+</li>
+<li>Making sense of multiple solutions to the same problem, when it would have been more appropriate for there to have been one solution that was just reused.</li>
+<li>Trying to remember what’s in each of their open tabs, because what would otherwise be easy-to-understand code has been needlessly split across many different files.</li>
+<li>Learning, remembering, and debugging multiple ways of doing the same thing, when there aren’t any benefits that accrue from doing so.</li>
+<li>Needing to learn, work with, and maintain lots of dependencies that aren’t actually doing that much.</li>
+<li>Trying to find the source of behavior that’s happening implicitly.</li>
+<li>Being unable to easily upgrade software or install new libraries.</li>
+<li>Having no tests, or having too many tests.</li>
+</ol>
+<p>That’s it.</p>
+<p>It’s absolutely worth reading the <a href="https://github.com/google/styleguide/blob/gh-pages/pyguide.md" target="_blank" rel="noopener">Google style guide</a>, <a href="https://effectivepython.com/" target="_blank" rel="noopener">Effective Python</a>, <a href="https://www.feldroy.com/" target="_blank" rel="noopener">Two Scoops of Django</a>, etc. Even the sections I don’t agree with, I’m vastly better off for having read.</p>
+<p>But none of these resources focus specifically on the needs of startups, nor do they get to the heart of what causes development velocity to grind to a halt or how to prevent that from happening. That’s why I’ve documented the patterns presented above; each has proved its worth in the companies where I’ve seen them implemented or have implemented them myself.</p>
+<p><strong>Optionality</strong></p>
+<p>The hardest part of starting a new business is making something people want. Why?</p>
+<p>Because everyone is lying to you.</p>
+<p>But even when following <a href="http://momtestbook.com/" target="_blank" rel="noopener">customer development</a> best practices (read the book!), it’s almost impossible to know which functionality users will gravitate toward until it’s actually built. There are two basic solutions to this:</p>
+<ol>
+<li>Find a highly profitable consulting niche, and then find a way to productize that consulting. As <a href="https://startupsocials.wistia.com/medias/e6ttk04b9e?fbclid=IwAR2LQPBXsMvSGEqes7qcYIas72Q57DfWhMeAAbtz6PtiZFQ-PCoWA4TZeNk" target="_blank" rel="noopener">this talk</a> explains, this is actually how many of the world’s most valuable SaaS companies got their start.</li>
+<li>Build some core piece of deep technology, and then have twenty or thirty different business hypotheses you want to test out using that technology. Talk with potential customers in advance and try to get some letters of intent, but also accept that this only gets you so far.</li>
+</ol>
+<p>A good example of the latter strategy is Uber, where their [core bet](<a href="https://medium.com/@" target="_blank" rel="noopener">https://medium.com/@</a> sarahtavel/how-to-build-an-enduring-multi-billion-dollar-business-hint-create-a-10x-product-recast-3527df2b8fcb) was on the ability of mobile phones to unlock a frozen labor market. When black cars didn’t work they quickly shifted to taxis, and if that hadn’t worked they would have just pivoted into food delivery or some other business using the same technology.</p>
+<p>With both strategies, optionality is essential. But in the second model, where the entire bet is on the value of some sort of frozen asset that you’re unlocking rather than on a specific market need, optionality is everything.</p>
+<p>For software teams, the best way to think about optionality is like the subway. When cities are building a new subway line, they usually extend it a few dozen yards past the last station in whatever directions they think they might want to expand in the future. This way they aren’t incurring any significant cost upfront, but if they eventually do decide to expand then they don’t have to pay a ton of extra money to completely rebuild the stations at the end of the line.</p>
+<p>This planning method allows cities to preserve optionality without paying extra for it, which is the same mentality that’s required for startups. Don’t write all the software needed to test each hypothesis upfront; rather, write software in a way that minimizes the friction of transitioning from one hypothesis to the next.</p>
+<p>For startups, keeping the architecture simple and readable is a cost-free tactic for creating optionality. Don’t guess at what business logic might need to be abstracted in the future before knowing the business requirements. Keeping things simple will make it easier to take advantage of new opportunities in the future.</p>
+<p><strong>Security</strong></p>
+<p>Security isn’t everything; it’s the only thing.</p>
+<p>I’d say that it doesn’t matter whether or not your app is working correctly if it isn’t secure, but that’s actually not true. If your app isn’t secure, it’s actually much better if it’s not working.</p>
+<p>At all.</p>
+<p>It’s tricky because in most jobs being reasonably competent and well-meaning is good enough, but this isn’t most jobs. In software development, it’s unfortunately super easy for folks who are reasonably good at their jobs and well-intentioned to do enormous amounts of damage extremely quickly.</p>
+<p>Figuring out how to deal with this dynamic is one of the more interesting management challenges. It’s probably why there’s a famous tech industry quote to the effect of, “If the person who made your computer weren’t an asshole, it probably wouldn’t even turn on.” That’s obviously terrible management advice, but the truth is that most developers aren’t security experts, and most tech managers don’t have unlimited time to review pull requests for security issues or the finesse necessary to turn security incidents into teachable moments while simultaneously give appropriate emphasis to their gravity.</p>
+<p>That’s why big companies have security teams responsible for teaching security, auditing code, monitoring for intrusions, and putting guardrails in place to make certain classes of mistakes impossible.</p>
+<p>For smaller startups, the best we can do is to make our code as readable as possible, to write it in a way so that security mistakes are as visible as possible, and to purposely maximize the chances of our tests breaking if there is ever a problem.</p>
+<p>The first rule of security is that <a href="https://www.schneier.com/essays/archives/2000/04/the_process_of_secur.html" target="_blank" rel="noopener">security is a process</a>, not a product. In other words, it’s not about paying for security audits or firewalls or what have you, but rather it’s about the systems and cultural expectations you put in place that govern how everyday tasks get done. You can — and should — go out and read the books and blog posts that have been written about this; it’s impossible to give much general advice because the security processes that make sense for each company are going to be largely determined by the nature and value of the assets under protection, and so even for a single company the best practices are going to shift significantly over time.</p>
+<p>But regardless, no matter what company you work for and what assets you’re protecting, the basic foundation is always going to be the same. Write your software so that:</p>
+<ol>
+<li>It’s as easy as possible to understand what the software is doing.</li>
+<li>Security mistakes are as visible as possible.</li>
+<li>There are systems in place, starting with integration tests, to ensure that private data isn’t accidentally exposed.</li>
+</ol>
+<p>There are lots of systems you’ll need to put in place outside of the code, everything from code reviews to break-glass procedures. But adopting the sorts of clear style conventions outlined above is the foundation of any good security process. It’s the most impactful step any company can take, and from a dollar-for-dollar perspective, the most cost-effective.</p>
+<p><strong>Diversity</strong></p>
+<p>Of the 60,000 tree species that exist in the world, I can identify barely more than 0.1%. And yet if you put me in any local forest, I can easily identify upwards of 99% of trees on sight.</p>
+<p>How is this possible?</p>
+<p>It’s because species aren’t evenly distributed. For example, 30% of all trees in New England are red maples. If the only thing you can say about a tree is that it doesn’t look like a pine tree, the odds of it being a red maple are over 50%. As with most things in life, the distribution of species roughly follows <a href="https://en.wikipedia.org/wiki/Zipf%27s_law" target="_blank" rel="noopener">Zipf’s Law</a>. That is, the most common tree species is about 10x as common as the 10th most common tree species, 100x as common as the 100th most common tree species, etc.<a href="https://alexkrupp.typepad.com/#footnote-8" target="_blank" rel="noopener">[8]</a></p>
+<p>In contrast, if you put me in any botanical garden or arboretum, where there are only a couple of each species and they’re sourced from all over the world, the only way I’m going to be able to identify more than 0% of trees correctly is if it’s winter so the shrubs and ferns aren’t yet covering up the metal signs.</p>
+<p>To the average person, a forest and an arboretum look more or less indistinguishable. And yet as the same person with the same set of knowledge and skills, I can be super productive and successful at identifying trees in one environment, and not at all productive or successful in the other.</p>
+<p>What’s the point?</p>
+<p>Your codebase should be like a forest, not a botanical garden.</p>
+<p>With any new project or business, you’re starting with some market need you want to address or some technical problem you want to solve. To get there, you’re going to need some set of tools, abstractions, patterns, and so on. So it’s completely normal for your tooling and architecture choices to roughly follow Zipf’s Law. That is, easy-to-use and powerful tools and patterns should be ubiquitous, whereas those that are difficult to learn or understand should appear rarely, and only when necessary for implementing specific niche functionality.</p>
+<p>But all too often, as the system gets bigger, organizational dysfunction results in the barrier-to-entry to contributing increasing over time. At the code level, this often happens because:</p>
+<ul>
+<li>Lots of dependencies get added to the project without strong justification. At best because there is no clear process for deciding when to add dependencies, and at worst because devs just want to add random technologies to their resumes and no one is paying attention.</li>
+<li>Basic functionality that already exists in the codebase is reimplemented in multiple places, due to inadequate documentation, knowledge transfer, and code organization.</li>
+<li>The same types of tasks are done with wildly different architectural patterns and code styles.</li>
+<li>People have implemented functionality and abstractions that weren’t needed, resulting in both unnecessary complexity and dead code.</li>
+</ul>
+<p>And so on.</p>
+<p>If there weren’t any consequences then these things wouldn’t especially matter, but there’s actually an enormous amount of money to be made by minimizing the technical barriers to contributing.<a href="https://alexkrupp.typepad.com/#footnote-9" target="_blank" rel="noopener">[9]</a> For example, the <a href="https://nabeelqu.co/education" target="_blank" rel="noopener">key insight</a> behind the Low-Code and No-Code movements is that:</p>
+<blockquote>
+<p><em>Making things easier has nonlinear effects</em>. Making something 10x easier can cause 1000x more of that thing to happen. Hence the explosion of online creativity you see on YouTube, with chess, Minecraft, math videos, Khan Academy, Twitchstreams, Soundcloud, etc; you remove a small bit of friction and get a large result.</p>
+</blockquote>
+<p>The aspirational promise is that the majority of the world’s most <a href="https://nabeelqu.co/education" target="_blank" rel="noopener">creative</a> and <a href="https://www.indiehackers.com/post/no-code-founders-are-on-the-rise-are-they-making-money-15da743dc3" target="_blank" rel="noopener">entrepreneurial</a> people don’t know how to code, and so by radically lowering the barrier to entry we’re going to get a new generation of products and services that are more innovative and more successful than anything seen to date.</p>
+<p>And while I completely agree with the premise, I’m not convinced that a purely visual approach is realistic. I’d suggest instead that perhaps it’s possible to unlock this tidal wave of entrepreneurship and creativity by just making coding itself 10x easier.</p>
+<p>Maybe the future isn’t low-code or no-code, but rather it’s just readable code.</p>
+<p>We’ll know we’ve succeeded when it’s taken for granted that everyone will be successful at the programming part of their job, so we only evaluate candidates on their skills that are unrelated to programming. Much like how today every analyst at every venture capital firm needs to be good at working with spreadsheets, but no one hires their analyst primarily based on this ability.</p>
+<p>Rather than hiring lots of folks with deep Python skills and experience using tracemalloc to debug memory leaks, startups would be much better off if they minimized the use of patterns and features associated with memory leaks in the first place, and instead hired just developers who were also experts at things like marketing, sales, and design.</p>
+<p>An explosion of productivity and creativity is going to happen regardless of whether your company reduces its barriers to contributing or not; the only difference is whether the wealth created is going to accumulate within your company or elsewhere. If the sorts of practices I’m recommending made it possible for people who couldn’t otherwise get hired to become 1x developers, but at the expense of your most talented developers, then clearly none of this would be worth it. But that’s not what happens. Instead, everyone at every ability level becomes vastly more productive.</p>
+<p>The important thing to understand here is that there’s no inherent conflict between velocity and <a href="https://en.wikipedia.org/wiki/Total_cost_of_ownership" target="_blank" rel="noopener">TCO</a>; software written this way is no more expensive to write, and is no less useful, or powerful, or performant.</p>
+<p>It’s just better.</p>
+<p><em>Alex Krupp is the co-founder &amp; CEO of FWD:Everyone, a platform for sharing and publishing email conversations. He intermittently takes on software consulting engagements, and has spent several years developing software for Fortune 500 companies, pre-seed startups, high-growth venture-backed startups, and everything in between.</em></p>
+<p><em>Special thanks to <a href="https://mtlynch.io/" target="_blank" rel="noopener">Michael Lynch</a>, <a href="http://jake.net/" target="_blank" rel="noopener">Jake Peters</a>, <a href="https://www.linkedin.com/in/dmytro-slipukha-48472131/" target="_blank" rel="noopener">Dmytro Slipukha</a>, and <a href="https://twitter.com/jackmccloy" target="_blank" rel="noopener">Jack McCloy</a>.</em></p>
+<p>[1] This architecture is also very well-suited for LOB apps, which are the internal-facing software applications that tend to make up the bulk of the software written within large companies. Their defining feature is that the bulk of their complexity tends to be in the business logic, as opposed to things like developer tools where the complexity is often more algorithmic in nature. Both SaaS startups and LOB apps tend to be around the same size, use the same architecture, and have the same general concerns, which is why the recommendations here are good for both.<br>[2] For Django specifically, this problem is compounded by the fact that much of the Django-specific architecture advice and tooling has been created by, and for the benefit of, dev shops — who inherently have a <a href="https://en.wikipedia.org/wiki/Principal%E2%80%93agent_problem" target="_blank" rel="noopener">principal-agent</a> conflict with their clients.<br>[3] Most series A startups I’ve seen tend to have 20 - 30 KLOC of Python, not including blank lines, tests, or migrations. If you’re curious about how many lines of code your codebase is, check out <a href="https://github.com/AlDanial/cloc" target="_blank" rel="noopener">CLOC</a>.<br>[4] Some people prefer sanitizing for things like XSS in middleware, on the grounds that A) relying on developers to explicitly sanitize input is risky B) it makes it easy to return an error immediately if any potentially malicious input is detected, which in some cases is better than proceeding with sanitized input. I think the risk of writing sanitization middleware incorrectly is greater than the risk of forgetting to sanitize input. But if someone wants to add sanitization middleware to a project, I’m not opposed as long as explicit sanitization is also required.<br>[5] <a href="https://github.com/google/styleguide/blob/gh-pages/pyguide.md" target="_blank" rel="noopener">https://github.com/google/styleguide/blob/gh-pages/pyguide.md</a>. Arguably this admonition only applies to leaving comments explaining basic Python syntax, in which case this quote is unfairly taken out of context. But regardless, assuming that others know more Python than you is generally bad advice when taken as a broader principle.<br>[6] There might be several reasons why a user isn’t allowed to perform an action, but enumerating every reason would at best serve no purpose and at worst could make it easier for a malicious user to circumvent a restriction.<br>[7] You should absolutely still do these things, I’m just saying that they’re not the things that have the biggest impact on development velocity.<br>[8] This quirk of the universe makes learning to identify your local trees, plants, and mushrooms a lot easier than you might otherwise suspect.<br>[9] In this <a href="https://www.youtube.com/watch?v=JVzZK2mLGi4" target="_blank" rel="noopener">interview</a>, Jon Stewart talks about how The Daily Show didn’t hit its creative peak until they started focusing on removing the barriers to contributing as part of their diversity, equity, and inclusion strategy.</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/06/24/qiwihui-pocket_readings-1139/" rel="prev" title="【网络民议】街上没了游行，维园没了烛光，报摊没了苹果">
+      <i class="fa fa-chevron-left"></i> 【网络民议】街上没了游行，维园没了烛光，报摊没了苹果
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/06/25/qiwihui-pocket_readings-1141/" rel="next" title="JSON Web Tokens (JWT) are Dangerous for User Sessions—Here’s a Solution | Redis Labs">
+      JSON Web Tokens (JWT) are Dangerous for User Sessions—Here’s a Solution | Redis Labs <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Django-for-Startup-Founders-A-better-software-architecture-for-SaaS-startups-and-consumer-apps"><span class="nav-number"></span> <span class="nav-text">Django for Startup Founders: A better software architecture for SaaS startups and consumer apps</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Predictability"><span class="nav-number"></span> <span class="nav-text">Predictability</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Rule-1-Every-endpoint-should-tell-a-story"><span class="nav-number">1.</span> <span class="nav-text">Rule #1: Every endpoint should tell a story</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Rule-2-Keep-business-logic-in-services"><span class="nav-number">2.</span> <span class="nav-text">Rule #2: Keep business logic in services</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Rule-3-Make-services-the-locus-of-reusability"><span class="nav-number">3.</span> <span class="nav-text">Rule #3: Make services the locus of reusability</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Rule-4-Always-sanitize-user-input-sometimes-save-raw-input-always-escape-output"><span class="nav-number">4.</span> <span class="nav-text">Rule #4: Always sanitize user input, sometimes save raw input, always escape output</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Rule-5-Don’t-split-files-by-default-amp-never-split-your-URLs-file"><span class="nav-number">5.</span> <span class="nav-text">Rule #5: Don’t split files by default &amp; never split your URLs file</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Readability"><span class="nav-number"></span> <span class="nav-text">Readability</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Rule-6-Each-variable’s-type-or-kind-should-be-obvious-from-its-name"><span class="nav-number">1.</span> <span class="nav-text">Rule #6: Each variable’s type or kind should be obvious from its name</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Rules-for-naming-kinds"><span class="nav-number">1.1.</span> <span class="nav-text">Rules for naming kinds</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Rules-for-naming-types"><span class="nav-number">1.2.</span> <span class="nav-text">Rules for naming types</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Rule-7-Assign-unique-names-to-files-classes-and-functions"><span class="nav-number">2.</span> <span class="nav-text">Rule #7: Assign unique names to files, classes, and functions</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Rule-8-Avoid-args-and-kwargs-in-user-code"><span class="nav-number">3.</span> <span class="nav-text">Rule #8: Avoid *args and **kwargs in user code</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Rule-9-Use-functions-not-classes"><span class="nav-number">4.</span> <span class="nav-text">Rule #9: Use functions, not classes</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Rule-10-There-are-exactly-4-types-of-errors"><span class="nav-number">5.</span> <span class="nav-text">Rule #10: There are exactly 4 types of errors</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Simplicity"><span class="nav-number"></span> <span class="nav-text">Simplicity</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Rule-11-URL-parameters-are-a-scam"><span class="nav-number">1.</span> <span class="nav-text">Rule #11: URL parameters are a scam</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Rule-12-Write-tests-Not-too-many-Mostly-integration"><span class="nav-number">2.</span> <span class="nav-text">Rule #12: Write tests. Not too many. Mostly integration.</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Rule-13-Treat-unit-tests-as-a-specialist-tool"><span class="nav-number">3.</span> <span class="nav-text">Rule #13: Treat unit tests as a specialist tool</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Rule-14-Use-serializers-responsibly-or-not-at-all"><span class="nav-number">4.</span> <span class="nav-text">Rule #14: Use serializers responsibly, or not at all</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Rule-15-Write-admin-functionality-as-API-endpoints"><span class="nav-number">5.</span> <span class="nav-text">Rule #15: Write admin functionality as API endpoints</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Upgradability"><span class="nav-number"></span> <span class="nav-text">Upgradability</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Rule-16-Your-app-lives-until-your-dependencies-die"><span class="nav-number">1.</span> <span class="nav-text">Rule #16: Your app lives until your dependencies die</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Rule-17-Keep-logic-out-of-the-front-end"><span class="nav-number">2.</span> <span class="nav-text">Rule #17: Keep logic out of the front end</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Rule-18-Don’t-break-core-dependencies"><span class="nav-number">3.</span> <span class="nav-text">Rule #18: Don’t break core dependencies</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Why-make-coding-easier"><span class="nav-number"></span> <span class="nav-text">Why make coding easier?</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

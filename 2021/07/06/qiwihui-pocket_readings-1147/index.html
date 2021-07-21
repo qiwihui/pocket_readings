@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="你真的了解 Load Balance 嘛">
+<meta property="og:type" content="article">
+<meta property="og:title" content="
+
+
+你真的了解 Load Balance 嘛 ">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/07/06/qiwihui-pocket_readings-1147/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="你真的了解 Load Balance 嘛">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGLTBymrBR2QOh8ibbBC9VYBQBPXxPLXkppxNsFhJUHdWFVxiaxZAkLLriaw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGLWoZ7PHEBMhR1Dz1NxgsXaEZaO4c8iadtMdOKsnxSgaWBUAqVVHNflicg/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGLnbXe9NUPA8mviclQODoAu3w0UXS0mx43ELn6UD2R9mfNRdXEV6etib5Q/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGLdQj6kxYfg41icFY5skia920DrYEs4834oRUtTicOuW5NCOe9GdC5oticNA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGLhJvAMZoENiaIQUY8DIgaM2xaMNeib5kceAGBmicg2Mb8UDV06sO3GRZQQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGL0ic3OKUe8wibVAcDKRgMTncODzKgprBictfByxyfr6g3EySyEOjmbyUfw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGL832c2q94LId4QbLh7NYPan7Bxn9qQ44tXjj7LUf5tzwiarO3YEw9hHA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGLN5u36zSb6qxMpPE4M3ibIKlE0MOuib3KL9KRkoicPn89SXGNicj6TzmnFw/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGLAdMqK0LHNibRlXcZHPA55qGPzeXPSgvToldhI6qbiaerNtmoLf0kQPKQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGLULhqVkgcaZa7tLN6s3bZsWfgqicEvtTNwqIU6Gxlyicm59TiaZBQoPtJw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGLGhQGAiaLiaVicBjoXMk1K9xA5bmoicgfPrsoVDcFoIIliaOvwclSHzibxruQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGLI5JzzDgDJib9QTUW6sGVQ9bf8qhGvqwEa7u3XXibgROpMh5libOtcMeNg/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGLEouNROYq81aaycaibbdDVqJnJUuyr9bXVHvfzBDQZWO5X0hC18RdEcw/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGLrwnyyLEdQaXUeHv0XpVtlU56PvSN4qpmpwItv7l2iapbMYu9qiahR5mA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGLjOoqMH6iaHG8LK2HrLfgbWzfrqsbJnqBRrJGBKdgkfCAvWpwZwwv0dA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGLSV7NJXS4BztzvZ7wiceQQVs3rmsyicSJvLTOyFy0dn7QHibIle6vCibrqQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGL95H8vW83NE4gdN7Js7Z5xj7iczO88qBQkVAIQmFDiaT3lWsP0zrzib81g/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/UWba2ryLMqm8cgtrMXjG1BLGg46vQNmUompBL02uYYwic9RicPbCnlKdZiacBF5Wv6RLgmGIqnBnwuWyP82ibYusiag/640?wx_fmt=jpeg">
+<meta property="article:published_time" content="2021-07-06T01:21:09.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.406Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://mmbiz.qpic.cn/mmbiz_png/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGLTBymrBR2QOh8ibbBC9VYBQBPXxPLXkppxNsFhJUHdWFVxiaxZAkLLriaw/640?wx_fmt=png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/07/06/qiwihui-pocket_readings-1147/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>
+
+
+你真的了解 Load Balance 嘛  | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/07/06/qiwihui-pocket_readings-1147/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+
+
+你真的了解 Load Balance 嘛 
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-07-06 01:21:09" itemprop="dateCreated datePublished" datetime="2021-07-06T01:21:09+00:00">2021-07-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">
+
+
+你真的了解 Load Balance 嘛 </div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#24494;&#20449;&#21495; studygolang &#21151;&#33021;&#20171;&#32461; Golang&#29233;&#22909;&#32773;&#31038;&#21306;&#65292;&#36825;&#37324;&#26377;&#31934;&#36873;&#30340;&#32593;&#31449;&#19978;&#25968;&#21315;&#31687;&#20248;&#31168;&#25991;&#31456;&#20379;&#20320;&#23398;&#20064;&#65292;&#20869;&#23481;&#28085;&#30422;Golang&#22522;&#30784;&#31995;&#21015;&#25945;&#31243;&#12289;&#23454;&#25112;&#25945;&#31243;&#31561;&#20248;&#31168;&#24320;&#28304;&#39033;&#30446;&#23454;&#36341;&#65292;&#21516;&#26102;&#20250;&#20998;&#20139;&#32844;&#22330;&#32463;&#39564;&#12290;&#27599;&#21608;&#33719;&#21462;Golang&#19968;&#21608;&#36164;&#35759;&#31561;&#20540;&#24471;&#20851;&#27880;&#30340;&#20869;&#23481; &#20197;&#19979;&#25991;&#31456;<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/3xfdJaF" target="_blank" rel="noopener">https://ift.tt/3xfdJaF</a> original site<br><br><br><br>July 06, 2021 at 09:00AM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1147#issuecomment-874394853" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>7/6/2021</strong></p>
+</blockquote>
+<h2 id="你真的了解-Load-Balance-嘛-by-Go语言中文网"><a href="#你真的了解-Load-Balance-嘛-by-Go语言中文网" class="headerlink" title="你真的了解 Load Balance 嘛 by Go语言中文网"></a>你真的了解 Load Balance 嘛 by Go语言中文网</h2><p><strong>2021-07-06</strong><br>在计算中，Load Balance[1] 是指在一组资源（计算单元）上分配一组任务的过程，目的是使其整体处理更有效率。负载均衡可以优化响应时间，避免一些计算节点不均衡地超载，而其他计算节点则被闲置</p>
+<p>同时，<code>负载均衡</code>, <code>反向代理</code>, <code>网关</code> 这些模块功能也比较相似，所以本文宽泛的将 LB 代指所有提供类似功能的开源软件以及设备</p>
+<h3 id="为什么需要-LB"><a href="#为什么需要-LB" class="headerlink" title="为什么需要 LB"></a>为什么需要 LB</h3><p><img src="https://mmbiz.qpic.cn/mmbiz_png/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGLTBymrBR2QOh8ibbBC9VYBQBPXxPLXkppxNsFhJUHdWFVxiaxZAkLLriaw/640?wx_fmt=png" alt=""></p>
+<p>能认识上图的人，都是 <code>Old Gun</code> 了。硬件负载均衡设备 <code>F5</code> 和 <code>Netscaler</code></p>
+<p>上一代互联网基础架构，必不可少的接入层设备，当时 <code>lvs</code> 刚起步，<code>fullnat</code> 还没有流行起来。所以需要硬件设备做接入层 LB</p>
+<p>在赶集网的时候，<code>Netscaler</code> 有两台设备，一主一备，后来设备到期，公司因为成本问题，没有购买后续维修服务，硬是撑到了和 58 合并</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGLWoZ7PHEBMhR1Dz1NxgsXaEZaO4c8iadtMdOKsnxSgaWBUAqVVHNflicg/640?wx_fmt=png" alt=""></p>
+<p>后来淘宝开源了 <code>fullnat</code> 模式的 lvs 代码，一般公司都是 lvs + nginx 实现接入层：<strong>对外 BGP IP, Lvs+OSPF 构建 tcp layer 4 接入层, nginx 负责 offload ssl 配置各种转发逻辑</strong></p>
+<p>宽泛来说，这里面 lvs, nginx 都是 Load Balance 软件，除了按照一定算法均衡 backend 设备的负载，LB 还要检测后端 Server 的存活状态，自动摘掉故障节点</p>
+<h3 id="基本常识"><a href="#基本常识" class="headerlink" title="基本常识"></a>基本常识</h3><p>那么问题来了，如何构建 Load Balance 设备或是软件呢？本质还是理解 tcp/ip 模型及底层原理</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGLnbXe9NUPA8mviclQODoAu3w0UXS0mx43ELn6UD2R9mfNRdXEV6etib5Q/640?wx_fmt=png" alt=""></p>
+<p>如上图所示，物理层，Mac 层，IP 层，TCP 层， HTTP/HTTPS 等七层。每层都是有不同的 header, 然后封装好 data 后传递给下一层，发送数据与接收数据逻辑相反</p>
+<p>不同的 LB 及模式工作在不同模型，比如我们常见的 <code>Nginx</code> 常工作在七层，在用户态解析 http/https 协议然后转发请求</p>
+<p>LVS 很多种模式，工作在二，三，四层都可以</p>
+<h3 id="Linux-Virtual-Server"><a href="#Linux-Virtual-Server" class="headerlink" title="Linux Virtual Server"></a>Linux Virtual Server</h3><p>Linux Virtual Server (lvs) 是 Linux 内核自带的负载均衡器，也是目前性能最好的软件负载均衡器之一。lvs 包括 ipvs 内核模块和 ipvsadm 用户空间命令行工具两部分</p>
+<p>在 lvs 中，节点分为 Director Server 和 Real Server 两个角色，其中 Director Server 是负载均衡器所在节点，而 Real Server 则是后端服务节点</p>
+<p>当用户的请求到达 Director Server 时，内核 netfilter 机制的 PREROUTING 链会将发往本地 IP 的包转发给 INPUT 链（也就是 ipvs 的工作链，在 INPUT 链上，ipvs 根据用户定义的规则对数据包进行处理（如修改目的 IP 和端口等），并把新的包发送到 POSTROUTING 链，进而再转发给 Real Server</p>
+<p>阿里开源 LVS 很久了，但是最新的 fullnat 代码一直没放出，七牛使用的 lvs 内核版本过低，只能用 linux 2.7 kernel, 连硬件支持都很差了。所以后面会讲到 dpvs[2]</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGLdQj6kxYfg41icFY5skia920DrYEs4834oRUtTicOuW5NCOe9GdC5oticNA/640?wx_fmt=png" alt=""></p>
+<p>Nat 是将修改数据包的目的 IP 和端口，将包转发给 RealServer (rs 不需要做任务设置), 此时 Director Server 即 LVS 是做为网关的，处于同一个局域网。包进来做 DNAT，出去做 SNAT</p>
+<p>所有流量都经过 LVS, 很容易成为瓶颈。一般用于运维 OP 性质的多一些，服务正常业务流量有问题。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGLhJvAMZoENiaIQUY8DIgaM2xaMNeib5kceAGBmicg2Mb8UDV06sO3GRZQQ/640?wx_fmt=png" alt=""></p>
+<p>DR (Direct Route) 模式性能最好，工作在二层，通过修改数据包的 Mac 地址来实现转发，属于单臂 one-arm 模式，所以要求二层可达</p>
+<p>进来的流量经过 LVS, 出去的直接返回给 client, 以前在赶集网时 MySQL 多用 DR 模式</p>
+<p>这个模式需要修改 Real Server, 配置 arp_ignore 和 arp_announce 忽略对vip的ARP解析请求，同时 lo 添加对应的 VIP</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGL0ic3OKUe8wibVAcDKRgMTncODzKgprBictfByxyfr6g3EySyEOjmbyUfw/640?wx_fmt=png" alt=""></p>
+<p>Tunnel 是典型的隧道模式</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGL832c2q94LId4QbLh7NYPan7Bxn9qQ44tXjj7LUf5tzwiarO3YEw9hHA/640?wx_fmt=png" alt=""></p>
+<p>Fullnat 解决了 Nat 的不足，机器可以无限扩展，当然也要受限于单机 lvs 的网卡及 cpu 性能</p>
+<p>同时为了让服务获取 client 真实 IP, 需要加载 TOA 模块，将 IP 写到 tcp option 中  </p>
+<h3 id="DPDK-LVS-DPVS"><a href="#DPDK-LVS-DPVS" class="headerlink" title="DPDK + LVS = DPVS"></a>DPDK + LVS = DPVS</h3><p>IQIYI 前几年开源了 DPVS, 主流公司都有自己的 DPDK LB 轮子，你不造一个都不好意思说是大公司</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGLN5u36zSb6qxMpPE4M3ibIKlE0MOuib3KL9KRkoicPn89SXGNicj6TzmnFw/640?wx_fmt=jpeg" alt=""></p>
+<p>另外，阿里开源的 fullnat 模块还停留在 linux 2.6.32 kernel, 很多现代机器支持不好，而且 2021 年了，linux 主流内核都是 4.0 及以上</p>
+<p>主要优化就是由 DPDK bypass 内核，完全用户态接管网卡，同时重写 tcp/ip 协议栈代码，这样避免了内核空间与用户空间的来回拷贝</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGLAdMqK0LHNibRlXcZHPA55qGPzeXPSgvToldhI6qbiaerNtmoLf0kQPKQ/640?wx_fmt=png" alt=""></p>
+<p>上面是 dpvs 的整体架构，里面细节超多，感兴趣可以网上搜我的文章，以前写过一系列</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGLULhqVkgcaZa7tLN6s3bZsWfgqicEvtTNwqIU6Gxlyicm59TiaZBQoPtJw/640?wx_fmt=png" alt=""></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGLGhQGAiaLiaVicBjoXMk1K9xA5bmoicgfPrsoVDcFoIIliaOvwclSHzibxruQ/640?wx_fmt=png" alt=""></p>
+<p>性能 Benchmark 据说可以达到线速，公司用的话还得调研一下。<strong>开源产品宣传的很好，实际测起来数据可能不是那么回事，需要有专人调优</strong>  </p>
+<h3 id="调度算法"><a href="#调度算法" class="headerlink" title="调度算法"></a>调度算法</h3><ul>
+<li><p>Round-robin (ip_vs_rr.c)</p>
+</li>
+<li><p>Weighted round-robin (ip_vs_wrr.c)</p>
+</li>
+<li><p>Least-connection (ip_vs_lc.c)Weighted least-connection (ip_vs_wlc.c)</p>
+</li>
+<li><p>Locality-based least-connection (ip_vs_lblc.c)</p>
+</li>
+<li><p>Locality-based least-connection with replication (ip_vs_lblcr.c)</p>
+</li>
+<li><p>Destination hashing (ip_vs_dh.c)</p>
+</li>
+<li><p>Source hashing (ip_vs_sh.c)</p>
+</li>
+<li><p>Shortest expected delay (ip_vs_sed.c)</p>
+</li>
+<li><p>Never queue (ip_vs_nq.c)</p>
+</li>
+<li><p>Maglev hashing (ip_vs_mh.c)</p>
+</li>
+</ul>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGLI5JzzDgDJib9QTUW6sGVQ9bf8qhGvqwEa7u3XXibgROpMh5libOtcMeNg/640?wx_fmt=png" alt=""></p>
+<p>上面是主流 LB 设备的调度算法，面试八股文必备，一般 RR 简单的轮询就够了。复杂一些的需要加个权，一般都是辗转相除实现的 GCD 最大公约数</p>
+<p>这就够了嘛？其实不够的，比如我们线上遇到过预热的问题，服务流量特别大，新起来的机器 RR 过来的话瞬间 QPS 超高，影响服务性能，表现为 GC 特别频繁，同时请求的 latency 非常高</p>
+<p>怎么解决呢？参考 Nginx 的 Smooth Weighted Round-Robin (SWRR) 平滑移动加权算法</p>
+<h3 id="云厂商的-LB"><a href="#云厂商的-LB" class="headerlink" title="云厂商的 LB"></a>云厂商的 LB</h3><p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGLEouNROYq81aaycaibbdDVqJnJUuyr9bXVHvfzBDQZWO5X0hC18RdEcw/640?wx_fmt=jpeg" alt=""></p>
+<p>暂时只看 AWS Cloud, 一般我们都用 <code>elb</code> 做入口，涉及到 <code>elb</code>, <code>alb</code>, <code>clb</code>, <code>nlb</code> 概念巨多</p>
+<p>大家可以参考官网看下区别，无外乎是否支持 layer 4、layer 7, 是否支持按 path 路由，还有一些高级功能等等的区别</p>
+<p>具体实现，因为是黑盒，可能 c/c++ 自己写，也可能是 nginx 魔改，谁知道呢</p>
+<h3 id="K8S-的-LB"><a href="#K8S-的-LB" class="headerlink" title="K8S 的 LB"></a>K8S 的 LB</h3><p>K8S 里面主要是三类：<code>Service</code> 四层，<code>Ingress</code> 七层，以及所谓的 <code>Service Mesh</code> 模式</p>
+<p>Service 允许指定你所需要的 Service 类型，默认是 ClusterIP, 主要类型有：</p>
+<p><strong>ClusterIP</strong>：通过集群的内部 IP 暴露服务，选择该值时服务只能够在集群内部访问。这也是默认的 ServiceType</p>
+<p><strong>NodePort</strong>：通过每个节点上的 IP 和静态端口（NodePort）暴露服务。NodePort 服务会路由到自动创建的 ClusterIP 服务。通过请求 &lt;节点 IP&gt;:&lt;节点端口&gt;，你可以从集群的外部访问一个 NodePort 服务</p>
+<p><strong>LoadBalancer</strong>：使用云提供商的负载均衡器向外部暴露服务。外部负载均衡器可以将流量路由到自动创建的 NodePort 服务和 ClusterIP 服务上</p>
+<p><strong>ExternalName</strong>：通过返回 CNAME 和对应值，可以将服务映射到 externalName 字段的内容（例如，foo.bar.example.com）, 无需创建任何类型代理</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGLrwnyyLEdQaXUeHv0XpVtlU56PvSN4qpmpwItv7l2iapbMYu9qiahR5mA/640?wx_fmt=png" alt=""></p>
+<p>除了类型主要用三种工作模式：userspace proxy, iptables model, ipvs model. 现在性能最好默认的就是 ipvs 模式，如果机器不支持会 fallback 到 iptables</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGLjOoqMH6iaHG8LK2HrLfgbWzfrqsbJnqBRrJGBKdgkfCAvWpwZwwv0dA/640?wx_fmt=png" alt=""></p>
+<p>网上有性能对比，差距还是蛮明显的。<code>Service</code> 工作在四层，有些需求是按照 path 把请求转发到不同服务，这时就需要用到 <code>Ingress</code></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGLSV7NJXS4BztzvZ7wiceQQVs3rmsyicSJvLTOyFy0dn7QHibIle6vCibrqQ/640?wx_fmt=png" alt=""></p>
+<p>上图的 <code>Ingress</code> 由 nginx 实现，感兴趣的可以参考官网</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/9OBDxDDV6f1QSrGXeGic67R6Oia3ic2rsGL95H8vW83NE4gdN7Js7Z5xj7iczO88qBQkVAIQmFDiaT3lWsP0zrzib81g/640?wx_fmt=png" alt=""></p>
+<p>对于流行的 <code>Service Mesh</code>, 每个 POD 都有 sidecar 容器来劫持流量，好处是业务无需配置服务发现，熔断，限流等等，这些都由 SM 的控制面来配</p>
+<p>缺点是中间引入过多的 proxy, 服务可观测性是个挑战，A 调 B 服务慢了，中间有多个 sidecar, 扯皮就很难受了</p>
+<h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p>今天的分享就这些，写文章不容易，如果对大家有所帮助和启发，请大家帮忙点击<code>再看</code>，<code>点赞</code>，<code>分享</code> 三连</p>
+<p>关于 Load Balance 大家有什么看法，或是文章有内容错误，欢迎留言一起讨论，大牛多留言 ^_^</p>
+<h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><p>[1]</p>
+<p>Load Balance From wikipedia: <em><a href="https://en.wikipedia.org/wiki/Load\_balancing\" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Load\_balancing\</a></em>(computing),_</p>
+<p>[2]</p>
+<p>dpvs: <em><a href="https://github.com/iqiyi/dpvs" target="_blank" rel="noopener">https://github.com/iqiyi/dpvs</a>,</em></p>
+<hr>
+<p><strong>推荐阅读</strong>  </p>
+<ul>
+<li><a href="http://mp.weixin.qq.com/s?__biz=MzAxMTA4Njc0OQ==&mid=2651448621&idx=1&sn=442d599894b15c7a30ebba6375a5a9ba&chksm=80bb3bdfb7ccb2c97d72171fb321208572cbaeff8376f68d96b5f7d645dc3fc2f004b2f06bfa&scene=21#wechat_redirect" target="_blank" rel="noopener">一本 Go 新书</a>  </li>
+</ul>
+<p><strong>福利</strong></p>
+<p>我为大家整理了一份从入门到进阶的Go学习资料礼包，包含学习建议：入门看什么，进阶看什么。关注公众号 「polarisxu」，回复 <strong>ebook</strong> 获取；还可以回复「<strong>进群</strong>」，和数万 Gopher 交流学习。</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_jpg/UWba2ryLMqm8cgtrMXjG1BLGg46vQNmUompBL02uYYwic9RicPbCnlKdZiacBF5Wv6RLgmGIqnBnwuWyP82ibYusiag/640?wx_fmt=jpeg" alt=""></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/07/04/qiwihui-pocket_readings-1146/" rel="prev" title="Memcached的存储原理解析">
+      <i class="fa fa-chevron-left"></i> Memcached的存储原理解析
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/07/06/qiwihui-pocket_readings-1148/" rel="next" title="Python Best Practices for a New Project in 2021">
+      Python Best Practices for a New Project in 2021 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#你真的了解-Load-Balance-嘛-by-Go语言中文网"><span class="nav-number"></span> <span class="nav-text">你真的了解 Load Balance 嘛 by Go语言中文网</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么需要-LB"><span class="nav-number">1.</span> <span class="nav-text">为什么需要 LB</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#基本常识"><span class="nav-number">2.</span> <span class="nav-text">基本常识</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Linux-Virtual-Server"><span class="nav-number">3.</span> <span class="nav-text">Linux Virtual Server</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DPDK-LVS-DPVS"><span class="nav-number">4.</span> <span class="nav-text">DPDK + LVS &#x3D; DPVS</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#调度算法"><span class="nav-number">5.</span> <span class="nav-text">调度算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#云厂商的-LB"><span class="nav-number">6.</span> <span class="nav-text">云厂商的 LB</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#K8S-的-LB"><span class="nav-number">7.</span> <span class="nav-text">K8S 的 LB</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#小结"><span class="nav-number">8.</span> <span class="nav-text">小结</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考资料"><span class="nav-number">9.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

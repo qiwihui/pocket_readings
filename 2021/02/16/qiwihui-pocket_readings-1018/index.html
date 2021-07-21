@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="《深度剖析CPython解释器》22. 解密Python中的生成器对象，从字节码的角度分析生成器的底层实现以及执行逻辑 - 古明地盆 - 博客园">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《深度剖析CPython解释器》22. 解密Python中的生成器对象，从字节码的角度分析生成器的底层实现以及执行逻辑 - 古明地盆 - 博客园">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1018/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="《深度剖析CPython解释器》22. 解密Python中的生成器对象，从字节码的角度分析生成器的底层实现以及执行逻辑 - 古明地盆 - 博客园">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200906005404319-765933567.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200828230612755-992873571.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200906005412543-756656835.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200906005419630-869370138.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200906005428253-249060011.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200906005437906-1976463887.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200906005448401-885632238.png">
+<meta property="article:published_time" content="2021-02-16T14:17:22.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.426Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200906005404319-765933567.png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1018/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>《深度剖析CPython解释器》22. 解密Python中的生成器对象，从字节码的角度分析生成器的底层实现以及执行逻辑 - 古明地盆 - 博客园 | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1018/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          《深度剖析CPython解释器》22. 解密Python中的生成器对象，从字节码的角度分析生成器的底层实现以及执行逻辑 - 古明地盆 - 博客园
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-02-16 14:17:22" itemprop="dateCreated datePublished" datetime="2021-02-16T14:17:22+00:00">2021-02-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">《深度剖析CPython解释器》22. 解密Python中的生成器对象，从字节码的角度分析生成器的底层实现以及执行逻辑 - 古明地盆 - 博客园</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#19979;&#38754;&#25105;&#20204;&#26469;&#32842;&#19968;&#32842;Python&#20013;&#30340;&#29983;&#25104;&#22120;&#65292;&#23427;&#26159;&#25105;&#20204;&#29702;&#35299;&#21518;&#38754;&#21327;&#31243;&#30340;&#22522;&#30784;&#65292;&#29983;&#25104;&#22120;&#30340;&#35805;&#65292;&#20272;&#35745;&#22823;&#37096;&#20998;&#20154;&#22312;&#20889;&#31243;&#24207;&#30340;&#26102;&#20505;&#37117;&#24819;&#19981;&#21040;&#29992;&#12290;&#20294;&#26159;&#19968;&#26086;&#29992;&#22909;&#20102;&#65292;&#30830;&#23454;&#33021;&#32473;&#31243;&#24207;&#24102;&#26469;&#24615;&#33021;&#19978;&#30340;&#25552;&#21319;&#65292;&#37027;&#20040;&#25105;&#20204;&#23601;&#26469;&#30475;&#19968;&#30475;&#21543;&#12290;<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/3dkmqcC" target="_blank" rel="noopener">https://ift.tt/3dkmqcC</a> original site<br><br><br><br>February 16, 2021 at 10:14PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1018#issuecomment-789377607" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>3/3/2021</strong></p>
+</blockquote>
+<h2 id="《深度剖析CPython解释器》22-解密Python中的生成器对象，从字节码的角度分析生成器的底层实现以及执行逻辑-古明地盆-博客园"><a href="#《深度剖析CPython解释器》22-解密Python中的生成器对象，从字节码的角度分析生成器的底层实现以及执行逻辑-古明地盆-博客园" class="headerlink" title="《深度剖析CPython解释器》22. 解密Python中的生成器对象，从字节码的角度分析生成器的底层实现以及执行逻辑 - 古明地盆 - 博客园"></a>《深度剖析CPython解释器》22. 解密Python中的生成器对象，从字节码的角度分析生成器的底层实现以及执行逻辑 - 古明地盆 - 博客园</h2><h1 id="《深度剖析CPython解释器》22-解密Python中的生成器对象，从字节码的角度分析生成器的底层实现以及执行逻辑"><a href="#《深度剖析CPython解释器》22-解密Python中的生成器对象，从字节码的角度分析生成器的底层实现以及执行逻辑" class="headerlink" title="《深度剖析CPython解释器》22. 解密Python中的生成器对象，从字节码的角度分析生成器的底层实现以及执行逻辑"></a><a href="https://www.cnblogs.com/traditional/p/13620438.html" target="_blank" rel="noopener">《深度剖析CPython解释器》22. 解密Python中的生成器对象，从字节码的角度分析生成器的底层实现以及执行逻辑</a></h1><h2 id="楔子"><a href="#楔子" class="headerlink" title="楔子"></a>楔子</h2><p><strong>下面我们来聊一聊Python中的生成器，它是我们理解后面协程的基础，生成器的话，估计大部分人在写程序的时候都想不到用。但是一旦用好了，确实能给程序带来性能上的提升，那么我们就来看一看吧。</strong></p>
+<h2 id="生成器"><a href="#生成器" class="headerlink" title="生成器"></a>生成器</h2><h3 id="基本用法"><a href="#基本用法" class="headerlink" title="基本用法"></a>基本用法</h3><p><strong>我们知道，一个函数如果它的内部出现了yield关键字，那么它就不再是普通的函数了，而是一个生成器函数。当我们调用的时候，就会创建一个生成器对象。</strong></p>
+<blockquote>
+<p><strong>生成器对象一般用于处理循环结构，应用得当的话可以极大优化内存使用率。比如：我们读取一个大文件。</strong></p>
+</blockquote>
+<pre><code>def read_file(file):
+    return open(file, encoding=&quot;utf-8&quot;).readlines()
+
+
+print(read_file(&quot;假装是大文件.txt&quot;))
+# [&apos;人生は一体何だろう\n&apos;, &apos;たぶん 輝いている同時に\n&apos;, &apos;人を苦しくさせるものだろう&apos;]</code></pre><p><strong>这个版本的函数，直接将里面的内容全部读取出来了，返回了一个列表。如果文件非常大，那么内存的开销可想而知。</strong></p>
+<p><strong>于是我们可以通过yield关键字，将函数变成一个生成器。</strong></p>
+<pre><code>def read_file(file):
+    with open(file, encoding=&quot;utf-8&quot;) as f:
+        for line in f:
+            yield line
+
+
+data = read_file(&quot;假装是大文件.txt&quot;)
+print(data)  # &lt;generator object read_file at 0x0000019B4FA8BAC0&gt;
+
+# 这里返回了一个生成器对象, 我们需要使用for循环遍历
+for line in data:
+    # 文件每一行自带换行符, 所以这里print就不用换行符了
+    print(line, end=&quot;&quot;)
+&quot;&quot;&quot;
+人生は一体何だろう
+たぶん 輝いている同時に
+人を苦しくさせるものだろう
+&quot;&quot;&quot;</code></pre><h3 id="观察生成器的运行行为"><a href="#观察生成器的运行行为" class="headerlink" title="观察生成器的运行行为"></a>观察生成器的运行行为</h3><p><strong>那么生成器是怎么做到的呢？我们继续考察一下。</strong></p>
+<pre><code>def read_file(file):
+    with open(file, encoding=&quot;utf-8&quot;) as f:
+        for line in f:
+            yield line
+
+
+data = read_file(&quot;假装是大文件.txt&quot;)
+print(data)  # &lt;generator object read_file at 0x0000019B4FA8BAC0&gt;
+
+# 当我们调用初始化函数(生成器函数)时, 会创建一个生成器
+# 此时生成器就已经被创建了
+# 当我们调用__next__的时候, 生成器会执行
+# 一旦执行到yield的时候就会将生成器暂停, 并将yield后面的值返回
+print(next(data), end=&quot;&quot;)  # 人生は一体何だろう
+
+# 此时生成器处于暂停状态, 如果我们不驱使它的话, 它是不会前进的
+# 当我们再次执行__next__的时候, 生成器恢复执行, 继续处理并在下一个yield处暂停
+print(next(data), end=&quot;&quot;)  # たぶん 輝いている同時に
+
+# 生成器会记住自己的执行进度, 每次调用next函数, 它总是处理并生产下一个数据, 完全不需要我们担心
+print(next(data))  # 人を苦しくさせるものだろう
+
+# 一旦next的时候, 就会找下一个yield, 但我们知道此时循环已经结束了
+# 所以没有下一个yield了, 因此程序就会报错了
+try:
+    print(next(data))
+except StopIteration as e:
+    print(&quot;生成器执行完毕&quot;)  # 生成器执行完毕</code></pre><p><strong>因此生成器和之前我们说的迭代器是类似的，毕竟生成器就是一个特殊的迭代器。</strong></p>
+<blockquote>
+<p><strong>原谅我写到这里有点懈怠了，有点累了。所以这里后面只对生成器的底层实现进行剖析，至于一些Python层面的东西就不说了。</strong></p>
+</blockquote>
+<h3 id="任务上下文"><a href="#任务上下文" class="headerlink" title="任务上下文"></a>任务上下文</h3><p><strong>在经典的线程模型中，每个线程都有一个独立的执行流，只能执行一个任务。如果一个程序需要同时处理多个任务，可以借助多线程或者多进程技术。假设一个站点需要同时服务于多个客户端连接，可以为每个连接创建一个独立的线程进行处理。</strong></p>
+<p><strong>但不管是线程还是进程，切换时都会带来巨大的性能开销：用户态和内核态的切换、执行上下文保存和恢复、CPU刷新缓存等等。因此，使用进程或者线程来驱动多个小任务的执行，显然不是一个理想的选择。</strong></p>
+<p><strong>那么，除了进程和线程，还有其它的解决方案吗？显然是有的，答案就是协程。不过在讨论之前，我们先来总结多任务执行体系的关键之处。</strong></p>
+<p><strong>一个程序想要同时处理多个任务，必须提供一种能够记录任务执行进度的机制。在经典线程模型中，这个机制由CPU提供：</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200906005404319-765933567.png" alt=""></p>
+<p><strong>如上图，程序内存空间分为代码、数据、堆以及栈等多个段，<em>CPU</em> 中的 <em>CS</em> 寄存器指向代码段，<em>SS</em> 寄存器指向栈段。当程序任务(线程)执行时，<em>IP</em> 寄存器指向代码段中当前正被执行的指令，<em>BP</em> 寄存器指向当前栈帧，<em>SP</em> 寄存器则指向栈顶。</strong></p>
+<p><strong>有了 <em>IP</em> 寄存器，<em>CPU</em> 可以取出需要执行的下一条指令；有了 <em>BP</em> 寄存器，当函数调用结束时，<em>CPU</em> 可以回到调用者继续执行。因此，<em>CPU</em> 寄存器与内存地址空间一起构成了任务执行上下文，记录着任务执行进度。当任务切换时，操作系统先将 <em>CPU</em> 当前寄存器保存到内存，然后恢复待执行任务的寄存器。</strong></p>
+<p><strong>至此，我们已经受到一些启发：生成器不是可以记住自己的执行进度吗？那么，是不是可以用生成器来实现任务执行流？由于生成器在用户态运行，切换成本比线程或进程小很多，是组织微型任务的理想手段。</strong></p>
+<p><strong>现在，我们用生成器来写一个玩具协程，以此体会协程的运行机制：</strong></p>
+<pre><code>def producer(n):
+    for i in range(1, n):
+        yield f&quot;生产者生产第{i}包子&quot;
+
+
+def consumer(n):
+    for i in range(1, n):
+        yield f&quot;消费者消费第{i}包子&quot;
+
+
+p = producer(3)
+c = consumer(3)</code></pre><p><strong>我们创建一个生产包子的生产者，和一个消费包子的消费者，然后进行初始化。当我们调用next函数的时候，就可以驱动它们执行了。</strong></p>
+<pre><code>print(next(p))  # 生产者生产第1包子
+print(next(c))  # 消费者消费第1包子</code></pre><p><strong>当遇到第一个yield语句时，让出执行权，并将yield后面的值返回。但是在实例项目中，一般在遇到网络I/O时，才会让出执行权。</strong></p>
+<p><strong>而且我们看到，我们还扮演着调度器的角色。</strong></p>
+<pre><code>print(next(p))  # 生产者生产第2包子
+print(next(c))  # 消费者消费第2包子</code></pre><p><strong>我们再次通过next驱动生成器执行，然后遇到yield之后继续暂停，将yield后面的值返回，并将执行权交给我们。</strong></p>
+<pre><code>print(next(p))  
+&quot;&quot;&quot;
+    print(next(p))  # 生产者生产第2包子
+StopIteration
+&quot;&quot;&quot;</code></pre><p><strong>再次驱动生成器执行，但是发现已经找不到下一个yield了，所以抛出StopIteration异常告诉我们生成器已经将全部的值都生成了。</strong></p>
+<p><strong>以上通过一个小例子，感受一下生成器的运行原理，它可以帮我们更好地理解后面的协程。因为协程的思想和生成器本质是一样的，而且在早期Python还没有提供原生协程的时候，就是通过生成器来模拟的协程。</strong></p>
+<h2 id="字节码解密生成器"><a href="#字节码解密生成器" class="headerlink" title="字节码解密生成器"></a>字节码解密生成器</h2><p><strong>上面我们简单的考察了一下生成器的运行时行为，发现了它神秘的一面。生成器可以通过yield关键字暂停，并且还可以通过next函数重新恢复执行<code>(从上一次暂停的位置)</code>，这个特性可以用来实现协程。</strong></p>
+<h3 id="生成器的创建"><a href="#生成器的创建" class="headerlink" title="生成器的创建"></a>生成器的创建</h3><p><strong>而理解协程，首先要理解生成器。</strong></p>
+<pre><code>def gen():
+    print(&quot;生成器开始执行了&quot;)
+
+    name = &quot;夏色祭&quot;
+    print(&quot;创建了一个局部变量name&quot;)
+    yield name 
+
+    age = -1
+    print(&quot;创建了一个局部变量age&quot;)
+    yield age 
+
+    gender = &quot;female&quot;
+    print(&quot;创建了一个局部变量gender&quot;)
+    yield gender</code></pre><p><strong>我们创建一个简单的生成器函数，当我们调用的时候就会得到一个生成器对象。</strong></p>
+<pre><code>def gen():
+    print(&quot;生成器开始执行了&quot;)
+
+    name = &quot;夏色祭&quot;
+    print(&quot;创建了一个局部变量name&quot;)
+    yield name
+
+    age = -1
+    print(&quot;创建了一个局部变量age&quot;)
+    yield age
+
+    gender = &quot;female&quot;
+    print(&quot;创建了一个局部变量gender&quot;)
+    yield gender
+
+
+# 虽然是生成器函数, 但它也是一个函数
+print(gen)  # &lt;function gen at 0x000001DABAD951F0&gt;
+
+# 但是调用生成器函数并不会立刻执行, 而是会返回一个生成器对象
+g = gen()
+print(g)  # &lt;generator object gen at 0x000001D89E9D7270&gt;
+print(g.__class__)  # &lt;class &apos;generator&apos;&gt;</code></pre><blockquote>
+<p><strong>关于普通函数和生成器函数，有一个非常生动的栗子。普通函数可以想象成一匹马，只要调用了，那么不把里面的代码执行完毕誓不罢休；而生成器函数则好比一头驴，调用的时候并没有动，只是返回一个生成器对象，然后需要每次拿鞭子抽一下<code>(调用一次next)</code>才往前走一步。</strong></p>
+<p><strong>另外我们可以把生成器看成是可以暂停的函数，其中的yield就类似于return，只不过可以有多个yield。当执行到一个yield时，将值返回、同时暂停在此处，然后当使用next函数驱动时，从暂停的地方继续执行，直到找到下一个yield。如果找不到下一个yield，就会抛出StopIteration异常。</strong></p>
+</blockquote>
+<p><strong>那么老规矩，肯定要看一下字节码。</strong></p>
+<pre><code>  1           0 LOAD_CONST               0 (&lt;code object gen at 0x00000188E73D1450, file &quot;generator&quot;, line 1&gt;)
+              2 LOAD_CONST               1 (&apos;gen&apos;)
+              4 MAKE_FUNCTION            0
+              6 STORE_NAME               0 (gen)
+              8 LOAD_CONST               2 (None)
+             10 RETURN_VALUE
+
+Disassembly of &lt;code object gen at 0x00000188E73D1450, file &quot;generator&quot;, line 1&gt;:
+  2           0 LOAD_GLOBAL              0 (print)
+              2 LOAD_CONST               1 (&apos;生成器开始执行了&apos;)
+              4 CALL_FUNCTION            1
+              6 POP_TOP
+
+  4           8 LOAD_CONST               2 (&apos;夏色祭&apos;)
+             10 STORE_FAST               0 (name)
+
+  5          12 LOAD_GLOBAL              0 (print)
+             14 LOAD_CONST               3 (&apos;创建了一个局部变量name&apos;)
+             16 CALL_FUNCTION            1
+             18 POP_TOP
+
+  6          20 LOAD_FAST                0 (name)
+             22 YIELD_VALUE
+             24 POP_TOP
+
+  8          26 LOAD_CONST               4 (-1)
+             28 STORE_FAST               1 (age)
+
+  9          30 LOAD_GLOBAL              0 (print)
+             32 LOAD_CONST               5 (&apos;创建了一个局部变量age&apos;)
+             34 CALL_FUNCTION            1
+             36 POP_TOP
+
+ 10          38 LOAD_FAST                1 (age)
+             40 YIELD_VALUE
+             42 POP_TOP
+
+ 12          44 LOAD_CONST               6 (&apos;female&apos;)
+             46 STORE_FAST               2 (gender)
+
+ 13          48 LOAD_GLOBAL              0 (print)
+             50 LOAD_CONST               7 (&apos;创建了一个局部变量gender&apos;)
+             52 CALL_FUNCTION            1
+             54 POP_TOP
+
+ 14          56 LOAD_FAST                2 (gender)
+             58 YIELD_VALUE
+             60 POP_TOP
+             62 LOAD_CONST               0 (None)
+             64 RETURN_VALUE</code></pre><p><strong>字节码指令依旧是分为两部分，我们先来看看模块的。很简单，就是创建一个生成器对象，而且我们发现字节码和调用一个普通函数的字节码是一样的。那么Python是如何知道这是一个生成器函数呢？显然秘密就在CALL_FUNCTION里面。</strong></p>
+<p><strong>由于我们已经分析过函数了，所以CALL_FUNCTION下一步会调用什么就不多说了，直接用我们之前的一张图：</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200828230612755-992873571.png" alt="2"></p>
+<p><strong>CALL_FUNCTION中，它会调用Objects/call.c中的call_function函数。call_function函数可以根据被调用对象的类型进行区别处理，可分为：类方法、函数对象、普通可调用对象等等。</strong></p>
+<p><strong>在这个例子中，被调用的是函数对象。因此call_function内部会调用位于Objects/call.c中的 <em>\</em>PyFunction_FastCallDict_ 函数，而它则进一步调用位于 <em>Python/ceval.c</em> 中的 <em>\</em>PyEval_EvalCodeWithName_ 函数，该函数会为PyFunctionObject创建一个栈帧，然后检查co_flags。如果带有 <em>CO_GENERATOR</em> 、<em>CO_COROUTINE</em> 或 _CO_ASYNC_GENERATOR_，那么便创建生成器返回。</strong></p>
+<pre><code>PyObject *
+_PyEval_EvalCodeWithName(PyObject *_co, PyObject *globals, PyObject *locals,
+           PyObject *const *args, Py_ssize_t argcount,
+           PyObject *const *kwnames, PyObject *const *kwargs,
+           Py_ssize_t kwcount, int kwstep,
+           PyObject *const *defs, Py_ssize_t defcount,
+           PyObject *kwdefs, PyObject *closure,
+           PyObject *name, PyObject *qualname)
+{
+    //......
+    //......
+    if (co-&gt;co_flags &amp; (CO_GENERATOR | CO_COROUTINE | CO_ASYNC_GENERATOR)) {
+        PyObject *gen;
+        int is_coro = co-&gt;co_flags &amp; CO_COROUTINE;
+        Py_CLEAR(f-&gt;f_back);
+        if (is_coro) {
+            gen = PyCoro_New(f, name, qualname);
+        } else if (co-&gt;co_flags &amp; CO_ASYNC_GENERATOR) {
+            gen = PyAsyncGen_New(f, name, qualname);
+        } else {
+            gen = PyGen_NewWithQualName(f, name, qualname);
+        }
+        if (gen == NULL) {
+            return NULL;
+        }
+
+        _PyObject_GC_TRACK(f);
+
+        //直接返回一个生成器
+        return gen;
+    }
+    //......
+    //......
+}</code></pre><p><strong>其中的 <em>co_flags</em> 是PyCodeObject中的一个域，显然它是在编译时由语法规则确定的。我们之前说它是用来判断参数特征的，但其实它还可以用来判断函数特征。</strong></p>
+<pre><code>//Include/code.h
+#define CO_OPTIMIZED    0x0001
+#define CO_NEWLOCALS    0x0002
+#define CO_VARARGS      0x0004
+#define CO_VARKEYWORDS  0x0008
+#define CO_NESTED       0x0010
+#define CO_GENERATOR    0x0020</code></pre><p><strong>我们看到 <em>CO_GENERATOR</em> 的值为0x0020。</strong></p>
+<pre><code>print(gen.__code__.co_flags &amp; 0x0020)  # 32</code></pre><p><strong>如果不是生成器函数，那么结果为0；现在结果不为0，说明是生成器函数。</strong></p>
+<p><strong>下面我们可以看看生成器函数的底层定义了，位于 <em>Include/genobject.h</em> 中。</strong></p>
+<pre><code>#define _PyGenObject_HEAD(prefix)                                           \
+    PyObject_HEAD                                                           \
+    struct _frame *prefix##_frame;                                          \
+    char prefix##_running;                                                  \
+    PyObject *prefix##_code;                                                \
+    PyObject *prefix##_weakreflist;                                         \
+    PyObject *prefix##_name;                                                \
+    PyObject *prefix##_qualname;                                            \
+    _PyErr_StackItem prefix##_exc_state;
+
+typedef struct {
+    _PyGenObject_HEAD(gi)
+} PyGenObject;
+
+//如果整理一下, 那么等价于这样
+typedef struct {
+    PyObject_HEAD
+    struct _frame *gi_frame; //生成器执行时对应的栈帧对象, 用于保存执行上下文信息
+    char gi_running;  //标识生成器是否运行中
+    PyObject *gi_code; //PyCodeObject对象
+    PyObject *gi_weakreflist; //弱引用相关，不深入讨论
+    PyObject *gi_name; //生成器名
+    PyObject *gi_qualname; //全限定名
+    _PyErr_StackItem *gi_exc_state; //生成器执行状态
+} PyGenObject;</code></pre><p><strong>所以我们可以画出一张模型图：</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200906005412543-756656835.png" alt=""></p>
+<p><strong>至此生成器对象的创建过程已经浮出水面，与普通函数对象一样，当生成器函数gen被调用时，Python将为其创建栈帧对象，用于维护函数执行上下文。PyCodeObject对象、全局名字空间、局部名字空间、以及运行时栈都在里面。</strong></p>
+<p><strong>但和普通函数不同的是，gen函数的PyCodeObject对象带有生成器标识，在调用的时候，Python不会立刻执行PyCodeObject对象里面的字节码，栈帧对象也不会被接入到调用链中，所以f_back字段此时是空的。相反，Python创建了一个生成器对象，并将其作为函数结果返回。</strong></p>
+<p><strong>我们可以使用Python来验证在我们得到的结论。</strong></p>
+<pre><code>g = gen()
+# 此时刚创建生成器对象, 还没有开始运行
+print(g.gi_running)  # False
+
+# 栈帧对象
+print(g.gi_frame)  # &lt;frame at 0x0000021B6B0969F0,....
+
+# PyCodeObject对象
+print(g.gi_code)  # &lt;code object gen...
+
+# 当然我们还可以通过如下方式获取
+print(g.gi_frame.f_code is g.gi_code is gen.__code__)  # True</code></pre><h3 id="生成器的执行"><a href="#生成器的执行" class="headerlink" title="生成器的执行"></a>生成器的执行</h3><p><strong>当执行g = gen()之后，返回生成器对象并交给变量g指向，这个时候还没有开始执行。</strong></p>
+<pre><code>g = gen()
+print(g.gi_frame.f_lasti)  # -1</code></pre><p><strong>栈帧对象 <em>f_lasti</em> 字段记录当前字节码执行进度，<em>-1</em> 表示尚未开始执行。</strong></p>
+<p><strong>在使用Python时我们知道，借助 <em>next</em> 内建函数或者 <em>send</em> 方法可以启动生成器，并驱动它不断执行。这意味着，生成器执行的秘密可以通过这两个函数找到。</strong></p>
+<p><strong>我们先从 <em>next</em> 函数入手，作为内建函数，它定义于 <em>Python/bltinmodule.c</em> 源文件，<em>C</em> 语言函数 <em>builtin_next</em> 是也。<em>builtin_next</em> 函数逻辑非常简单，除了类型检查等一些样板式代码，最关键的是这一行：</strong></p>
+<pre><code>res = (*it-&gt;ob_type-&gt;tp_iternext)(it);</code></pre><p><strong>这行代码表明，<em>next</em> 函数实际上调用了生成器类型对象的 <em>tp_iternext</em> 函数完成工作。</strong></p>
+<blockquote>
+<p><strong>next(g)等价于g.__next__()、等价于g.__class__.__next__(g)。</strong></p>
+</blockquote>
+<pre><code>g = gen()
+print(g.__next__())
+&quot;&quot;&quot;
+生成器开始执行了
+创建了一个局部变量name
+夏色祭
+&quot;&quot;&quot;
+# 其中g.__next__()的返回值就是yield后面的name</code></pre><p><strong>那么底层调用了哪个函数呢？我们说类型对象决定实例对象的行为，实例对象相关操作函数的指针都保存在类型对象中。生成器作为 <em>Python</em> 对象中的一员，当然也遵守这一法则。顺着生成器的类型对象 <em>PyGen_Type</em> ( <em>Objects/genobject.c</em> )，很快就可以找到 <em>gen_iternext</em> 函数。</strong></p>
+<p><strong>另一方面， <em>g.send</em> 也可以启动并驱动生成器的执行，根据 <em>Objects/genobject.c</em> 中的方法定义，它底层调用 <em>\</em>PyGen_Send_ 函数：</strong></p>
+<pre><code>static PyMethodDef coro_methods[] = {
+    {&quot;send&quot;,(PyCFunction)_PyGen_Send, METH_O, coro_send_doc},
+    {&quot;throw&quot;,(PyCFunction)gen_throw, METH_VARARGS, coro_throw_doc},
+    {&quot;close&quot;,(PyCFunction)gen_close, METH_NOARGS, coro_close_doc},
+    {NULL, NULL}        /* Sentinel */
+};</code></pre><p><strong>不管 <em>gen_iternext</em> 函数还是 <em>\</em>PyGen_Send_ 函数，都是直接调用 <em>gen_send_ex</em> 函数完成工作的：</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200906005419630-869370138.png" alt=""></p>
+<p><strong>因为不管是哪一种方式驱动，最终都由 <em>gen_send_ex</em> 函数处理，<em>next</em> 和 <em>send</em> 的等价性也源于此。经过千辛万苦，我们终于找到了理解生成器运行机制的关键所在。不过这两者虽然是等价的，但是稍稍还有一点不同。</strong></p>
+<pre><code>def test():
+    name = yield &quot;value1&quot;
+    print(f&quot;name = {name}&quot;)
+    yield &quot;value2&quot;
+
+
+t = test()
+t.__next__()
+t.__next__()
+&quot;&quot;&quot;
+name = None
+&quot;&quot;&quot;
+
+t = test()
+t.__next__()
+t.send(&quot;夏色祭&quot;)  # name = 夏色祭</code></pre><p><strong>这里简单提一下，具体细节可以自己去了解，比较简单。</strong></p>
+<p><strong>此外，<em>gen_send_ex</em> 函数同样位于 <em>Objects/genobject.c</em> 源文件，函数挺长，但最关键的代码只有两行：</strong></p>
+<pre><code>f-&gt;f_back = tstate-&gt;frame;
+
+// ...
+
+result = PyEval_EvalFrameEx(f, exc);</code></pre><p><strong>首先，第一行代码将生成器栈帧挂到当前调用链(或者说栈帧链)上；然后，第二行代码调用 <em>PyEval_EvalFrameEx</em> 开始在生成器栈帧对象中执行字节码；生成器栈帧对象保存着生成器执行上下文，其中 <em>f_lasti</em> 字段跟踪生成器代码对象的执行进度。</strong></p>
+<p><strong>剩下的逻辑我们显然之前就知道了，<em>PyEval_EvalFrameEx</em> 函数最终调用 <em>\</em>PyEval_EvalFrameDefault_ 函数执行 <em>frame</em> 对象中 <em>f_code</em> 内部的字节码。这个函数我们在虚拟机部分学习过，对它并不陌生。虽然它体量巨大，超过 <em>3</em> 千行代码，但逻辑却非常直白——内部由无限 <em>for</em> 循环逐条遍历字节码，然后交给内部的一个巨型switch case语句，根据不同的指令执行不同的case分支，每执行完一条字节码就自增 <em>f_lasti</em> 字段，直到字节码全部执行完毕、或者中间出现异常时结束循环。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200906005428253-249060011.png" alt=""></p>
+<h3 id="生成器的暂停"><a href="#生成器的暂停" class="headerlink" title="生成器的暂停"></a>生成器的暂停</h3><p><strong>我们知道，生成器可以利用 <em>yield</em> 语句，将执行权归还给调用者。因此，生成器暂停执行的秘密就隐藏在 <em>yield</em> 语句中。我们先来看看 <em>yield</em> 语句编译后，生成什么字节码。这里我们就直接分析上面生成器函数内部的字节码：</strong></p>
+<pre><code> 2           0 LOAD_GLOBAL              0 (print)
+             2 LOAD_CONST               1 (&apos;生成器开始执行了&apos;)
+             4 CALL_FUNCTION            1
+             6 POP_TOP
+
+ 4           8 LOAD_CONST               2 (&apos;夏色祭&apos;)
+            10 STORE_FAST               0 (name)
+
+ 5          12 LOAD_GLOBAL              0 (print)
+            14 LOAD_CONST               3 (&apos;创建了一个局部变量name&apos;)
+            16 CALL_FUNCTION            1
+            18 POP_TOP
+
+ 6          20 LOAD_FAST                0 (name)
+            22 YIELD_VALUE
+            24 POP_TOP
+
+ 8          26 LOAD_CONST               4 (-1)
+            28 STORE_FAST               1 (age)
+
+ 9          30 LOAD_GLOBAL              0 (print)
+            32 LOAD_CONST               5 (&apos;创建了一个局部变量age&apos;)
+            34 CALL_FUNCTION            1
+            36 POP_TOP
+
+10          38 LOAD_FAST                1 (age)
+            40 YIELD_VALUE
+            42 POP_TOP
+
+12          44 LOAD_CONST               6 (&apos;female&apos;)
+            46 STORE_FAST               2 (gender)
+
+13          48 LOAD_GLOBAL              0 (print)
+            50 LOAD_CONST               7 (&apos;创建了一个局部变量gender&apos;)
+            52 CALL_FUNCTION            1
+            54 POP_TOP
+
+14          56 LOAD_FAST                2 (gender)
+            58 YIELD_VALUE
+            60 POP_TOP
+            62 LOAD_CONST               0 (None)
+            64 RETURN_VALUE</code></pre><p><strong>我们看到每个 <em>yield</em> 语句编译后，都得到这样 <em>3</em> 条字节码指令：</strong></p>
+<pre><code>LOAD_FAST   
+YIELD_VALUE
+POP_TOP</code></pre><p><strong>这里是LOAD_FAST，也可以是LOAD_CONST、LOAD_NAME等等，首先这里的LOAD_FAST是将变量指向的值压入运行时栈，设置在栈顶。另外这里变量就是yield右边的值，然后执行 <em>YIELD_VALUE</em> 指令，显然关键就在此处。</strong></p>
+<pre><code>case TARGET(YIELD_VALUE): {
+    retval = POP(); //弹出返回值
+
+    if (co-&gt;co_flags &amp; CO_ASYNC_GENERATOR) {
+        PyObject *w = _PyAsyncGenValueWrapperNew(retval);
+        Py_DECREF(retval);
+        if (w == NULL) {
+            retval = NULL;
+            goto error;
+        }
+        retval = w;
+    }
+
+    f-&gt;f_stacktop = stack_pointer;
+    //直接通过goto语句跳出for循环
+    goto exit_yielding;
+}</code></pre><p><strong>紧接着，<em>\</em>PyEval_EvalFrameDefault_ 函数将当前栈帧(也就是生成器的栈帧)从栈帧链中解开。注意到，<em>yield</em> 值被 <em>\</em>PyEval_EvalFrameDefault_ 函数返回，并最终被 <em>send</em> 方法或 <em>next</em> 函数返回给调用者。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200906005437906-1976463887.png" alt=""></p>
+<h3 id="生成器的恢复"><a href="#生成器的恢复" class="headerlink" title="生成器的恢复"></a>生成器的恢复</h3><p><strong>当我们再次调用 <em>next</em> 函数或者 <em>send</em> 方法时，生成器将恢复执行：</strong></p>
+<p><strong>另外通过 <em>send</em> 方法，可以传入一个值，赋给yield所在语句的等号左边的变量，那么这是如何做到的呢？</strong></p>
+<p><strong>首先我们知道，<em>send</em> 方法被调用后，<em>Python</em> 先把生成器栈帧对象挂到栈帧链中，并最终调用 <em>PyEval_EvalFrameEx</em> 函数逐条执行字节码。在这个过程中，<em>send</em> 发送的数据会被放在生成器栈顶：</strong></p>
+<pre><code>g = gen()
+print(g.__next__())
+&quot;&quot;&quot;
+生成器开始执行了
+创建了一个局部变量name
+夏色祭
+&quot;&quot;&quot;
+print(g.gi_frame.f_lasti)  # 22
+print(g.gi_frame.f_locals)  # {&apos;name&apos;: &apos;夏色祭&apos;}
+
+
+print(g.send(&quot;matsuri&quot;))
+&quot;&quot;&quot;
+创建了一个局部变量age
+-1
+&quot;&quot;&quot;
+print(g.gi_frame.f_lasti)  # 40
+print(g.gi_frame.f_locals)  # {&apos;name&apos;: &apos;夏色祭&apos;, &apos;age&apos;: -1}</code></pre><p><strong>这里我们 <em>send</em> 一个字符串”matsuri”，当然我们的 <em>yield</em> 语句中没有出现赋值，所以这里的值没有变量接收。因此在YIELD_VALUE指令后面就是POP_TOP了，将栈顶的值直接弹出、丢弃。尽管我们没有尝试，但如果假设我们使用变量接收了会怎么样呢？不用想，显然YIELD_VALUE指令后面的POP_TOP会变成STORE_FAST，从栈顶取出 <em>send</em> 发来的值，并保存在局部变量中。</strong></p>
+<p><strong>所以当出现 <em>next</em> 函数或者 <em>send</em> 方法时，这里会再次将生成器对象的栈帧插入到栈帧链中。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200906005448401-885632238.png" alt=""></p>
+<p><strong>而且我们看到 <em>f_lasti</em> ，它负责保存执行进度，这个进度显然是指字节码指令的便宜量。一开始是 <em>-1</em> 表示生成器没有执行，后面的 <em>22</em> 、<em>40</em> 则对应各自的YIELD_VALUE。此外，我们看到随着生成器的执行，f_locals也在不断变化。</strong></p>
+<p><strong>再接着生成器按照逻辑有条不紊的执行，每次遇到 <em>yield</em> 就将后面的值返回，并将生成器所在栈帧从栈帧链中移除，同时将f_back设置为空；当使用next函数或者send方法时，再将生成器所在栈帧插入到栈帧链中，然后f_back指向next(g)或者g.send(value)对应的栈帧。然后next(g)或者g.send(value)继续执行，在找到下一个yield之后，继续返回，然后再将生成器所在栈帧的f_back设置为空、并从栈帧链中移除，至于next(g)或者g.send(value)，由于它们已经执行完毕，所在栈帧就被销毁了。然后代码继续执行，如果再遇到next(g)或者g.send(value)，那么再重复相同的动作，周而复始，直到生成器执行完毕。</strong></p>
+<pre><code>g = gen()
+print(g.__next__())
+&quot;&quot;&quot;
+生成器开始执行了
+创建了一个局部变量name
+夏色祭
+&quot;&quot;&quot;
+print(g.gi_frame.f_lasti)  # 22
+print(g.gi_frame.f_locals)  # {&apos;name&apos;: &apos;夏色祭&apos;}
+# 我们说next函数或者send方法执行完毕时, 生成器所在栈帧就会从栈帧链中移除, 同时f_back设置为空
+print(g.gi_frame.f_back)  # None
+# 如果是函数, 那么它的栈帧的f_back属性显然是模块对应的栈帧, 但是对于生成器而言则是None
+# 只有在执行时才会被插入到栈帧链中, 并且f_back就是next函数或者send方法调用时所在的栈帧
+
+print(g.send(&quot;matsuri&quot;))
+&quot;&quot;&quot;
+创建了一个局部变量age
+-1
+&quot;&quot;&quot;
+print(g.gi_frame.f_lasti)  # 40
+print(g.gi_frame.f_locals)  # {&apos;name&apos;: &apos;夏色祭&apos;, &apos;age&apos;: -1}
+
+
+print(next(g))
+&quot;&quot;&quot;
+创建了一个局部变量gender
+-female
+&quot;&quot;&quot;
+print(g.gi_frame.f_lasti)  # 58
+print(g.gi_frame.f_locals)  # {&apos;name&apos;: &apos;夏色祭&apos;, &apos;age&apos;: -1, &apos;gender&apos;: &apos;female&apos;}
+
+
+try:
+    next(g)
+except StopIteration:
+    print(&quot;生成器执行完毕&quot;)  # 生成器执行完毕</code></pre><p><strong>注意：一旦当生成器执行完毕之后，它的 <em>gi_frame</em> 会被设置为None。</strong></p>
+<pre><code>print(g.gi_frame)  # &lt;frame at 0x000002353BB469F0...
+
+try:
+    next(g)
+except StopIteration:
+    print(&quot;生成器执行完毕&quot;)  # 生成器执行完毕
+
+print(g.gi_frame)  # None</code></pre><h3 id="生成器小结"><a href="#生成器小结" class="headerlink" title="生成器小结"></a>生成器小结</h3><p><strong>至此，生成器执行、暂停、恢复的全部秘密皆已揭开。流程如下：</strong></p>
+<ul>
+<li><code>生成器函数编译后代码对象带有 CO_GENERATOR 标识</code></li>
+<li><code>如果函数代码对象带 CO_GENERATOR 标识，被调用时 Python 将创建生成器对象</code></li>
+<li><code>生成器创建的同时，Python 还创建一个栈帧对象，用于维护代码对象执行上下文</code></li>
+<li><code>调用 next函数或者send方法 驱动生成器执行，然后Python 将生成器栈帧对象插入栈帧链，f_back设置为调用的next函数或者send方法对应的栈帧, 开始执行字节码, 注意: 此时是在next函数或者send方法对应的栈帧中执行</code></li>
+<li><code>执行到yield语句时，说明next函数或者send方法执行完毕了; 那么将yield右边的值压入运行时栈栈顶, 并终止字节码执行, 退回到上一级栈帧; 并且还会将生成器所在栈帧的f_back设置为空, 以及设置f_lasti等成员</code></li>
+<li><code>yield值最终作为next函数或者send方法的返回值，被调用者取得</code></li>
+<li><code>当再次调用next函数或者send方法时，Python会将生成器栈帧重新插入到栈帧链中，f_back设置为调用的next函数或者send方法对应的栈帧，然后继续执行生成器内部的字节码。从什么地方开始执行呢？显然是上一次中断的位置，那么上一次中断的位置Python如何得知？没错，显然是通过f_lasti(字节码偏移量)，直接从f_lasti处开始执行</code></li>
+<li><code>执行时，会从f_lasti、即上一次YIELD_VALUE处开始执行，并且会获得调用者通过send发来的值，然后继续往下执行</code></li>
+<li><code>代码执行权就这样在调用者和生成器间来回切换，然后一直周而复始，直至生成器执行完毕。执行完毕之后，gi_frame就被设置为None了。</code></li>
+</ul>
+<h2 id="yield和yield-from"><a href="#yield和yield-from" class="headerlink" title="yield和yield from"></a>yield和yield from</h2><p><strong>除了yield还有一个yield from，估计有人理解不清它们的作用，这里我们简单的提一句。由于我们现在是分析解释器，所以这些Python层面的语法知识，就简单说一下。另外之所以会提到yield from，主要是为了后面的协程做铺垫。</strong></p>
+<pre><code>def f1():
+    yield &quot;夏色祭&quot;
+
+
+def f2():
+    yield from &quot;夏色祭&quot;
+
+
+f1 = f1()
+f2 = f2()
+
+print(f1.__next__())  # 夏色祭
+print(f2.__next__())  # 夏</code></pre><p><strong>yield后面可以跟可迭代对象和不可迭代对象，而yield from后面必须跟可迭代对象。当执行时，会将yield后面的值作为一个整体迭代出来，而yield from则是迭代”可迭代对象里面的一个值”。我们再举个栗子：</strong></p>
+<pre><code>def foo1():
+    yield [1, 2, 3]
+
+
+def foo2():
+    yield from [1, 2, 3]
+
+f1 = foo1()
+f2 = foo2()
+
+print(f1.__next__())  # [1, 2, 3]
+print(f2.__next__())  # 1
+print(f2.__next__())  # 2
+print(f2.__next__())  # 3
+
+&quot;&quot;&quot;
+所以我们发现了:
+    yield from [1, 2, 3]
+    等价于
+    for item in [1, 2, 3]
+        yield item
+&quot;&quot;&quot;</code></pre><p><strong>如果要是但看上面的吗？会发现yield from貌似没什么特殊的地方，但是yield from它还可以作为委托生成器。</strong></p>
+<blockquote>
+<p><strong>委托生成器：负责在调用方和子生成器之间建立一个双向通道。</strong></p>
+</blockquote>
+<pre><code>def foo1():
+    for name in [&quot;夏色祭&quot;, &quot;神乐mea&quot;, &quot;白上吹雪&quot;]:
+        yield name
+
+    return &quot;yagoo的偶像梦破灭了&quot;
+
+
+def foo2():
+    res = yield from foo1()
+    print(res)
+
+
+f2 = foo2()
+# 此时不经过foo2, 我们说调用方和子生成器之间建立了一个双向通道
+print(f2.__next__())  # 夏色祭
+print(f2.__next__())  # 神乐mea
+print(f2.__next__())  # 白上吹雪
+try:
+    f2.__next__()
+except StopIteration:
+    print(&quot;迭代结束了&quot;)
+&quot;&quot;&quot;
+yagoo的偶像梦破灭了
+迭代结束了
+&quot;&quot;&quot;</code></pre><p><strong>这里在执行f2.__next__()的时候并没有经过foo2，因为它建立了一个双向通道，我们是直接找到foo1，同理foo1中yield后面的值也会直接返回给调用方。</strong></p>
+<p><strong>一旦foo1中的代码执行完毕，理论上肯定会抛出StopIteration异常，但是有委托生成器。所以会将返回值交给委托生成器中的res，然后在委托生成器中继续寻找yield或者yield from。但是显然res = yield from foo1()这行代码下面已经没有yield或者yield from了，所以异常会由委托生成器抛出来。</strong></p>
+<pre><code>def foo1():
+    for name in [&quot;夏色祭&quot;, &quot;神乐mea&quot;, &quot;白上吹雪&quot;]:
+        yield name
+
+    return &quot;yagoo的偶像梦破灭了&quot;
+
+
+def foo2():
+    yield (yield from foo1())
+
+
+f2 = foo2()
+print(f2.__next__())  # 夏色祭
+print(f2.__next__())  # 神乐mea
+print(f2.__next__())  # 白上吹雪
+print(f2.__next__())  # yagoo的偶像梦破灭了
+
+# 显然这是最标准的写法
+# 当foo1结束之后, 那么yield from foo1()就是foo1的返回值
+# 因此等价于yield &quot;yagoo的偶像梦破灭了&quot;, 在寻找下一个yield的时候, 正好将返回值迭代出来</code></pre><h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p><strong>这次我们介绍了生成器，分析了它的执行原理，相信你对生成器会有一个更深的认识。另外在项目中，可以多尝试使用生成器。</strong></p>
+<p>posted @  2020-09-06 00:55  <a href="https://www.cnblogs.com/traditional/" target="_blank" rel="noopener">古明地盆</a>  阅读(110)  评论(4)  <a href="https://i.cnblogs.com/EditPosts.aspx?postid=13620438" target="_blank" rel="noopener">编辑</a>  <a href="https://www.cnblogs.com/traditional/p/13620438.html" target="_blank" rel="noopener">收藏</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-1016/" rel="prev" title="《深度剖析CPython解释器》20. Python类机制的深度解析(第四部分): 实例对象的创建、以及属性访问 - 古明地盆 - 博客园">
+      <i class="fa fa-chevron-left"></i> 《深度剖析CPython解释器》20. Python类机制的深度解析(第四部分): 实例对象的创建、以及属性访问 - 古明地盆 - 博客园
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-1020/" rel="next" title="《深度剖析CPython解释器》24. Python运行时环境的初始化、源码分析Python解释器在启动时都做了哪些事情？ - 古明地盆 - 博客园">
+      《深度剖析CPython解释器》24. Python运行时环境的初始化、源码分析Python解释器在启动时都做了哪些事情？ - 古明地盆 - 博客园 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#《深度剖析CPython解释器》22-解密Python中的生成器对象，从字节码的角度分析生成器的底层实现以及执行逻辑-古明地盆-博客园"><span class="nav-number"></span> <span class="nav-text">《深度剖析CPython解释器》22. 解密Python中的生成器对象，从字节码的角度分析生成器的底层实现以及执行逻辑 - 古明地盆 - 博客园</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#《深度剖析CPython解释器》22-解密Python中的生成器对象，从字节码的角度分析生成器的底层实现以及执行逻辑"><span class="nav-number"></span> <span class="nav-text">《深度剖析CPython解释器》22. 解密Python中的生成器对象，从字节码的角度分析生成器的底层实现以及执行逻辑</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#楔子"><span class="nav-number"></span> <span class="nav-text">楔子</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#生成器"><span class="nav-number"></span> <span class="nav-text">生成器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#基本用法"><span class="nav-number">1.</span> <span class="nav-text">基本用法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#观察生成器的运行行为"><span class="nav-number">2.</span> <span class="nav-text">观察生成器的运行行为</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#任务上下文"><span class="nav-number">3.</span> <span class="nav-text">任务上下文</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#字节码解密生成器"><span class="nav-number"></span> <span class="nav-text">字节码解密生成器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#生成器的创建"><span class="nav-number">1.</span> <span class="nav-text">生成器的创建</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#生成器的执行"><span class="nav-number">2.</span> <span class="nav-text">生成器的执行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#生成器的暂停"><span class="nav-number">3.</span> <span class="nav-text">生成器的暂停</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#生成器的恢复"><span class="nav-number">4.</span> <span class="nav-text">生成器的恢复</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#生成器小结"><span class="nav-number">5.</span> <span class="nav-text">生成器小结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#yield和yield-from"><span class="nav-number"></span> <span class="nav-text">yield和yield from</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#小结"><span class="nav-number"></span> <span class="nav-text">小结</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

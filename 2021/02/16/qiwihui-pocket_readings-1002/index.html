@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="《深度剖析CPython解释器》6. 解密Python中bytes对象的底层实现，以及相关操作 - 古明地盆 - 博客园">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《深度剖析CPython解释器》6. 解密Python中bytes对象的底层实现，以及相关操作 - 古明地盆 - 博客园">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1002/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="《深度剖析CPython解释器》6. 解密Python中bytes对象的底层实现，以及相关操作 - 古明地盆 - 博客园">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200805223900719-724141880.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200805223908475-1596108760.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200805223922037-1082582124.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200805223933085-875268687.png">
+<meta property="article:published_time" content="2021-02-16T14:12:19.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.434Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200805223900719-724141880.png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1002/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>《深度剖析CPython解释器》6. 解密Python中bytes对象的底层实现，以及相关操作 - 古明地盆 - 博客园 | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1002/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          《深度剖析CPython解释器》6. 解密Python中bytes对象的底层实现，以及相关操作 - 古明地盆 - 博客园
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-02-16 14:12:19" itemprop="dateCreated datePublished" datetime="2021-02-16T14:12:19+00:00">2021-02-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">《深度剖析CPython解释器》6. 解密Python中bytes对象的底层实现，以及相关操作 - 古明地盆 - 博客园</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#19981;&#23569;&#32534;&#31243;&#35821;&#35328;&#20013;&#30340;”&#23383;&#31526;&#20018;”&#37117;&#26159;&#20351;&#29992;&#23383;&#31526;&#25968;&#32452;(&#25110;&#32773;&#31216;&#23383;&#31526;&#24207;&#21015;)&#26469;&#34920;&#31034;&#65292;&#27604;&#22914;C&#35821;&#35328;&#21644;go&#35821;&#35328;&#23601;&#26159;&#36825;&#26679;&#12290;<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/2Zsfwtv" target="_blank" rel="noopener">https://ift.tt/2Zsfwtv</a> original site<br><br><br><br>February 16, 2021 at 10:08PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1002#issuecomment-792616472" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>3/8/2021</strong></p>
+</blockquote>
+<h2 id="《深度剖析CPython解释器》6-解密Python中bytes对象的底层实现，以及相关操作-古明地盆-博客园"><a href="#《深度剖析CPython解释器》6-解密Python中bytes对象的底层实现，以及相关操作-古明地盆-博客园" class="headerlink" title="《深度剖析CPython解释器》6. 解密Python中bytes对象的底层实现，以及相关操作 - 古明地盆 - 博客园"></a>《深度剖析CPython解释器》6. 解密Python中bytes对象的底层实现，以及相关操作 - 古明地盆 - 博客园</h2><h1 id="《深度剖析CPython解释器》6-解密Python中bytes对象的底层实现，以及相关操作"><a href="#《深度剖析CPython解释器》6-解密Python中bytes对象的底层实现，以及相关操作" class="headerlink" title="《深度剖析CPython解释器》6. 解密Python中bytes对象的底层实现，以及相关操作"></a><a href="https://www.cnblogs.com/traditional/p/13443313.html" target="_blank" rel="noopener">《深度剖析CPython解释器》6. 解密Python中bytes对象的底层实现，以及相关操作</a></h1><h2 id="楔子"><a href="#楔子" class="headerlink" title="楔子"></a>楔子</h2><p><strong>不少编程语言中的”字符串”都是使用**</strong>字符数组(或者称字符序列)<strong>**来表示，比如C语言和go语言就是这样。</strong></p>
+<pre><code>char name[] = &quot;komeiji satori&quot;;</code></pre><p><strong>一个字节最多能表示256个字符，所以对于英文来说足够了，因此一个英文字符占一个字节即可，然而对于那些非英文字符便力不从心了。因此为了表示这些非英文编码，于是多字节编码应运而生—-通过多个字节来表示一个字符。但由于原始字节序列不维护编码信息，因此操作不慎便导致各种乱码现象。</strong></p>
+<p><strong>而Python提供的解决方案是使用unicode<code>(在Python3中等价于str)</code>表示字符串，因为unicode可以表示各种字符，不需要关心编码的问题。但在存储或网络通讯时，字符串不可避免地要**</strong>序列化<strong><strong>成</strong></strong>字节序列<strong>**。为此，Python除了提供字符串对象之外，还额外提供了字节序列对象—-bytes。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200805223900719-724141880.png" alt=""></p>
+<p><strong>如上图，str对象统一表示一个字符串，不需要关心编码；计算机通过字节序列和存储介质、网络介质打交道，字节序列由bytes对象表示；在存储和传输str对象的时候，需要将其序列化成字节序列，序列化也是编码的过程。</strong></p>
+<p><strong>下面我们就来看看bytes对象在底层的数据结构。</strong></p>
+<h2 id="PyBytesObject"><a href="#PyBytesObject" class="headerlink" title="PyBytesObject"></a>PyBytesObject</h2><p><strong>我们说bytes对象是由若干个字节组成的，显然这是一个变长对象，有多少个字节说明其长度是多少。</strong></p>
+<pre><code>//Include/bytesobject.h
+typedef struct {
+    PyObject_VAR_HEAD
+    Py_hash_t ob_shash;
+    char ob_sval[1];
+
+    /* Invariants:
+     *     ob_sval contains space for &apos;ob_size+1&apos; elements.
+     *     ob_sval[ob_size] == 0.
+     *     ob_shash is the hash of the string or -1 if not computed yet.
+     */
+} PyBytesObject;</code></pre><p><strong>我们看一下里面的成员对象：</strong></p>
+<ul>
+<li><code>PyObject_VAR_HEAD：变长对象的公共头部</code></li>
+<li><code>ob_shash：保存该字节序列的哈希值，之所以选择保存是因为在很多场景都需要bytes对象的哈希值。而Python在计算字节序列的哈希值的时候，需要遍历每一个字节，因此开销比较大。所以会提前计算一次并保存起来，这样以后就不需要算了，可以直接拿来用，并且bytes对象是不可变的，所以哈希值是不变的。</code></li>
+<li><code>ob_sval：这个和PyLongObject中的ob_digit的声明方式是类似的，虽然声明的时候长度是1, 但具体是多少则取决于bytes对象的字节数量。这是C语言中定义&quot;变长数组&quot;的技巧, 虽然写的长度是1, 但是你可以当成n来用, n可取任意值。显然这个ob_sval存储的是所有的字节，因此Python中的bytes的值，底层是通过字符数组存储的。而且通过注释，我们发现会多申请一个空间，用于存储\0，因为C中是通过\0来表示一个字符数组的结束，但是计算ob_size的时候不包括\0。</code></li>
+</ul>
+<p><strong>我们创建几个不同的bytes对象，然后通过画图感受一下：</strong></p>
+<p><strong>val = b””</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200805223908475-1596108760.png" alt=""></p>
+<p><strong>我们看到一个空的字节序列，底层的ob_savl也是需要一个’\0’的，那么这个结构体实例占多大内存呢？我们说上面ob_sval之外的四个成员，显然每个都是8字节，而ob_savl每个成员都是一个char、也就是占1字节，所以Python中bytes对象占的内存等于32 + ob_sval的长度。而ob_sval里面至少有一个’\0’，因此对于一个空的字节序列，显然占33个字节。注意：ob_size统计的是ob_sval中有效字节的个数，不包括’\0’，但是计算占用内存的时候，显然是需要考虑在内的，因为它确实多占用了一个字节的空间。或者说bytes对象占的内存等于33 + ob_size也是可以的。</strong></p>
+<pre><code>&gt;&gt;&gt; val = b&quot;&quot;
+&gt;&gt;&gt; sys.getsizeof(val)
+33
+&gt;&gt;&gt;</code></pre><p><strong>val = b”abc”</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200805223922037-1082582124.png" alt=""></p>
+<pre><code>&gt;&gt;&gt; val = b&quot;abc&quot;
+&gt;&gt;&gt; sys.getsizeof(val)
+36  # 32 + 4
+&gt;&gt;&gt;</code></pre><h2 id="bytes对象的行为"><a href="#bytes对象的行为" class="headerlink" title="bytes对象的行为"></a>bytes对象的行为</h2><p><strong>介绍bytes对象在底层的数据结构之后，我们要考察bytes对象的行为。我们说实例对象的行为由其类型对象决定，所以bytes对象具有哪些行为，就看bytes类型对象本身定义了哪些操作。bytes类型对象，显然对应PyBytes_Type，根据我们之前介绍的规律，也可以猜出来，它定义在Object/bytesobject.c中。</strong></p>
+<pre><code>PyTypeObject PyBytes_Type = {
+    PyVarObject_HEAD_INIT(&amp;PyType_Type, 0)
+    &quot;bytes&quot;,
+    PyBytesObject_SIZE,
+    sizeof(char),
+    // ...
+    &amp;bytes_as_number,                           /* tp_as_number */
+    &amp;bytes_as_sequence,                         /* tp_as_sequence */
+    &amp;bytes_as_mapping,                          /* tp_as_mapping */
+    (hashfunc)bytes_hash,                       /* tp_hash */
+    // ...
+};</code></pre><p><strong>到了现在，相信你对类型对象的结构肯定非常熟悉了，因为类型对象都是由PyTypeObject结构体实例化得到的。我们看到tp_as_number，它居然不是0，而是传递了一个指针，说明确实指向了一个PyNumberMethods结构体实例。难道bytes支持数值运算，这显然是不可能的啊，所以我们需要进入bytes_as_number中一探究竟。</strong></p>
+<pre><code>static PyNumberMethods bytes_as_number = {
+    0,              /*nb_add*/
+    0,              /*nb_subtract*/
+    0,              /*nb_multiply*/
+    bytes_mod,      /*nb_remainder*/
+}
+
+//我们看到它只定义了一个取模操作，也就是%
+//看到%估计有人已经明白了，这是格式化
+static PyObject *
+bytes_mod(PyObject *self, PyObject *arg)
+{
+    if (!PyBytes_Check(self)) {
+        Py_RETURN_NOTIMPLEMENTED;
+    }
+    return _PyBytes_FormatEx(PyBytes_AS_STRING(self), PyBytes_GET_SIZE(self),
+                             arg, 0);
+}</code></pre><p><strong>由此可见，bytes对象只是借用了%运算实现了格式化，谈不上数值运算，虚惊一场。不过由此也看到了Python的动态特性，即使是相同的操作，但如果是不同类型的对象执行的话，也会有不同的表现。</strong></p>
+<pre><code>&gt;&gt;&gt; info = b&quot;name: %s, age: %d&quot;
+&gt;&gt;&gt; info % (b&quot;satori&quot;, 16)
+b&apos;name: satori, age: 16&apos;
+&gt;&gt;&gt;</code></pre><p><strong>除了tp_as_number，PyBytes_Type还给tp_as_sequence成员传递了bytes_as_sequence指针，说明bytes对象支持序列操作。显然这是肯定的，而且bytes对象显然是序列型对象，所以序列型操作才是我们的研究的重点，下面看看bytes_as_sequence的定义。</strong></p>
+<pre><code>static PySequenceMethods bytes_as_sequence = {
+    (lenfunc)bytes_length, /*sq_length*/
+    (binaryfunc)bytes_concat, /*sq_concat*/
+    (ssizeargfunc)bytes_repeat, /*sq_repeat*/
+    (ssizeargfunc)bytes_item, /*sq_item*/
+    0,                  /*sq_slice*/
+    0,                  /*sq_ass_item*/
+    0,                  /*sq_ass_slice*/
+    (objobjproc)bytes_contains /*sq_contains*/
+};</code></pre><p><strong>根据定义我们看到，bytes对象支持的序列型操作一共有5个：</strong></p>
+<ul>
+<li><code>sq_length：查看序列的长度</code></li>
+<li><code>sq_concat：将两个序列合并为一个</code></li>
+<li><code>sq_repeat：将序列重复多次</code></li>
+<li><code>sq_item：根据索引获取指定的下表, 得到一个整型;如果是切片，那么还会得到一个bytes对象</code></li>
+<li><code>sq_contains：判断某个序列是不是在该序列中，显然它等价于Python中的in操作</code></li>
+</ul>
+<p><strong>查看序列长度：</strong></p>
+<p><strong>显然这是最简单的，直接获取ob_size即可，比如：val = b”abcde”，那么长度就是5。</strong></p>
+<pre><code>static Py_ssize_t
+bytes_length(PyBytesObject *a)
+{
+    return Py_SIZE(a);
+}</code></pre><p><strong>将两个序列合并为一个：</strong></p>
+<pre><code>&gt;&gt;&gt; a = b&quot;abc&quot;
+&gt;&gt;&gt; b = b&quot;def&quot;
+&gt;&gt;&gt; a + b
+b&apos;abcdef&apos;
+&gt;&gt;&gt;</code></pre><p><strong>而且我们看到这里相当于是加法运算，我们很容易想到会是PyNumberMethods中的nb_add，比如：PyLongObject对应的long_add、PyFloatObject对应的float_add，但对于bytes对象而言，加法操作对应PySequenceMethods的sq_concat。所以我们看到Python中的同一个操作符，在底层会对应不同的函数，比如：long_add和float_add、以及这里的bytes_concat，在Python的层面都是+这个操作符。然后我们看看底层是怎么对两个字节序列进行相加的。</strong></p>
+<pre><code>static PyObject *
+bytes_concat(PyObject *a, PyObject *b)
+{    
+    //两个局部变量，用于维护缓冲区
+    Py_buffer va, vb;
+    //result用于保存结果
+    PyObject *result = NULL;
+
+    //将缓冲区的长度设置为-1, 可以认为此时缓冲区啥也没有
+    va.len = -1;
+    vb.len = -1;
+    //将a、b中ob_sval拷贝到缓冲区中，拷贝成功返回0，拷贝失败返回非0
+    //如果下面的条件不成功, 就意味着拷贝失败了, 说明至少有一个老铁不是bytes类型
+    if (PyObject_GetBuffer(a, &amp;va, PyBUF_SIMPLE) != 0 ||
+        PyObject_GetBuffer(b, &amp;vb, PyBUF_SIMPLE) != 0) {
+        //然后设置异常，PyExc_TypeError表示TypeError(类型错误)，专门用来指对一个对象执行了它所不支持的操作
+        PyErr_Format(PyExc_TypeError, &quot;can&apos;t concat %.100s to %.100s&quot;,
+                     Py_TYPE(b)-&gt;tp_name, Py_TYPE(a)-&gt;tp_name);
+        //比如：&quot;123&quot; + 123, 会得到: TypeError: can&apos;t concat int to bytes, 和这里设置的异常信息是一样的
+        //这里直接跳转到done
+        goto done;
+    }
+
+    //这里是判断是否有一方长度为0, 如果a长度为0，那么相加之后结果就是b
+    if (va.len == 0 &amp;&amp; PyBytes_CheckExact(b)) {
+        //将b拷贝给result
+        result = b;
+        //增加result的引用计数
+        Py_INCREF(result);
+        //跳转
+        goto done;
+    }
+
+    //和上面同理，如果b长度为0，那么相加之后的结果就是a
+    if (vb.len == 0 &amp;&amp; PyBytes_CheckExact(a)) {
+        //将a拷贝给result
+        result = a;
+        //增加引用计数
+        Py_INCREF(result);
+        //跳转
+        goto done;
+    }
+
+    //这里是判断两个字节序列合并之后，长度是否超过限制，因为不允许超过PY_SSIZE_T_MAX
+    //所以更直观的写法应该是 if (va.len + vb.len &gt; PY_SSIZE_T_MAX), 但是这个条件基本不可能满足，除非你写恶意代码
+    if (va.len &gt; PY_SSIZE_T_MAX - vb.len) {
+        PyErr_NoMemory();
+        goto done;
+    }
+
+    //否则话，声明指定容量PyBytesObject
+    result = PyBytes_FromStringAndSize(NULL, va.len + vb.len);
+    if (result != NULL) {
+        //将缓冲区va里面内容拷贝到result的ob_sval中，拷贝的长度为va.len
+        //PyBytes_AS_STRING是一个宏，用于获取PyBytesObject中的ob_sval
+        memcpy(PyBytes_AS_STRING(result), va.buf, va.len);
+        //然后将缓冲区vb里面的内容拷贝到result的ob_sval中，拷贝的长度为vb.len，但是从va.len的位置开始拷贝, 不然会把内容覆盖掉
+        memcpy(PyBytes_AS_STRING(result) + va.len, vb.buf, vb.len);
+    }
+
+  done:
+    //如果长度不会-1，那么要将缓冲区里面的内容释放掉，否则可能导致内存泄漏
+    if (va.len != -1)
+        PyBuffer_Release(&amp;va);
+    if (vb.len != -1)
+        PyBuffer_Release(&amp;vb);
+    //返回result
+    return result;
+}</code></pre><p><strong>虽然代码很长，但是不难理解。不过可能有人认为为什么非要先将a、b的内容拷贝到Py_buffer里面，再通过Py_buffer拷贝到result里面去呢？直接拷贝不可以吗？答案是Py_buffer提供了一套操作对象缓冲区的统一接口，屏蔽不同类型对象的内部差异。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202008/1229382-20200805223933085-875268687.png" alt=""></p>
+<p><strong>将序列重复多次：</strong></p>
+<pre><code>&gt;&gt;&gt; a = b&quot;abc&quot;
+&gt;&gt;&gt; a * 3
+b&apos;abcabcabc&apos;
+&gt;&gt;&gt; a * -1
+b&apos;&apos;  # 如果乘上一个负数，等于乘上0，那么会得到一个空的字节序列
+&gt;&gt;&gt;</code></pre><p><strong>然后我们看看底层的实现：</strong></p>
+<pre><code>static PyObject *
+bytes_repeat(PyBytesObject *a, Py_ssize_t n)
+{
+    Py_ssize_t i;
+    Py_ssize_t j;
+    Py_ssize_t size;
+    PyBytesObject *op;
+    size_t nbytes;
+    //如果n小于0, 那么等于0
+    if (n &lt; 0)
+        n = 0;
+    //这里条件写成Py_SIZE(a) * n &gt; PY_SSIZE_T_MAX更容易理解
+    if (n &gt; 0 &amp;&amp; Py_SIZE(a) &gt; PY_SSIZE_T_MAX / n) {
+        //先计算相乘之后字节序列的长度是否超过最大限制，如果超过了，直接报错
+        PyErr_SetString(PyExc_OverflowError,
+            &quot;repeated bytes are too long&quot;);
+        return NULL;
+    }
+    //计算Py_SIZE(a) * n得到size
+    size = Py_SIZE(a) * n;
+    if (size == Py_SIZE(a) &amp;&amp; PyBytes_CheckExact(a)) {
+        //如果两者相等，那么证明n = 1，直接增加引用计数，然后返回a即可
+        Py_INCREF(a);
+        return (PyObject *)a;
+    }
+    //类型转化，此时是size_t类型，相当于无符号64位整型
+    nbytes = (size_t)size;
+    //PyBytesObject_SIZE是一个宏，表示PyBytesObject的基本大小
+    //它是一个宏，等价于(offsetof(PyBytesObject, ob_sval) + 1), 显然是33
+    //所以nbytes + PyBytesObject_SIZE就是bytes对象所需要的空间
+    //如果nbytes + PyBytesObject_SIZE还小于等于nbytes, 所以相加之后size_t类型存不下了
+    //说明超过所占内存的极限了
+    if (nbytes + PyBytesObject_SIZE &lt;= nbytes) {
+        PyErr_SetString(PyExc_OverflowError,
+            &quot;repeated bytes are too long&quot;);
+        return NULL;
+    }
+    //申请空间，大小为PyBytesObject_SIZE + nbytes
+    op = (PyBytesObject *)PyObject_MALLOC(PyBytesObject_SIZE + nbytes);
+    if (op == NULL)
+        //返回NULL，表示申请失败
+        return PyErr_NoMemory();
+    //PyObject_INIT_VAR是一个宏，设置ob_type和ob_size
+    (void)PyObject_INIT_VAR(op, &amp;PyBytes_Type, size);
+    //设置ob_shash为-1
+    op-&gt;ob_shash = -1;
+    //将ob_sval最后一位设置为&apos;\0&apos;
+    op-&gt;ob_sval[size] = &apos;\0&apos;;
+    if (Py_SIZE(a) == 1 &amp;&amp; n &gt; 0) {
+        //显然这里是在a对应的bytes对象长度为1时，所走的逻辑
+        //直接将op-&gt;ob_sval里面元素设置a-&gt;ob_sval[0], 设置n个
+        memset(op-&gt;ob_sval, a-&gt;ob_sval[0] , n);
+        return (PyObject *) op;
+    }
+    i = 0;
+    //否则将a -&gt; ob_sval拷贝到op -&gt; ob_sval中, 拷贝n次, 因为size = Py_SIZE(a) * n;
+    //这里是先拷贝了一次
+    if (i &lt; size) {
+        memcpy(op-&gt;ob_sval, a-&gt;ob_sval, Py_SIZE(a));
+        i = Py_SIZE(a);
+    }
+    //然后拷贝n - 1次
+    while (i &lt; size) {
+        j = (i &lt;= size-i)  ?  i  :  size-i;
+        memcpy(op-&gt;ob_sval+i, op-&gt;ob_sval, j);
+        i += j;
+    }
+    return (PyObject *) op;
+}</code></pre><p><strong>根据索引获取指定元素：</strong></p>
+<pre><code>&gt;&gt;&gt; val = b&quot;abcdef&quot;
+&gt;&gt;&gt; val[1], type(val[1])
+(98, &lt;class &apos;int&apos;&gt;)
+&gt;&gt;&gt; 
+&gt;&gt;&gt; val[1: 4], type(val[1:4])
+(b&apos;bcd&apos;, &lt;class &apos;bytes&apos;&gt;)
+&gt;&gt;&gt;</code></pre><p><strong>然后我们看看底层的实现：</strong></p>
+<pre><code>static PyObject *
+bytes_item(PyBytesObject *a, Py_ssize_t i)
+{    
+    //如果i &lt; 0或者 i &gt;= a的ob_size，那么会报错:索引越界
+    //但是我们记得Python支持负数索引的啊，是的，只不过会手动帮你变成正的
+    //因为C是不支持负数索引的，所以通过C的索引获取，那么索引一定是正的
+    //因此我们填上的负数，Python会帮你加上长度。比如：长度为5，但是我们写的索引为-1, 那么Python会帮你变成4之后再获取
+    if (i &lt; 0 || i &gt;= Py_SIZE(a)) {
+        PyErr_SetString(PyExc_IndexError, &quot;index out of range&quot;);
+        return NULL;
+    }
+    //我们看到获取第i个元素之后直接转成了PyLongObject，然后返回指针
+    return PyLong_FromLong((unsigned char)a-&gt;ob_sval[i]);
+}</code></pre><p><strong>那切片呢？切片的话对应bytes_subscript，但它不是在PySequenceMethods tp_as_sequence里面，而是在PyMappingMethods bytes_as_mapping里面，它是一个映射操作。</strong></p>
+<pre><code>static PySequenceMethods bytes_as_sequence = {
+    (lenfunc)bytes_length, /*sq_length*/
+    (binaryfunc)bytes_concat, /*sq_concat*/
+    (ssizeargfunc)bytes_repeat, /*sq_repeat*/
+    (ssizeargfunc)bytes_item, /*sq_item*/
+    0,                  /*sq_slice*/
+    0,                  /*sq_ass_item*/
+    0,                  /*sq_ass_slice*/
+    (objobjproc)bytes_contains /*sq_contains*/
+};
+
+//我们看到映射操作，bytes对象中只有两个，一个bytes_length获取长度，这个在bytes_as_sequence中已经实现了，还有一个就是bytes_subscript进行切片操作
+static PyMappingMethods bytes_as_mapping = {
+    (lenfunc)bytes_length,
+    (binaryfunc)bytes_subscript,
+    0,
+};</code></pre><p><strong>因为映射操作只有两个，一个是重复的，还有一个是必须要在这里说的，所以映射操作我们就放在这里介绍了。</strong></p>
+<pre><code>static PyObject*
+bytes_subscript(PyBytesObject* self, PyObject* item)
+{    
+    //参数是self和item，那么在Python的层面上就类似于self[item]
+    //检测item，看它是不是一个整型
+    if (PyIndex_Check(item)) {
+        //如果是转成Ssize_t
+        Py_ssize_t i = PyNumber_AsSsize_t(item, PyExc_IndexError);
+        if (i == -1 &amp;&amp; PyErr_Occurred())
+            return NULL;
+        //如果i小于0，那么将i加上序列的长度，得到正数索引
+        if (i &lt; 0)
+            i += PyBytes_GET_SIZE(self);
+        if (i &lt; 0 || i &gt;= PyBytes_GET_SIZE(self)) {
+            PyErr_SetString(PyExc_IndexError,
+                            &quot;index out of range&quot;);
+            return NULL;
+        }
+        //得到整型
+        return PyLong_FromLong((unsigned char)self-&gt;ob_sval[i]);
+    }
+    //检测是否是一个切片
+    else if (PySlice_Check(item)) {
+        //起始、终止、步长、拷贝的字节个数、循环变量
+        Py_ssize_t start, stop, step, slicelength, i;
+        size_t cur; //拷贝的字节所在的位置
+        //两个缓存
+        char* source_buf;
+        char* result_buf;
+        //返回的结果
+        PyObject* result;
+        //这里是会将item解包
+        if (PySlice_Unpack(item, &amp;start, &amp;stop, &amp;step) &lt; 0) {
+            return NULL;
+        }
+        //得到拷贝的字节个数比如：ob_sval长度为9, 但是未必拷贝9个，所以这个slicelength是计算的拷贝的字节个数
+        slicelength = PySlice_AdjustIndices(PyBytes_GET_SIZE(self), &amp;start,
+                                            &amp;stop, step);
+
+        //slicelength小于等于0的话，直接返回空的字节序列，比如val[3: 2]，显然此时是不循环的，因为start对应的位置在end之后，而且步长为正
+        if (slicelength &lt;= 0) {
+            return PyBytes_FromStringAndSize(&quot;&quot;, 0);
+        }
+        //如果起始位置为0，步长为1，且拷贝的字节个数等于字节序列的长度
+        else if (start == 0 &amp;&amp; step == 1 &amp;&amp;
+                 slicelength == PyBytes_GET_SIZE(self) &amp;&amp;
+                 PyBytes_CheckExact(self)) {
+            //那么增加引用计数，直接返回
+            Py_INCREF(self);
+            return (PyObject *)self;
+        }
+        else if (step == 1) {
+            //如果步长是1，那么从start开始拷贝，拷贝slicelength个字字节
+            return PyBytes_FromStringAndSize(
+                PyBytes_AS_STRING(self) + start,
+                slicelength);
+        }
+        else {
+            //走到这里，说明步长不是1，只能一个一个拷贝了
+            source_buf = PyBytes_AS_STRING(self);
+            //创建PyBytesObject对象，空间为slicelength
+            result = PyBytes_FromStringAndSize(NULL, slicelength);
+            if (result == NULL)
+                return NULL;
+
+            //拿到内部的ob_sval
+            result_buf = PyBytes_AS_STRING(result);
+            //从start开始然后一个字节一个字节的拷贝过去
+            //start开始拷贝，依旧循环slicelength，通过cur记录拷贝的位置，然后每次循环都加上步长step
+            for (cur = start, i = 0; i &lt; slicelength;
+                 cur += step, i++) {
+                result_buf[i] = source_buf[cur];
+            }
+            //返回
+            return result;
+        }
+    }
+    //item要么是整数、要么是切片，走到这里说明不满足条件
+    else {
+        //比如：item我们传递了一个字符串，显然此时在通过这种方式获取的话，这属于字典的操作
+        //所以抛出TypeError异常
+        PyErr_Format(PyExc_TypeError,
+                     &quot;byte indices must be integers or slices, not %.200s&quot;,
+                     Py_TYPE(item)-&gt;tp_name);
+        //返回空
+        return NULL;
+    }
+}</code></pre><p><strong>所以从底层我们可以看到，Python为我们做的事情是真的不少，我们通过一个简单的切片，在底层要这么多行代码。不过在我们分析完逻辑之后，会发现其实也不过如此，毕竟逻辑很好理解。</strong></p>
+<p><strong>但是在Python中，索引操作和切片操作，我们都可以通过__getitem__实现。</strong></p>
+<pre><code>class A:
+
+    def __getitem__(self, item):
+        return item
+
+
+a = A()
+print(a[123])  # 123
+print(a[&quot;name&quot;])  # name
+print(a[1: 5])  # slice(1, 5, None)
+print(a[1: 5: 2])  # slice(1, 5, 2)
+print(a[&quot;yo&quot;: &quot;ha&quot;: &quot;哼哼&quot;])  # slice(&apos;yo&apos;, &apos;ha&apos;, &apos;哼哼&apos;)
+
+# 通过__getitem__，我们可以同时实现切片、索引获取，但是当item为字符串时，我们还可以实现字典操作
+# 当然这部分内容，我们会在后面系列中分析类的时候介绍。</code></pre><p><strong>判断一个序列是否在指定的序列中：</strong></p>
+<pre><code>&gt;&gt;&gt; val = b&quot;abcdef&quot;
+&gt;&gt;&gt; b&quot;abc&quot; in val
+True
+&gt;&gt;&gt; b&quot;cbd&quot; in val
+False
+&gt;&gt;&gt;</code></pre><p><strong>如果让你来实现的话，显然是两层for循环，那么Python是怎么做的呢？</strong></p>
+<pre><code>static int
+bytes_contains(PyObject *self, PyObject *arg)
+{    
+    //比如: b&quot;abc&quot; in b&quot;abcde&quot;会调用这里的bytes_contains
+    //self就是b&quot;abcde&quot;对应的PyBytesObject的指针,arg是b&quot;abc&quot;对应的PyBytesObject的指针
+
+    //显然这里调用了_Py_bytes_contains, 传入了self -&gt; ob_sval, self -&gt; ob_size, arg
+    return _Py_bytes_contains(PyBytes_AS_STRING(self), PyBytes_GET_SIZE(self), arg);
+}
+
+
+//上面的源码没有说明，显然是在bytesobject.c中
+//但是_Py_bytes_contains位于bytes_methods.c中
+_Py_bytes_contains(const char *str, Py_ssize_t len, PyObject *arg)
+{    
+    //将arg转成整型, 但是显然只有当arg -&gt; ob_savl的有效字节为1时才可以这么做
+    Py_ssize_t ival = PyNumber_AsSsize_t(arg, NULL);
+    if (ival == -1 &amp;&amp; PyErr_Occurred()) {
+        //所以如果ival == -1 &amp;&amp; PyErr_Occurred()，说明arg -&gt; ob_sval的有效字节数大于1
+        Py_buffer varg;//缓冲区
+        Py_ssize_t pos;//遍历位置
+        PyErr_Clear();//这里将异常清空
+        //将arg -&gt; ob_sval设置到缓存区中
+        if (PyObject_GetBuffer(arg, &amp;varg, PyBUF_SIMPLE) != 0)
+            return -1;
+        //调用stringlib_find找到其位置，里面也是使用了循环
+        pos = stringlib_find(str, len,
+                             varg.buf, varg.len, 0);
+        PyBuffer_Release(&amp;varg); //释放缓冲区
+        //如果pos大于0确实找到了，否则返回-1
+        return pos &gt;= 0;
+    }
+    //否则说明字节不合法
+    if (ival &lt; 0 || ival &gt;= 256) {
+        PyErr_SetString(PyExc_ValueError, &quot;byte must be in range(0, 256)&quot;);
+        return -1;
+    }
+    //走到这里说明是单个字节，直接调用C中memchr去寻找即可
+    return memchr(str, (int) ival, len) != NULL;
+}</code></pre><h2 id="效率问题"><a href="#效率问题" class="headerlink" title="效率问题"></a>效率问题</h2><p><strong>我们知道Python中对于不可变对象运算的处理方式就是，再创建一个新的。所以三个bytes对象a、b、c相加时，那么会先根据a + b创建新的临时对象，然后再根据”临时对象+c”创建新的对象，返回指针。所以：</strong></p>
+<pre><code>result = b&quot;&quot;
+for _ in bytes_list:
+    result += _</code></pre><p><strong>这是一种效率非常低下的做法，因为涉及大量临时对象的创建和销毁，不仅是这里bytes，后面即将分析的字符串也是同样的道理。官方推荐的做法是，使用join，字符串和字节序列都可以对一个列表进行join，将列表里面的多个字符串或者字节序列join在一起。</strong></p>
+<p><strong>举个Python中的例子，我们以字符串为例，字节序列同样如此：</strong></p>
+<pre><code>def bad():
+    s = &quot;&quot;
+    for _ in range(1, 10):
+        s += str(_)
+    return s
+
+
+def good():
+    l = []
+    for _ in range(1, 10):
+        l.append(str(_))
+    return &quot;&quot;.join(l)
+
+
+def better():
+    return &quot;&quot;.join(str(_) for _ in range(1, 10))
+
+
+def best():
+    return &quot;&quot;.join(map(str, range(1, 10)))</code></pre><h2 id="字节序列缓冲池"><a href="#字节序列缓冲池" class="headerlink" title="字节序列缓冲池"></a>字节序列缓冲池</h2><p><strong>为了优化单字节bytes对象的创建效率，Python底层内部维护了一个缓冲池。</strong></p>
+<pre><code>static PyBytesObject *characters[UCHAR_MAX + 1];</code></pre><p><strong>Python内部创建单字节bytes对象时，先检查目标对象是否已在缓冲池中。PyBytes_FromStringAndSize函数是负责创建bytes对象的通用接口，同样位于 Objects/bytesobject.c 中：</strong></p>
+<pre><code>PyObject *
+PyBytes_FromStringAndSize(const char *str, Py_ssize_t size)
+{    
+    //PyBytesObject对象的指针
+    PyBytesObject *op;
+    if (size &lt; 0) {
+        //显然size不可以小于0
+        PyErr_SetString(PyExc_SystemError,
+            &quot;Negative size passed to PyBytes_FromStringAndSize&quot;);
+        return NULL;
+    }
+    //如果size为1表名创建的是单字节对象，当然str不可以为NULL, 而且获取到的字节必须要在characters里面
+    if (size == 1 &amp;&amp; str != NULL &amp;&amp;
+        (op = characters[*str &amp; UCHAR_MAX]) != NULL)
+    {
+#ifdef COUNT_ALLOCS
+        _Py_one_strings++;
+#endif    
+        //增加引用计数，返回指针
+        Py_INCREF(op);
+        return (PyObject *)op;
+    }
+
+    //否则话创建新的PyBytesObject，此时是个空
+    op = (PyBytesObject *)_PyBytes_FromSize(size, 0);
+    if (op == NULL)
+        return NULL;
+    if (str == NULL)
+        return (PyObject *) op;
+
+    //不管size是对少，都直接拷贝即可
+    memcpy(op-&gt;ob_sval, str, size);
+    //但是size是1的话，除了拷贝还会放到缓存池characters中
+    if (size == 1) {
+        characters[*str &amp; UCHAR_MAX] = op;
+        Py_INCREF(op);
+    }
+    //返回其指针
+    return (PyObject *) op;
+}</code></pre><p><strong>由此可见，当 Python 程序开始运行时，字符缓冲池是空的。随着单字节 bytes*对象的创建，缓冲池中的对象慢慢多了起来。</strong></p>
+<p><strong>这样一来，字符对象首次创建后便在缓冲池中缓存起来；后续再次使用时， Python 直接从缓冲池中取，避免重复创建和销毁。与前面章节介绍的小整数对象池一样，字符对象只有为数不多的 256 个，但使用频率非常高。缓冲池技术作为一种以时间换空间的优化手段，只需较小的内存为代价，便可明显提升执行效率。</strong></p>
+<pre><code>&gt;&gt;&gt; a1 = b&quot;a&quot;
+&gt;&gt;&gt; a2 = b&quot;a&quot;
+&gt;&gt;&gt; a1 is a2
+True
+&gt;&gt;&gt;
+&gt;&gt;&gt; a1 = b&quot;ab&quot;
+&gt;&gt;&gt; a2 = b&quot;ab&quot;
+&gt;&gt;&gt; a1 is a2
+False
+&gt;&gt;&gt;</code></pre><p><strong>显然此时不需要我解释了，单字节bytes对象会缓存起来，不是单字节则不会缓存。</strong></p>
+<h2 id="bytearray对象"><a href="#bytearray对象" class="headerlink" title="bytearray对象"></a>bytearray对象</h2><p><strong>除了bytes对象之外，Python中还有一个bytearray对象，它和bytes对象类似，只不过bytes对象是不可变的，而bytearray对象是可变的。所以就不单独分析了，这里简单提一嘴。</strong></p>
+<pre><code># 传入一个整型组成的列表创建bytearray对象
+s = bytearray([99, 100, 101])
+print(s)  # bytearray(b&apos;cde&apos;)
+
+# 传入一个bytes对象创建bytearray对象
+s = bytearray(b&quot;abc&quot;)
+print(s)
+
+# 传入一个字符串，同时指定encoding编码创建bytearray对象
+s = bytearray(&quot;古明地觉&quot;, encoding=&quot;utf-8&quot;)
+print(s)  # bytearray(b&apos;\xe5\x8f\xa4\xe6\x98\x8e\xe5\x9c\xb0\xe8\xa7\x89&apos;)
+
+# 我们对s进行decode会直接得到字符串
+print(s.decode(&quot;utf-8&quot;))  # 古明地觉
+
+# 注意：bytearray对象是可以变的
+# 如果是中文，为了防止出现乱码，所以一次要改变3个字节
+s[-3:] = &quot;恋&quot;.encode(&quot;utf-8&quot;)
+print(s)  # bytearray(b&apos;\xe5\x8f\xa4\xe6\x98\x8e\xe5\x9c\xb0\xe6\x81\x8b&apos;)
+print(s.decode(&quot;utf-8&quot;))  # 古明地恋
+
+# 我们同样可以根据索引、切片获取
+s = bytearray(b&quot;abc&quot;)
+# 获取单个元素也会得到整型，这一点和bytes对象是一样的
+print(s[0], s[1], s[2])  # 97 98 99
+# 通过切片得到bytearray
+print(s[:2])  # bytearray(b&apos;ab&apos;)
+
+# 对多个bytearray对象进行join, 会得到一个bytes对象
+print(b&quot;--&quot;.join([bytearray(b&quot;abc&quot;), bytearray(b&quot;def&quot;)]))  # b&apos;abc--def&apos;</code></pre><p><strong>因此把bytearray对象想象成可变的bytes对象即可，它的使用和bytes对象非常类似，一些操作的行为也是一样的，所以就不单独分析了，下一篇将会分析Python中的字符串。</strong></p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p><strong>这次我们分析了bytes对象的底层实现，我们说：</strong></p>
+<ul>
+<li><code>bytes对象是一个变长、不可变对象，内部的值是通过一个C的字符数组来维护的;</code></li>
+<li><code>bytes也是序列型操作，它支持的操作在bytes_as_sequence中;</code></li>
+<li><code>Python内部维护字符缓冲池来优化单字节bytes对象的创建和销毁操作;</code></li>
+<li><code>缓冲池是一种常用的以空间换时间的优化技术;</code></li>
+</ul>
+<p>posted @  2020-08-05 22:40  <a href="https://www.cnblogs.com/traditional/" target="_blank" rel="noopener">古明地盆</a>  阅读(299)  评论(7)  <a href="https://i.cnblogs.com/EditPosts.aspx?postid=13443313" target="_blank" rel="noopener">编辑</a>  <a href="https://www.cnblogs.com/traditional/p/13443313.html" target="_blank" rel="noopener">收藏</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-1000/" rel="prev" title="《深度剖析CPython解释器》4. 解密Python中最简单的对象--浮点数的底层实现 - 古明地盆 - 博客园">
+      <i class="fa fa-chevron-left"></i> 《深度剖析CPython解释器》4. 解密Python中最简单的对象--浮点数的底层实现 - 古明地盆 - 博客园
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-1001/" rel="next" title="《深度剖析CPython解释器》5. 解密Python中的整数在底层是如何实现的，以及为什么Python中大整数的运算不会溢出 - 古明地盆 - 博客园">
+      《深度剖析CPython解释器》5. 解密Python中的整数在底层是如何实现的，以及为什么Python中大整数的运算不会溢出 - 古明地盆 - 博客园 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#《深度剖析CPython解释器》6-解密Python中bytes对象的底层实现，以及相关操作-古明地盆-博客园"><span class="nav-number"></span> <span class="nav-text">《深度剖析CPython解释器》6. 解密Python中bytes对象的底层实现，以及相关操作 - 古明地盆 - 博客园</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#《深度剖析CPython解释器》6-解密Python中bytes对象的底层实现，以及相关操作"><span class="nav-number"></span> <span class="nav-text">《深度剖析CPython解释器》6. 解密Python中bytes对象的底层实现，以及相关操作</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#楔子"><span class="nav-number"></span> <span class="nav-text">楔子</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PyBytesObject"><span class="nav-number"></span> <span class="nav-text">PyBytesObject</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#bytes对象的行为"><span class="nav-number"></span> <span class="nav-text">bytes对象的行为</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#效率问题"><span class="nav-number"></span> <span class="nav-text">效率问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#字节序列缓冲池"><span class="nav-number"></span> <span class="nav-text">字节序列缓冲池</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#bytearray对象"><span class="nav-number"></span> <span class="nav-text">bytearray对象</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#小结"><span class="nav-number"></span> <span class="nav-text">小结</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

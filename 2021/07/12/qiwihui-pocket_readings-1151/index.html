@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="The Decade of Deep Learning">
+<meta property="og:type" content="article">
+<meta property="og:title" content="The Decade of Deep Learning">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/07/12/qiwihui-pocket_readings-1151/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="The Decade of Deep Learning">
+<meta property="og:image" content="https://bmk.sh/images/contour_really_small.png">
+<meta property="og:image" content="https://bmk.sh/images/glorot_activ_comp.png">
+<meta property="og:image" content="https://bmk.sh/images/rectifier.png">
+<meta property="og:image" content="https://bmk.sh/images/sigmoid_derivative_small.png">
+<meta property="og:image" content="https://bmk.sh/images/alexnet_diagram.png">
+<meta property="og:image" content="https://bmk.sh/images/imagenet_hierarchy.png">
+<meta property="og:image" content="https://bmk.sh/images/lenet98.png">
+<meta property="og:image" content="https://bmk.sh/images/dqn_atari2.png">
+<meta property="og:image" content="https://bmk.sh/images/gan_res.png">
+<meta property="og:image" content="https://bmk.sh/images/stylegan_res.png">
+<meta property="og:image" content="https://bmk.sh/images/attention.png">
+<meta property="og:image" content="https://bmk.sh/images/residual.png">
+<meta property="og:image" content="https://bmk.sh/images/cnn-arch-comparison.png">
+<meta property="og:image" content="https://bmk.sh/images/inception.png">
+<meta property="og:image" content="https://bmk.sh/images/neuralode.png">
+<meta property="og:image" content="https://bmk.sh/images/norms_comparison.png">
+<meta property="og:image" content="https://bmk.sh/images/alphago_arch.png">
+<meta property="og:image" content="https://bmk.sh/images/transformer_arch.png">
+<meta property="og:image" content="https://bmk.sh/images/nasnet.png">
+<meta property="og:image" content="https://bmk.sh/images/bert_compare.png">
+<meta property="og:image" content="https://bmk.sh/images/gpt_transfer.png">
+<meta property="og:image" content="https://bmk.sh/images/transformerxl.png">
+<meta property="og:image" content="https://bmk.sh/images/deepdoubledescent.png">
+<meta property="og:image" content="https://bmk.sh/images/neocognitron_small.png">
+<meta property="og:image" content="https://bmk.sh/images/neocognitron-connections.png">
+<meta property="article:published_time" content="2021-07-12T06:21:40.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.418Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://bmk.sh/images/contour_really_small.png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/07/12/qiwihui-pocket_readings-1151/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>The Decade of Deep Learning | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/07/12/qiwihui-pocket_readings-1151/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          The Decade of Deep Learning
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-07-12 06:21:40" itemprop="dateCreated datePublished" datetime="2021-07-12T06:21:40+00:00">2021-07-12</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">The Decade of Deep Learning</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>As the 2010&rsquo;s draw to a close, it&rsquo;s worth taking a look back at the monumental progress that has been made in Deep Learning in this decade.<br><br><br><br>Tags: deep_learning<br><br><br><br>via Pocket <a href="https://ift.tt/3rftNq9" target="_blank" rel="noopener">https://ift.tt/3rftNq9</a> original site<br><br><br><br>July 12, 2021 at 02:07PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1151#issuecomment-878006047" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>7/12/2021</strong></p>
+</blockquote>
+<h2 id="The-Decade-of-Deep-Learning-by-nabla-theta"><a href="#The-Decade-of-Deep-Learning-by-nabla-theta" class="headerlink" title="The Decade of Deep Learning by @nabla_theta"></a>The Decade of Deep Learning by @nabla_theta</h2><p>Created: 2019-12-31  Modified: 2020-01-04</p>
+<h1 id="The-Decade-of-Deep-Learning"><a href="#The-Decade-of-Deep-Learning" class="headerlink" title="The Decade of Deep Learning"></a>The Decade of Deep Learning</h1><p><img src="https://bmk.sh/images/contour_really_small.png" alt=""></p>
+<p>As the 2010’s draw to a close, it’s worth taking a look back at the monumental progress that has been made in Deep Learning in this decade.<a href="https://bmk.sh/#fn1" target="_blank" rel="noopener">[1]</a> Driven by the development of ever-more powerful compute and the increased availability of big data, Deep Learning has successfully tackled many previously intractable problems, especially in Computer Vision and Natural Language Processing. Deep Learning has also begun to see real-world application everywhere around us, from the high-impact to the frivolous, from autonomous vehicles and <a href="https://www.sciencedirect.com/science/article/abs/pii/S1361841517301135" target="_blank" rel="noopener">medical imaging</a> to virtual assistants and <a href="https://en.wikipedia.org/wiki/Deepfake" target="_blank" rel="noopener">deepfakes</a>.</p>
+<p>This post is an overview of some the most influential Deep Learning papers of the last decade. My hope is to provide a jumping-off point into many disparate areas of Deep Learning by providing succinct and dense summaries that go slightly deeper than a surface level exposition, with many references to the relevant resources.</p>
+<p>Given the nature of research, assigning credit is very difficult—the same ideas are <a href="https://en.wikipedia.org/wiki/Multiple_discovery" target="_blank" rel="noopener">pursued by many simultaneously</a>, and the most influential paper is often <a href="https://en.wikipedia.org/wiki/Stigler%27s_law_of_eponymy" target="_blank" rel="noopener">neither the first nor the best</a>. I try my best to tiptoe the line between influence and first/best works by listing the most influential papers as main entries and the other relevant papers that precede or improve upon the main entry as honorable mentions.<a href="https://bmk.sh/#fn2" target="_blank" rel="noopener">[2]</a> Of course, as such a list will always be subjective, this is not meant to be final, exhaustive, or authoritative. If you feel that the ordering, omission, or description of any paper is incorrect, please let me know—I would be more than glad to improve this list by making it more complete and accurate.</p>
+<hr>
+<p>2010</p>
+<p>========</p>
+<h2 id="Understanding-the-difficulty-of-training-deep-feedforward-neural-networks-7446-citations"><a href="#Understanding-the-difficulty-of-training-deep-feedforward-neural-networks-7446-citations" class="headerlink" title="Understanding the difficulty of training deep feedforward neural networks (7446 citations)"></a><a href="http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf" target="_blank" rel="noopener">Understanding the difficulty of training deep feedforward neural networks</a> (7446 citations)</h2><p><img src="https://bmk.sh/images/glorot_activ_comp.png" alt="A comparison of activations with and without Xavier initialization. (&lt;a href=&#39;http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf&#39;&gt;Source&lt;/a&gt;)"></p>
+<p>This paper explored some problems with deep networks, especially surrounding random initialization of weights. This paper also noticed issues with sigmoid and hyperbolic tangent activations, and proposed an alternative, SoftSign, which is a sigmoidal activation function with smoother asymptopes<a href="https://bmk.sh/#fn3" target="_blank" rel="noopener">[3]</a>. The most lasting contribution of this paper, however, is in initialization. When initialized with normally-distributed weights, it is easy for values in the network to explode or vanish, preventing training. Assuming the values from the previous layer are i.i.d Gaussians, adding them adds their variances, and thus the variance should be scaled down proportionally to the number of inputs to keep the output zero mean and unit variance. The same logic holds in reverse (i.e with the number of outputs) for the gradients. The Xavier initialization introduced in this paper is a compromise between the two, initializing weights from a Gaussian with variance 2nin+nout\frac{2}{n_{in} + n_{out}}​n​in​​+n​out​​​​2​​, where ninn_{in}n​in​​ and noutn_{out}n​out​​ are the numbers of neurons in the previous and next layers, respectively. A subsequent paper in 2015, <a href="https://arxiv.org/abs/1502.01852" target="_blank" rel="noopener"><strong>Delving Deep into Rectifiers: Surpassing Human-Level Performance on ImageNet Classification</strong></a>, introduced Kaiming initialization, which is an improved version of Xavier initialization that accounts for the effects of ReLU activations.<a href="https://bmk.sh/#fn4" target="_blank" rel="noopener">[4]</a></p>
+<hr>
+<p>2011</p>
+<p>========</p>
+<h2 id="Deep-Sparse-Rectifier-Neural-Networks-4071-citations"><a href="#Deep-Sparse-Rectifier-Neural-Networks-4071-citations" class="headerlink" title="Deep Sparse Rectifier Neural Networks (4071 citations)"></a><a href="http://proceedings.mlr.press/v15/glorot11a/glorot11a.pdf" target="_blank" rel="noopener">Deep Sparse Rectifier Neural Networks</a> (4071 citations)</h2><p><img src="https://bmk.sh/images/rectifier.png" alt="ReLU and Softplus (&lt;a href=&#39;http://proceedings.mlr.press/v15/glorot11a/glorot11a.pdf&#39;&gt;Source&lt;/a&gt;)"></p>
+<p>Most neural networks, from the earliest MLPs up until many networks toward the middle of the decade, used sigmoids for intermediate activations. Sigmoids (most commonly the <a href="https://en.wikipedia.org/wiki/Logistic_function" target="_blank" rel="noopener">logistic</a> and <a href="https://en.wikipedia.org/wiki/Tanh" target="_blank" rel="noopener">hyperbolic tangent</a> functions) have the advantages of being differentiable everywhere and having a bounded output. They also provide a satisfying analogy to biological neurons’ <a href="https://en.wikipedia.org/wiki/All-or-none_law" target="_blank" rel="noopener">all-or-none law</a>. However, as the derivative of sigmoid functions decays quickly away from zero, the gradient is often diminished rapidly as more layers are added. This is known as the vanishing gradient problem and is one of the reasons that networks were difficult to scale depthwise. This paper found that using ReLUs helped solve the vanishing gradient problem and paved the way for deeper networks.</p>
+<p><img src="https://bmk.sh/images/sigmoid_derivative_small.png" alt="Sigmoid and its derivative (&lt;a href=&#39;https://towardsdatascience.com/derivative-of-the-sigmoid-function-536880cf918e&#39;&gt;Source&lt;/a&gt;)"></p>
+<p>Despite this, however, ReLUs still have some flaws: they are non-differentiable at zero<a href="https://bmk.sh/#fn5" target="_blank" rel="noopener">[5]</a>, they can grow unbounded, and neurons could “die” and become inactive due to the saturated half of the activation. Since 2011, many improved activations have been proposed to solve the problem, but vanilla ReLUs are still competitive, as the efficacy of many new activations has been under question.</p>
+<p>The paper <a href="https://www.ncbi.nlm.nih.gov/pubmed/10879535" target="_blank" rel="noopener"><strong>Digital selection and analogue amplification coexist in a cortex-inspired silicon circuit</strong></a> (2000) is generally credited to be the first paper to establish the biological plausibility of the ReLU, and <a href="http://yann.lecun.com/exdb/publis/pdf/jarrett-iccv-09.pdf" target="_blank" rel="noopener"><strong>What is the Best Multi-Stage Architecture for Object Recognition?</strong></a> (2009) was the earliest paper that I was able to find that explored using the ReLU (referred to as the positive part in this paper) for neural networks.</p>
+<h3 id="Honorable-Mentions"><a href="#Honorable-Mentions" class="headerlink" title="Honorable Mentions"></a>Honorable Mentions</h3><ul>
+<li><a href="https://ai.stanford.edu/~amaas/papers/relu_hybrid_icml2013_final.pdf" target="_blank" rel="noopener"><strong>Rectifier Nonlinearities Improve Neural Network Acoustic Models</strong></a>: This paper introduced the Leaky ReLU, which, instead of outputting zero, “leaks” with a small gradient on the negative half. This is to help prevent the dying ReLU problem. Leaky ReLUs still have a discontinuity in the derivative at zero, though.</li>
+<li><a href="https://arxiv.org/abs/1511.07289" target="_blank" rel="noopener"><strong>Fast and Accurate Deep Network Learning by Exponential Linear Units (ELUs)</strong></a>: ELUs are similar to Leaky ReLUs but are smoother and saturate to -1 on the negative side.</li>
+<li><a href="https://arxiv.org/abs/1706.02515" target="_blank" rel="noopener"><strong>Self-Normalizing Neural Networks</strong></a>: SELUs aim to remove the need for batch normalization by scaling an ELU to create a fixed point and push the distribution towards zero mean and unit variance.</li>
+<li><a href="https://arxiv.org/abs/1606.08415" target="_blank" rel="noopener"><strong>Gaussian Error Linear Units (GELUs)</strong></a>: The GELU activation is based on the expected value of dropping out neurons according to a Gaussian distribution. To be more concrete, the probability of a certain value xxx being kept (i.e not zeroed out) is the CDF of the standard normal distribution: Φ(x)=P(x≤Z∼N(0,1))\begin{aligned}\Phi(x) = P(x \leq Z \sim \mathcal{N}(0, 1))\end{aligned}​Φ(x)=P(x≤Z∼N(0,1))​​. Thus, the expected value of a variable after this probabilistic dropout procedure is GELU(x)=xΦ(x)\bold{GELU}(x) = x\Phi(x)GELU(x)=xΦ(x).<a href="https://bmk.sh/#fn6" target="_blank" rel="noopener">[6]</a> GELUs are used in many state-of-the-art Transformer models, like BERT and GPT/GPT-2.</li>
+</ul>
+<hr>
+<p>2012</p>
+<p>========</p>
+<h2 id="ImageNet-Classification-with-Deep-Convolutional-Neural-Networks-52025-citations"><a href="#ImageNet-Classification-with-Deep-Convolutional-Neural-Networks-52025-citations" class="headerlink" title="ImageNet Classification with Deep Convolutional Neural Networks (52025 citations)"></a><a href="https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks" target="_blank" rel="noopener">ImageNet Classification with Deep Convolutional Neural Networks</a> (52025 citations)</h2><p><img src="https://bmk.sh/images/alexnet_diagram.png" alt="AlexNet architecture (&lt;a href=&#39;https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks&#39;&gt;Source&lt;/a&gt;, Untruncated)"></p>
+<p>AlexNet is an 8 layer Convolutional Neural Network using the ReLU activation function and 60 million parameters. The crucial contribution of AlexNet was demonstrating the power of deeper networks, as its architecture was, in essence, a deeper version of previous networks (i.e LeNet).</p>
+<p>The AlexNet paper is generally recognized as the paper that sparked the field of Deep Learning. AlexNet was also one of the first networks to leverage the massively parallel processing power of GPUs to train much deeper convolutional networks than before. The result was astounding, lowering the error rate on ImageNet from 26.2% to 15.3%, and beating every other contender in <a href="http://www.image-net.org/challenges/LSVRC/2012/" target="_blank" rel="noopener">ILSVRC 2012</a> by a <em>wide margin</em>. This massive improvement in error attracted a lot of attention to the field of Deep Learning, and made the AlexNet paper the most cited papers in Deep Learning.</p>
+<h3 id="Honorable-Mentions-1"><a href="#Honorable-Mentions-1" class="headerlink" title="Honorable Mentions:"></a>Honorable Mentions:</h3><p><img src="https://bmk.sh/images/imagenet_hierarchy.png" alt="An example of images from the ImageNet hierarchy (&lt;a href=&#39;http://www.image-net.org/papers/imagenet_cvpr09.pdf&#39;&gt;Source&lt;/a&gt;)"></p>
+<ul>
+<li><a href="http://www.image-net.org/papers/imagenet_cvpr09.pdf" target="_blank" rel="noopener"><strong>ImageNet: A Large-Scale Hierarchical Image Database</strong></a>: The ImageNet dataset itself is also in large part responsible for the boom in Deep Learning. With 15050 citations, it is also one of the most cited papers in all of Deep Learning (as it was published in 2009, I have decided to list it as an honorable mention). The dataset was constructed using Amazon Mechanical Turk to outsource the classification task to workers, which made this astronomically-sized dataset possible. The ImageNet Large Scale Visual Recognition Challenge (ILSVRC), the contest for image classification algorithms spawned by the ImageNet database, was also responsible for driving the development of many other innovations in Computer Vision.</li>
+<li><a href="http://people.idsia.ch/~juergen/ijcai2011.pdf" target="_blank" rel="noopener"><strong>Flexible, High Performance Convolutional Neural Networks for Image Classification</strong></a>: This paper predates AlexNet and has much in common with it: both papers leveraged GPU acceleration for training deeper networks, and both use the ReLU activation that solved the vanishing gradient problem of deep networks. Some argue that this paper has been unfairly snubbed of its place, receiving far fewer citations than AlexNet. <img src="https://bmk.sh/images/lenet98.png" alt="LeNet architecture (&lt;a href=&#39;http://vision.stanford.edu/cs598_spring07/papers/Lecun98.pdf&#39;&gt;Source&lt;/a&gt;)"></li>
+<li><a href="http://vision.stanford.edu/cs598_spring07/papers/Lecun98.pdf" target="_blank" rel="noopener"><strong>Gradient-Based Learning Applied to Document Recognition</strong></a>: This paper from <em>1998</em>, with a whopping 23110 citations, is the oft-cited pioneer of CNNs for image recognition. Indeed, modern CNNs are almost exactly scaled up versions of this early work! Even earlier is LeCun’s less cited (though, with 5697 citations, it’s nothing to scoff at) 1989 paper <a href="http://yann.lecun.com/exdb/publis/pdf/lecun-89e.pdf" target="_blank" rel="noopener"><strong>Backpropagation Applied to Handwritten Zip Codes</strong></a>, arguably the first gradient descent CNN.<a href="https://bmk.sh/#fn7" target="_blank" rel="noopener">[7]</a></li>
+</ul>
+<hr>
+<p>2013</p>
+<p>========</p>
+<h2 id="Distributed-Representations-of-Words-and-Phrases-and-their-Compositionality-16923-citations"><a href="#Distributed-Representations-of-Words-and-Phrases-and-their-Compositionality-16923-citations" class="headerlink" title="Distributed Representations of Words and Phrases and their Compositionality (16923 citations)"></a><a href="https://papers.nips.cc/paper/5021-distributed-representations-of-words-and-phrases-and-their-compositionality.pdf" target="_blank" rel="noopener">Distributed Representations of Words and Phrases and their Compositionality</a> (16923 citations)</h2><p>This paper (and the slightly earlier <a href="https://arxiv.org/abs/1301.3781" target="_blank" rel="noopener"><strong>Efficient Estimation of Word Representations in Vector Space</strong></a> by the same authors) introduced word2vec, which became the dominant way to encode text for Deep Learning NLP models. It is based on the idea that words which appear in similar contexts likely have similar meanings, and thus can be used to embed words into vectors (hence the name) to be used downstream in other models. Word2vec, in particular, trains a network to predict the context around a word given the word itself, and then extracting the latent vector from the network.<a href="https://bmk.sh/#fn8" target="_blank" rel="noopener">[8]</a></p>
+<h3 id="Honorable-Mentions-2"><a href="#Honorable-Mentions-2" class="headerlink" title="Honorable Mentions"></a>Honorable Mentions</h3><ul>
+<li><a href="https://nlp.stanford.edu/pubs/glove.pdf" target="_blank" rel="noopener"><strong>GloVe: Global Vectors for Word Representation</strong></a>: GloVe is an improved model based on the same core ideas of word2vec, except realized slightly differently. It is hotly debated whether either of these models is better in general.</li>
+</ul>
+<h2 id="Playing-Atari-with-Deep-Reinforcement-Learning-3251-citations"><a href="#Playing-Atari-with-Deep-Reinforcement-Learning-3251-citations" class="headerlink" title="Playing Atari with Deep Reinforcement Learning (3251 citations)"></a><a href="https://www.cs.toronto.edu/~vmnih/docs/dqn.pdf" target="_blank" rel="noopener">Playing Atari with Deep Reinforcement Learning</a> (3251 citations)</h2><p><img src="https://bmk.sh/images/dqn_atari2.png" alt="DeepMind Atari DQN (&lt;a href=&#39;https://arxiv.org/abs/1312.5602&#39;&gt;Source&lt;/a&gt;)"></p>
+<p>The results of DeepMind’s Atari DQN kickstarted the field of Deep Reinforcement Learning. Reinforcement Learning was previously used mostly on low-dimensional environments such as gridworlds, and was difficult to apply to more complex environments. Atari was the first successful application of reinforcement learning to a high-dimensional environment, which brought Reinforcement Learning from obscurity to an important subfield of AI.</p>
+<p>The paper uses Deep Q-Learning in particular, a form of value-based Reinforcement Learning. Value-based means that the goal is to learn how much reward the agent can expect to obtain at each state (or, in the case of Q-learning, each state-action pair) by following the policy implicitly defined by the Q-value function. This policy used in this paper is the ϵ\epsilonϵ-greedy policy—it takes the greedy (highest-scored) action as estimated by the Q-function with probability 1−ϵ1 - \epsilon1−ϵ and a completely random action with probability ϵ\epsilonϵ. This is to allow for exploration of the state space. The objective for training the Q-value function is derived from the <a href="https://en.wikipedia.org/wiki/Bellman_equation" target="_blank" rel="noopener">Bellman equation</a>, which decomposes the Q-value function into the current reward plus the maximum (discounted) Q-value of the next state (Q(s,a)=r+γmaxa′Q(s′,a′)Q(s, a) = r + \gamma \max_{a’} Q(s’, a’)Q(s,a)=r+γmax​a​′​​​​Q(s​′​​,a​′​​)), which lets us update the Q-value function using its own estimates. This technique of updating the value function based on the current reward plus future value function is known in general as <a href="https://en.wikipedia.org/wiki/Temporal_difference_learning" target="_blank" rel="noopener">Temporal Difference learning</a>.</p>
+<h3 id="Honorable-Mentions-3"><a href="#Honorable-Mentions-3" class="headerlink" title="Honorable Mentions"></a>Honorable Mentions</h3><ul>
+<li><a href="http://www.cs.rhul.ac.uk/~chrisw/new_thesis.pdf" target="_blank" rel="noopener"><strong>Learning from Delayed Rewards</strong></a>: Christopher Watkins’ thesis in 1989 introduced Q-Learning.</li>
+</ul>
+<hr>
+<p>2014</p>
+<p>========</p>
+<h2 id="Generative-Adversarial-Networks-13917-citations"><a href="#Generative-Adversarial-Networks-13917-citations" class="headerlink" title="Generative Adversarial Networks (13917 citations)"></a><a href="https://papers.nips.cc/paper/5423-generative-adversarial-nets" target="_blank" rel="noopener">Generative Adversarial Networks</a> (13917 citations)</h2><p><img src="https://bmk.sh/images/gan_res.png" alt="GAN images (&lt;a href=&#39;https://papers.nips.cc/paper/5423-generative-adversarial-nets&#39;&gt;Source&lt;/a&gt;)"></p>
+<p>Generative Adversarial Networks have been successful in no small part due to the stunning visuals they produce. Relying on a <a href="https://en.wikipedia.org/wiki/Minimax" target="_blank" rel="noopener">minimax game</a> between a Generator and a Discriminator, GANs are able to model complex, high dimensional distributions (most often, images<a href="https://bmk.sh/#fn9" target="_blank" rel="noopener">[9]</a>). The objective of the Generator is to minimize the log-probability log(1−D(G(z)))log(1 - D(G(\bold{z})))log(1−D(G(z))) of the Discriminator being correct on fake samples, while the Discriminator’s goal is to minimize its classification error logD(x)+log(1−D(G(z)))log D(x) + log(1 - D(G(\bold{z})))logD(x)+log(1−D(G(z))) between real and fake samples.</p>
+<blockquote>
+<p>The cost used for the generator in the minimax game is useful for theoretical analysis, but does not perform especially well in practice. Goodfellow, 2016</p>
+</blockquote>
+<p>In practice, the Generator is often trained to maximize the log-probability D(G(z))D(G(\bold{z}))D(G(z)) of the Discriminator being incorrect (See: <a href="https://arxiv.org/abs/1701.00160" target="_blank" rel="noopener"><em>NIPS 2016 Tutorial: Generative Adversarial Networks</em>, section 3.2.3</a>). This minor change reduces gradient saturating and improves training stability.</p>
+<h3 id="Honorable-Mentions-4"><a href="#Honorable-Mentions-4" class="headerlink" title="Honorable Mentions:"></a>Honorable Mentions:</h3><ul>
+<li><a href="https://arxiv.org/abs/1701.07875" target="_blank" rel="noopener"><strong>Wasserstein GAN</strong></a> &amp; <a href="https://arxiv.org/abs/1704.00028" target="_blank" rel="noopener"><strong>Improved Training of Wasserstein GANs</strong></a>: Vanilla GANs are plagued with difficulties, especially in training stability. Even with many <a href="https://github.com/soumith/ganhacks" target="_blank" rel="noopener">tweaks</a>, vanilla GANs often fail to train, or experience mode collapse (where the Generator produces only few distinct images). Due to their improved training stability, Wasserstein GANs with Gradient Penalty have become the de facto base GAN implementation for many GANs today. Unlike the Jensen-Shannon distance used by vanilla GANs, which saturates and provides an unusable gradient when there is little overlap between the distributions, WGANs use the <a href="https://en.wikipedia.org/wiki/Earth_mover%27s_distance" target="_blank" rel="noopener">Earth Mover’s distance</a>.<a href="https://bmk.sh/#fn10" target="_blank" rel="noopener">[10]</a> The original WGAN paper enforced a <a href="https://en.wikipedia.org/wiki/Lipschitz_continuity" target="_blank" rel="noopener">Lipschitz continuity constraint</a> (gradient less than a constant everywhere) via weight clipping, which introduced some problems which using a gradient penalty helped solve. <img src="https://bmk.sh/images/stylegan_res.png" alt="StyleGAN images (&lt;a href=&#39;https://arxiv.org/abs/1812.04948&#39;&gt;Source&lt;/a&gt;)"></li>
+<li><a href="https://arxiv.org/abs/1812.04948" target="_blank" rel="noopener"><strong>StyleGAN</strong></a>: StyleGAN is able to generate stunning high-resolution images that are nearly indistinguishable<a href="https://bmk.sh/#fn11" target="_blank" rel="noopener">[11]</a> from real images. Among the most important techniques used in such high-resolution GANs is <a href="https://arxiv.org/abs/1710.10196" target="_blank" rel="noopener">progressively growing the image size</a>, which is incorporated into StyleGAN. StyleGAN also allows for modification of the latent spaces at each of these different image scales to manipulate only features at certain levels of detail in the generated image.</li>
+</ul>
+<h2 id="Neural-Machine-Translation-by-Jointly-Learning-to-Align-and-Translate-9882-citations"><a href="#Neural-Machine-Translation-by-Jointly-Learning-to-Align-and-Translate-9882-citations" class="headerlink" title="Neural Machine Translation by Jointly Learning to Align and Translate (9882 citations)"></a><a href="https://arxiv.org/abs/1409.0473" target="_blank" rel="noopener">Neural Machine Translation by Jointly Learning to Align and Translate</a> (9882 citations)</h2><p><img src="https://bmk.sh/images/attention.png" alt="A visualization of the attention (&lt;a href=&#39;https://arxiv.org/abs/1409.0473&#39;&gt;Source&lt;/a&gt;)"></p>
+<p>This paper introduced the idea of attention—instead of compressing information down into a latent space in an RNN, one could instead keep the entire context in memory, then allowing every element of the output to attend to every element of the input, using O(nm)\mathcal{O}(nm)O(nm) operations. Despite requiring quadratically-increasing compute<a href="https://bmk.sh/#fn12" target="_blank" rel="noopener">[12]</a>, attention is far more performant than fixed-state RNNs and have become an integral part of not only textual tasks like translation and language modeling, but also percolating to models as distant as <a href="https://arxiv.org/abs/1805.08318" target="_blank" rel="noopener">GANs</a>, too.</p>
+<h2 id="Adam-A-Method-for-Stochastic-Optimization-34082-citations"><a href="#Adam-A-Method-for-Stochastic-Optimization-34082-citations" class="headerlink" title="Adam: A Method for Stochastic Optimization (34082 citations)"></a><a href="https://arxiv.org/abs/1412.6980" target="_blank" rel="noopener">Adam: A Method for Stochastic Optimization</a> (34082 citations)</h2><p>Adam has become a very popular adaptive optimizer due to its ease of tuning. Adam is based on the idea of adapting separate learning rates for each parameter. While more recent papers have <a href="https://arxiv.org/abs/1705.08292" target="_blank" rel="noopener">cast doubt</a> on the performance of Adam, it remains one of the most popular optimization algorithms in Deep Learning.</p>
+<h3 id="Honorable-Mentions-5"><a href="#Honorable-Mentions-5" class="headerlink" title="Honorable Mentions"></a>Honorable Mentions</h3><ul>
+<li><a href="https://arxiv.org/abs/1711.05101" target="_blank" rel="noopener"><strong>Decoupled Weight Decay Regularization</strong></a>: This paper claims to have discovered an error<a href="https://bmk.sh/#fn13" target="_blank" rel="noopener">[13]</a> in the implementation of Adam with weight decay in popular implementations, proposing instead an alternative AdamW optimizer to alleviate these problems.</li>
+<li><strong>RMSProp</strong>: Another popular adaptive optimizer (especially for RNNs, although whether it is actually better or worse than Adam is dubious). RMSProp is notorious for being perhaps the most cited <a href="https://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf" target="_blank" rel="noopener">lecture slide</a> in Deep Learning.</li>
+</ul>
+<hr>
+<p>2015</p>
+<p>========</p>
+<h2 id="Deep-Residual-Learning-for-Image-Recognition-34635-citations"><a href="#Deep-Residual-Learning-for-Image-Recognition-34635-citations" class="headerlink" title="Deep Residual Learning for Image Recognition (34635 citations)"></a><a href="https://arxiv.org/abs/1512.03385" target="_blank" rel="noopener">Deep Residual Learning for Image Recognition</a> (34635 citations)</h2><p><img src="https://bmk.sh/images/residual.png" alt="Residual Block Architecture (&lt;a href=&#39;https://arxiv.org/abs/1512.03385&#39;&gt;Source&lt;/a&gt;)"> Initially designed to deal with the problem of vanishing/exploding gradients in deep CNNs, the residual block has become the elementary building block for almost all CNNs today. The idea is very simple—add the input from before each block of convolutional layers to the output. The inspiration behind residual networks is that neural networks should theoretically never degrade with more layers, as additional layers could, in the worst case, be set simply as identity mappings. However, in practice, deeper networks often experience difficulties training. Residual networks made it easier for layers to learn an identity mapping, and also reduced the issue of gradient vanishing. Despite the simplicity, however, residual networks vastly outperform regular CNNs, especially for deeper networks.</p>
+<h3 id="Honorable-Mentions-6"><a href="#Honorable-Mentions-6" class="headerlink" title="Honorable Mentions:"></a>Honorable Mentions:</h3><p><img src="https://bmk.sh/images/cnn-arch-comparison.png" alt="A comparison of many different CNNs (&lt;a href=&#39;https://www.researchgate.net/publication/320084139_Gesture_Recognition_for_Robotic_Control_Using_Deep_Learning&#39;&gt;Source&lt;/a&gt;)"> Many other, more complex CNN architectures have vied for the top spot<a href="https://bmk.sh/#fn14" target="_blank" rel="noopener">[14]</a>. The following is a small sampling of historically significant networks.</p>
+<ul>
+<li><a href="https://arxiv.org/abs/1409.4842" target="_blank" rel="noopener"><strong>Highway Networks</strong></a>: Residual networks are a special case of the earlier Highway Networks, which use a similar but more complex gated design to channel gradients in deeper networks. <img src="https://bmk.sh/images/inception.png" alt="Inceptionv1 architecture (&lt;a href=&#39;https://arxiv.org/abs/1409.4842&#39;&gt;Source&lt;/a&gt;)"></li>
+<li><a href="https://arxiv.org/abs/1409.4842" target="_blank" rel="noopener"><strong>Going Deeper with Convolutions</strong></a>: The Inception architecture is based on the idea of factoring the convolutions to reduce the number of parameters and make activations sparser. This allows deeper nesting of layers, which helped GoogLeNet, also introduced in this paper, become the SOTA network in ILSVRC 2014. Many future iterations of the Inception module were subsequently published, and Inception modules were finally integrated with ResNets in <a href="https://arxiv.org/abs/1602.07261" target="_blank" rel="noopener"><strong>Inception-v4, Inception-ResNet and the Impact of Residual Connections on Learning</strong></a>.</li>
+<li><a href="https://arxiv.org/abs/1409.1556" target="_blank" rel="noopener"><strong>Very Deep Convolutional Networks for Large-Scale Image Recognition</strong></a>: Another very significant work in the history of CNNs, this paper introduced the VGG networks. This paper is significant for exploring the use of only 3x3 convolutions, instead of larger convolutions as used in most other networks. This reduces the number of parameters significantly. <img src="https://bmk.sh/images/neuralode.png" alt="Neural ODE diagram (&lt;a href=&#39;https://arxiv.org/abs/1806.07366&#39;&gt;Source&lt;/a&gt;)"></li>
+<li><a href="https://arxiv.org/abs/1806.07366" target="_blank" rel="noopener"><strong>Neural Ordinary Differential Equations</strong></a>: Neural ODEs, which won the best paper award at NIPS 2018, draw a parallel between residuals and Differential Equations. The core idea is to view residual networks as a discretization of a continuous transformation. One can then define the residual network as parameterized by an ODE, which can be solved using off-the-shelf solvers.</li>
+</ul>
+<h2 id="Batch-Normalization-Accelerating-Deep-Network-Training-by-Reducing-Internal-Covariate-Shift-14384-citations"><a href="#Batch-Normalization-Accelerating-Deep-Network-Training-by-Reducing-Internal-Covariate-Shift-14384-citations" class="headerlink" title="Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift (14384 citations)"></a><a href="https://arxiv.org/abs/1502.03167" target="_blank" rel="noopener">Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift</a> (14384 citations)</h2><p>Batch normalization is another mainstay of nearly all neural networks today. Batch norm is based on another simple but powerful idea: Keeping mean and variance statistics during training, and using that to scale activations to zero mean and unit variance. The exact reasons for the effectiveness of Batch norm are <a href="https://arxiv.org/abs/1805.11604" target="_blank" rel="noopener">disputed</a>, but it is undeniably effective empirically.<a href="https://bmk.sh/#fn15" target="_blank" rel="noopener">[15]</a></p>
+<h3 id="Honorable-Mentions-7"><a href="#Honorable-Mentions-7" class="headerlink" title="Honorable Mentions"></a>Honorable Mentions</h3><p><img src="https://bmk.sh/images/norms_comparison.png" alt="A visualization of the different normalization techniques (&lt;a href=&#39;https://arxiv.org/abs/1803.08494&#39;&gt;Source&lt;/a&gt;)"></p>
+<ul>
+<li><a href="https://arxiv.org/abs/1607.06450" target="_blank" rel="noopener"><strong>Layer Normalization</strong></a>, <a href="https://arxiv.org/abs/1607.08022" target="_blank" rel="noopener"><strong>Instance Normalization</strong></a>, and <a href="https://arxiv.org/abs/1803.08494" target="_blank" rel="noopener"><strong>Group Normalization</strong></a>: Many other alternatives have sprung up based on different ways of aggregating the statistics: within a batch, both batch and channel, or a batch and several channels, respectively. These techniques are useful when it is undesirable for different samples in a batch and/or channel to interfere with each other—a prime example of this is in GANs.</li>
+</ul>
+<hr>
+<p>2016</p>
+<p>========</p>
+<h2 id="Mastering-the-game-of-Go-with-deep-neural-networks-and-tree-search-6310-citations"><a href="#Mastering-the-game-of-Go-with-deep-neural-networks-and-tree-search-6310-citations" class="headerlink" title="Mastering the game of Go with deep neural networks and tree search (6310 citations)"></a><a href="https://www.nature.com/articles/nature16961" target="_blank" rel="noopener">Mastering the game of Go with deep neural networks and tree search</a> (6310 citations)</h2><p><img src="https://bmk.sh/images/alphago_arch.png" alt="Supervised Learning and Reinforcement Learning pipeline; Policy/Value Network Architectures (&lt;a href=&#39;https://www.nature.com/articles/nature16961.pdf&#39;&gt;Source&lt;/a&gt;)"></p>
+<p>After the defeat of Kasparov by Deep Blue, Go became the next goal for the AI community, thanks to its properties: a much larger state space than chess and a greater reliance on intuition among human players. Up until AlphaGo, the most successful Go systems such as <a href="https://www.remi-coulom.fr/CrazyStone/" target="_blank" rel="noopener">Crazy Stone</a> and <a href="https://en.wikipedia.org/wiki/Zen_(software)" target="_blank" rel="noopener">Zen</a> were a combination of a Monte-Carlo tree search with many handcrafted heuristics to guide the tree search. Judging from the progress of these systems, defeating human grandmasters was considered at the time to be many years away. Although previous attempts at <a href="https://www.cs.utoronto.ca/~ilya/pubs/2008/go_paper.pdf" target="_blank" rel="noopener">applying</a> <a href="https://arxiv.org/abs/1412.6564" target="_blank" rel="noopener">neural</a> <a href="http://proceedings.mlr.press/v37/clark15.pdf" target="_blank" rel="noopener">networks</a> to Go do exist, none have reached the level of success of AlphaGo, which combines many of these previous techniques with big compute. Specifically, AlphaGo consists of a policy network and a value network that narrow the search tree and allow for truncation of the search tree, respectively. These networks were first trained with standard Supervised Learning and then further tuned with Reinforcement Learning.</p>
+<p>AlphaGo has made, of all the advancements listed here, possibly the biggest impact on the public mind, with an estimated 100 million people globally (especially from China, Japan, and Korea, where Go is very popular) tuning in to the AlphaGo vs. Lee Sedol match. The games from this match and the other later AlphaGo Zero matches have influenced human strategy in Go. One example of a very influential move by AlphaGo is the 37th move in the second game; AlphaGo played very unconventionally, baffling many analysts. This move later turned out to be crucial in securing the win for AlphaGo later.<a href="https://bmk.sh/#fn16" target="_blank" rel="noopener">[16]</a></p>
+<h3 id="Honorable-Mentions-8"><a href="#Honorable-Mentions-8" class="headerlink" title="Honorable Mentions"></a>Honorable Mentions</h3><ul>
+<li><a href="https://discovery.ucl.ac.uk/id/eprint/10045895/1/agz_unformatted_nature.pdf" target="_blank" rel="noopener"><strong>Mastering the Game of Go without Human Knowledge</strong></a>: This follow-up paper, which introduced AlphaGo Zero, removed the supervised learning phase and trained the policy and value networks purely through self-play. Despite not being imbued with any human biases, AlphaGo Zero was able to rediscover many human strategies, as well as invent superior strategies that challenged many long-held assumptions in common Go wisdom.</li>
+</ul>
+<hr>
+<p>2017</p>
+<p>========</p>
+<h2 id="Attention-Is-All-You-Need-5059-citations"><a href="#Attention-Is-All-You-Need-5059-citations" class="headerlink" title="Attention Is All You Need (5059 citations)"></a><a href="https://papers.nips.cc/paper/7181-attention-is-all-you-need.pdf" target="_blank" rel="noopener">Attention Is All You Need</a> (5059 citations)</h2><p><img src="https://bmk.sh/images/transformer_arch.png" alt="Transformer Architecture (&lt;a href=&#39;https://arxiv.org/abs/1706.03762&#39;&gt;Source&lt;/a&gt;)"> The Transformer architecture, making use of the aforementioned attention mechanism at scale, has become the backbone of nearly all state-of-the-art NLP models today. Transformer models beat RNNs in large part due to the computational benefits in very large networks; in RNNs, gradients need to be propagated through the entire “unrolled” graph, which makes memory access a large bottleneck. This also exacerbates the exploding/vanishing gradients problem, necessitating more complex (and more computationally expensive!) LSTM and GRU models. Instead, Transformer models are optimized for highly parallel processing. The most computationally expensive components are the feed forward networks after the attention layers, which can be applied in parallel, and the attention itself, which is a large matrix multiplication and is also easily optimized.</p>
+<h2 id="Neural-Architecture-Search-with-Reinforcement-Learning-1186-citations"><a href="#Neural-Architecture-Search-with-Reinforcement-Learning-1186-citations" class="headerlink" title="Neural Architecture Search with Reinforcement Learning (1186 citations)"></a><a href="https://openreview.net/forum?id=r1Ue8Hcxg" target="_blank" rel="noopener">Neural Architecture Search with Reinforcement Learning</a> (1186 citations)</h2><p><img src="https://bmk.sh/images/nasnet.png" alt="The architecture of NASNet, a network designed using NAS techniques (&lt;a href=&#39;https://arxiv.org/abs/1706.03762&#39;&gt;Source&lt;/a&gt;)"></p>
+<p>Neural Architecture Search has become common practice in the field for squeezing every drop of performance out of networks. Instead of designing architectures painstakingly by hand, NAS allows this process to be automated. In this paper, a controller network is trained using RL<a href="https://bmk.sh/#fn17" target="_blank" rel="noopener">[17]</a> to produce performant network architectures, which has created many SOTA networks. Other approaches, such as <a href="https://arxiv.org/abs/1802.01548" target="_blank" rel="noopener"><strong>Regularized Evolution for Image Classifier Architecture Search</strong></a> (AmoebaNet), use evolutionary algorithms instead.</p>
+<hr>
+<p>2018</p>
+<p>========</p>
+<h2 id="BERT-Pre-training-of-Deep-Bidirectional-Transformers-for-Language-Understanding-3025-citations"><a href="#BERT-Pre-training-of-Deep-Bidirectional-Transformers-for-Language-Understanding-3025-citations" class="headerlink" title="BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding (3025 citations)"></a><a href="https://arxiv.org/abs/1810.04805" target="_blank" rel="noopener">BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding</a> (3025 citations)</h2><p><img src="https://bmk.sh/images/bert_compare.png" alt="BERT compared to GPT and ELMo (&lt;a href=&#39;https://arxiv.org/abs/1810.04805&#39;&gt;Source&lt;/a&gt;)"></p>
+<p>BERT is a bidirectional contextual text embedding model. Like word2vec, it is based on assigning each word (or, rather, sub-word token) a vector. However, these vectors in BERT are contextual, allowing homographs to be properly distinguished. Furthermore, BERT is deeply bidirectional, with each latent vector in each layer depending on all latent vectors from the previous layer, unlike earlier works like GPT (which is forward-only) and ELMo (which has separate forward and backward LMs that are only combined at the end). In unidirectional LMs like GPT, the model is trained to predict the next token at each time step, which works because the states at each time step can only depend on previous states. (With ELMo, both the forward and backward models are trained independently in this way and optimized jointly.) However, in a deeply bidirectional network, a state StLS^L_tS​t​L​​ for step ttt and layer LLL must depend on all states St′L−1S^{L-1}_{t’}S​t​′​​​L−1​​, each of which could, in turn, depend on StL−2S^{L-2}_{t}S​t​L−2​​, allowing the network to “cheat” on the language modeling. To solve this problem, BERT uses a reconstruction task to recover masked tokens, which are never seen by the network.<a href="https://bmk.sh/#fn18" target="_blank" rel="noopener">[18]</a></p>
+<h3 id="Honorable-Mentions-9"><a href="#Honorable-Mentions-9" class="headerlink" title="Honorable Mentions"></a>Honorable Mentions</h3><p>Since the publication of BERT, there has been an explosion of other transformer-based language models. As they are all quite similar, I will list some of them here instead of as their own entries. Of course, since this field is so fast-moving, it is impossible to be comprehensive; moreover, many of these papers have yet to stand the test of time, and so it is difficult to conclude which papers will have the most impact.</p>
+<ul>
+<li><a href="https://arxiv.org/abs/1802.05365" target="_blank" rel="noopener"><strong>Deep contextualized word representations</strong></a>: The aforementioned ELMo paper. ELMo is arguably the first contextual text embedding model; however, BERT has become much more popular in practice. <img src="https://bmk.sh/images/gpt_transfer.png" alt="GPT used for different tasks (&lt;a href=&#39;https://s3-us-west-2.amazonaws.com/openai-assets/research-covers/language-unsupervised/language_understanding_paper.pdf&#39;&gt;Source&lt;/a&gt;)"></li>
+<li><a href="https://s3-us-west-2.amazonaws.com/openai-assets/research-covers/language-unsupervised/language_understanding_paper.pdf" target="_blank" rel="noopener"><strong>Improving Language Understanding by Generative Pre-Training</strong></a>: This, the aforementioned GPT paper by OpenAI, explores the idea of using the same pretrained LM downstream for many different types of problems, with only minor fine tuning. Especially considering the price of training a modern language model from scratch, this idea has become very pervasive.</li>
+<li><a href="https://d4mucfpksywv.cloudfront.net/better-language-models/language_models_are_unsupervised_multitask_learners.pdf" target="_blank" rel="noopener"><strong>Language Models are Unsupervised Multitask Learners</strong></a>: GPT-2, a followup to GPT by OpenAI, is in many senses simply a scaled up version of GPT. It has more parameters (up to 1.5 billion!), more training data, and much better test perplexity across the board. It also exhibits an impressive level of generalization across datasets, and provides further evidence for the generalization capacity of extremely large networks. Its claim to fame, however, is its impressive text generating ability; I have a <a href="https://leogao.dev/2019/10/27/The-Difficulties-of-Text-Generation-with-Autoregressive-Language-Models/" target="_blank" rel="noopener">more in-depth discussion of text generation here</a> that (I hope!) would be of interest. GPT-2 has drawn some criticism for its release strategy, which some purport is designed to maximize hype. <a href="https://bmk.sh/#fn19" target="_blank" rel="noopener">[19]</a> <img src="https://bmk.sh/images/transformerxl.png" alt="Transformer-XL context (&lt;a href=&#39;https://arxiv.org/abs/1901.02860&#39;&gt;Source&lt;/a&gt;)"></li>
+<li><a href="https://arxiv.org/abs/1901.02860" target="_blank" rel="noopener"><strong>Transformer-XL: Attentive Language Models Beyond a Fixed-Length Context</strong></a>: Transformer-based models have a fixed attention window, which prevents attending to longer-term context. Transformer-XL attempts to fix this by attending to some context from the previous window (albeit without propagating gradients, for computational feasibility), which allows a much longer effective attention window.</li>
+<li><a href="https://arxiv.org/abs/1906.08237" target="_blank" rel="noopener"><strong>XLNet: Generalized Autoregressive Pretraining for Language Understanding</strong></a>: XLNet solves the “cheating” dilemma that BERT faces in a different way. XLNet is unidirectional; however, tokens are permuted in an arbitrary order, taking advantage of transformers’ inbuilt invariance to input order. This allows the network to act effectively bidirectional while retaining the computational benefits of unidirectionality. XLNet also integrates ideas from Transformer-XL for a larger effective window.</li>
+<li><a href="https://arxiv.org/abs/1508.07909" target="_blank" rel="noopener"><strong>Neural Machine Translation of Rare Words with Subword Units</strong></a>: Better tokenization techniques have also been a core part of the recent boom in language modeling. These eliminate the necessity for out-of-vocab tokens by ensuring that all words are tokenizable in pieces.</li>
+</ul>
+<hr>
+<p>2019</p>
+<p>========</p>
+<h2 id="Deep-Double-Descent-Where-Bigger-Models-and-More-Data-Hurt"><a href="#Deep-Double-Descent-Where-Bigger-Models-and-More-Data-Hurt" class="headerlink" title="Deep Double Descent: Where Bigger Models and More Data Hurt"></a><a href="https://arxiv.org/abs/1912.02292" target="_blank" rel="noopener">Deep Double Descent: Where Bigger Models and More Data Hurt</a></h2><p><img src="https://bmk.sh/images/deepdoubledescent.png" alt="Deep Double Descent (&lt;a href=&#39;https://openai.com/blog/deep-double-descent/&#39;&gt;Source&lt;/a&gt;)"></p>
+<p>The phenomenon of (Deep) Double Descent explored in this paper runs contrary to popular wisdom in both classical machine learning and modern Deep Learning. In classical machine learning, model complexity follows the bias-variance tradeoff. Too weak a model is unable to fully capture the structure of the data, while too powerful a model can overfit and capture spurious patterns that don’t generalize. Because of this, in classical machine learning it is expected that test error will decrease as models get larger, but then start to increase again once the models begin to overfit. In practice, however, in Deep Learning, models are very often massively overparameterized and yet still seem to improve on test performance with larger models. This conflict is the motivation behind (deep) double descent. Deep Double Descent expanded on the original <a href="https://arxiv.org/abs/1812.11118" target="_blank" rel="noopener">Double Descent paper by Belkin et al.</a> by showing empirically the effects of Double Descent on a much wider variety of Deep Learning models, and its applicability to not only the model size but also training time and dataset size.</p>
+<blockquote>
+<p>By considering larger function classes, which contain more candidate predictors compatible with the data, we are able to find interpolating functions that have smaller norm and are thus “simpler”. Thus increasing function class capacity improves performance of classifiers. Belkin et al. 2018</p>
+</blockquote>
+<p>As the capacity of the models approaches the “interpolation threshold,” the demarcation between the classical ML and Deep Learning regimes, it becomes possible for gradient descent to find models that achieve near-zero error, which are likely to be overfit. However, as the model capacity is increased even further, the number of different models that can achieve zero training error increases, and the likelihood that some of them fit the data smoothly (i.e without overfitting) increases. Double Descent posits that gradient descent is more likely to find these smoother zero-training-error networks, which generalize well despite being overparameterized.<a href="https://bmk.sh/#fn20" target="_blank" rel="noopener">[20]</a></p>
+<hr>
+<h2 id="The-Lottery-Ticket-Hypothesis-Finding-Sparse-Trainable-Neural-Networks"><a href="#The-Lottery-Ticket-Hypothesis-Finding-Sparse-Trainable-Neural-Networks" class="headerlink" title="The Lottery Ticket Hypothesis: Finding Sparse, Trainable Neural Networks"></a><a href="https://arxiv.org/abs/1803.03635" target="_blank" rel="noopener">The Lottery Ticket Hypothesis: Finding Sparse, Trainable Neural Networks</a></h2><blockquote>
+<p>A randomly-initialized, dense neural network contains a subnetwork that is initialized such that—when trained in isolation—it can match the test accuracy of the original network after training for at most the same number of iterations.</p>
+</blockquote>
+<p>Another paper about the training characteristics of deep neural networks was the Lottery Ticket Hypothesis paper. The Lottery Ticket Hypothesis asserts that most of a network’s performance comes from a certain subnetwork due to a lucky initialization (hence the name, “lottery ticket,” to refer to these subnetworks), and that larger networks are more performant because of a higher chance of lottery tickets occurring. This not only allows us to prune the irrelevant weights (which is already well established in the literature), but also to retrain from scratch using only the “lottery ticket” weights, which, surprisingly, obtains close to the original loss.</p>
+<h1 id="Conclusion-and-Future-Prospects"><a href="#Conclusion-and-Future-Prospects" class="headerlink" title="Conclusion and Future Prospects"></a>Conclusion and Future Prospects</h1><p>The past decade has marked an incredibly fast-paced and innovative period in the history of AI, driven by the start of the Deep Learning Revolution—the Renaissance of gradient-based networks. Spurred in large part by the ever increasing computing power available, neural networks have gotten much larger and thus more powerful, displacing traditional AI techniques across the board, from Computer Vision to Natural Language Processing. Neural networks do have their weaknesses though: they require a large amount of data to train, have inexplicable failure modes, and cannot generalize beyond individual tasks. As the limits of Deep Learning with respect to advancing AI have begun to become apparent thanks to the massive improvements in the field, attention has shifted towards a deeper understanding of Deep Learning. The next decade is likely to be marked by an increased understanding of many of the empirical characteristics of neural networks observed today. Personally, I am optimistic about the prospects of AI; Deep Learning is an invaluable tool in the toolkit of AI, that brings us yet another step closer to understanding intelligence.</p>
+<p>Here’s to a fruitful 2020’s.</p>
+<h4 id="To-cite"><a href="#To-cite" class="headerlink" title="To cite:"></a>To cite:</h4><p>1<br>2<br>3<br>4<br>5<br>6<br>7  </p>
+<p>@ article{lg2020dldecade,<br> title   = “The Decade of Deep Learning”,<br> author  = “Gao, Leo”,<br> journal = “leogao.dev”,<br> year    = “2019”,<br> url     = “<a href="https://leogao.dev/2019/12/31/The-Decade-of-Deep-Learning/&quot;" target="_blank" rel="noopener">https://leogao.dev/2019/12/31/The-Decade-of-Deep-Learning/&quot;</a><br>}  </p>
+<hr>
+<ol>
+<li><p>For all the people who are saying that the new decade doesn’t begin until the end of 2020: in my opinion, it’s much more elegant for decades to be 0-indexed. ISO 8601 concurs.</p>
+<p>As for there being no year 0, I propose to define xxx bce = 1−x1 - x1−x ce, so that bce years are indexed by ce years (−∞,0](-\infty, 0](−∞,0].</p>
+<p><a href="https://xkcd.com/2249/" target="_blank" rel="noopener">(Relevant xkcd)</a> <a href="https://bmk.sh/#fnref1" target="_blank" rel="noopener">↩︎</a></p>
+</li>
+<li><p>This also helps clump similar papers together; if listed strictly chronologically, it would be much more difficult to follow developments along any particular thread of research. <a href="https://bmk.sh/#fnref2" target="_blank" rel="noopener">↩︎</a></p>
+</li>
+<li><p>Unfortunately, SoftSign never really caught on; I suspect this is because of the continued persistence of the disappearing gradient problem, as the gradient is still less than or equal to 1 everywhere. For more information see the ReLU section below. <a href="https://bmk.sh/#fnref3" target="_blank" rel="noopener">↩︎</a></p>
+</li>
+<li><p>This explanation is admittedly handwavy, and so I would like to provide some other resources to mull over if you’re interested in learning more about Xavier and Kaiming initializations: <a href="https://andyljones.tumblr.com/post/110998971763/an-explanation-of-xavier-initialization" target="_blank" rel="noopener">this post</a> is quick and intuitive, while <a href="https://pouannes.github.io/blog/initialization/" target="_blank" rel="noopener">this one</a> delves much deeper into the math. <a href="https://bmk.sh/#fnref4" target="_blank" rel="noopener">↩︎</a></p>
+</li>
+<li><p>In practice, the derivative is simply set to an arbitrary value at zero. The discontinuity is more a theoretical concern than anything else. <a href="https://bmk.sh/#fnref5" target="_blank" rel="noopener">↩︎</a></p>
+</li>
+<li><p>Interestingly, there are several other activation functions with very similar shapes: <a href="https://arxiv.org/abs/1710.05941" target="_blank" rel="noopener">Swish</a> and <a href="https://arxiv.org/abs/1908.08681" target="_blank" rel="noopener">Mish</a>, which can be written as xσ(x)x\sigma(x)xσ(x) and xtanh(ln(1+ex))xtanh(ln(1 + e^x))xtanh(ln(1+e​x​​)), respectively.</p>
+<p>GELU, Swish, and Mish all follow the same basic pattern of x times some sigmoidal function (in fact, GELU is often approximated as xσ(1.702x)x\sigma(1.702x)xσ(1.702x)) <a href="https://bmk.sh/#fnref6" target="_blank" rel="noopener">↩︎</a></p>
+</li>
+<li><p><img src="https://bmk.sh/images/neocognitron_small.png" alt="Layers in a neocognitron. (&lt;a href=&#39;https://www.rctn.org/bruno/public/papers/Fukushima1980.pdf&#39;&gt;Source&lt;/a&gt;)"> …but not the first <em>CNN-like network</em> ever; that honor would go to the <a href="https://www.rctn.org/bruno/public/papers/Fukushima1980.pdf" target="_blank" rel="noopener">Neocognitron</a> from 1980 (though the preliminary report was published in 1979). <img src="https://bmk.sh/images/neocognitron-connections.png" alt="Connections between layers in a neocognitron. (&lt;a href=&#39;https://www.rctn.org/bruno/public/papers/Fukushima1980.pdf&#39;&gt;Source&lt;/a&gt;)"> The Neocognitron bears striking resemblance to a CNN; the neurons are arranged in layers with multiple filters (called S-planes in the paper) per layer and connected locally. <a href="https://bmk.sh/#fnref7" target="_blank" rel="noopener">↩︎</a></p>
+</li>
+<li><p>The <a href="https://github.com/tmikolov/word2vec" target="_blank" rel="noopener">reference C implementation</a> of word2vec actually does things <a href="https://bollu.github.io/#everything-you-know-about-word2vec-is-wrong" target="_blank" rel="noopener">slightly differently from the description in the paper</a> by having separate vectors for context and focus words. <a href="https://bmk.sh/#fnref8" target="_blank" rel="noopener">↩︎</a></p>
+</li>
+<li><p>GANs for other modalities do exist, though! GANs have been applied to <a href="https://arxiv.org/abs/1802.04208" target="_blank" rel="noopener">audio</a>, <a href="https://arxiv.org/abs/1703.10593" target="_blank" rel="noopener"><em>unpaired</em> image-to-image translation</a>, and even <a href="https://arxiv.org/abs/1609.05473" target="_blank" rel="noopener">text</a> (though difficulties exist due to the discrete nature of text; a good overview of the challenges can be found <a href="https://becominghuman.ai/generative-adversarial-networks-for-text-generation-part-1-2b886c8cab10" target="_blank" rel="noopener">here</a>) <a href="https://bmk.sh/#fnref9" target="_blank" rel="noopener">↩︎</a></p>
+</li>
+<li><p>The EM distance is, intuitively, the amount of “work” (mass * distance) it would take to move a certain volume of material to another arrangement (hence the name) if the optimal transportation strategy were used. <a href="https://bmk.sh/#fnref10" target="_blank" rel="noopener">↩︎</a></p>
+</li>
+<li><p>Want to put yourself to the test? <a href="http://www.whichfaceisreal.com/" target="_blank" rel="noopener">whichfaceisreal.com</a> lets you test yourself on distinguishing between GAN-generated and fake images. It’s possible to tell very consistently if you know what to look for, but it’s still incredible that we’ve gone from images that only look real if you squint at them to images that only look fake if you squint at them. <a href="https://bmk.sh/#fnref11" target="_blank" rel="noopener">↩︎</a></p>
+</li>
+<li><p>A recent paper, <a href="https://openreview.net/forum?id=rkgNKkHtvB" target="_blank" rel="noopener"><strong>Reformer: The Efficient Transformer</strong></a>, could potentially solve this problem using locality-sensitive hashing to compute the attention matrix sparsely. <a href="https://bmk.sh/#fnref12" target="_blank" rel="noopener">↩︎</a></p>
+</li>
+<li><p>The issue revolves mainly around how weight decay, which should be subtracted directly from the weights, is usually factored into the gradient instead. This doesn’t make a difference for optimizers without momentum, but for optimizers with momentum the gradients go through the momentum step before being applied to the weights, which means that previous weights will also affect the weight decay. A great discussion of this topic can be found <a href="https://www.fast.ai/2018/07/02/adam-weight-decay/" target="_blank" rel="noopener">here on fast.ai</a>. <a href="https://bmk.sh/#fnref13" target="_blank" rel="noopener">↩︎</a></p>
+</li>
+<li><p>A good place to explore the SOTA over time is <a href="https://paperswithcode.com/" target="_blank" rel="noopener">Papers With Code</a>. <a href="https://bmk.sh/#fnref14" target="_blank" rel="noopener">↩︎</a></p>
+</li>
+<li><p>“Confounding theoretically but successful empirically” is perhaps the <em>modus operandi</em> of Deep Learning. This is not necessarily a bad thing though; theoretical developments are often spurred by previously unexplainable empirical observations, and many have already shifted their focus to plumbing the theoretical side of deep networks. <a href="https://bmk.sh/#fnref15" target="_blank" rel="noopener">↩︎</a></p>
+</li>
+<li><p>There is an amusing parallel to Deep Blue to be drawn here. In the 36th move of the second game of the 1997 rematch, Deep Blue famously made an unexpected move, which was lauded by analysts. Kasparov himself accused the Deep Blue team of cheating. Only in 2012 was it revealed that the move in question was actually made because Deep Blue was unable to decide and thus chose a random move as a fallback. <a href="https://bmk.sh/#fnref16" target="_blank" rel="noopener">↩︎</a></p>
+</li>
+<li><p>Some more recent work has <a href="https://arxiv.org/abs/1902.07638" target="_blank" rel="noopener">brought into question</a> the effectiveness of RL-based NAS techniques entirely, suggesting that a simple random search can achieve similar results. <a href="https://bmk.sh/#fnref17" target="_blank" rel="noopener">↩︎</a></p>
+</li>
+<li><p>An excellent in-depth exposition of BERT is <a href="https://jalammar.github.io/illustrated-bert/" target="_blank" rel="noopener">“The Illustrated BERT, ELMo, and co.”</a>. <a href="https://bmk.sh/#fnref18" target="_blank" rel="noopener">↩︎</a></p>
+</li>
+<li><p>Despite having attracted a lot of attention recently, I have chosen not to give GPT-2 its own entry because I have already covered GPT-2 and related autoregressive models in the <a href="https://leogao.dev/2019/10/27/The-Difficulties-of-Text-Generation-with-Autoregressive-Language-Models/" target="_blank" rel="noopener">aforementioned text generation post</a>. <a href="https://bmk.sh/#fnref19" target="_blank" rel="noopener">↩︎</a></p>
+</li>
+<li><p>There is debate over the exact causes of this phenomenon; this <a href="https://www.lesswrong.com/posts/FRv7ryoqtvSuqBxuT/understanding-deep-double-descent" target="_blank" rel="noopener">LessWrong post</a> discusses several potential explanations. <a href="https://bmk.sh/#fnref20" target="_blank" rel="noopener">↩︎</a></p>
+</li>
+</ol>
+<p><a href="https://bmk.sh/2019/12/31/The-Decade-of-Deep-Learning/index.html" target="_blank" rel="noopener">Share</a></p>
+<ul>
+<li><a href="https://bmk.sh/tags/Deep-Learning/" target="_blank" rel="noopener">Deep Learning</a></li>
+<li><a href="https://bmk.sh/tags/Machine-Learning/" target="_blank" rel="noopener">Machine Learning</a></li>
+<li><a href="https://bmk.sh/tags/Reinforcement-Learning/" target="_blank" rel="noopener">Reinforcement Learning</a></li>
+</ul>
+<p>[<strong>Newer</strong></p>
+<p>Multidisk Filesystems: A Comparison</p>
+<p>](<a href="https://bmk.sh/2020/01/31/Multidisk-Filesystems-A-Comparison/)[**Older" target="_blank" rel="noopener">https://bmk.sh/2020/01/31/Multidisk-Filesystems-A-Comparison/)[**Older</a>**</p>
+<p>Converting HuggingFace GPT-2 Models to Tensorflow 1.x</p>
+<p>](<a href="https://bmk.sh/2019/11/09/Converting-HuggingFace-GPT2-Models-to-Tensorflow-1/" target="_blank" rel="noopener">https://bmk.sh/2019/11/09/Converting-HuggingFace-GPT2-Models-to-Tensorflow-1/</a>)</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/07/12/qiwihui-pocket_readings-1150/" rel="prev" title="
+
+
+2 万字长文深入详解 Kafka，从源码到架构全部讲透 ">
+      <i class="fa fa-chevron-left"></i> 
+
+
+2 万字长文深入详解 Kafka，从源码到架构全部讲透 
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/07/13/qiwihui-pocket_readings-1152/" rel="next" title="
+
+
+Python进阶：为什么GIL让多线程变得如此鸡肋？ ">
+      
+
+
+Python进阶：为什么GIL让多线程变得如此鸡肋？  <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#The-Decade-of-Deep-Learning-by-nabla-theta"><span class="nav-number"></span> <span class="nav-text">The Decade of Deep Learning by @nabla_theta</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#The-Decade-of-Deep-Learning"><span class="nav-number"></span> <span class="nav-text">The Decade of Deep Learning</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Understanding-the-difficulty-of-training-deep-feedforward-neural-networks-7446-citations"><span class="nav-number"></span> <span class="nav-text">Understanding the difficulty of training deep feedforward neural networks (7446 citations)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Deep-Sparse-Rectifier-Neural-Networks-4071-citations"><span class="nav-number"></span> <span class="nav-text">Deep Sparse Rectifier Neural Networks (4071 citations)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Honorable-Mentions"><span class="nav-number">1.</span> <span class="nav-text">Honorable Mentions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ImageNet-Classification-with-Deep-Convolutional-Neural-Networks-52025-citations"><span class="nav-number"></span> <span class="nav-text">ImageNet Classification with Deep Convolutional Neural Networks (52025 citations)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Honorable-Mentions-1"><span class="nav-number">1.</span> <span class="nav-text">Honorable Mentions:</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Distributed-Representations-of-Words-and-Phrases-and-their-Compositionality-16923-citations"><span class="nav-number"></span> <span class="nav-text">Distributed Representations of Words and Phrases and their Compositionality (16923 citations)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Honorable-Mentions-2"><span class="nav-number">1.</span> <span class="nav-text">Honorable Mentions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Playing-Atari-with-Deep-Reinforcement-Learning-3251-citations"><span class="nav-number"></span> <span class="nav-text">Playing Atari with Deep Reinforcement Learning (3251 citations)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Honorable-Mentions-3"><span class="nav-number">1.</span> <span class="nav-text">Honorable Mentions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Generative-Adversarial-Networks-13917-citations"><span class="nav-number"></span> <span class="nav-text">Generative Adversarial Networks (13917 citations)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Honorable-Mentions-4"><span class="nav-number">1.</span> <span class="nav-text">Honorable Mentions:</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Neural-Machine-Translation-by-Jointly-Learning-to-Align-and-Translate-9882-citations"><span class="nav-number"></span> <span class="nav-text">Neural Machine Translation by Jointly Learning to Align and Translate (9882 citations)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Adam-A-Method-for-Stochastic-Optimization-34082-citations"><span class="nav-number"></span> <span class="nav-text">Adam: A Method for Stochastic Optimization (34082 citations)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Honorable-Mentions-5"><span class="nav-number">1.</span> <span class="nav-text">Honorable Mentions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Deep-Residual-Learning-for-Image-Recognition-34635-citations"><span class="nav-number"></span> <span class="nav-text">Deep Residual Learning for Image Recognition (34635 citations)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Honorable-Mentions-6"><span class="nav-number">1.</span> <span class="nav-text">Honorable Mentions:</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Batch-Normalization-Accelerating-Deep-Network-Training-by-Reducing-Internal-Covariate-Shift-14384-citations"><span class="nav-number"></span> <span class="nav-text">Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift (14384 citations)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Honorable-Mentions-7"><span class="nav-number">1.</span> <span class="nav-text">Honorable Mentions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Mastering-the-game-of-Go-with-deep-neural-networks-and-tree-search-6310-citations"><span class="nav-number"></span> <span class="nav-text">Mastering the game of Go with deep neural networks and tree search (6310 citations)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Honorable-Mentions-8"><span class="nav-number">1.</span> <span class="nav-text">Honorable Mentions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Attention-Is-All-You-Need-5059-citations"><span class="nav-number"></span> <span class="nav-text">Attention Is All You Need (5059 citations)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Neural-Architecture-Search-with-Reinforcement-Learning-1186-citations"><span class="nav-number"></span> <span class="nav-text">Neural Architecture Search with Reinforcement Learning (1186 citations)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#BERT-Pre-training-of-Deep-Bidirectional-Transformers-for-Language-Understanding-3025-citations"><span class="nav-number"></span> <span class="nav-text">BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding (3025 citations)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Honorable-Mentions-9"><span class="nav-number">1.</span> <span class="nav-text">Honorable Mentions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Deep-Double-Descent-Where-Bigger-Models-and-More-Data-Hurt"><span class="nav-number"></span> <span class="nav-text">Deep Double Descent: Where Bigger Models and More Data Hurt</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#The-Lottery-Ticket-Hypothesis-Finding-Sparse-Trainable-Neural-Networks"><span class="nav-number"></span> <span class="nav-text">The Lottery Ticket Hypothesis: Finding Sparse, Trainable Neural Networks</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Conclusion-and-Future-Prospects"><span class="nav-number"></span> <span class="nav-text">Conclusion and Future Prospects</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#To-cite"><span class="nav-number">0.1.</span> <span class="nav-text">To cite:</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

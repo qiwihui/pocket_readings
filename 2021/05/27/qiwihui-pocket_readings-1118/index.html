@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="HTTP cookie的安全性、安全使用方法和攻击防御手段">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HTTP cookie的安全性、安全使用方法和攻击防御手段">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/05/27/qiwihui-pocket_readings-1118/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="HTTP cookie的安全性、安全使用方法和攻击防御手段">
+<meta property="article:published_time" content="2021-05-27T06:21:06.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.414Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/05/27/qiwihui-pocket_readings-1118/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>HTTP cookie的安全性、安全使用方法和攻击防御手段 | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/05/27/qiwihui-pocket_readings-1118/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          HTTP cookie的安全性、安全使用方法和攻击防御手段
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-05-27 06:21:06" itemprop="dateCreated datePublished" datetime="2021-05-27T06:21:06+00:00">2021-05-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">HTTP cookie的安全性、安全使用方法和攻击防御手段</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#26412;&#25991;&#38656;&#35201;&#35835;&#32773;&#23545;&#35745;&#31639;&#26426;&#32593;&#32476;&#26377;&#22823;&#33268;&#20102;&#35299;&#65292; &#27809;&#26377;&#20102;&#35299;&#20063;&#21487;&#20197;&#65292;&#26415;&#35821;&#20250;&#25346;&#19978;&#35299;&#37322;&#38142;&#25509;&#65292;&#20294;&#38405;&#35835;&#20307;&#39564;&#23601;&#27604;&#36739;&#24046;&#20102;&#12290; 2&#37096;&#20998;&#19982;3&#37096;&#20998;&#30340;&#35299;&#20915;&#26041;&#26696;&#37096;&#20998;&#26377;&#37325;&#22797;&#65292; &#20294;&#25105;&#35748;&#20026;&#36824;&#26159;&#25226;&#25915;&#38450;&#21644;&#24320;&#21457;&#20998;&#24320;&#65292;&#32570;&#38519;&#19982;&#35299;&#20915;&#32467;&#21512;&#65292;&#27604;&#36739;&#26041;&#20415;&#38405;&#35835;&#12290;<br><br><br><br>Tags: security<br><br><br><br>via Pocket <a href="https://ift.tt/3vpTRkk" target="_blank" rel="noopener">https://ift.tt/3vpTRkk</a> original site<br><br><br><br>May 27, 2021 at 02:12PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1118#issuecomment-849360906" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>5/27/2021</strong></p>
+</blockquote>
+<h2 id="HTTP-cookie的安全性、安全使用方法和攻击防御手段-by-BoHolder"><a href="#HTTP-cookie的安全性、安全使用方法和攻击防御手段-by-BoHolder" class="headerlink" title="HTTP cookie的安全性、安全使用方法和攻击防御手段 by BoHolder"></a>HTTP cookie的安全性、安全使用方法和攻击防御手段 by BoHolder</h2><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a><a href="https://boholder.github.io/#%E5%89%8D%E8%A8%80" target="_blank" rel="noopener"></a><a href="https://boholder.github.io/#contents:%E5%89%8D%E8%A8%80" target="_blank" rel="noopener">前言</a></h2><p>本文将把，截至2019-05-18的，从互联网上搜集到</p>
+<p>（“cookie+security”-&gt;Google与StartPage前两页结果为源+相关学术文献）的,<br>有关Cookie标准与用法、cookie安全性的信息，汇总索引，以方便读者学习了解相关信息。</p>
+<p>本文需要读者对计算机网络有大致了解，<br>没有了解也可以，术语会挂上解释链接，但阅读体验就比较差了。</p>
+<p>小段英文的翻译交给谷歌处理。</p>
+<h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a><a href="https://boholder.github.io/#%E7%9B%AE%E5%BD%95" target="_blank" rel="noopener"></a><a href="https://boholder.github.io/#contents:%E7%9B%AE%E5%BD%95" target="_blank" rel="noopener">目录</a></h2><p>2部分与3部分的解决方案部分有重复，<br>但我认为还是把攻防和开发分开，缺陷与解决结合，比较方便阅读。</p>
+<ol>
+<li><a href="https://boholder.github.io/#what-is-cookie" target="_blank" rel="noopener">Cookie是什么&amp;用法</a></li>
+<li><a href="https://boholder.github.io/#security-risk-in-design-and-use-and-solution" target="_blank" rel="noopener">设计、使用中的安全隐患以及相应改进</a></li>
+<li><a href="https://boholder.github.io/#attack-on-cookies-and-solution" target="_blank" rel="noopener">针对cookie窃取的攻击与相应防御</a></li>
+<li><a href="https://boholder.github.io/#academic-discussion-about-cookies" target="_blank" rel="noopener">学术讨论涉及cookie的攻防</a></li>
+<li><a href="https://boholder.github.io/#summary" target="_blank" rel="noopener">总结</a></li>
+</ol>
+<h2 id="What-is-cookie"><a href="#What-is-cookie" class="headerlink" title="What is cookie"></a><a href="https://boholder.github.io/#what-is-cookie" target="_blank" rel="noopener"></a><a href="https://boholder.github.io/#contents:what-is-cookie" target="_blank" rel="noopener">What is cookie</a></h2><p><strong>1.Cookie是什么&amp;用法</strong></p>
+<h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a><a href="https://boholder.github.io/#%E5%AE%9A%E4%B9%89" target="_blank" rel="noopener"></a><a href="https://boholder.github.io/#contents:%E5%AE%9A%E4%B9%89" target="_blank" rel="noopener">定义</a></h3><p>英文<a href="https://en.wikipedia.org/wiki/HTTP_cookie" target="_blank" rel="noopener">维基百科</a> 还是蛮丰富的，中文维基简单点，可以看<a href="https://baike.baidu.com/item/cookie/1119" target="_blank" rel="noopener">百度百科</a>。</p>
+<p>RFC：<a href="https://tools.ietf.org/html/rfc2109" target="_blank" rel="noopener">rfc2109-1997</a> -&gt; <a href="https://tools.ietf.org/html/rfc2965" target="_blank" rel="noopener">rfc2965-2000</a> -&gt; <a href="https://tools.ietf.org/html/rfc6265" target="_blank" rel="noopener">rfc6265-2011</a> -&gt; <a href="https://datatracker.ietf.org/doc/draft-ietf-httpbis-rfc6265bis/" target="_blank" rel="noopener">rfc6265bis</a></p>
+<p><a href="https://hc.apache.org/httpcomponents-client-ga/tutorial/html/statemgmt.html" target="_blank" rel="noopener">https://hc.apache.org/httpcomponents-client-ga/tutorial/html/statemgmt.html</a></p>
+<p>在最新的定义cookie的RFC2965上，是这么说的：</p>
+<blockquote>
+<p>we will use the term cookie to refer to the state<br>information that passes between an origin server and user agent,<br>and that gets stored by the user agent.</p>
+</blockquote>
+<blockquote>
+<p>我们将使用术语cookie来指代在源服务器和用户代理之间传递的状态信息，<br>以及由用户代理存储的状态信息。</p>
+</blockquote>
+<p>简单总结，cookie是：服务器与客户端间标识状态的信息，储存在客户端<br>（硬盘或内存，视类型而定），由服务器增删改读。<br>用途：满足对无状态的HTTP协议，想让它<strong>有状态</strong>的需求，一种修补措施。</p>
+<p>比如一个服务器，需要同时与多个客户端通信。</p>
+<ul>
+<li>因为HTTP协议@ 的无连接性，所以需要一个额外方法区分不同客户端。</li>
+<li>然后因为计算机网络的网络层路由有<a href="https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing" target="_blank" rel="noopener">CIDR-无类域间路由</a>、<a href="https://en.wikipedia.org/wiki/Network_address_translation" target="_blank" rel="noopener">NAT-网络地址转换</a> 这类协议存在，<br>服务器不能单靠记录IP或者MAC这些HTTP包里的信息标识每一个客户端。</li>
+</ul>
+<p>因此Netscape Draft在1994年率先定义了cookie这一解决方案<br>（此处apache.org的原文链接好像失效了），之后被整理成rfc2109。</p>
+<p>cookie可以用来干什么？<a href="https://en.wikipedia.org/wiki/HTTP_cookie#Uses" target="_blank" rel="noopener">维基</a> 给了三个功能：</p>
+<ol>
+<li>会话管理</li>
+<li>个性化定制 <a href="https://en.wikipedia.org/wiki/Zombie_cookie" target="_blank" rel="noopener">wikipedia-Zombie cookie （有点意思）</a></li>
+<li>追踪</li>
+</ol>
+<h3 id="格式-amp-用法"><a href="#格式-amp-用法" class="headerlink" title="格式&amp;用法"></a><a href="https://boholder.github.io/#%E6%A0%BC%E5%BC%8F%E7%94%A8%E6%B3%95" target="_blank" rel="noopener"></a><a href="https://boholder.github.io/#contents:%E6%A0%BC%E5%BC%8F%E7%94%A8%E6%B3%95" target="_blank" rel="noopener">格式&amp;用法</a></h3><p>一个cookie由一个键值对（key=value）组成，同时在<em>被设置时</em> 会附加一些变量（attributes），<br>这些变量用来控制该cookie的使用方法。</p>
+<p>想了解详细属性，看<a href="https://tools.ietf.org/html/rfc6265#section-5.2" target="_blank" rel="noopener">rfc6265-The Set-Cookie Header</a> ，<br>找不到新鲜的全面的中文材料，有个不错的<a href="https://imququ.com/post/host-only-cookie.html#toc-3" target="_blank" rel="noopener">博客@ Jerry Qu</a> ，但是是13年的。</p>
+<p>比如，我们时常听闻的第三方cookie，在设置时会标一个<code>Third-party</code>属性，<br>表明这是从非当前网站（URL框里的网站）设置的。</p>
+<p>当一个网站有引用（<img>…）其他网站，比如广告网站的广告资源时，<br>浏览器加载该网站时，也会向广告网站发GET请求，<br>第三方cookie就随着资源一起来到了浏览器上。</p>
+<p>对cookie的操作不再赘述，有需请自取。</p>
+<p><a href="https://en.wikipedia.org/wiki/HTTP_cookie#Implementation" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/HTTP_cookie#Implementation</a></p>
+<p><a href="https://developer.mozilla.org/zh-CN/docs/Web/API/Document/cookie" target="_blank" rel="noopener">https://developer.mozilla.org/zh-CN/docs/Web/API/Document/cookie</a></p>
+<p><a href="https://tools.ietf.org/html/rfc6265#section-4.2" target="_blank" rel="noopener">https://tools.ietf.org/html/rfc6265#section-4.2</a></p>
+<h2 id="Security-risk-in-design-and-use-and-solution"><a href="#Security-risk-in-design-and-use-and-solution" class="headerlink" title="Security risk in design and use and solution"></a><a href="https://boholder.github.io/#security-risk-in-design-and-use-and-solution" target="_blank" rel="noopener"></a><a href="https://boholder.github.io/#contents:security-risk-in-design-and-use-and-solution" target="_blank" rel="noopener">Security risk in design and use and solution</a></h2><p><strong>2.Cookie设计与使用中的安全隐患，以及相应改进</strong></p>
+<p>Cookie安全性这点，<a href="https://tools.ietf.org/html/rfc6265#section-8" target="_blank" rel="noopener">rfc6265中有一整段(8. Security Considerations)</a> 去阐述，<br>务必读一下，总结的很好，我会跳过那些内容，只给出一个目录以供预览。</p>
+<p>分标题</p>
+<p>简述</p>
+<p>Overview</p>
+<p>总览</p>
+<p>Ambient Authority</p>
+<p>cookie是一种权限凭证</p>
+<p>Clear Text</p>
+<p>明文传输问题</p>
+<p>Session Identifiers</p>
+<p>非可读的会话标识符</p>
+<p>Weak Confidentiality</p>
+<p>cookie在各种层面保密性都弱</p>
+<p>Reliance on DNS</p>
+<p>cookie的安全性以DNS安全为前提</p>
+<p>与其说其设计不周全，不如说cookie因本身位置的限制无法保证设计安全，<br>rfc还警告开发人员不要把cookie作为唯一的认证环节。</p>
+<blockquote>
+<p>rfc6265: In addition, by default, cookies do not provide confidentiality or integrity<br>from network attackers, even when used in conjunction with HTTPS.</p>
+</blockquote>
+<blockquote>
+<p>此外，默认情况下，cookie不会为网络攻击者提供机密性或完整性，<br>即使与HTTPS结合使用也是如此。</p>
+</blockquote>
+<h3 id="1-服务器只能读取cookie键值对，读不到属性"><a href="#1-服务器只能读取cookie键值对，读不到属性" class="headerlink" title="1.服务器只能读取cookie键值对，读不到属性"></a><a href="https://boholder.github.io/#1%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%8F%AA%E8%83%BD%E8%AF%BB%E5%8F%96cookie%E9%94%AE%E5%80%BC%E5%AF%B9%E8%AF%BB%E4%B8%8D%E5%88%B0%E5%B1%9E%E6%80%A7" target="_blank" rel="noopener"></a><a href="https://boholder.github.io/#contents:1%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%8F%AA%E8%83%BD%E8%AF%BB%E5%8F%96cookie%E9%94%AE%E5%80%BC%E5%AF%B9%E8%AF%BB%E4%B8%8D%E5%88%B0%E5%B1%9E%E6%80%A7" target="_blank" rel="noopener">1.服务器只能读取cookie键值对，读不到属性</a></h3><blockquote>
+<p><a href="https://tools.ietf.org/html/rfc6265#section-4.2.2" target="_blank" rel="noopener">rfc6265#section-4.2.2</a> :<br>Notice that the cookie attributes are not returned.<br>In particular,the server cannot determine from the Cookie header alone<br>when a cookie will expire, for which hosts the cookie is valid,<br>for which paths the cookie is valid, or whether the cookie was set with the Secure or HttpOnly attributes.</p>
+</blockquote>
+<blockquote>
+<p><a href="https://tools.ietf.org/html/rfc6265#section-4.2.2" target="_blank" rel="noopener">rfc6265#section-4.2.2</a> :<br>请注意，不返回cookie属性。特别是，当cookie过期时，<br>服务器无法单独从Cookie标头确定，cookie对哪些主机有效，cookie的路径有效，<br>或者cookie是否使用Secure或HttpOnly属性设置。</p>
+</blockquote>
+<p>同时在设置cookie时，客户端并不会发回结果反馈。这使得服务器不知道cookie是否被正确设置。<br>这等于要从数据库读一个不知道是否干净的数据，对数据完整性有影响。</p>
+<h4 id="解决：服务器容错与键名“走私（Smuggle）”"><a href="#解决：服务器容错与键名“走私（Smuggle）”" class="headerlink" title="解决：服务器容错与键名“走私（Smuggle）”"></a><a href="https://boholder.github.io/#%E8%A7%A3%E5%86%B3%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%AE%B9%E9%94%99%E4%B8%8E%E9%94%AE%E5%90%8D%E8%B5%B0%E7%A7%81smuggle" target="_blank" rel="noopener"></a><a href="https://boholder.github.io/#contents:%E8%A7%A3%E5%86%B3%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%AE%B9%E9%94%99%E4%B8%8E%E9%94%AE%E5%90%8D%E8%B5%B0%E7%A7%81smuggle" target="_blank" rel="noopener">解决：服务器容错与键名“走私（Smuggle）”</a></h4><p>大多数情况下，可以用服务器逻辑容错。<br><a href="https://www.owasp.org/images/a/a0/OWASPLondon20171130_Cookie_Security_Myths_Misconceptions_David_Johansson.pdf" target="_blank" rel="noopener">OWASPLondon20171130_Cookie_Security_Myths_Misconceptions_David_Johansson</a><br>此报告提供了在cookie名里添加“私货”以标识属性的方法，<br>比如一个cookie设置了属性<code>http-only</code>，名字就加个前缀HTTP_ONLY_。</p>
+<h3 id="2-“Domain”“Path”属性影响完整性"><a href="#2-“Domain”“Path”属性影响完整性" class="headerlink" title="2. “Domain”“Path”属性影响完整性"></a><a href="https://boholder.github.io/#2-domainpath%E5%B1%9E%E6%80%A7%E5%BD%B1%E5%93%8D%E5%AE%8C%E6%95%B4%E6%80%A7" target="_blank" rel="noopener"></a><a href="https://boholder.github.io/#contents:2-domainpath%E5%B1%9E%E6%80%A7%E5%BD%B1%E5%93%8D%E5%AE%8C%E6%95%B4%E6%80%A7" target="_blank" rel="noopener">2. “Domain”“Path”属性影响完整性</a></h3><p><a href="https://tools.ietf.org/html/rfc6265#section-5.2.3" target="_blank" rel="noopener">rfc6265-两个属性的设置</a></p>
+<p><a href="https://tools.ietf.org/html/rfc6265#section-5.1.2" target="_blank" rel="noopener">rfc6265-两个属性在客户端的处理算法</a></p>
+<p>不贴原文了，简单地总结（参照维基）：</p>
+<h4 id="Path-是指域名-Host下的路径归属。"><a href="#Path-是指域名-Host下的路径归属。" class="headerlink" title="Path 是指域名|Host下的路径归属。"></a><a href="https://boholder.github.io/#path-%E6%98%AF%E6%8C%87%E5%9F%9F%E5%90%8Dhost%E4%B8%8B%E7%9A%84%E8%B7%AF%E5%BE%84%E5%BD%92%E5%B1%9E" target="_blank" rel="noopener"></a><a href="https://boholder.github.io/#contents:path-%E6%98%AF%E6%8C%87%E5%9F%9F%E5%90%8Dhost%E4%B8%8B%E7%9A%84%E8%B7%AF%E5%BE%84%E5%BD%92%E5%B1%9E" target="_blank" rel="noopener"><code>Path</code> 是指域名|Host下的路径归属。</a></h4><ul>
+<li>比如两网站<code>example.com/site1/index.htm</code>,<code>example/com/site2/index.htm</code>，<br>设置Path属性为<code>/site1</code>,<code>/site2</code>两个值以分离两个目录中的页面的cookie。</li>
+<li>有些网站的不同目录是运行不同功能的，比如两个朋友共租一个域名运营博客，用上述方式划分。<br>通过这种方式可以做到分离两个博客的cookie。</li>
+</ul>
+<p>看起来很好，但稍有不慎（或故意为之），就可以用来绕过<a href="https://en.wikipedia.org/wiki/Same-origin_policy" target="_blank" rel="noopener">SOE-同源策略</a> 。<br>比如，设置path成<code>/</code>，好，域名下所有页面都能读该cookie了。</p>
+<p>这是一种减少网站开发人员工作量的窍门，也能被攻击者用来做窃取cookie的手段。</p>
+<h4 id="Domain-是指域名归属。"><a href="#Domain-是指域名归属。" class="headerlink" title="Domain 是指域名归属。"></a><a href="https://boholder.github.io/#domain-%E6%98%AF%E6%8C%87%E5%9F%9F%E5%90%8D%E5%BD%92%E5%B1%9E" target="_blank" rel="noopener"></a><a href="https://boholder.github.io/#contents:domain-%E6%98%AF%E6%8C%87%E5%9F%9F%E5%90%8D%E5%BD%92%E5%B1%9E" target="_blank" rel="noopener"><code>Domain</code> 是指域名归属。</a></h4><p>它和<code>Path</code>属性的缺点差不多类型，设置了<code>Domain</code>的cookie是<strong>默认暴露给所有子域名</strong>的。<br>我们都知道，同域名不一定等于同服务器IP，所以攻击者可以劫持域名解析偷cookie。<br>因为这个原因，实际开发中一般不建议设置<code>Domain</code>属性。</p>
+<h4 id="解决：SameSite-属性-2016年-amp-不设置Domain属性"><a href="#解决：SameSite-属性-2016年-amp-不设置Domain属性" class="headerlink" title="解决：SameSite 属性(2016年)&amp;不设置Domain属性"></a><a href="https://boholder.github.io/#%E8%A7%A3%E5%86%B3samesite-%E5%B1%9E%E6%80%A72016%E5%B9%B4%E4%B8%8D%E8%AE%BE%E7%BD%AEdomain%E5%B1%9E%E6%80%A7" target="_blank" rel="noopener"></a><a href="https://boholder.github.io/#contents:%E8%A7%A3%E5%86%B3samesite-%E5%B1%9E%E6%80%A72016%E5%B9%B4%E4%B8%8D%E8%AE%BE%E7%BD%AEdomain%E5%B1%9E%E6%80%A7" target="_blank" rel="noopener">解决：<code>SameSite</code> 属性(2016年)&amp;不设置<code>Domain</code>属性</a></h4><h5 id="SameSite"><a href="#SameSite" class="headerlink" title="SameSite"></a><a href="https://boholder.github.io/#samesite" target="_blank" rel="noopener"></a><a href="https://boholder.github.io/#contents:samesite" target="_blank" rel="noopener"><code>SameSite</code></a></h5><blockquote>
+<p><a href="https://en.wikipedia.org/wiki/HTTP_cookie#Same-site_cookie" target="_blank" rel="noopener">维基#Same-site_cookie</a>:<br>In 2016 Google Chrome version 51 introduced a new kind of cookie, the same-site cookie,<br>which can only be sent in requests originating from the same origin as the target domain.<br>This restriction mitigates attacks such as cross-site request forgery (XSRF).<br>A cookie is given this characteristic by setting the SameSite flag to Strict or Lax.<br><a href="https://tools.ietf.org/html/draft-west-first-party-cookies-07" target="_blank" rel="noopener">google：draft-ietf-httpbis-cookie-same-site</a></p>
+</blockquote>
+<blockquote>
+<p>2016年，谷歌Chrome版本51引入了一种新型cookie，即同一站点的cookie，<br>只能在源自与目标域相同的源的请求中发送。此限制可缓解诸如跨站点请求伪造（XSRF）等攻击。<br>通过将SameSite标志设置为Strict或Lax，可以为cookie提供此特性。</p>
+</blockquote>
+<p>标准支持：截至撰文时间(2019-05)，</p>
+<ul>
+<li>开发支持：查到的是node.js的express、PHP7.3支持，应该还有没搜到的</li>
+<li>浏览器支持：几个主流浏览器，的新版本都已支持，不再列举名字。</li>
+</ul>
+<p><a href="https://www.lambdatest.com/SameSite-cookie-attribute" target="_blank" rel="noopener">Browser Compatibility Testing of ‘SameSite’ cookie - LambdaTest</a></p>
+<h5 id="不设置Domain属性"><a href="#不设置Domain属性" class="headerlink" title="不设置Domain属性"></a><a href="https://boholder.github.io/#%E4%B8%8D%E8%AE%BE%E7%BD%AEdomain%E5%B1%9E%E6%80%A7" target="_blank" rel="noopener"></a><a href="https://boholder.github.io/#contents:%E4%B8%8D%E8%AE%BE%E7%BD%AEdomain%E5%B1%9E%E6%80%A7" target="_blank" rel="noopener">不设置<code>Domain</code>属性</a></h5><p><a href="https://stackoverflow.com/questions/12387338/what-is-a-host-only-cookie" target="_blank" rel="noopener">Stack over flow-What is a host only cookie?</a></p>
+<p>之所以不设置<code>Domain</code>属性，其实是为了激活<code>host-only-flag</code>，<br><strong>当host-only-flag被设置，子域名无法访问此cookie。</strong></p>
+<p><a href="https://tools.ietf.org/html/rfc6265#section-5.3" target="_blank" rel="noopener">rfc6265-5.3. Storage Model</a></p>
+<h3 id="3-对cookie的误用"><a href="#3-对cookie的误用" class="headerlink" title="3.对cookie的误用"></a><a href="https://boholder.github.io/#3%E5%AF%B9cookie%E7%9A%84%E8%AF%AF%E7%94%A8" target="_blank" rel="noopener"></a><a href="https://boholder.github.io/#contents:3%E5%AF%B9cookie%E7%9A%84%E8%AF%AF%E7%94%A8" target="_blank" rel="noopener">3.对cookie的误用</a></h3><p>上面算是设计问题，下面是多数文章主要讲的，开发者对cookie的误用。</p>
+<h4 id="①http-明文传递-cookie"><a href="#①http-明文传递-cookie" class="headerlink" title="①http 明文传递 cookie"></a><a href="https://boholder.github.io/#http-%E6%98%8E%E6%96%87%E4%BC%A0%E9%80%92-cookie" target="_blank" rel="noopener"></a><a href="https://boholder.github.io/#contents:http-%E6%98%8E%E6%96%87%E4%BC%A0%E9%80%92-cookie" target="_blank" rel="noopener">①http 明文传递 cookie</a></h4><p>cookie默认不加密传输，可以在传输中被坏家伙窃听或修改。</p>
+<p><strong>解决：设置<code>Secure</code>属性&amp;cookie加密和签名</strong></p>
+<p><a href="https://tools.ietf.org/html/rfc6265#section-5.2.5" target="_blank" rel="noopener">rfc6265-5.2.5. The Secure Attribute</a><br><code>Secure</code>属性保证cookie只在HTTPS环境下可被传输。</p>
+<p>和数据库设计一样，为了保险，应尽量减少数据中非必须的信息量。<br>cookie值可以是随机生成的字符串（会话凭证）而不是具体信息，<br>在下次登录时修改，以应对cookie窃取与重放攻击。</p>
+<blockquote>
+<p>rfc6265:<br>Servers SHOULD encrypt and sign the contents of cookies<br>(using whatever format the server desires) when transmitting them to the<br>user agent (even when sending the cookies over a secure channel).</p>
+</blockquote>
+<blockquote>
+<p>当将服务器传输给用户代理时，服务器应该对cookie的内容进行加密和签名<br>（使用服务器所需的任何格式）（即使通过安全通道发送cookie）。</p>
+</blockquote>
+<h4 id="②cookie-默认可被客户端API-JS-etc-读取"><a href="#②cookie-默认可被客户端API-JS-etc-读取" class="headerlink" title="②cookie 默认可被客户端API(JS etc)读取"></a><a href="https://boholder.github.io/#cookie-%E9%BB%98%E8%AE%A4%E5%8F%AF%E8%A2%AB%E5%AE%A2%E6%88%B7%E7%AB%AFapijs-etc%E8%AF%BB%E5%8F%96" target="_blank" rel="noopener"></a><a href="https://boholder.github.io/#contents:cookie-%E9%BB%98%E8%AE%A4%E5%8F%AF%E8%A2%AB%E5%AE%A2%E6%88%B7%E7%AB%AFapijs-etc%E8%AF%BB%E5%8F%96" target="_blank" rel="noopener">②cookie 默认可被客户端API(JS etc)读取</a></h4><p><strong>解决：设置时加 <code>Http-only-flag</code> ，禁止客户端JS读取cookie。</strong></p>
+<h4 id="③错误规划max-age、expires"><a href="#③错误规划max-age、expires" class="headerlink" title="③错误规划max-age、expires"></a><a href="https://boholder.github.io/#%E9%94%99%E8%AF%AF%E8%A7%84%E5%88%92max-ageexpires" target="_blank" rel="noopener"></a><a href="https://boholder.github.io/#contents:%E9%94%99%E8%AF%AF%E8%A7%84%E5%88%92max-ageexpires" target="_blank" rel="noopener">③错误规划<code>max-age</code>、<code>expires</code></a></h4><p><a href="https://tools.ietf.org/html/rfc6265#section-5.2" target="_blank" rel="noopener">rfc6265-The Set-Cookie Header</a></p>
+<p>标准太长，简单总结：<br><code>max-age</code>: 类似TTL，以秒计，到时删除。<br><code>expires</code>: GMT时间字符串（Wed, 09 Jun 2021 10:18:14 GMT）,到时删除。<br><code>max-age</code> 是 <code>expires</code> 的一个补充性属性。没有这两个属性，cookie被视为<a href="https://en.wikipedia.org/wiki/HTTP_cookie#Session_cookie" target="_blank" rel="noopener">session cookie</a> 。<br>cookie保留在客户端的时间越长，被攻击的可能性越高。</p>
+<h4 id="解决：谨慎设计max-age、expires的值"><a href="#解决：谨慎设计max-age、expires的值" class="headerlink" title="解决：谨慎设计max-age、expires的值"></a><a href="https://boholder.github.io/#%E8%A7%A3%E5%86%B3%E8%B0%A8%E6%85%8E%E8%AE%BE%E8%AE%A1max-ageexpires%E7%9A%84%E5%80%BC" target="_blank" rel="noopener"></a><a href="https://boholder.github.io/#contents:%E8%A7%A3%E5%86%B3%E8%B0%A8%E6%85%8E%E8%AE%BE%E8%AE%A1max-ageexpires%E7%9A%84%E5%80%BC" target="_blank" rel="noopener">解决：谨慎设计<code>max-age</code>、<code>expires</code>的值</a></h4><p>越敏感的数据，越要设置时间短，保持用户频繁认证。</p>
+<h2 id="Attack-on-cookies-and-solution"><a href="#Attack-on-cookies-and-solution" class="headerlink" title="Attack on cookies and solution"></a><a href="https://boholder.github.io/#attack-on-cookies-and-solution" target="_blank" rel="noopener"></a><a href="https://boholder.github.io/#contents:attack-on-cookies-and-solution" target="_blank" rel="noopener">Attack on cookies and solution</a></h2><p><strong>3.针对cookie窃取的攻击与相应防御</strong></p>
+<p>以下所有攻击手段，都能单独拉出来写好多篇技术报告|分享，<br>很明显本文没有这个篇幅，因此本文征求做到全而不详，并附链接以供详求。</p>
+<h3 id="为什么我们要攻击-保护cookie？"><a href="#为什么我们要攻击-保护cookie？" class="headerlink" title="为什么我们要攻击|保护cookie？"></a><a href="https://boholder.github.io/#%E4%B8%BA%E4%BB%80%E4%B9%88%E6%88%91%E4%BB%AC%E8%A6%81%E6%94%BB%E5%87%BB%E4%BF%9D%E6%8A%A4cookie" target="_blank" rel="noopener"></a><a href="https://boholder.github.io/#contents:%E4%B8%BA%E4%BB%80%E4%B9%88%E6%88%91%E4%BB%AC%E8%A6%81%E6%94%BB%E5%87%BB%E4%BF%9D%E6%8A%A4cookie" target="_blank" rel="noopener">为什么我们要攻击|保护cookie？</a></h3><p><a href="https://odino.org/security-hardening-http-cookies/" target="_blank" rel="noopener">这篇文章</a> 的一段话讲得不错：</p>
+<blockquote>
+<p>Because the data they contain is, more often than not, extremely sensitive<br>— cookies are generally used to store session IDs or access tokens,<br>an attacker’s holy grail.<br>Once they are exposed or compromised, attackers can impersonate users,<br>or escalate their privileges on your application.</p>
+</blockquote>
+<blockquote>
+<p>因为它们包含的数据通常非常敏感 - 通常用于存储会话ID或访问令牌，攻击者的圣杯。<br>一旦他们暴露或受到攻击，攻击者就可以冒充用户，或者升级他们对您的应用程序的权限。</p>
+</blockquote>
+<h3 id="常见攻击方式"><a href="#常见攻击方式" class="headerlink" title="常见攻击方式"></a><a href="https://boholder.github.io/#%E5%B8%B8%E8%A7%81%E6%94%BB%E5%87%BB%E6%96%B9%E5%BC%8F" target="_blank" rel="noopener"></a><a href="https://boholder.github.io/#contents:%E5%B8%B8%E8%A7%81%E6%94%BB%E5%87%BB%E6%96%B9%E5%BC%8F" target="_blank" rel="noopener">常见攻击方式</a></h3><p><a href="https://en.wikipedia.org/wiki/HTTP_cookie#Cookie_theft_and_session_hijacking" target="_blank" rel="noopener">维基百科</a>总结了几种常见的攻击方式，包括攻击过程简介与防御手段，在此不复述，只提供目录。</p>
+<p>攻击</p>
+<p>防御</p>
+<p>MITM</p>
+<p>TLS&amp;<code>secure</code>attr</p>
+<p>DNS Poisoning</p>
+<p>TLS&amp;<code>secure</code>attr</p>
+<p>DOM-Based-XSS</p>
+<p><code>http-only-flag</code>&amp;<code>SameSite</code>attr</p>
+<p>反射型XSS+恶意代理服务器</p>
+<p><code>secure</code>attr&amp;<code>SameSite</code>attr</p>
+<p>CSRF</p>
+<p><code>SameSite</code>attr</p>
+<p>还有一类维基没提到的，针对<a href="https://en.wikipedia.org/wiki/Transport_Layer_Security" target="_blank" rel="noopener">TLS协议</a> 的攻击。<br>TLS协议不是完全安全的，因为设计或实现的缺陷，<br>已有不少在特定情况下针对TLS的攻击出现，<br>主要目的是使HTTPS降为“等同于”HTTP的情况（即复原密文为明文），<br>这不是一个新方向，列举几个比较有名的攻击方式：</p>
+<ul>
+<li><a href="https://www.contextis.com/en/blog/server-technologies-https-beast-attack" target="_blank" rel="noopener">BEAST</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Lucky_Thirteen_attack" target="_blank" rel="noopener">Lucky 13</a></li>
+<li><a href="https://blog.qualys.com/ssllabs/2012/09/14/crime-information-leakage-attack-against-ssltls" target="_blank" rel="noopener">CRIME</a></li>
+<li><a href="http://breachattack.com/" target="_blank" rel="noopener">BREACH</a></li>
+</ul>
+<h3 id="非常见方式"><a href="#非常见方式" class="headerlink" title="非常见方式"></a><a href="https://boholder.github.io/#%E9%9D%9E%E5%B8%B8%E8%A7%81%E6%96%B9%E5%BC%8F" target="_blank" rel="noopener"></a><a href="https://boholder.github.io/#contents:%E9%9D%9E%E5%B8%B8%E8%A7%81%E6%96%B9%E5%BC%8F" target="_blank" rel="noopener">非常见方式</a></h3><p>非单一的、利用知识组合各种部分的针对cookie的攻击方式，<br>可惜我只找到一个。</p>
+<h4 id="①cookiejacking-Rosario-Valotta-2011-05-link"><a href="#①cookiejacking-Rosario-Valotta-2011-05-link" class="headerlink" title="①cookiejacking-Rosario Valotta-2011-05[link]"></a><a href="https://boholder.github.io/#cookiejacking-rosario-valotta-2011-05linkhttpssitesgooglecomsitetentacoloviolacookiejacking" target="_blank" rel="noopener"></a><a href="https://boholder.github.io/#contents:cookiejacking-rosario-valotta-2011-05linkhttpssitesgooglecomsitetentacoloviolacookiejacking" target="_blank" rel="noopener">①cookiejacking-Rosario Valotta-2011-05</a><a href="https://sites.google.com/site/tentacoloviola/cookiejacking" target="_blank" rel="noopener">[link]</a></h4><p>该方法利用了IE浏览器的“跨域交互策略”的一个漏洞，<br>外部HTML的<iframe>标签可以加载本地cookie文件（本应不能）。<br>恶意服务器通过一系列正常的手段获知用于构造cookie路径的信息，<br>然后通过此漏洞读取cookie，并利用<a href="https://www.securitysift.com/who-do-you-trust-cross-domain-content-extraction-with-clickjacking/" target="_blank" rel="noopener">Clickjacking</a> 手段传输cookie至服务器。<br>因为读的是文件，任何cookie都会被窃取。</p>
+<p>微软<a href="https://digitizor.com/cookiejacking-patch/" target="_blank" rel="noopener">6月</a> 给这个漏洞打了补丁。<br>至于Clickjacking，<code>x-frame-options</code><a href="https://www.keycdn.com/blog/x-frame-options" target="_blank" rel="noopener">(XFO)</a> 可以防止。</p>
+<h2 id="Academic-discussion-about-cookies"><a href="#Academic-discussion-about-cookies" class="headerlink" title="Academic discussion about cookies"></a><a href="https://boholder.github.io/#academic-discussion-about-cookies" target="_blank" rel="noopener"></a><a href="https://boholder.github.io/#contents:academic-discussion-about-cookies" target="_blank" rel="noopener">Academic discussion about cookies</a></h2><p><strong>关于cookie的学术讨论</strong></p>
+<p>本来想把理论方面作为2、3段的添头，没想到专家们已经在纸头上打过一两轮攻防了。<br>故单开此段，索引几个我觉得有意思的学术文献。</p>
+<h3 id="cookie-masking-cookie-掩盖"><a href="#cookie-masking-cookie-掩盖" class="headerlink" title="cookie masking-cookie 掩盖"></a><a href="https://boholder.github.io/#cookie-masking-cookie-%E6%8E%A9%E7%9B%96" target="_blank" rel="noopener"></a><a href="https://boholder.github.io/#contents:cookie-masking-cookie-%E6%8E%A9%E7%9B%96" target="_blank" rel="noopener">cookie masking-cookie 掩盖</a></h3><blockquote>
+<p><a href="https://dl.acm.org/citation.cfm?id=2714592" target="_blank" rel="noopener">TLS Record Protocol: Security Analysis and<br>Defense-in-depth Countermeasures for HTTPS</a><br>Author: Olivier Levillain etc<br>Time: 2015</p>
+</blockquote>
+<p>这个研究总结了针对TLS记录协议的5个攻击方式，并给出了两个cookie掩盖方式：<br>TLS Scramble &amp; MCookies，以保证在意外导致HTTP明文传输的情况下，<br>继续保持cookie等秘密信息机密性。</p>
+<blockquote>
+<p><a href="https://link.springer.com/article/10.1007%2Fs12095-018-0280-y" target="_blank" rel="noopener">Statistical attacks on cookie masking for RC4</a><br>Author: Kenneth G. PatersonEmail author etc<br>Time: 2018-02</p>
+</blockquote>
+<p>该文验证了上篇文章两种掩盖方式理论上可被加大提供算力后破解，<br>因此该掩盖方式只能提供不强的机密性。</p>
+<h3 id="测信道攻击"><a href="#测信道攻击" class="headerlink" title="测信道攻击"></a><a href="https://boholder.github.io/#%E6%B5%8B%E4%BF%A1%E9%81%93%E6%94%BB%E5%87%BB" target="_blank" rel="noopener"></a><a href="https://boholder.github.io/#contents:%E6%B5%8B%E4%BF%A1%E9%81%93%E6%94%BB%E5%87%BB" target="_blank" rel="noopener">测信道攻击</a></h3><blockquote>
+<p><a href="https://link.springer.com/chapter/10.1007/978-3-319-89641-0_11" target="_blank" rel="noopener">Path Leaks of HTTPS Side-Channel by Cookie Injection</a><br>Author: Fuqing Chen etc<br>Time: 2018-04</p>
+</blockquote>
+<p>该文阐述了一种攻击方式和两种应用方面：<br>利用cookie的弱同源策略（上文有提），实施cookie注入，<br>用注入的cookie来推断敏感信息，进而复原一部分密文（比如请求的URL）。<br>没看完，大概是利用当时浏览器的cookie路径匹配的算法的一个缺陷。</p>
+<blockquote>
+<p><a href="https://link.springer.com/chapter/10.1007/978-3-662-47854-7_6" target="_blank" rel="noopener">Protecting Encrypted Cookies from<br>Compression Side-Channel Attacks</a><br>Author: Janaka Alawatugoda etc<br>Time: 2015-07</p>
+</blockquote>
+<p>有那么两种对TLS的攻击：<a href="https://blog.qualys.com/ssllabs/2012/09/14/crime-information-leakage-attack-against-ssltls" target="_blank" rel="noopener">CRIME</a> 和 <a href="http://breachattack.com/" target="_blank" rel="noopener">BREACH</a> （上文有提）,<br>它们基于传输前压缩过程中产生的额外信息量，复现敏感信息，<br>针对它们的常规解决方法是禁止传输中压缩，<br>这意味着加大使用带宽资源。<br>该文阐述了两种新的压缩方式，用于实现压缩并保护机密信息的功能。</p>
+<h2 id="Summary"><a href="#Summary" class="headerlink" title="Summary"></a><a href="https://boholder.github.io/#summary" target="_blank" rel="noopener"></a><a href="https://boholder.github.io/#contents:summary" target="_blank" rel="noopener">Summary</a></h2><p><strong>总结</strong></p>
+<p>首先，关于此文，不包括素材阅读的，纯搜索时间，大概只有2小时多，<br>因此即使是截至2019-05，此文大概还是遗漏了许多值得一提的部分，请读者海涵。</p>
+<p>其次，经过编写此文，作者对cookie的认识有了很大变化，认清了cookie能力是很有限的，<br>以后编写web服务也会注意cookie的正确运用。希望各位读者也能从此文中学到知识。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/05/27/qiwihui-pocket_readings-1117/" rel="prev" title="译文：从源码中学习（阅读源码，初学者的有效成长方式）">
+      <i class="fa fa-chevron-left"></i> 译文：从源码中学习（阅读源码，初学者的有效成长方式）
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/05/27/qiwihui-pocket_readings-1119/" rel="next" title="web安全目录遍历漏洞学习及绕过 - FreeBuf网络安全行业门户">
+      web安全目录遍历漏洞学习及绕过 - FreeBuf网络安全行业门户 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTP-cookie的安全性、安全使用方法和攻击防御手段-by-BoHolder"><span class="nav-number"></span> <span class="nav-text">HTTP cookie的安全性、安全使用方法和攻击防御手段 by BoHolder</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number"></span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#目录"><span class="nav-number"></span> <span class="nav-text">目录</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#What-is-cookie"><span class="nav-number"></span> <span class="nav-text">What is cookie</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#定义"><span class="nav-number">1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#格式-amp-用法"><span class="nav-number">2.</span> <span class="nav-text">格式&amp;用法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Security-risk-in-design-and-use-and-solution"><span class="nav-number"></span> <span class="nav-text">Security risk in design and use and solution</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-服务器只能读取cookie键值对，读不到属性"><span class="nav-number">1.</span> <span class="nav-text">1.服务器只能读取cookie键值对，读不到属性</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#解决：服务器容错与键名“走私（Smuggle）”"><span class="nav-number">1.1.</span> <span class="nav-text">解决：服务器容错与键名“走私（Smuggle）”</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-“Domain”“Path”属性影响完整性"><span class="nav-number">2.</span> <span class="nav-text">2. “Domain”“Path”属性影响完整性</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Path-是指域名-Host下的路径归属。"><span class="nav-number">2.1.</span> <span class="nav-text">Path 是指域名|Host下的路径归属。</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Domain-是指域名归属。"><span class="nav-number">2.2.</span> <span class="nav-text">Domain 是指域名归属。</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#解决：SameSite-属性-2016年-amp-不设置Domain属性"><span class="nav-number">2.3.</span> <span class="nav-text">解决：SameSite 属性(2016年)&amp;不设置Domain属性</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#SameSite"><span class="nav-number">2.3.1.</span> <span class="nav-text">SameSite</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#不设置Domain属性"><span class="nav-number">2.3.2.</span> <span class="nav-text">不设置Domain属性</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-对cookie的误用"><span class="nav-number">3.</span> <span class="nav-text">3.对cookie的误用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#①http-明文传递-cookie"><span class="nav-number">3.1.</span> <span class="nav-text">①http 明文传递 cookie</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#②cookie-默认可被客户端API-JS-etc-读取"><span class="nav-number">3.2.</span> <span class="nav-text">②cookie 默认可被客户端API(JS etc)读取</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#③错误规划max-age、expires"><span class="nav-number">3.3.</span> <span class="nav-text">③错误规划max-age、expires</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#解决：谨慎设计max-age、expires的值"><span class="nav-number">3.4.</span> <span class="nav-text">解决：谨慎设计max-age、expires的值</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Attack-on-cookies-and-solution"><span class="nav-number"></span> <span class="nav-text">Attack on cookies and solution</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么我们要攻击-保护cookie？"><span class="nav-number">1.</span> <span class="nav-text">为什么我们要攻击|保护cookie？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#常见攻击方式"><span class="nav-number">2.</span> <span class="nav-text">常见攻击方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#非常见方式"><span class="nav-number">3.</span> <span class="nav-text">非常见方式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#①cookiejacking-Rosario-Valotta-2011-05-link"><span class="nav-number">3.1.</span> <span class="nav-text">①cookiejacking-Rosario Valotta-2011-05[link]</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Academic-discussion-about-cookies"><span class="nav-number"></span> <span class="nav-text">Academic discussion about cookies</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#cookie-masking-cookie-掩盖"><span class="nav-number">1.</span> <span class="nav-text">cookie masking-cookie 掩盖</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#测信道攻击"><span class="nav-number">2.</span> <span class="nav-text">测信道攻击</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Summary"><span class="nav-number"></span> <span class="nav-text">Summary</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Introduction to architecting systems for scale.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Introduction to architecting systems for scale.">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/06/01/qiwihui-pocket_readings-1123/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="Introduction to architecting systems for scale.">
+<meta property="og:image" content="https://lethain.com/static/blog/2018/intro-scalable-arch.png">
+<meta property="og:image" content="https://lethain.com/static/blog/intro_arch/load_balance.png">
+<meta property="og:image" content="https://lethain.com/static/blog/intro_arch/app_cache.png">
+<meta property="og:image" content="https://lethain.com/static/blog/intro_arch/database_cache.png">
+<meta property="og:image" content="https://lethain.com/static/blog/intro_arch/cdn.png">
+<meta property="og:image" content="https://lethain.com/static/blog/intro_arch/message_queue.png">
+<meta property="og:image" content="https://lethain.com/static/blog/intro_arch/map_reduce.png">
+<meta property="og:image" content="https://lethain.com/static/blog/intro_arch/platform_layer.png">
+<meta property="og:image" content="https://lethain.com/static/blog/2019/aep-small-lq.jpg">
+<meta property="og:image" content="https://lethain.com/static/blog/staffeng/StaffEngBookMed.jpg">
+<meta property="article:published_time" content="2021-06-01T02:21:03.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.406Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://lethain.com/static/blog/2018/intro-scalable-arch.png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/06/01/qiwihui-pocket_readings-1123/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>Introduction to architecting systems for scale. | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/06/01/qiwihui-pocket_readings-1123/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Introduction to architecting systems for scale.
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-06-01 02:21:03" itemprop="dateCreated datePublished" datetime="2021-06-01T02:21:03+00:00">2021-06-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">Introduction to architecting systems for scale.</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Few computer science or software development programs attempt to teach the building blocks of scalable systems.<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/3c7kIdn" target="_blank" rel="noopener">https://ift.tt/3c7kIdn</a> original site<br><br><br><br>June 01, 2021 at 09:27AM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1123#issuecomment-851758184" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>6/1/2021</strong></p>
+</blockquote>
+<h2 id="Introduction-to-architecting-systems-for-scale"><a href="#Introduction-to-architecting-systems-for-scale" class="headerlink" title="Introduction to architecting systems for scale."></a>Introduction to architecting systems for scale.</h2><p><img src="https://lethain.com/static/blog/2018/intro-scalable-arch.png" alt=""></p>
+<h1 id="Introduction-to-architecting-systems-for-scale-1"><a href="#Introduction-to-architecting-systems-for-scale-1" class="headerlink" title="Introduction to architecting systems for scale."></a>Introduction to architecting systems for scale.</h1><p>April 4, 2011. <a href="https://lethain.com/tags/infrastructure" target="_blank" rel="noopener">infrastructure (34),</a> <a href="https://lethain.com/tags/architecture" target="_blank" rel="noopener">architecture (30)</a></p>
+<p>Few computer science or software development programs attempt to teach the building blocks of scalable systems. Instead, system architecture is usually picked up on the job by <a href="http://engineering.twitter.com/2010/06/perfect-stormof-whales.html" target="_blank" rel="noopener">working through the pain of a growing product</a> or by working with engineers who have already learned through that suffering process.</p>
+<p>In this post I’ll attempt to document some of the scalability architecture lessons I’ve learned while working on systems at <a href="http://yahoo.com/" target="_blank" rel="noopener">Yahoo!</a> and <a href="http://digg.com/" target="_blank" rel="noopener">Digg</a>.</p>
+<p>I’ve attempted to maintain a color convention for diagrams:</p>
+<ul>
+<li><em>green</em> is an external request from an external client (an HTTP request from a browser, etc),</li>
+<li><em>blue</em> is your code running in some container (a Django app running on <a href="http://code.google.com/p/modwsgi/" target="_blank" rel="noopener">mod_wsgi</a>, a Python script listening to <a href="http://www.rabbitmq.com/" target="_blank" rel="noopener">RabbitMQ</a>, etc), and</li>
+<li><em>red</em> is a piece of infrastructure (MySQL, <a href="http://redis.io/" target="_blank" rel="noopener">Redis</a>, RabbitMQ, etc).</li>
+</ul>
+<h1 id="Load-balancing"><a href="#Load-balancing" class="headerlink" title="Load balancing"></a>Load balancing</h1><p>The ideal system increases capacity linearly with adding hardware. In such a system, if you have one machine and add another, your capacity would double. If you had three and you add another, your capacity would increase by 33%. Let’s call this <em>horizontal scalability</em>.</p>
+<p>On the failure side, an ideal system isn’t disrupted by the loss of a server. Losing a server should simply decrease system capacity by the same amount it increased overall capacity when it was added. Let’s call this <em>redundancy</em>.</p>
+<p>Both horizontal scalability and redundancy are usually achieved via load balancing.</p>
+<p>(This article won’t address <em>vertical scalability</em>, as it is usually an undesirable property for a large system, as there is inevitably a point where it becomes cheaper to add capacity in the form on additional machines rather than additional resources of one machine, and redundancy and vertical scaling can be at odds with one-another.)</p>
+<p><img src="https://lethain.com/static/blog/intro_arch/load_balance.png" alt="Load Balancing"></p>
+<p>Load balancing is the process of spreading requests across multiple resources according to some metric (random, round-robin, random with weighting for machine capacity, etc) and their current status (available for requests, not responding, elevated error rate, etc).</p>
+<p>Load needs to be balanced between user requests and your web servers, but must also be balanced at every stage to achieve full scalability and redundancy for your system. A moderately large system may balance load at three layers:</p>
+<ul>
+<li>user to your web servers,</li>
+<li>web servers to an internal platform layer,</li>
+<li>internal platform layer to your database.</li>
+</ul>
+<p>There are a number of ways to implement load balancing.</p>
+<h2 id="Smart-clients"><a href="#Smart-clients" class="headerlink" title="Smart clients"></a>Smart clients</h2><p>Adding load-balancing functionality into your database (cache, service, etc) client is usually an attractive solution for the developer. Is it attractive because it is the simplest solution? Usually, no. Is it seductive because it is the most robust? Sadly, no. Is it alluring because it’ll be easy to reuse? Tragically, no.</p>
+<p><em>Developers lean towards smart clients because they are developers, and so they are used to writing software to solve their problems, and smart clients are software.</em></p>
+<p>With that caveat in mind, what is a smart client? It is a client which takes a pool of service hosts and balances load across them, detects downed hosts and avoids sending requests their way (they also have to detect recovered hosts, deal with adding new hosts, etc, making them fun to get working decently and a terror to setup).</p>
+<h2 id="Hardware-load-balancers"><a href="#Hardware-load-balancers" class="headerlink" title="Hardware load balancers"></a>Hardware load balancers</h2><p>The most expensive–but very high performance–solution to load balancing is to buy a dedicated hardware load balancer (something like a <a href="http://www.citrix.com/English/ps2/products/product.asp?contentID=21679" target="_blank" rel="noopener">Citrix NetScaler</a>). While they can solve a remarkable range of problems, hardware solutions are remarkably expensive, and they are also “non-trivial” to configure.</p>
+<p>As such, generally even large companies with substantial budgets will often avoid using dedicated hardware for all their load-balancing needs; instead they use them only as the first point of contact from user requests to their infrastructure, and use other mechanisms (smart clients or the hybrid approach discussed in the next section) for load-balancing for traffic within their network.</p>
+<h2 id="Software-load-balancers"><a href="#Software-load-balancers" class="headerlink" title="Software load balancers"></a>Software load balancers</h2><p>If you want to avoid the pain of creating a smart client, and purchasing dedicated hardware is excessive, then the universe has been kind enough to provide a hybrid: software load-balancers.</p>
+<p><a href="http://haproxy.1wt.eu/" target="_blank" rel="noopener">HAProxy</a> is a great example of this approach. It runs locally on each of your boxes, and each service you want to load-balance has a locally bound port. For example, you might have your platform machines accessible via <code>localhost:9000</code>, your database read-pool at <code>localhost:9001</code> and your database write-pool at <code>localhost:9002</code>. HAProxy manages healthchecks and will remove and return machines to those pools according to your configuration, as well as balancing across all the machines in those pools as well.</p>
+<p>For most systems, I’d recommend starting with a software load balancer and moving to smart clients or hardware load balancing only with deliberate need.</p>
+<h1 id="Caching"><a href="#Caching" class="headerlink" title="Caching"></a>Caching</h1><p>Load balancing helps you scale horizontally across an ever-increasing number of servers, but caching will enable you to make vastly better use of the resources you already have, as well as making otherwise unattainable product requirements feasible.</p>
+<p>Caching consists of: precalculating results (e.g. the number of visits from each referring domain for the previous day), pre-generating expensive indexes (e.g. suggested stories based on a user’s click history), and storing copies of frequently accessed data in a faster backend (e.g. <a href="http://memcached.org/" target="_blank" rel="noopener">Memcache</a> instead of <a href="http://www.postgresql.org/" target="_blank" rel="noopener">PostgreSQL</a>.</p>
+<p>In practice, caching is important earlier in the development process than load-balancing, and starting with a consistent caching strategy will save you time later on. It also ensures you don’t optimize access patterns which can’t be replicated with your caching mechanism or access patterns where performance becomes unimportant after the addition of caching (I’ve found that many heavily optimized <a href="http://cassandra.apache.org/" target="_blank" rel="noopener">Cassandra</a> applications are a challenge to cleanly add caching to if/when the database’s caching strategy can’t be applied to your access patterns, as the datamodel is generally inconsistent between the Cassandra and your cache).</p>
+<h2 id="Application-vs-database-caching"><a href="#Application-vs-database-caching" class="headerlink" title="Application vs. database caching"></a>Application vs. database caching</h2><p>There are two primary approaches to caching: application caching and database caching (most systems rely heavily on both).</p>
+<p><img src="https://lethain.com/static/blog/intro_arch/app_cache.png" alt="Application Cache"></p>
+<p>Application caching requires explicit integration in the application code itself. Usually it will check if a value is in the cache; if not, retrieve the value from the database; then write that value into the cache (this value is especially common if you are using a cache which observes the <a href="http://en.wikipedia.org/wiki/Cache_algorithms#Least_Recently_Used" target="_blank" rel="noopener">least recently used caching algorithm</a>). The code typically looks like (specifically this is a <em>read-through cache</em>, as it reads the value from the database into the cache if it is missing from the cache):</p>
+<pre><code>key = &quot;user.%s&quot; % user_id
+user_blob = memcache.get(key)
+if user_blob is None:
+    user = mysql.query(&quot;SELECT * FROM users WHERE user_id=\&quot;%s\&quot;&quot;, user_id)
+    if user:
+        memcache.set(key, json.dumps(user))
+    return user
+else:
+    return json.loads(user_blob)</code></pre><p>The other side of the coin is database caching.</p>
+<p><img src="https://lethain.com/static/blog/intro_arch/database_cache.png" alt="Database Cache"></p>
+<p>When you flip your database on, you’re going to get some level of default configuration which will provide some degree of caching and performance. Those initial settings will be optimized for a generic usecase, and by tweaking them to your system’s access patterns you can generally squeeze a great deal of performance improvement.</p>
+<p>The beauty of database caching is that your application code gets faster “for free”, and a talented DBA or operational engineer can uncover quite a bit of performance without your code changing a whit (my colleague Rob Coli spent some time recently optimizing our configuration for Cassandra row caches, and was succcessful to the extent that he spent a week harassing us with graphs showing the I/O load dropping dramatically and request latencies improving substantially as well).</p>
+<h2 id="In-memory-caches"><a href="#In-memory-caches" class="headerlink" title="In-memory caches"></a>In-memory caches</h2><p>The most potent–in terms of raw performance–caches you’ll encounter are those which store their entire set of data in memory. <a href="http://memcached.org/" target="_blank" rel="noopener">Memcached</a> and <a href="http://redis.io/" target="_blank" rel="noopener">Redis</a> are both examples of in-memory caches (caveat: Redis can be configured to store some data to disk). This is because accesses to RAM are <a href="http://en.wikipedia.org/wiki/RAM_disk" target="_blank" rel="noopener">orders of magnitude</a> faster than those to disk.</p>
+<p>On the other hand, you’ll generally have far less RAM available than disk space, so you’ll need a strategy for only keeping the hot subset of your data in your memory cache. The most straightforward strategy is <a href="http://en.wikipedia.org/wiki/Cache_algorithms#Least_Recently_Used" target="_blank" rel="noopener">least recently used</a>, and is employed by Memcache (and Redis as of 2.2 can be configured to employ it as well). LRU works by evicting less commonly used data in preference of more frequently used data, and is almost always an appropriate caching strategy.</p>
+<h2 id="Content-distribution-networks"><a href="#Content-distribution-networks" class="headerlink" title="Content distribution networks"></a>Content distribution networks</h2><p>A particular kind of cache (some might argue with this usage of the term, but I find it fitting) which comes into play for sites serving large amounts of static media is the <em>content distribution network.</em></p>
+<p><img src="https://lethain.com/static/blog/intro_arch/cdn.png" alt="Content Distribution Network"></p>
+<p>CDNs take the burden of serving static media off of your application servers (which are typically optimzed for serving dynamic pages rather than static media), and provide geographic distribution. Overall, your static assets will load more quickly and with less strain on your servers (but a new strain of business expense).</p>
+<p>In a typical CDN setup, a request will first ask your CDN for a piece of static media, the CDN will serve that content if it has it locally available (HTTP headers are used for configuring how the CDN caches a given piece of content). If it isn’t available, the CDN will query your servers for the file and then cache it locally and serve it to the requesting user (in this configuration they are acting as a read-through cache).</p>
+<p>If your site isn’t yet large enough to merit its own CDN, you can ease a future transition by serving your static media off a separate subdomain (e.g. <code>static.example.com</code>) using a lightweight HTTP server like <a href="http://nginx.org/" target="_blank" rel="noopener">Nginx</a>, and cutover the DNS from your servers to a CDN at a later date.</p>
+<h2 id="Cache-invalidation"><a href="#Cache-invalidation" class="headerlink" title="Cache invalidation"></a>Cache invalidation</h2><p>While caching is fantastic, it does require you to maintain consistency between your caches and the source of truth (i.e. your database), at risk of truly bizarre applicaiton behavior.</p>
+<p>Solving this problem is known as <em>cache invalidation</em>.</p>
+<p>If you’re dealing with a single datacenter, it tends to be a straightforward problem, but it’s easy to introduce errors if you have multiple codepaths writing to your database and cache (which is almost always going to happen if you don’t go into writing the application with a caching strategy already in mind). At a high level, the solution is: each time a value changes, write the new value into the cache (this is called a <em>write-through</em> cache) or simply delete the current value from the cache and allow a read-through cache to populate it later (choosing between read and write through caches depends on your application’s details, but generally I prefer write-through caches as they reduce likelihood of a stampede on your backend database).</p>
+<p>Invalidation becomes meaningfully more challenging for scenarios involving fuzzy queries (e.g if you are trying to add application level caching in-front of a full-text search engine like <a href="http://lucene.apache.org/solr/" target="_blank" rel="noopener">SOLR</a>), or modifications to unknown number of elements (e.g. deleting all objects created more than a week ago).</p>
+<p>In those scenarios you have to consider relying fully on database caching, adding aggressive expirations to the cached data, or reworking your application’s logic to avoid the issue (e.g. instead of <code>DELETE FROM a WHERE...</code>, retrieve all the items which match the criteria, invalidate the corresponding cache rows and then delete the rows by their primary key explicitly).</p>
+<h1 id="Off-line-processing"><a href="#Off-line-processing" class="headerlink" title="Off-line processing"></a>Off-line processing</h1><p>As a system grows more complex, it is almost always necessary to perform processing which can’t be performed in-line with a client’s request either because it is creates unacceptable latency (e.g. you want to want to propagate a user’s action across a social graph) or it because it needs to occur periodically (e.g. want to create daily rollups of analytics).</p>
+<h2 id="Message-queues"><a href="#Message-queues" class="headerlink" title="Message queues"></a>Message queues</h2><p>For processing you’d like to perform inline with a request but is too slow, the easiest solution is to create a message queue (for example, <a href="http://www.rabbitmq.com/" target="_blank" rel="noopener">RabbitMQ</a>). Message queues allow your web applications to quickly publish messages to the queue, and have other consumers processes perform the processing outside the scope and timeline of the client request.</p>
+<p>Dividing work between off-line work handled by a consumer and in-line work done by the web application depends entirely on the interface you are exposing to your users. Generally you’ll either:</p>
+<ol>
+<li>perform almost no work in the consumer (merely scheduling a task) and inform your user that the task will occur offline, usually with a polling mechanism to update the interface once the task is complete (for example, provisioning a new VM on Slicehost follows this pattern), or</li>
+<li>perform enough work in-line to make it appear to the user that the task has completed, and tie up hanging ends afterwards (posting a message on Twitter or Facebook likely follow this pattern by updating the tweet/message in your timeline but updating your followers’ timelines out of band; it’s simple isn’t feasible to update all the followers for a <a href="http://twitter.com/#!/scobleizer" target="_blank" rel="noopener">Scobleizer</a> in real-time).</li>
+</ol>
+<p><img src="https://lethain.com/static/blog/intro_arch/message_queue.png" alt="Message Queue"></p>
+<p>Message queues have another benefit, which is that they allow you to create a separate machine pool for performing off-line processing rather than burdening your web application servers. This allows you to target increases in resources to your current performance or throughput bottleneck rather than uniformly increasing resources across the bottleneck and non-bottleneck systems.</p>
+<h2 id="Scheduling-periodic-tasks"><a href="#Scheduling-periodic-tasks" class="headerlink" title="Scheduling periodic tasks"></a>Scheduling periodic tasks</h2><p>Almost all large systems require daily or hourly tasks, but unfortunately this seems to still be a problem waiting for a widely accepted solution which easily supports redundancy. In the meantime you’re probably still stuck with <a href="http://en.wikipedia.org/wiki/Cron" target="_blank" rel="noopener">cron</a>, but you could use the cronjobs to publish messages to a consumer, which would mean that the cron machine is only responsible for scheduling rather than needing to perform all the processing.</p>
+<p>Does anyone know of recognized tools which solve this problem? I’ve seen many homebrew systems, but nothing clean and reusable. Sure, you can store the cronjobs in a <a href="http://www.puppetlabs.com/" target="_blank" rel="noopener">Puppet</a> config for a machine, which makes recovering from losing that machine easy, but it would still require a manual recovery, which is likely acceptable but not perfect.</p>
+<h2 id="Map-reduce"><a href="#Map-reduce" class="headerlink" title="Map-reduce"></a>Map-reduce</h2><p>If your large scale application is dealing with a large quantity of data, at some point you’re likely to add support for <a href="http://en.wikipedia.org/wiki/MapReduce" target="_blank" rel="noopener">map-reduce</a>, probably using <a href="http://hadoop.apache.org/" target="_blank" rel="noopener">Hadoop</a>, and maybe <a href="http://hive.apache.org/" target="_blank" rel="noopener">Hive</a> or <a href="http://hbase.apache.org/" target="_blank" rel="noopener">HBase</a>.</p>
+<p><img src="https://lethain.com/static/blog/intro_arch/map_reduce.png" alt="Map Reduce"></p>
+<p>Adding a map-reduce layer makes it possible to perform data and/or processing intensive operations in a reasonable amount of time. You might use it for calculating suggested users in a social graph, or for generating analytics reports.</p>
+<p>For sufficiently small systems you can often get away with adhoc queries on a SQL database, but that approach may not scale up trivially once the quantity of data stored or write-load requires sharding your database, and will usually require dedicated slaves for the purpose of performing these queries (at which point, maybe you’d rather use a system designed for analyzing large quantities of data, rather than fighting your database).</p>
+<h1 id="Platform-layer"><a href="#Platform-layer" class="headerlink" title="Platform layer"></a>Platform layer</h1><p>Most applications start out with a web application communicating directly with a database. This approach tends to be sufficient for most applications, but there are some compelling reasons for adding a platform layer, such that your web applications communicate with a platform layer which in turn communicates with your databases.</p>
+<p><img src="https://lethain.com/static/blog/intro_arch/platform_layer.png" alt="Platform Layer"></p>
+<p>First, separating the platform and web application allow you to scale the pieces independently. If you add a new API, you can add platform servers without adding unnecessary capacity for your web application tier. (Generally, specializing your servers’ role opens up an additional level of configuration optimization which isn’t available for general purpose machines; your database machine will usually have a high I/O load and will benefit from a solid-state drive, but your well-configured application server probably isn’t reading from disk at all during normal operation, but might benefit from more CPU.)</p>
+<p>Second, adding a platform layer can be a way to reuse your infrastructure for multiple products or interfaces (a web application, an API, an iPhone app, etc) without writing too much redundant boilerplate code for dealing with caches, databases, etc.</p>
+<p>Third, a sometimes underappreciated aspect of platform layers is that they make it easier to scale an organization. At their best, a platform exposes a crisp product-agnostic interface which masks implementation details. If done well, this allows multiple independent teams to develop utilizing the platform’s capabilities, as well as another team implementing/optimizing the platform itself.</p>
+<hr>
+<p>I had intended to go into moderate detail on handling multiple data-centers, but that topic truly deserves its own post, so I’ll only mention that cache invalidation and data replication/consistency become rather interesting problems at that stage.</p>
+<p>I’m sure I’ve made some controversial statements in this post, which I hope the dear reader will argue with such that we can both learn a bit. Thanks for reading!</p>
+<p>Hi folks. I’m <a href="https://lethain.com/about" target="_blank" rel="noopener">Will</a> aka <a href="https://twitter.com/lethain" target="_blank" rel="noopener">@ lethain</a>.<br>If you’re looking to reach out to me, here are <a href="https://lethain.com/ways-i-help/" target="_blank" rel="noopener">ways I help</a>. If you’d like to get a email from me, subscribe to <a href="https://lethain.com/newsletter/" target="_blank" rel="noopener">my weekly newsletter</a>.</p>
+<p>I wrote <a href="https://www.amazon.com/Elegant-Puzzle-Systems-Engineering-Management/dp/1732265186" target="_blank" rel="noopener">An Elegant Puzzle</a>.</p>
+<p><a href="https://www.amazon.com/Elegant-Puzzle-Systems-Engineering-Management/dp/1732265186" target="_blank" rel="noopener"><img src="https://lethain.com/static/blog/2019/aep-small-lq.jpg" alt=""></a></p>
+<p>As well as, <a href="https://staffeng.com/book" target="_blank" rel="noopener">Staff Engineer</a>.</p>
+<p><a href="https://staffeng.com/book" target="_blank" rel="noopener"><img src="https://lethain.com/static/blog/staffeng/StaffEngBookMed.jpg" alt=""></a></p>
+<p>Popular</p>
+<ul>
+<li><a href="https://lethain.com/good-engineering-strategy-is-boring/" target="_blank" rel="noopener">Write five, then synthesize: good engineering strategy is boring.</a></li>
+<li><a href="https://lethain.com/managing-technical-quality/" target="_blank" rel="noopener">Managing technical quality in a codebase.</a></li>
+<li><a href="https://lethain.com/work-on-what-matters/" target="_blank" rel="noopener">Work on what matters.</a></li>
+<li><a href="https://lethain.com/first-ninety-days-cto-vpe/" target="_blank" rel="noopener">Your first 90 days as CTO or VP Engineering.</a></li>
+<li><a href="https://lethain.com/digg-acquihire/" target="_blank" rel="noopener">How the Digg team was acquihired.</a></li>
+</ul>
+<p>Recent</p>
+<ul>
+<li><a href="https://lethain.com/posts/2021/an-interlude/" target="_blank" rel="noopener">An interlude.</a></li>
+<li><a href="https://lethain.com/mailbag-should-we-call-them-architects/" target="_blank" rel="noopener">Mailbag: Should we just call them architects?</a></li>
+<li><a href="https://lethain.com/migrating-blog/" target="_blank" rel="noopener">RSS feed changing! Migrating blog in next few days.</a></li>
+<li><a href="https://lethain.com/mailbag-unhappy-users-internal-platform/" target="_blank" rel="noopener">Mailbag: How to deal with unhappy users on your Internal platform?</a></li>
+<li><a href="https://lethain.com/measures-of-engineering-impact/" target="_blank" rel="noopener">Measures of engineering impact.</a></li>
+</ul>
+<p>Related</p>
+<ul>
+<li><a href="https://lethain.com/overview-of-single-vs-multi-server-architecture/" target="_blank" rel="noopener">Overview of Single vs. Multi Server Architecture</a></li>
+<li><a href="https://lethain.com/designing-my-future-home/" target="_blank" rel="noopener">Designing My Future Home</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/05/29/qiwihui-pocket_readings-1122/" rel="prev" title="成都旅游不完全指北 - 见字如面">
+      <i class="fa fa-chevron-left"></i> 成都旅游不完全指北 - 见字如面
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/06/03/qiwihui-pocket_readings-1124/" rel="next" title="一文带你重新审视CAP理论与分布式系统设计 - 分布式 - dbaplus社群：围绕Data、Blockchain、AiOps的企业级专业社群。技术大咖、原创干货，每天精品原创文章推送，每周线上技术分享，每月线下技术沙龙。">
+      一文带你重新审视CAP理论与分布式系统设计 - 分布式 - dbaplus社群：围绕Data、Blockchain、AiOps的企业级专业社群。技术大咖、原创干货，每天精品原创文章推送，每周线上技术分享，每月线下技术沙龙。 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Introduction-to-architecting-systems-for-scale"><span class="nav-number"></span> <span class="nav-text">Introduction to architecting systems for scale.</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Introduction-to-architecting-systems-for-scale-1"><span class="nav-number"></span> <span class="nav-text">Introduction to architecting systems for scale.</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Load-balancing"><span class="nav-number"></span> <span class="nav-text">Load balancing</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Smart-clients"><span class="nav-number"></span> <span class="nav-text">Smart clients</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Hardware-load-balancers"><span class="nav-number"></span> <span class="nav-text">Hardware load balancers</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Software-load-balancers"><span class="nav-number"></span> <span class="nav-text">Software load balancers</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Caching"><span class="nav-number"></span> <span class="nav-text">Caching</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Application-vs-database-caching"><span class="nav-number"></span> <span class="nav-text">Application vs. database caching</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#In-memory-caches"><span class="nav-number"></span> <span class="nav-text">In-memory caches</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Content-distribution-networks"><span class="nav-number"></span> <span class="nav-text">Content distribution networks</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Cache-invalidation"><span class="nav-number"></span> <span class="nav-text">Cache invalidation</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Off-line-processing"><span class="nav-number"></span> <span class="nav-text">Off-line processing</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Message-queues"><span class="nav-number"></span> <span class="nav-text">Message queues</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Scheduling-periodic-tasks"><span class="nav-number"></span> <span class="nav-text">Scheduling periodic tasks</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Map-reduce"><span class="nav-number"></span> <span class="nav-text">Map-reduce</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Platform-layer"><span class="nav-number"></span> <span class="nav-text">Platform layer</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

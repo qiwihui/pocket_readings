@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="计算机领域的三个重要思想：抽象，分层和高阶">
+<meta property="og:type" content="article">
+<meta property="og:title" content="计算机领域的三个重要思想：抽象，分层和高阶">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/03/19/qiwihui-pocket_readings-1050/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="计算机领域的三个重要思想：抽象，分层和高阶">
+<meta property="og:image" content="https://ray-eldath.me/img/xkcd_workflow.png">
+<meta property="article:published_time" content="2021-03-19T03:21:18.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.426Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ray-eldath.me/img/xkcd_workflow.png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/03/19/qiwihui-pocket_readings-1050/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>计算机领域的三个重要思想：抽象，分层和高阶 | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/03/19/qiwihui-pocket_readings-1050/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          计算机领域的三个重要思想：抽象，分层和高阶
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-03-19 03:21:18" itemprop="dateCreated datePublished" datetime="2021-03-19T03:21:18+00:00">2021-03-19</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">计算机领域的三个重要思想：抽象，分层和高阶</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#26152;&#26202;&#30475;&#20102;&#28857;&#27604;&#36739;&#26377;&#24847;&#24605;&#30340;&#19996;&#35199;&#65292;&#20110;&#26159;&#20915;&#23450;&#20889;&#19968;&#31687;&#25991;&#31456;&#31616;&#21333;&#35762;&#19968;&#19979;&#12290;<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/3uTZfMJ" target="_blank" rel="noopener">https://ift.tt/3uTZfMJ</a> original site<br><br><br><br>March 19, 2021 at 10:58AM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1050#issuecomment-802517578" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>3/19/2021</strong></p>
+</blockquote>
+<h2 id="计算机领域的三个重要思想：抽象，分层和高阶-by-nagisakaworu17"><a href="#计算机领域的三个重要思想：抽象，分层和高阶-by-nagisakaworu17" class="headerlink" title="计算机领域的三个重要思想：抽象，分层和高阶 by @nagisakaworu17"></a>计算机领域的三个重要思想：抽象，分层和高阶 by @nagisakaworu17</h2><p>2021-03-06发表<a href="https://ray-eldath.me/categories/programming/" target="_blank" rel="noopener">programming</a>约6711字</p>
+<h1 id="计算机领域的三个重要思想：抽象，分层和高阶"><a href="#计算机领域的三个重要思想：抽象，分层和高阶" class="headerlink" title="计算机领域的三个重要思想：抽象，分层和高阶"></a>计算机领域的三个重要思想：抽象，分层和高阶</h1><p>昨晚看了点比较有意思的东西，于是决定写一篇文章简单讲一下。</p>
+<p>本文致力于概括本寒对计算机界三个重要思想的体会和认识。我希望做的并不是简单的百科全书式的列举（“<code>A</code> 体现了抽象思想；<code>B</code> 体现了分层思想…”），而是从这些思想中选取几个我个人<strong>较有体会</strong>（或者是我单纯觉得<strong>十分有趣</strong>）的侧面拿来细讲。这些侧面仅仅能覆盖这些思想应用范围中十分微小的一部分，它们<strong>并不是</strong>最有代表性的、<strong>亦非</strong>最为重要的——仅仅因为，我个人对这点侧面有些体会，或者我个人认为它比较有趣而已。</p>
+<p>同样需要强调，和本博客大多数文章一样，本文<strong>个人意见色彩浓厚——本文并不客观，更绝不权威。</strong></p>
+<p>为方便行文，文中提到的大量引述来源不会标号、也不会在文中注明。关于攥写时参考的资料，请参见文末 “参考文献”。</p>
+<h2 id="有关抽象"><a href="#有关抽象" class="headerlink" title="有关抽象"></a>有关抽象</h2><p>要从软件开发的所有指导性思想（或者说是哲学）中找到最容易想到、最广为人知的那一个，那必定是本节的主题：<strong>抽象</strong>。</p>
+<p>这是一种重要的心智活动，它从具体的、实际的概念和经验中提炼出较不具体的、更加泛化的部分。在软件生产实践中我们无时无刻不在使用这一工具：我们从具体的<em>类</em>中提炼出_接口_；从实在的_数据_中提炼出_数据结构、泛型和多态_；从生动的_现实场景_中提炼出_实体_并为之命名（有时候相比_提炼出抽象_而言命名还要更加困难）。某种程度上，本文中提到的其它两点思想_分层<em>和</em>高阶_同样是抽象的一种形式，但是我个人认为将它们单独拎出来会有一些特别的指导性意义和方法论层面上的价值——关于这点在本文的其它部分中会再作说明。</p>
+<p>关于_纯粹的抽象_这一点，我主要想特别谈谈_数学抽象_。众所周知，这一类概念在计算机界中有重要应用。</p>
+<h3 id="“数学抽象”"><a href="#“数学抽象”" class="headerlink" title="“数学抽象”"></a>“数学抽象”</h3><p>长久以来（我不知道这是否是我个人的经验，我希望有和我一样有相同看法的朋友），我对_编程语言理论 PLT_总有一种现在看来是错误的认识，那就是以为_抽象代数是 PLT 的先修课_。一到两年前我（极其痛苦，现在看来却同时是<strong>相当无用</strong>地）啃过丘维声的《抽象代数讲义》；粗略且不完整地看过油管上 Bartosz Milewski 的猫论视频；曾认真阅读过有关 Scala 中 Cats 库的拆解，并自己实现了其中的很多抽象。</p>
+<p>然而，现在看来，这些经历并未帮助我理解很多东西。知道了 Monad 的形式定义（<code>pure</code> 和 <code>flatMap</code>，同时 Monad 还是一个 Functor 因而具有 <code>map</code>）和 Moniod 的抽象定义（幺半群，指一个定义有二元运算的集合，它满足结合律，并且有单位元）并没有帮助我更好地理解程序的意义和结构。现在看来这些知识几乎是独立的小块——它们与我绝大部分的编程经验并没有联系起来，只有极少数的时候（比如现在要写博文了= =）才会想起来这点东西。</p>
+<p>于是我开始思考，<strong>偏向工业的程序员们应该如何对待抽象概念（尤其是从数学界借用的）？</strong>学习这些抽象概念到底能不能（以及如何能）提升一般程序员、或者是计算机产业界对代码的理解和认识？学习这些抽象概念，我们是否能籍以此成为更好的程序员呢？</p>
+<p>我想我对于这个问题不是太有发言权，于是我给 Dan Grossman 写了一封邮件——这位 Dan Grossman 大概是 PLT 学界（和教学界）的重要人物（某种程度上，因为听过他在 Coursera 上的系列课程 Programming Languages，也是我的 _“技术偶像”_（我一直在找一个不那么中二不那么尴尬的词，但是一直没有找到，如果你有什么比较好的建议非常欢迎在评论区告诉我… :-|），我简单翻译了下这封邮件，其中从 Bjarne 的一篇论文（见文末）中他和 Alexander Stepanov 之间的 “私人通讯” 里引用了一段话 ：</p>
+<blockquote>
+<p>Dr. Dan:</p>
+<p>（客套话略）</p>
+<p>I’m here to ask you a question that has confused me for a while. The story may be a bit long, and I’m genuinely sorry for that. Many of my friends have been devoted themselves to PLT for many years. And, as their friend, I noticed there is a deep connection between PLT and mathematics — especially those overwhelmingly perplexing and abstract subdisciplines, e.g. Abstract Algebra. As a programmer, I’ve also noticed that there’re many (and even more and more) articles are intended to introduce some algebraic concepts to programming, e.g. Monad, Functor. Most of these articles use some analogy like a box, funnel, to make them more understandable.</p>
+<p>One of my friends has the following comment on these articles: he said that the only way to truly understand abstraction, is through abstraction, and inaccurate analogy cannot help. He said that to effectively (or even usefully) learn these abstractions, you have to learn mathematics, not some rough material, all it has is analogies.</p>
+<p>This trend — perplexing words used to boast, perplexing explaining articles read to have nothing — is not good. Personally speaking, I think these abstract concepts are just not useful. <strong>Just</strong> knowing a Promise in JavaScript is a Monad per se, and Functor “is a box” could NOT help you being a better programmer. Using these words in your own library makes the newcomer feel uncomfortable.</p>
+<p><strong>So, here’s my question:</strong> What’s your opinion towards these abstractions, many of them are quoted directly from abstract mathematics? Can learn these abstractions helping me be a better programmer? And if I just “know” them but not “understand” them in a more abstract manner (which is the Abstract Algebraic), can I still be a better programmer? Would you recommend a “Joe Coder” to learn or use these words during his career? Will you write some easy-to-read articles to make “Joe Coder” learn them by showing them bunches of analogies?</p>
+<p>My personal answer is No. And here I quoted a paragraph from Bjarne’s paper and is said by Alexander Stepanov:</p>
+<blockquote>
+<p>At that time I discovered the works of Euler and my perception of the nature of mathematics underwent a dramatic transformation. I was de-Bourbakized, stopped believing in sets, and was expelled from the Cantorian paradise. I still believe in abstraction, but now I know that one ends with abstraction, not starts with it. I learned that one has to adapt abstractions to reality and not the other way around. Mathematics stopped being a science of theories but reappeared to me as a science of numbers and shapes.</p>
+</blockquote>
+<p>As a personal answer I’d like to say that reading those articles, just “knowing” them won’t help you become a better programmer. And using those words in libraries makes things even <strong>worse</strong>. A programmer should be honored if and only if they use and write things technical superior, not something mathematical superior.</p>
+<p>And this is my question. I’m eagerly waiting for your reply, as I think your opinion could really help me being a better programmer, and should I learn these concepts, how can learning them help me (if it could).</p>
+<hr>
+<p>我谨在此向您提出一个疑问，这个疑问困扰我已经有一阵了。故事大概会有些长，而我对此十分抱歉。我的很多朋友已经在 PLT 界摸爬滚打了多年，作为他们的朋友，我注意到 PLT 和数学——特别是那些（于我而言）尤其难搞和抽象的学科，比如抽象代数——有着深刻的联系；而作为一位程序员，我又注意到如今有很多（以及越来越多的）文章致力于将一些代数的概念引介到编程中，比如 Monad，比如 Functor；这些文章大多会使用一些类比，比如盒子 box，比如漏斗 funnel，来使这些概念更易理解。</p>
+<p>我的一位朋友如此评论这些文章（如果我作了不确切的引用，我在此对他真诚地道歉）：他说真正理解抽象的唯一方式是通过抽象_本身_，而不是通过并不准确的类比。他说为了充分地（甚至是有用处地）学习这些抽象，你必须去学数学，而不是通过一些糊里糊涂的文章，它们除了类比还是类比。</p>
+<p>这样的一种趋势——令人困惑的词语用来故弄玄虚，令人困惑的文章读来一无所有——并不好。就我而言，我认为这些抽象概念并不大有用。<strong>仅仅</strong>知道 JavaScript 里的 Promise 本质上是 Monad，而 Functor “是一个盒子 box” 并_不能_帮助你成为更好地程序员，而在你自己的库中使用这些词语只会让后来者觉得不舒服。</p>
+<p><strong>所以，这就是我的疑问：</strong>您对于这些抽象——它们中的很多直接引用自抽象的数学分支，有什么看法？学习这些抽象能否帮助我们成为更好的程序员？如果仅仅只是 “知道” 它们但却未以一种更加抽象的视野（即抽象代数）“理解” 它们，我们是否仍然能成为更好的程序员呢？您是否会推荐一位 “大众程序员” 去学习或使用这些东西？</p>
+<p>我个人的回答是，它们不能。在这儿我引用 Bjarne 的论文中的一段话，它们来自 Alexander Stepanov：</p>
+<blockquote>
+<p><strong>当时我发现了欧拉的作品，我对数学本质的认识发生了巨大的转变。我被去布尔巴克化了，不再相信集合，被逐出了康托尔的天堂。我仍然相信抽象，但现在我知道，一个人经抽象走向末路，而不是自抽象开启旅途。我知道了，人必须使抽象适应现实，而不是反其道而行之。数学不再是一门理论的科学，而是作为一门数字和形状的科学重新出现在我的面前。</strong></p>
+</blockquote>
+<p>我个人的回答是，阅读这些文章，仅仅 “知道” 它们并不能帮助你成为更好的程序员，而在库中使用这些词只会让现状恶化。一个程序员应该以（且只以）使用或编写了技术上更佳的东西为荣，而不是数学上更佳的东西。</p>
+<p>所以这就是我的疑问，而我急切地期待着您的回复。我觉得您的意见可以帮助我成为更好的程序员，以及我是否应该学习这些概念，它们对我能有什么帮助（如果有的话）。</p>
+<hr>
+<p><strong>Have a nice day!</strong><br>Ray Eldath<br>GitHub: github.com/Ray-Eldath MyBlog: han.ninja</p>
+</blockquote>
+<p>数日之后（非常惊喜又不大意外地）收到了 Dan 的回邮。他在回邮中说：</p>
+<blockquote>
+<p>Ray,</p>
+<p>These are good but unanswerable questions as it is easy to end up down the path of “what does it mean to learn or understand something” which is a question of consciousness well beyond my expertise. :) For my own worldview, I am a fairly die-hard “operational semantics” person which comes through in my teaching. I believe you can understand monads and functors for programming purposes in terms of how they compute – what the rules are for operation’s like a monad’s bind operator. Yes, there are algebraic laws that should be followed, but to understand “what code does” these are not necessary. Entities like monads are very abstract and general – it’s a concept that describes a broad set of programming patterns / data structures / libraries / APIs and the power is that this is a guiding principle for how to both design and use such abstractions. The connection to advanced mathematics has value and helped develop these powerful abstractions, but it is not my view that effective programmers need to understand the full connection. Others will, naturally, vehemently disagree. :-)</p>
+<hr>
+<p>这些都是很好的问题，但我无法回答，因为很容易就会走上 “学习或理解某件事情意味着什么” 的道路，而这是一个意识问题，远远超出了我的专业知识 :)。对于我自己而言，我相当顽固地秉持着 “操作语义”，这一点在我的教学中得到了体现。我相信你可以通过 Monad 和 Functor 在编程目的下的计算方式来理解它们——像是 Monad 的 <code>bind</code> 操作符受制于什么规则。是的，有一些代数法则是应被遵循的，但要理解 “哪些代码遵循它们” 并不是必须的。像 Monad 这样的概念是非常抽象和通用的：它是一个描述了一套广泛的编程模式、数据结构、库和 API 的概念，其强大之处在于它们是对如何设计和使用这种抽象的指导原则。与高级数学的联系是有价值的，并且有助于发展这些强大的抽象，但我认为成为高效的程序员并不需要理解全部的联系。其他人自然会强烈反对 :-)。</p>
+<p>Best,<br>Dan</p>
+</blockquote>
+<p>我想我对这一特别抽象（即数学抽象）的看法，以及一位代表性学者（实话说，我觉得 Dan 并没有确切地回答很多我觉得应该得到回答的疑问）的看法在这一个邮件的来回中已经充分表达。我想你大概已经看出来了，我并不擅长理解抽象——或许这就是我 “动机不纯” 的把柄，所以我要坦诚地承认这一点。我知道有太多太多的人远比我擅长理解抽象，并确实深刻地理解它们的意义和价值。或许他们会走向和 Alexander Stepanov 相反的道路，或许他们也会是 Dan 提到的 “will vehemently disagree” 的 “others”。</p>
+<h2 id="有关分层"><a href="#有关分层" class="headerlink" title="有关分层"></a>有关分层</h2><p>相比_抽象_侧重于一种<strong>心智活动</strong>（从特化的到泛化的，从具体的到笼统的）、强调一种 <strong>“抽取”</strong> 的动作，分层要更加客观，它强调概念之间存在明显的、更加客观的断层，这些断层，或者说是<strong>界面</strong>，或者说是<strong>接口</strong>，区隔了层与层，提出了表面的_接口 / 契约_和深入的_实现细节_间的差别：上一层只需要依赖下一层的_接口_而非更加细致的_实现细节_，这意味着<strong>在良好实现的分层机制中，对于某一层的实现者而言，下一层的绝大部分是不需关心的。</strong></p>
+<hr>
+<p><strong>但是，真的如此吗？</strong></p>
+<p>_抽象<em>和</em>分层_向我们一再承诺的 “接口远大于实现细节”、“只需要关心很小的一部分”，在多大程度上是成立的？这样的_封装_有没有被打破的时候？</p>
+<h3 id="“Hyrum’s-Law”"><a href="#“Hyrum’s-Law”" class="headerlink" title="“Hyrum’s Law”"></a>“Hyrum’s Law”</h3><p>最早听闻 Hyrum’s Law 是在 YouTube 的一个非常著名（评价也非常好）的talk <em>A Philosophy of Software Design</em> 里。主讲 John Ousterhout 讲到一半时主持从在线论坛里边抽了个问题问他，其中就提到了这个 Hyrum’s Law。</p>
+<blockquote>
+<p>John Ousterhout 当时还愣了一下问啥事 Hyrum’s Law，主持把这个东西的简明定义说了一下，然后附了一句 “actually I Googled this” wwww 看来大家都不是很知道这个东西 😉</p>
+</blockquote>
+<p>这个 Hyrum’s Law 的简明定义其实很好理解：</p>
+<blockquote>
+<p>Hyrum’s Law: <strong>With a sufficient number of users of an API, it does not matter what you promise in the contract: all observable behaviors of your system will be depended on by somebody.</strong></p>
+<p>Hyrum’s Law: <strong>只要一个 API 有足够的用户，那么无论你在接口契约中承诺什么，你的系统的所有可观测行为都会被某个用户所依赖。</strong></p>
+</blockquote>
+<p>更容易理解的或许是下边这张 xkcd 的漫画：</p>
+<p><a href="https://xkcd.com/1172/" target="_blank" rel="noopener"><img src="https://ray-eldath.me/img/xkcd_workflow.png" alt="xkcd#1172"></a></p>
+<p>_Hyrum’s Law_（又作 _The Law of Leaky Abstractions_）描述的是这样一种现象： <strong><em>层</em>被创造出来的本意是通过_分层_这一过程，从而界定一个清晰、明确的边界。这一边界划定了_接口 / 契约<em>和</em>实现细节_之间的界限，从而一方面提高了程序员的工作效率（“我只要用它就好啦”），另一方面——更为重要的是——_降低了程序员的门槛，并减轻学习负担_（“既然只要用就好了，那我应该就不用关心底层的实现细节了吧？”）</strong></p>
+<p>然而，<strong>随着一个层的用户逐渐增多，层逐渐失去了_区隔契约和实现细节_的作用：层的每一个可观测行为（不管是不是在契约框定的范围之内）都会被某些用户所依赖，这意味着分层的初衷事实上_已不再有效_：总有一个时候，我们的输入会足够特殊，我们的场景会足够复杂，以致于我们会依赖层的某一个_契约之外_的可观测行为。这个时候，层对我们而言已经_毫无意义_：我们依赖的_早已不是_层创设出的接口 / 契约，而是层的_实现细节本身_。</strong></p>
+<p>这样的例子数不胜数。比如，说到分层，大家脑海中的第一个想法，很可能会是计算机网络以及深入人心的OSI七层模型。</p>
+<ul>
+<li><p>众所周知，TCP 承诺可靠、有序、无差错的数据传输。然而，有一天你突然发现服务器组中的某两台之间的基于 TCP 长连接突然变得极慢。你调试了半天，排除了所有的应用程序导致的元素，你终于把视线移到了 TCP 本身。</p>
+<p>这时候你被迫去学习有关 TCP <em>实现细节_的知识，你了解到网络中其它未部署端到端拥塞控制算法的协议（比如 UDP）很可能会严重影响 TCP 协议的工作（这些协议被称作是 TCP-unfriendly 的），你啃了啃几篇论文，终于了解到工作在 FCFS（_First Come First Serve_，先到者先处理）状态下的路由器处理 _TCP – 无拥塞控制算法协议</em> 的混合网络有各种各样的问题，典型的比如 _unfairness_，还有 _congestion collapse_——后者的效果甚至会导致在网络的送达率_没有任何提升_的同时仍然（毫无意义地）大大降低 TCP 的工作效率。你最终认识到在路由器上部署 WRR（_weighted round-robin_，带权重的轮询选择）算法或许是一个解决方案。</p>
+<p>这时候，TCP 作为一个<em>层</em>，它原本承诺的减轻程序员学习负担这一效果完全没有体现：网络的异常逼迫我们去学习有关 TCP <em>实现细节_的知识，这些知识<strong>完全没有</strong>包括在 _TCP 提供可靠、无差错的数据传输</em> 这一契约中。</p>
+</li>
+</ul>
+<p>这样的例子还有很多。比如，遍历二维数组时_按行遍历<em>和</em>按列遍历_之间的性能差异甚至意味着程序员最终需要打破语言虚拟机、甚至是 CPU缓存层级结构 的抽象。</p>
+<p>软件业的至理名言 “没有银弹” 相信每位读者都听过，而分层作为一种抽象机制同样如此：它承诺的_既能提高效率又能减轻负担_的 “银弹般” 的作用，是不成立的。抽象带来的效率提升，是以更大的学习负担（对实现细节的学习）为代价的：<strong>随着我们创造越来越多、越来越高层的抽象，编程实现会变得更加简单，但成为专业程序员也越来越难。</strong></p>
+<p>看看如今的 Kubernetes 和云原生吧！到底需要强记多少有用没用的知识点、看多少篇晦涩难懂的论文、掌握从网络到操作系统从缓存架构到计组原理的多少方面，才能足以理解这么一个如此高层的抽象，如此庞杂的系统？</p>
+<p><strong>我们已经深陷于不断泄露的实现细节中。成为专业程序员需要了解的知识越来越多，成为有竞争力的专业程序员越来越难——我们会不会看到最终的那个场景，到某一天，泄露的实现细节的总和多到甚至超出了一个个体人类所能掌握的知识量？我们应该做些什么来保持<em>层</em>的严密？到底怎样才能使现代软件架构更易理解和掌握？</strong></p>
+<p>或许，随着知识大厦毫不留情地一层层向上堆筑，新一轮软件危机的丧钟已经鸣响。</p>
+<h2 id="有关高阶"><a href="#有关高阶" class="headerlink" title="有关高阶"></a>有关<em>高阶</em></h2><p>相比上一节强调物理或逻辑上客观存在的 “界限”，本节主要强调一种心智活动。这样的心智活动具有一个明显的特征，那就是它具有一种 “递归” 的结构。我们首先从一个概念中抽象出它的形成过程，再将这样的思维过程应用于这个概念_自身_。如此，我们得到的新概念常常具有这样的结构： <strong><code>A</code> 的 <code>A</code></strong> 。</p>
+<p>个人认为，本节讨论的思想或许是本文的所有思想中<strong>最为重要的那一个</strong>。这是因为_高阶_这一思想具有很好的方法论层面上的指导意义，并且在实践中操作起来又有趣又直截了当——同时，个人的看法是通过这一思想生成的很多概念对启迪编程初学者的思维具有非常重要的意义（事实上，如果要从_整个技术界_中选一个本科教育一般不大重视、但又极度有价值的术语，我会选_闭包和高阶函数_）。</p>
+<p>通过这样一种 “递归式” 的抽象过程得到的 <em><code>A</code> 的 <code>A</code></em> 这一形式的概念，我们通常将其称作 <strong>“高阶 <code>A</code>”</strong>。比如，将函数代表的过程（<code>A</code> -&gt; <code>B</code>）抽象出来，再应用于函数_自身_，我们就得到了 _函数的函数_，即 <strong>高阶函数 higher-order function</strong>。个人认为高阶函数和闭包是计算机领域最为重要的抽象之一。</p>
+<p>比如，将类型的形成过程（类型描述一个语言中最小单位的类别）抽象出来，应用于类型<em>自身_，我们就得到了 _类型的类型_，即 _型别 kind</em> 。</p>
+<p>最后，作为压轴，讲一个咱昨晚在一篇屯了半年一年的文章中看到的一个概念。我想这个概念应该是超出大部分读者的经验的，而我觉得它还蛮有意思，所以放到最后来大概说说。我们需要从故事的最开始讲起——可能要过很久才能最终看到这个词。</p>
+<h3 id="“二村映射-Futamura-projections”"><a href="#“二村映射-Futamura-projections”" class="headerlink" title="“二村映射 Futamura projections”"></a>“二村映射 Futamura projections”</h3><p>我们知道大体上编译技术可以分为两种，分别是 <strong>编译器 compiler</strong> 和 <strong>解释器 interpreter</strong>。编译器执行的是一个<strong>两阶段</strong>的过程：首先，自_源代码_编译出_目标程序 target program_，再向_目标程序_提供_输入_，然后得到程序的_输出_；解释器执行的则是一个<strong>一阶段</strong>的过程：解释器接收_源代码<em>和</em>输入_，并直接得到程序的_输出_。在本节中，我们主要关注_解释器_。</p>
+<p>绝大部分的编译原理教科书和课程都只涵盖这两者。然而，事实上还存在着<strong>第三种</strong>编译技术：某种程度上，它介于解释器和编译器之间，但它_既不是_解释器_又不是_编译器——咱在和同学试讲解这个概念的时候就忘了特别强调这一点。为了方便理解，我先岔开点讲。</p>
+<p>稍有函数式经验的读者应该都听过 _柯里化 curried_。如果有一个接收 $n$ 个<strong>输入</strong>的函数，我们可以把它转化成一叠嵌套的_高阶函数_，这叠高阶函数中的第 $i$ 个接收原函数中的第 $i$ 个输入（仅一个），然后返回接收剩下 $ n - i $ 个输入的函数（故为 “高阶函数”）：比如，一个接收 3 个输入的函数（<code>(A, B, C) -&gt; Output</code>）经柯里化后会成为一叠高阶函数，这个高阶函数中的第一个接收一个输入 <code>A</code>，然后返回一个接收输入 <code>B</code> 的高阶函数；再向其提供输入 <code>C</code>，才能得到最终结果，即柯里化后的结果是 <code>A -&gt; (B -&gt; (C -&gt; Output))</code>。</p>
+<p>尽管在支持闭包和高阶函数的语言中柯里化和 <em>反柯里化 uncurring</em> 都能以非常浅显（trivial）的方式实现，但仅有少数的编程语言才_一等地_支持了柯里化，比如 ML系语言（Haskell, SML, OCaml, F#）和 Scala。</p>
+<p>对于一个经柯里化后的函数，如果我们只向它提供前 $i\space\space(i&lt;n)$ 个_输入_，那么我们必然得不到最终的_输出_，而只能得到一个高阶函数，它会再处理余下的输入：这称作 <strong>部分应用 partial applied</strong>。</p>
+<p>讲了这么一大堆，其实主要就是为了_部分应用_这个概念。你可能会想知道为什么我在上文不用_参数_这个惯用说法而是用_输入_，你可能也已经猜到了，这是因为我希望在此强调将解释器理解成一个函数的思想：它的输入是_源代码<em>和</em>这段代码的输入_，它的输出是_这段代码的输出_（事实上，很多语言都提供一些十分类似解释器的机制，它们_确实_是函数（比如 <code>eval</code>））。</p>
+<p>是的，之所以要将解释器理解成一个函数，是因为我正是要借用_部分应用_的思想：既然解释器的输入是_源代码<em>和</em>输入_，那么我能不能_部分应用_这个 “函数”（即解释器），首先给定_源代码_，得到一个 “处理剩下参数的高阶函数”（即一个中间程序），然后对于这个中间程序，再提供它的输入，然后得到结果？</p>
+<p><strong>答案是，这是可行的。</strong>事实上，这一过程称作 <strong>部分求值 partial evaluate</strong>，而执行这一过程的<strong>程序</strong>我们称作 _部分求值器 partial evaluator_。部分求值器作用于一个程序和它的一些参数，输出一个该程序对于这组参数 “特化” 后的新的程序。这里的 “一个程序” 我们称作 _源程序 source program_，“新的程序” 我们称作 _残差程序 residual program_。</p>
+<p>回到上边有关解释器举例上来。我们将一个解释器和一个源程序传入<em>部分求值器_中，得到的_残差程序_就是一个接收 _输入</em> 返回 <em>输出</em> 的中间程序。</p>
+<p>是不是觉得非常的熟悉……？第一阶段我们提供源代码，得到中间程序；第二阶段我们提供输入，随后得到输出。这是在做什么…？</p>
+<p>是的，这就是<strong>编译</strong>。神奇之处在于，我们并没有_手工编写_一个编译器，我们只是将一个解释器和需要被求值的源代码扔给了部分求值器而已——某种意义上来说，我们是 “免费” 得到了一个编译器。</p>
+<p>你可能在思考这有什么用？你或许已经将这一思路和_语言虚拟机_联系了起来：众所周知，实现编译器通常比实现解释器<strong>难得多</strong>，那我们能不能弄一个本质其实是一个部分求值器的语言虚拟机，在这个虚拟机上实现一门新的语言只需要编写一个解释器就行了，而语言虚拟机会调用它的部分求值器自动帮我生成对应的、更加高效的 “编译器” 呢？</p>
+<p>显然，这是完全可行的——事实上这是有产业实践的。PyPy 是一个 Python 语言的解释器实现，它正是基于以上语言虚拟机的思路实现的：在 PyPy VM 上工作的语言有 Python, Ruby 和 逻辑编程语言 Prolog 等；除此以外，泛语言高级语言虚拟机（HLLVM）GraalVM 的一个重要组件同样如此，工作在 GraalVM 上的语言包括 JavaScript, Ruby, Python, Java, R 等。</p>
+<p>这其实就是 <strong>第一类二村映射 first Futamura projection</strong>。</p>
+<p>既然是放在 “高阶” 这一主题下的，我们当然要用到这一思想：正如前几段的粗体所提示的，部分求值器其实也是一个<strong>程序</strong>，它自身也能够被部分求值。</p>
+<p>回想一开始，<code>解释器</code> 的输入是 <em>源代码</em> 和 <em>输入_，我们将 <code>解释器</code>（主体）和 _源代码_（主体的其中一个输入）单独拎出来，扔进了部分求值器中，这是第一类二村映射；即是说，在第一类二村映射中，<code>部分求值器</code> 的输入是 _解释器</em> 和 _源代码_。</p>
+<p>我们将这一过程——即 “将 <em>主体</em> 和 <em>主体的其中一个输入</em> 单独拎出来扔进部分求值器中”—— “高阶化”，作用于自身，简单的代换就能得到，我们需要将 <code>部分求值器</code>（主体）和 <em>解释器</em> （主体的其中一个输入）扔进一个部分求值器中。现在我们需要弄清楚，这个 “高阶过程” 得到的_残差程序_是什么。</p>
+<p>注意到，在第一类二村映射中输入只有 <em>解释器</em> 和 <em>源代码_。既然我们已经_部分求值_了前者，那么下一步自然只剩下后者了：向上一段提到的 _残差程序</em> 提供 _源代码_，我们就能得到 _目标程序_。</p>
+<p>向<em>一个程序_提供源代码得到另一个程序…… 听起来有点像是某个我们已经知道的东西会做的事情。是的，这就是<strong>编译</strong>。我们的这个 “高阶过程” 得到的残差程序其实是一个<strong>编译器</strong>，而我们的这个 “高阶过程” 所做的，正是在<strong>生成编译器</strong>，即，这一过程其实是<strong>编译器的编译器</strong>——如此，我们终于见到了本节概述中提到的 _<code>A</code> 的 <code>A</code></em> 这样的结构，如果你愿意的话，或许你还可以将这称作_高阶编译器_。</p>
+<p>这其实就是 <strong>第二类二村映射 second Futamura projection</strong>。</p>
+<p>那么，这个 “高阶化” 的过程还能继续下去吗？显然如此。再继续下去，我们就能得到_编译器的编译器的编译器_，也即<strong>第三类二村映射 third Futamura projection</strong>。再往后呢？这点就留给读者自行阅读和思考啦。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p><strong>本节提出的参考文献是本文中各种举例的来源。如果你想深入了解某一个方向或某一点例证，这些参考文献是最好最好的材料——我认为，它们无论是在哪个方面都要远远高于本文粗略而又空泛的简单说明。特别推荐的材料以 ⭐ 标注。</strong></p>
+<p>本节中列出的参考文献是_粗略_按照在文中的顺序排列的。</p>
+<ul>
+<li>Stroustrup, Bjarne. “Evolving a language in and for the real world: C++ 1991-2006.” <em>Proceedings of the third ACM SIGPLAN conference on History of programming languages</em>. 2007.</li>
+<li>Dan Grossman. Private communication.</li>
+<li><em>Hyrum’s Law</em>. <a href="https://www.hyrumslaw.com/" target="_blank" rel="noopener">https://www.hyrumslaw.com/</a></li>
+<li>⭐<em>The Law of Leaky Abstractions</em>. Joel Spolsky. <a href="https://www.joelonsoftware.com/2002/11/11/the-law-of-leaky-abstractions/" target="_blank" rel="noopener">https://www.joelonsoftware.com/2002/11/11/the-law-of-leaky-abstractions/</a></li>
+<li>⭐<em>A Philosophy of Software Design</em> | John Ousterhout | <em>Talks at Google</em>. <a href="https://youtu.be/bmSAYlu0NcY" target="_blank" rel="noopener">https://youtu.be/bmSAYlu0NcY</a></li>
+<li>Floyd, Sally, and Kevin Fall. “Promoting the use of end-to-end congestion control in the Internet.” <em>IEEE/ACM Transactions on networking</em> 7.4 (1999): 458-472.</li>
+<li>Würthinger, Thomas, et al. “One VM to rule them all.” <em>Proceedings of the 2013 ACM international symposium on New ideas, new paradigms, and reflections on programming &amp; software</em>. 2013.</li>
+<li>⭐<em>RubyConf 2013 - Compilers for Free by Tom Stuart</em>. <a href="https://youtu.be/n_k6O50Nd-4" target="_blank" rel="noopener">https://youtu.be/n_k6O50Nd-4</a></li>
+<li>Perugini, Saverio &amp; Williams, Brandon. (2017). Revisiting the Futamura Projections: A Diagrammatic Approach. Theoretical and Applied Informatics. 28. 15-32. 10.20904/284015.</li>
+<li>lyzh 聚聚. Private communication.</li>
+<li>Robert Glück. 2009. Is there a fourth Futamura projection? In <em>Proceedings of the 2009 ACM SIGPLAN workshop on Partial evaluation and program manipulation</em> (<em>PEPM ‘09</em>). Association for Computing Machinery, New York, NY, USA, 51–60. DOI:<a href="https://doi.org/10.1145/1480945.1480954" target="_blank" rel="noopener">https://doi.org/10.1145/1480945.1480954</a></li>
+</ul>
+<p>计算机领域的三个重要思想：抽象，分层和高阶</p>
+<p><a href="https://ray-eldath.me/programming/three-important-ideas/" target="_blank" rel="noopener">https://ray-eldath.me/programming/three-important-ideas/</a></p>
+<p>作者</p>
+<p>Ray Eldath</p>
+<p>发布于</p>
+<p>2021-03-06</p>
+<p>更新于</p>
+<p>2021-03-15</p>
+<p>许可协议</p>
+<p><a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener"></a></p>
+<p>#<a href="https://ray-eldath.me/tags/%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E8%8C%83%E5%BC%8F%EF%BC%88paradigm%EF%BC%89/" target="_blank" rel="noopener">程序设计范式（paradigm）</a><a href="https://ray-eldath.me/tags/%E9%9A%8F%E7%AC%94/" target="_blank" rel="noopener">随笔</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/03/17/qiwihui-pocket_readings-1049/" rel="prev" title="Pod terminating">
+      <i class="fa fa-chevron-left"></i> Pod terminating
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/03/25/qiwihui-pocket_readings-1051/" rel="next" title="
+
+
+设计稿（UI视图）自动生成代码方案的探索 ">
+      
+
+
+设计稿（UI视图）自动生成代码方案的探索  <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#计算机领域的三个重要思想：抽象，分层和高阶-by-nagisakaworu17"><span class="nav-number"></span> <span class="nav-text">计算机领域的三个重要思想：抽象，分层和高阶 by @nagisakaworu17</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#计算机领域的三个重要思想：抽象，分层和高阶"><span class="nav-number"></span> <span class="nav-text">计算机领域的三个重要思想：抽象，分层和高阶</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#有关抽象"><span class="nav-number"></span> <span class="nav-text">有关抽象</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#“数学抽象”"><span class="nav-number">1.</span> <span class="nav-text">“数学抽象”</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#有关分层"><span class="nav-number"></span> <span class="nav-text">有关分层</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#“Hyrum’s-Law”"><span class="nav-number">1.</span> <span class="nav-text">“Hyrum’s Law”</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#有关高阶"><span class="nav-number"></span> <span class="nav-text">有关高阶</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#“二村映射-Futamura-projections”"><span class="nav-number">1.</span> <span class="nav-text">“二村映射 Futamura projections”</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number"></span> <span class="nav-text">参考文献</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="3 分钟找书指南 v8.0">
+<meta property="og:type" content="article">
+<meta property="og:title" content="
+
+
+3 分钟找书指南 v8.0 ">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/06/23/qiwihui-pocket_readings-1138/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="3 分钟找书指南 v8.0">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/lKib3E6zjXUM3ymB40509f2wEjsDMdpKGuy6UXUfTicfcgIptWK3aqTYNOiaaljBpjZibQ2XzBSmqibUKdJIvCTw5bQ/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/lKib3E6zjXUOIB5g1huSpyuiaVazkOCjqVLM9y5YWjTRibOnia2QYw3YJhUdpibANWwbNxrNM4TLIwib53PfOYcYGbxg/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/ibYGtJk9LbxT46riaYfcpibpqicQsYEIrHXB9xYrZuQ4Dc8bs12PtSMJqWXhrzbSesKjWqT7m662h5QbnPwbFfPDVQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/dyDu14T9ZVDhY5ib3F0vX3ulQPaJDlcEhjozCfb3bNXNCLQxppKZUd1fV0v1RrsrYDfpicdOpCZ1d5tGGicyvIDRA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/lKib3E6zjXUM3ymB40509f2wEjsDMdpKGAIZDztZ8GKmnXg1YcFuYA3nibefVOUtJZ2TxmunT58IZay5rEKsiaJ8w/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/ibYGtJk9LbxT46riaYfcpibpqicQsYEIrHXB9xYrZuQ4Dc8bs12PtSMJqWXhrzbSesKjWqT7m662h5QbnPwbFfPDVQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/dyDu14T9ZVDhY5ib3F0vX3ulQPaJDlcEhjozCfb3bNXNCLQxppKZUd1fV0v1RrsrYDfpicdOpCZ1d5tGGicyvIDRA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/lKib3E6zjXUM3ymB40509f2wEjsDMdpKGrWibSo3M1FiaD2rpdqUTDtNO6AWNe7td8jLlq9PlLPP07urDbzDJPnibA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/ibYGtJk9LbxT46riaYfcpibpqicQsYEIrHXB9xYrZuQ4Dc8bs12PtSMJqWXhrzbSesKjWqT7m662h5QbnPwbFfPDVQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/dyDu14T9ZVDhY5ib3F0vX3ulQPaJDlcEhjozCfb3bNXNCLQxppKZUd1fV0v1RrsrYDfpicdOpCZ1d5tGGicyvIDRA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/lKib3E6zjXUM3ymB40509f2wEjsDMdpKGH5zEyqRhJ49jmc16gUWj6LVfE4Sy1Xp0kFicNdl8nlswSaPZWSuebiaA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/ibYGtJk9LbxT46riaYfcpibpqicQsYEIrHXB9xYrZuQ4Dc8bs12PtSMJqWXhrzbSesKjWqT7m662h5QbnPwbFfPDVQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/dyDu14T9ZVDhY5ib3F0vX3ulQPaJDlcEhjozCfb3bNXNCLQxppKZUd1fV0v1RrsrYDfpicdOpCZ1d5tGGicyvIDRA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/lKib3E6zjXUM3ymB40509f2wEjsDMdpKGiaW73AeVzZxJic1MfVMiafHmG5ziaRIBXxiacgE7sUDWz7hdkgEeiax26tww/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/ibYGtJk9LbxT46riaYfcpibpqicQsYEIrHXB9xYrZuQ4Dc8bs12PtSMJqWXhrzbSesKjWqT7m662h5QbnPwbFfPDVQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/dyDu14T9ZVDhY5ib3F0vX3ulQPaJDlcEhjozCfb3bNXNCLQxppKZUd1fV0v1RrsrYDfpicdOpCZ1d5tGGicyvIDRA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/lKib3E6zjXUM3ymB40509f2wEjsDMdpKGTQiahN1W9zF3BMKiaAuv9gqmibUe8D04jqXsYUtdo3TDTsOwwheg6uWicg/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/ibYGtJk9LbxT46riaYfcpibpqicQsYEIrHXB9xYrZuQ4Dc8bs12PtSMJqWXhrzbSesKjWqT7m662h5QbnPwbFfPDVQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/dyDu14T9ZVDhY5ib3F0vX3ulQPaJDlcEhjozCfb3bNXNCLQxppKZUd1fV0v1RrsrYDfpicdOpCZ1d5tGGicyvIDRA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/lKib3E6zjXUM3ymB40509f2wEjsDMdpKGccJeakUPtNwciaIDicaHNCb57tBgOXypeKSFFeowSaRpeBEqxVTR1ZKw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/ibYGtJk9LbxT46riaYfcpibpqicQsYEIrHXB9xYrZuQ4Dc8bs12PtSMJqWXhrzbSesKjWqT7m662h5QbnPwbFfPDVQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/dyDu14T9ZVDhY5ib3F0vX3ulQPaJDlcEhjozCfb3bNXNCLQxppKZUd1fV0v1RrsrYDfpicdOpCZ1d5tGGicyvIDRA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/lKib3E6zjXUM3ymB40509f2wEjsDMdpKG4j9pgffTb3eTnt1SCDniciau8wlDsYj5PjQel5GAiaLliaGprp7hLogl1w/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/ibYGtJk9LbxT46riaYfcpibpqicQsYEIrHXB9xYrZuQ4Dc8bs12PtSMJqWXhrzbSesKjWqT7m662h5QbnPwbFfPDVQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/dyDu14T9ZVDhY5ib3F0vX3ulQPaJDlcEhjozCfb3bNXNCLQxppKZUd1fV0v1RrsrYDfpicdOpCZ1d5tGGicyvIDRA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/lKib3E6zjXUM3ymB40509f2wEjsDMdpKGUxrQ6PTltgIgIxJTdDPlH8JuXFZ5Or2Ykf6hcv5Vz9g5UB4VrQ488w/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/ibYGtJk9LbxT46riaYfcpibpqicQsYEIrHXB9xYrZuQ4Dc8bs12PtSMJqWXhrzbSesKjWqT7m662h5QbnPwbFfPDVQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/dyDu14T9ZVDhY5ib3F0vX3ulQPaJDlcEhjozCfb3bNXNCLQxppKZUd1fV0v1RrsrYDfpicdOpCZ1d5tGGicyvIDRA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/lKib3E6zjXUM3ymB40509f2wEjsDMdpKGgzSIcdEs5iaAgCuzuwicXIfeaoC6rOicyMK4qXuT9ORT5KBRE4pB95XZw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/ibYGtJk9LbxT46riaYfcpibpqicQsYEIrHXB9xYrZuQ4Dc8bs12PtSMJqWXhrzbSesKjWqT7m662h5QbnPwbFfPDVQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/dyDu14T9ZVDhY5ib3F0vX3ulQPaJDlcEhjozCfb3bNXNCLQxppKZUd1fV0v1RrsrYDfpicdOpCZ1d5tGGicyvIDRA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/lKib3E6zjXUM3ymB40509f2wEjsDMdpKG9RBZDXMHuznic7XOYgTPOkQOWlLibicLqohCNYSiaBFwQYYaNNRlm4ZIKA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/ibYGtJk9LbxT46riaYfcpibpqicQsYEIrHXB9xYrZuQ4Dc8bs12PtSMJqWXhrzbSesKjWqT7m662h5QbnPwbFfPDVQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/dyDu14T9ZVDhY5ib3F0vX3ulQPaJDlcEhjozCfb3bNXNCLQxppKZUd1fV0v1RrsrYDfpicdOpCZ1d5tGGicyvIDRA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/lKib3E6zjXUM3ymB40509f2wEjsDMdpKGnAJtfKx7rRIzfNicQXjFnlY6e5RibEV3QVsyuYKaZR5JlFx4lgrCSmLw/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/ibYGtJk9LbxT46riaYfcpibpqicQsYEIrHXB9xYrZuQ4Dc8bs12PtSMJqWXhrzbSesKjWqT7m662h5QbnPwbFfPDVQ/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/dyDu14T9ZVDhY5ib3F0vX3ulQPaJDlcEhjozCfb3bNXNCLQxppKZUd1fV0v1RrsrYDfpicdOpCZ1d5tGGicyvIDRA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/lKib3E6zjXUM3ymB40509f2wEjsDMdpKGF8Y7ILUm0NPicxibtxc7eW38HwGaibUHsJyEDKxEwWr5K8jdWibyibl53kA/640?wx_fmt=png">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/lKib3E6zjXUOIB5g1huSpyuiaVazkOCjqVLsAtIDtEw3ssUTaPQdDbsfjufnibVYyMJTaoc8MVyJ16KhnKIAgAQZw/640?wx_fmt=jpeg">
+<meta property="og:image" content="https://mmbiz.qpic.cn/mmbiz_png/lKib3E6zjXUOIB5g1huSpyuiaVazkOCjqVLsAtIDtEw3ssUTaPQdDbsfjufnibVYyMJTaoc8MVyJ16KhnKIAgAQZw/640?wx_fmt=jpeg">
+<meta property="article:published_time" content="2021-06-23T03:21:09.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.406Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://mmbiz.qpic.cn/mmbiz_jpg/lKib3E6zjXUM3ymB40509f2wEjsDMdpKGuy6UXUfTicfcgIptWK3aqTYNOiaaljBpjZibQ2XzBSmqibUKdJIvCTw5bQ/640?wx_fmt=jpeg">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/06/23/qiwihui-pocket_readings-1138/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>
+
+
+3 分钟找书指南 v8.0  | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/06/23/qiwihui-pocket_readings-1138/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+
+
+3 分钟找书指南 v8.0 
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-06-23 03:21:09" itemprop="dateCreated datePublished" datetime="2021-06-23T03:21:09+00:00">2021-06-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">
+
+
+3 分钟找书指南 v8.0 </div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#24494;&#20449;&#21495; ebooksplan &#21151;&#33021;&#20171;&#32461; &#23567;&#22768;&#35835;&#20070;&#65292;&#33618;&#33108;&#36208;&#26495;&#12290; &#9678; &#39064;&#22270;&#65306;Yagi / Dribbble&#26102;&#38548;&#19968;&#24180;&#21322;&#65292;&#25214;&#20070;&#25351;&#21335;&#26356;&#26032;&#20102;&#65292;&#29616;&#22312;&#26469;&#21040;&#20102; 8.<br><br><br><br>Tags: engineering<br><br><br><br>via Pocket <a href="https://ift.tt/2RVwuAu" target="_blank" rel="noopener">https://ift.tt/2RVwuAu</a> original site<br><br><br><br>June 23, 2021 at 11:10AM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1138#issuecomment-866491474" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>6/23/2021</strong></p>
+</blockquote>
+<h2 id="3-分钟找书指南-v8-0-by-eBooksPlan"><a href="#3-分钟找书指南-v8-0-by-eBooksPlan" class="headerlink" title="3 分钟找书指南 v8.0 by eBooksPlan"></a>3 分钟找书指南 v8.0 by eBooksPlan</h2><p><strong>2021-06-14</strong><br><img src="https://mmbiz.qpic.cn/mmbiz_jpg/lKib3E6zjXUM3ymB40509f2wEjsDMdpKGuy6UXUfTicfcgIptWK3aqTYNOiaaljBpjZibQ2XzBSmqibUKdJIvCTw5bQ/640?wx_fmt=jpeg" alt=""></p>
+<p>◎ 题图：Yagi /  Dribbble</p>
+<p>时隔一年半，找书指南更新了，现在来到了 8.0 版本，此次更新主要在<strong>统一文案风格和**</strong>加配图<strong><strong>提升阅读体验，不求多，但求精，</strong></strong>总计个 12 文档搜索渠道。**欢迎转发给需要的朋友们，建议收藏备用。<img src="https://mmbiz.qpic.cn/mmbiz_png/lKib3E6zjXUOIB5g1huSpyuiaVazkOCjqVLM9y5YWjTRibOnia2QYw3YJhUdpibANWwbNxrNM4TLIwib53PfOYcYGbxg/640?wx_fmt=png" alt=""></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/ibYGtJk9LbxT46riaYfcpibpqicQsYEIrHXB9xYrZuQ4Dc8bs12PtSMJqWXhrzbSesKjWqT7m662h5QbnPwbFfPDVQ/640?wx_fmt=png" alt=""></p>
+<p><strong>一</strong></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/dyDu14T9ZVDhY5ib3F0vX3ulQPaJDlcEhjozCfb3bNXNCLQxppKZUd1fV0v1RrsrYDfpicdOpCZ1d5tGGicyvIDRA/640?wx_fmt=png" alt=""> </p>
+<p><strong>英文书籍搜索引擎</strong></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/lKib3E6zjXUM3ymB40509f2wEjsDMdpKGAIZDztZ8GKmnXg1YcFuYA3nibefVOUtJZ2TxmunT58IZay5rEKsiaJ8w/640?wx_fmt=png" alt=""></p>
+<p><a href="http://libgen.rs" target="_blank" rel="noopener">http://libgen.rs</a></p>
+<p>Library Genesis 网页体验很好，不需要注册，没有广告。华东师范大学的朱国华教授曾说：俄罗斯人开的网站（<a href="http://gen.lib.rus.ec）为全世界读书人带来了功德无量的便利，我的绝大部分英文书是从该网站中下载得到，但愿此网站万世不倒。" target="_blank" rel="noopener">http://gen.lib.rus.ec）为全世界读书人带来了功德无量的便利，我的绝大部分英文书是从该网站中下载得到，但愿此网站万世不倒。</a></p>
+<p>@  某位需要寻找英文书籍的读者</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/ibYGtJk9LbxT46riaYfcpibpqicQsYEIrHXB9xYrZuQ4Dc8bs12PtSMJqWXhrzbSesKjWqT7m662h5QbnPwbFfPDVQ/640?wx_fmt=png" alt=""></p>
+<p><strong>二</strong></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/dyDu14T9ZVDhY5ib3F0vX3ulQPaJDlcEhjozCfb3bNXNCLQxppKZUd1fV0v1RrsrYDfpicdOpCZ1d5tGGicyvIDRA/640?wx_fmt=png" alt=""> </p>
+<p><strong>书伴</strong></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/lKib3E6zjXUM3ymB40509f2wEjsDMdpKGrWibSo3M1FiaD2rpdqUTDtNO6AWNe7td8jLlq9PlLPP07urDbzDJPnibA/640?wx_fmt=png" alt=""></p>
+<p><a href="https://bookfere.com" target="_blank" rel="noopener">https://bookfere.com</a></p>
+<p>它是国内众多 Kindle 用户的第一站，是数字阅读的布道者，其「每周一书」栏目促进了大众的阅读习惯的养成。如果不知道读什么书了，去这里逛逛，顺便把 Kindle 升级到最新固件，不亦乐乎。🤣</p>
+<p>@  为静心阅读而生</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/ibYGtJk9LbxT46riaYfcpibpqicQsYEIrHXB9xYrZuQ4Dc8bs12PtSMJqWXhrzbSesKjWqT7m662h5QbnPwbFfPDVQ/640?wx_fmt=png" alt=""></p>
+<p><strong>三</strong></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/dyDu14T9ZVDhY5ib3F0vX3ulQPaJDlcEhjozCfb3bNXNCLQxppKZUd1fV0v1RrsrYDfpicdOpCZ1d5tGGicyvIDRA/640?wx_fmt=png" alt=""> </p>
+<p><strong>鸠摩搜索</strong></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/lKib3E6zjXUM3ymB40509f2wEjsDMdpKGH5zEyqRhJ49jmc16gUWj6LVfE4Sy1Xp0kFicNdl8nlswSaPZWSuebiaA/640?wx_fmt=png" alt=""></p>
+<p><a href="https://www.jiumodiary.com" target="_blank" rel="noopener">https://www.jiumodiary.com</a></p>
+<p>我用的多推荐的也多，几乎没有什么文档是搜索不出来的，集成了豆瓣、百度文库、微盘、老夫子网、国家数字图书馆等资源，自然是轻轻松松挖掘出自己需要的东西。</p>
+<p>@  开发者低调而厉害</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/ibYGtJk9LbxT46riaYfcpibpqicQsYEIrHXB9xYrZuQ4Dc8bs12PtSMJqWXhrzbSesKjWqT7m662h5QbnPwbFfPDVQ/640?wx_fmt=png" alt=""></p>
+<p><strong>四</strong></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/dyDu14T9ZVDhY5ib3F0vX3ulQPaJDlcEhjozCfb3bNXNCLQxppKZUd1fV0v1RrsrYDfpicdOpCZ1d5tGGicyvIDRA/640?wx_fmt=png" alt=""> </p>
+<p><strong>Z-Library articles</strong>  </p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/lKib3E6zjXUM3ymB40509f2wEjsDMdpKGiaW73AeVzZxJic1MfVMiafHmG5ziaRIBXxiacgE7sUDWz7hdkgEeiax26tww/640?wx_fmt=png" alt=""></p>
+<p><a href="https://booksc.org" target="_blank" rel="noopener">https://booksc.org</a></p>
+<p>这个项目源自 2009 年，是 Z-Library project 的一部分，是世界上最大的科学类文章图书馆，热爱科研和精于研究的你，一定会如鱼得水。在这之前务必学好英语。🥲</p>
+<p>@  收录了 339 万本书籍及 5242 万个文献</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/ibYGtJk9LbxT46riaYfcpibpqicQsYEIrHXB9xYrZuQ4Dc8bs12PtSMJqWXhrzbSesKjWqT7m662h5QbnPwbFfPDVQ/640?wx_fmt=png" alt=""></p>
+<p><strong>五</strong></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/dyDu14T9ZVDhY5ib3F0vX3ulQPaJDlcEhjozCfb3bNXNCLQxppKZUd1fV0v1RrsrYDfpicdOpCZ1d5tGGicyvIDRA/640?wx_fmt=png" alt=""> </p>
+<p><strong>豆瓣读书</strong></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/lKib3E6zjXUM3ymB40509f2wEjsDMdpKGTQiahN1W9zF3BMKiaAuv9gqmibUe8D04jqXsYUtdo3TDTsOwwheg6uWicg/640?wx_fmt=png" alt=""></p>
+<p><a href="https://book.douban.com" target="_blank" rel="noopener">https://book.douban.com</a></p>
+<p>高中时常写书评，一位女同学说我适合去玩豆瓣，我不以为意，直到今天我也只有豆瓣读书这个模块浏览的比较多，但它确实悄无声息陪伴我们至今。滑动鼠标，遇到一本喜欢的不得了的书，这种喜悦和恋爱是类似的。</p>
+<p>@  书评是书籍存在过的证明</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/ibYGtJk9LbxT46riaYfcpibpqicQsYEIrHXB9xYrZuQ4Dc8bs12PtSMJqWXhrzbSesKjWqT7m662h5QbnPwbFfPDVQ/640?wx_fmt=png" alt=""></p>
+<p><strong>六</strong></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/dyDu14T9ZVDhY5ib3F0vX3ulQPaJDlcEhjozCfb3bNXNCLQxppKZUd1fV0v1RrsrYDfpicdOpCZ1d5tGGicyvIDRA/640?wx_fmt=png" alt=""> </p>
+<p><strong>小声读书</strong></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/lKib3E6zjXUM3ymB40509f2wEjsDMdpKGccJeakUPtNwciaIDicaHNCb57tBgOXypeKSFFeowSaRpeBEqxVTR1ZKw/640?wx_fmt=png" alt=""></p>
+<p><a href="https://t.me/weekly\_books" target="_blank" rel="noopener">https://t.me/weekly\_books</a></p>
+<p>一个从虚无中来又到虚无中去的频道，它平行于中文互联网，只为寻找一点点自由表达的可能性。正如它的简介所写：一个探索数字阅读可能性和未来的开放项目，致力于打破信息茧房，挖掘价值信息。亦是一份杂志，一个博客，混搭不拘一格，时常荒腔走板。</p>
+<p>@  一个 Telegram 频道，荐书</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/ibYGtJk9LbxT46riaYfcpibpqicQsYEIrHXB9xYrZuQ4Dc8bs12PtSMJqWXhrzbSesKjWqT7m662h5QbnPwbFfPDVQ/640?wx_fmt=png" alt=""></p>
+<p><strong>七</strong></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/dyDu14T9ZVDhY5ib3F0vX3ulQPaJDlcEhjozCfb3bNXNCLQxppKZUd1fV0v1RrsrYDfpicdOpCZ1d5tGGicyvIDRA/640?wx_fmt=png" alt=""> </p>
+<p><strong>书格</strong></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/lKib3E6zjXUM3ymB40509f2wEjsDMdpKG4j9pgffTb3eTnt1SCDniciau8wlDsYj5PjQel5GAiaLliaGprp7hLogl1w/640?wx_fmt=png" alt=""></p>
+<p><a href="https://shuge.org" target="_blank" rel="noopener">https://shuge.org</a></p>
+<p>书格是一个自由开放的在线古籍图书馆。致力于开放式分享、介绍、推荐有价值的古籍善本，并鼓励将文化艺术作品数字化归档。<strong>分享内容限定为公共版权领域的书籍</strong>（参照标准《伯尔尼公约》）；我们最大限度地还原书籍品貌、内容；借此计划让大家自由、免费地欣赏到那些难以现世的书籍。让大家能从中感受到人类文明进程。</p>
+<p>@  精品古籍，强烈推荐</p>
+<p>🙋‍♂️🙋‍♂️🙋‍♂️</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/ibYGtJk9LbxT46riaYfcpibpqicQsYEIrHXB9xYrZuQ4Dc8bs12PtSMJqWXhrzbSesKjWqT7m662h5QbnPwbFfPDVQ/640?wx_fmt=png" alt=""></p>
+<p><strong>八</strong></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/dyDu14T9ZVDhY5ib3F0vX3ulQPaJDlcEhjozCfb3bNXNCLQxppKZUd1fV0v1RrsrYDfpicdOpCZ1d5tGGicyvIDRA/640?wx_fmt=png" alt=""> </p>
+<p><strong>中国哲学书籍电子化计划</strong></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/lKib3E6zjXUM3ymB40509f2wEjsDMdpKGUxrQ6PTltgIgIxJTdDPlH8JuXFZ5Or2Ykf6hcv5Vz9g5UB4VrQ488w/640?wx_fmt=png" alt=""></p>
+<p><a href="https://ctext.org/zh" target="_blank" rel="noopener">https://ctext.org/zh</a></p>
+<p>中国哲学书电子化计划是一个线上开放电子图书馆，为中外学者提供中国历代传世文献，力图超越印刷媒体限制，通过电子科技探索新方式与古代文献进行沟通。收藏的文本已超过三万部著作，并有五十亿字之多，故为历代中文文献资料库最大者。</p>
+<p>@  诸子百家，尽在此处</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/ibYGtJk9LbxT46riaYfcpibpqicQsYEIrHXB9xYrZuQ4Dc8bs12PtSMJqWXhrzbSesKjWqT7m662h5QbnPwbFfPDVQ/640?wx_fmt=png" alt=""></p>
+<p><strong>九</strong></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/dyDu14T9ZVDhY5ib3F0vX3ulQPaJDlcEhjozCfb3bNXNCLQxppKZUd1fV0v1RrsrYDfpicdOpCZ1d5tGGicyvIDRA/640?wx_fmt=png" alt=""> </p>
+<p><strong>Manybooks</strong></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/lKib3E6zjXUM3ymB40509f2wEjsDMdpKGgzSIcdEs5iaAgCuzuwicXIfeaoC6rOicyMK4qXuT9ORT5KBRE4pB95XZw/640?wx_fmt=png" alt=""></p>
+<p><a href="https://manybooks.net" target="_blank" rel="noopener">https://manybooks.net</a></p>
+<p>适合探索那些你这辈子都可能在图书馆遇不到的书籍，它们同样精致美丽，有内涵，甚至会一下子让你「哇」出来！</p>
+<p>@  我们有超过 50000 本电子书等待你来发掘</p>
+<p>推荐指数 ⭐️⭐️⭐️⭐️</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/ibYGtJk9LbxT46riaYfcpibpqicQsYEIrHXB9xYrZuQ4Dc8bs12PtSMJqWXhrzbSesKjWqT7m662h5QbnPwbFfPDVQ/640?wx_fmt=png" alt=""></p>
+<p><strong>十</strong></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/dyDu14T9ZVDhY5ib3F0vX3ulQPaJDlcEhjozCfb3bNXNCLQxppKZUd1fV0v1RrsrYDfpicdOpCZ1d5tGGicyvIDRA/640?wx_fmt=png" alt=""> </p>
+<p><strong>LoreFree</strong></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/lKib3E6zjXUM3ymB40509f2wEjsDMdpKG9RBZDXMHuznic7XOYgTPOkQOWlLibicLqohCNYSiaBFwQYYaNNRlm4ZIKA/640?wx_fmt=png" alt=""></p>
+<p><a href="http://ebook2.lorefree.com" target="_blank" rel="noopener">http://ebook2.lorefree.com</a></p>
+<p>@  上传资源参与挖矿，区块链模式</p>
+<p>去中心化的电子书共享平台</p>
+<p>推荐指数 ⭐️⭐️⭐️⭐️⭐️</p>
+<p>点击底部【阅读原文】直达</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/ibYGtJk9LbxT46riaYfcpibpqicQsYEIrHXB9xYrZuQ4Dc8bs12PtSMJqWXhrzbSesKjWqT7m662h5QbnPwbFfPDVQ/640?wx_fmt=png" alt=""></p>
+<p><strong>十一</strong></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/dyDu14T9ZVDhY5ib3F0vX3ulQPaJDlcEhjozCfb3bNXNCLQxppKZUd1fV0v1RrsrYDfpicdOpCZ1d5tGGicyvIDRA/640?wx_fmt=png" alt=""> </p>
+<p><strong>古腾堡计划</strong></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/lKib3E6zjXUM3ymB40509f2wEjsDMdpKGnAJtfKx7rRIzfNicQXjFnlY6e5RibEV3QVsyuYKaZR5JlFx4lgrCSmLw/640?wx_fmt=png" alt=""></p>
+<p><a href="http://www.gutenberg.org" target="_blank" rel="noopener">http://www.gutenberg.org</a></p>
+<p>谷登堡计划（Project Gutenberg，缩写：PG），由志愿者参与，致力于将文化作品的数字化和归档，并鼓励创作和发行电子书。该工程肇始于 1971 年，是最早的数字图书馆。其中的大部分书籍都是公有领域书籍的原本，谷登堡计划确保这些原本自由流通、自由文件格式，有利于长期保存，并可在各种计算机上阅读。截至 2018 年 7 月，谷登堡计划声称超过 57000 件馆藏。</p>
+<p>在可能的情况下，发布的格式是纯文本文件，但也包括其他格式，如 HTML、PDF、EPUB、MOBI、Plucker。大多数版本使用的语言是英语，但也可以有许多非英语的作品。有多个相关项目，提供更多的内容，包括区域性的和特定于语言的作品。谷登堡计划也密切联系 Distributed Proofreaders，一个校对扫描文本的以互联网为基础的社区。</p>
+<p>@  历史久远，老大哥了</p>
+<p>‍‍‍‍‍‍‍‍‍‍‍‍‍‍‍‍‍‍‍‍‍‍‍‍‍‍‍<img src="https://mmbiz.qpic.cn/mmbiz_png/ibYGtJk9LbxT46riaYfcpibpqicQsYEIrHXB9xYrZuQ4Dc8bs12PtSMJqWXhrzbSesKjWqT7m662h5QbnPwbFfPDVQ/640?wx_fmt=png" alt=""></p>
+<p><strong>十二</strong></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/dyDu14T9ZVDhY5ib3F0vX3ulQPaJDlcEhjozCfb3bNXNCLQxppKZUd1fV0v1RrsrYDfpicdOpCZ1d5tGGicyvIDRA/640?wx_fmt=png" alt=""> </p>
+<p><strong>FreeBooks4Doctors</strong></p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/lKib3E6zjXUM3ymB40509f2wEjsDMdpKGF8Y7ILUm0NPicxibtxc7eW38HwGaibUHsJyEDKxEwWr5K8jdWibyibl53kA/640?wx_fmt=png" alt=""></p>
+<p><a href="http://freebooks4doctors.com" target="_blank" rel="noopener">http://freebooks4doctors.com</a>  </p>
+<p>医学书籍厚重且内容繁复，但人类将健康寄托于现代医学之外别无他法，新冠疫情仍在肆虐，了解再多保护自己的<strong>正确</strong>知识都不为过。</p>
+<p>@  拥有 369 册医学电子书，人人都需要了解自己的身体</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/lKib3E6zjXUOIB5g1huSpyuiaVazkOCjqVLsAtIDtEw3ssUTaPQdDbsfjufnibVYyMJTaoc8MVyJ16KhnKIAgAQZw/640?wx_fmt=jpeg" alt="">)<img src="https://mmbiz.qpic.cn/mmbiz_png/lKib3E6zjXUOIB5g1huSpyuiaVazkOCjqVLsAtIDtEw3ssUTaPQdDbsfjufnibVYyMJTaoc8MVyJ16KhnKIAgAQZw/640?wx_fmt=jpeg" alt=""></p>
+<p><strong>食用须知</strong></p>
+<p>本目录收集数字文档相关的网站和工具</p>
+<p>便于大家学习交流</p>
+<p>切勿用于任何商业活动中</p>
+<p>另外，我们坚持认为</p>
+<p><strong>知识为人类所共有</strong></p>
+<p><strong>每个人都有平等获取的权利</strong></p>
+<p>信息不对称天然存在</p>
+<p>人为控制更是加剧了这一点</p>
+<p>Let’s break it ！</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/06/22/qiwihui-pocket_readings-1137/" rel="prev" title="
+
+
+我国车牌设计29年来首次更新！全球20国车牌变迁史带你了解车牌背后的设计学 ">
+      <i class="fa fa-chevron-left"></i> 
+
+
+我国车牌设计29年来首次更新！全球20国车牌变迁史带你了解车牌背后的设计学 
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/06/24/qiwihui-pocket_readings-1139/" rel="next" title="【网络民议】街上没了游行，维园没了烛光，报摊没了苹果">
+      【网络民议】街上没了游行，维园没了烛光，报摊没了苹果 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-分钟找书指南-v8-0-by-eBooksPlan"><span class="nav-number"></span> <span class="nav-text">3 分钟找书指南 v8.0 by eBooksPlan</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

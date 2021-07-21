@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="《深度剖析CPython解释器》19. Python类机制的深度解析(第三部分): 自定义类的底层实现、以及metaclass - 古明地盆 - 博客园">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《深度剖析CPython解释器》19. Python类机制的深度解析(第三部分): 自定义类的底层实现、以及metaclass - 古明地盆 - 博客园">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1015/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="《深度剖析CPython解释器》19. Python类机制的深度解析(第三部分): 自定义类的底层实现、以及metaclass - 古明地盆 - 博客园">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200901005722023-2010359374.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200901005728755-1725864266.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200901005736206-1581059838.png">
+<meta property="article:published_time" content="2021-02-16T14:17:20.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.430Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200901005722023-2010359374.png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1015/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>《深度剖析CPython解释器》19. Python类机制的深度解析(第三部分): 自定义类的底层实现、以及metaclass - 古明地盆 - 博客园 | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1015/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          《深度剖析CPython解释器》19. Python类机制的深度解析(第三部分): 自定义类的底层实现、以及metaclass - 古明地盆 - 博客园
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-02-16 14:17:20" itemprop="dateCreated datePublished" datetime="2021-02-16T14:17:20+00:00">2021-02-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+
+          
+            <div class="post-description">《深度剖析CPython解释器》19. Python类机制的深度解析(第三部分): 自定义类的底层实现、以及metaclass - 古明地盆 - 博客园</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Python&#38500;&#20102;&#32473;&#25105;&#25552;&#20379;&#20102;&#24456;&#22810;&#30340;&#31867;&#20043;&#22806;&#65292;&#36824;&#25903;&#25345;&#25105;&#20204;&#23450;&#20041;&#23646;&#20110;&#33258;&#24049;&#30340;&#31867;&#65292;&#37027;&#20040;Python&#24213;&#23618;&#26159;&#22914;&#20309;&#20570;&#30340;&#21602;&#65311;&#25105;&#20204;&#19979;&#38754;&#23601;&#26469;&#30475;&#30475;&#12290; &#32769;&#35268;&#30697;&#65292;&#22914;&#26524;&#24819;&#30693;&#36947;&#24213;&#23618;&#26159;&#24590;&#20040;&#20570;&#30340;&#65292;&#37027;&#20040;&#23601;&#24517;&#39035;&#35201;&#36890;&#36807;&#35266;&#23519;&#23383;&#33410;&#30721;&#26469;&#23454;&#29616;&#12290;<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/2LVUP6l" target="_blank" rel="noopener">https://ift.tt/2LVUP6l</a> original site<br><br><br><br>February 16, 2021 at 10:14PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1015#issuecomment-792571282" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>3/8/2021</strong></p>
+</blockquote>
+<h2 id="《深度剖析CPython解释器》19-Python类机制的深度解析-第三部分-自定义类的底层实现、以及metaclass-古明地盆-博客园"><a href="#《深度剖析CPython解释器》19-Python类机制的深度解析-第三部分-自定义类的底层实现、以及metaclass-古明地盆-博客园" class="headerlink" title="《深度剖析CPython解释器》19. Python类机制的深度解析(第三部分): 自定义类的底层实现、以及metaclass - 古明地盆 - 博客园"></a>《深度剖析CPython解释器》19. Python类机制的深度解析(第三部分): 自定义类的底层实现、以及metaclass - 古明地盆 - 博客园</h2><h1 id="《深度剖析CPython解释器》19-Python类机制的深度解析-第三部分-自定义类的底层实现、以及metaclass"><a href="#《深度剖析CPython解释器》19-Python类机制的深度解析-第三部分-自定义类的底层实现、以及metaclass" class="headerlink" title="《深度剖析CPython解释器》19. Python类机制的深度解析(第三部分): 自定义类的底层实现、以及metaclass"></a><a href="https://www.cnblogs.com/traditional/p/13593927.html" target="_blank" rel="noopener">《深度剖析CPython解释器》19. Python类机制的深度解析(第三部分): 自定义类的底层实现、以及metaclass</a></h1><h2 id="楔子"><a href="#楔子" class="headerlink" title="楔子"></a>楔子</h2><p><strong>Python除了给我提供了很多的类之外，还支持我们定义属于自己的类，那么Python底层是如何做的呢？我们下面就来看看。</strong></p>
+<h2 id="自定义class"><a href="#自定义class" class="headerlink" title="自定义class"></a>自定义class</h2><p><strong>老规矩，如果想知道底层是怎么做的，那么就必须要通过观察字节码来实现。</strong></p>
+<pre><code>class Girl:
+
+    name = &quot;夏色祭&quot;
+    def __init__(self):
+        print(&quot;__init__&quot;)
+
+    def f(self):
+        print(&quot;f&quot;)
+
+    def g(self, name):
+        self.name = name
+        print(self.name)
+
+
+girl = Girl()
+girl.f()
+girl.g(&quot;神乐mea&quot;)
+&quot;&quot;&quot;
+__init__
+f
+神乐mea
+&quot;&quot;&quot;</code></pre><p><strong>通过之前对函数机制的分析中，我们知道对于一个包含函数定义的Python源文件，在编译之后会得到一个和源文件对应的PyCodeObject对象，其内部的常量池中存储了函数编译之后的PyCodeObject对象。那么对于包含类的Python源文件，编译之后的结果又是怎么样的呢？</strong></p>
+<p><strong>显然我们可以照葫芦画瓢，根据以前的经验我们可以猜测模块对应的PyCodeObject对象的常量池中肯定存储了类对应的PyCodeObject对象，类对应的PyCodeObject对象的常量池中则存储了__init__、f、g三个函数对应的PyCodeObject对象。然而事实也确实如此。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200901005722023-2010359374.png" alt=""></p>
+<p><strong>在介绍函数的时候，我们看到函数的声明(def语句)和函数的实现代码虽然是一个逻辑整体，但是它们的字节码指令却是分离在两个PyCodeObject对象中的。在类中，同样存在这样的分离现象。声明类的class语句，编译后的字节码指令存储在模块对应的PyCodeObject中，而类的实现、也就是类里面的逻辑，编译后的字节码指令序列则存储在类对应的的PyCodeObject中。所以我们在模块级别中只能找到类，无法直接找到类里面的成员。</strong></p>
+<p><strong>另外还可以看到，类的成员函数和一般的函数相同，也会有这种声明和实现分离的现象。其实也很好理解，就把类和函数想象成变量就行了，类名、函数名就是变量名，而类、函数里面的逻辑想象成值，一个变量对应一个值。</strong></p>
+<pre><code>s = &quot;&quot;&quot;class Girl:
+    name = &quot;夏色祭&quot;
+
+    def __init__(self):
+        print(&quot;__init__&quot;)
+
+    def f(self):
+        print(&quot;f&quot;)
+
+    def g(self, name):
+        self.name = name
+        print(self.name)&quot;&quot;&quot;
+
+
+# 此时的code显然是模块对应的PyCodeObject对象
+code = compile(s, &quot;class&quot;, &quot;exec&quot;)
+print(code)  # &lt;code object &lt;module&gt; at 0x000001B588101450, file &quot;class&quot;, line 1&gt;
+
+# 常量池里面存储了Girl对应的PyCodeObject对象
+print(code.co_consts[0])  # &lt;code object Girl at 0x0000024BB6C7ABE0, file &quot;class&quot;, line 1&gt;
+
+# Girl的PyCodeObject对象的常量池里面存储了几个函数的PyCodeObject对象
+# 至于它们的位置我们暂时不需要关心
+print(code.co_consts[0].co_consts[6])  # &lt;code object g at 0x000001FAC40A82F0, file &quot;class&quot;, line 10&gt;
+print(code.co_consts[0].co_consts[6].co_varnames)  # (&apos;self&apos;, &apos;name&apos;)</code></pre><h3 id="class对象的动态元信息"><a href="#class对象的动态元信息" class="headerlink" title="class对象的动态元信息"></a>class对象的动态元信息</h3><p><strong>class对象(class关键字创建的类)的元信息指的就是关于class的信息，比如说class的名称、它所拥有的的属性、方法，该class实例化时要为实例对象申请的内存空间大小等。对于模块中定义的class Girl来说，我们必须知道相应的信息：比如在class Girl中，有一个符号f，这个f对应一个函数；还有一个符号g，这个g也对应了一个函数。有了这些元信息，才能创建class对象，否则我们是没办法创建的。元信息是一个非常重要的概念，比如说Hive，数据的元信息就是存储在MySQL里面的，而在编程语言中，正是通过元信息才实现了反射等动态特性。而在Python中，元信息的概念被发挥的淋漓尽致，因此Python也提供了其他编程语言所不具备的高度灵活的动态特征。</strong></p>
+<p><strong>老规矩，下面还是看一下字节码：</strong></p>
+<pre><code>class Girl:
+
+    name = &quot;夏色祭&quot;
+    def __init__(self):
+        print(&quot;__init__&quot;)
+
+    def f(self):
+        print(&quot;f&quot;)
+
+    def g(self, name):
+        self.name = name
+        print(self.name)</code></pre><p><strong>这里我们先不涉及调用，只看类的创建。</strong></p>
+<pre><code>  1           0 LOAD_BUILD_CLASS
+              2 LOAD_CONST               0 (&lt;code object Girl at 0x0000026FB0B3ABE0, file &quot;class&quot;, line 1&gt;)
+              4 LOAD_CONST               1 (&apos;Girl&apos;)
+              6 MAKE_FUNCTION            0
+              8 LOAD_CONST               1 (&apos;Girl&apos;)
+             10 CALL_FUNCTION            2
+             12 STORE_NAME               0 (Girl)
+             14 LOAD_CONST               2 (None)
+             16 RETURN_VALUE
+
+Disassembly of &lt;code object Girl at 0x0000026FB0B3ABE0, file &quot;class&quot;, line 1&gt;:
+  1           0 LOAD_NAME                0 (__name__)
+              2 STORE_NAME               1 (__module__)
+              4 LOAD_CONST               0 (&apos;Girl&apos;)
+              6 STORE_NAME               2 (__qualname__)
+
+  3           8 LOAD_CONST               1 (&apos;夏色祭&apos;)
+             10 STORE_NAME               3 (name)
+
+  4          12 LOAD_CONST               2 (&lt;code object __init__ at 0x0000026FB0961450, file &quot;class&quot;, line 4&gt;)
+             14 LOAD_CONST               3 (&apos;Girl.__init__&apos;)
+             16 MAKE_FUNCTION            0
+             18 STORE_NAME               4 (__init__)
+
+  7          20 LOAD_CONST               4 (&lt;code object f at 0x0000026FB095AB30, file &quot;class&quot;, line 7&gt;)
+             22 LOAD_CONST               5 (&apos;Girl.f&apos;)
+             24 MAKE_FUNCTION            0
+             26 STORE_NAME               5 (f)
+
+ 10          28 LOAD_CONST               6 (&lt;code object g at 0x0000026FB0B472F0, file &quot;class&quot;, line 10&gt;)
+             30 LOAD_CONST               7 (&apos;Girl.g&apos;)
+             32 MAKE_FUNCTION            0
+             34 STORE_NAME               6 (g)
+             36 LOAD_CONST               8 (None)
+             38 RETURN_VALUE
+
+Disassembly of &lt;code object __init__ at 0x0000026FB0961450, file &quot;class&quot;, line 4&gt;:
+  5           0 LOAD_GLOBAL              0 (print)
+              2 LOAD_CONST               1 (&apos;__init__&apos;)
+              4 CALL_FUNCTION            1
+              6 POP_TOP
+              8 LOAD_CONST               0 (None)
+             10 RETURN_VALUE
+
+Disassembly of &lt;code object f at 0x0000026FB095AB30, file &quot;class&quot;, line 7&gt;:
+  8           0 LOAD_GLOBAL              0 (print)
+              2 LOAD_CONST               1 (&apos;f&apos;)
+              4 CALL_FUNCTION            1
+              6 POP_TOP
+              8 LOAD_CONST               0 (None)
+             10 RETURN_VALUE
+
+Disassembly of &lt;code object g at 0x0000026FB0B472F0, file &quot;class&quot;, line 10&gt;:
+ 11           0 LOAD_FAST                1 (name)
+              2 LOAD_FAST                0 (self)
+              4 STORE_ATTR               0 (name)
+
+ 12           6 LOAD_GLOBAL              1 (print)
+              8 LOAD_FAST                0 (self)
+             10 LOAD_ATTR                0 (name)
+             12 CALL_FUNCTION            1
+             14 POP_TOP
+             16 LOAD_CONST               0 (None)
+             18 RETURN_VALUE</code></pre><p><strong>字节码比较长，我们逐行分析，当然很多字节码我们都见过了，因此有的字节码介绍的时候就不会特别详细了。我们仔细观察一下字节码，会发现分为五个部分：模块的字节码、class Girl的字节码、class的三个函数的字节码。</strong></p>
+<p><strong>我们先来看看模块的字节码</strong>：</p>
+<pre><code>1           0 LOAD_BUILD_CLASS
+            2 LOAD_CONST               0 (&lt;code object Girl at 0x0000026FB0B3ABE0, file &quot;class&quot;, line 1&gt;)
+            4 LOAD_CONST               1 (&apos;Girl&apos;)
+            6 MAKE_FUNCTION            0
+            8 LOAD_CONST               1 (&apos;Girl&apos;)
+           10 CALL_FUNCTION            2
+           12 STORE_NAME               0 (Girl)
+           14 LOAD_CONST               2 (None)
+           16 RETURN_VALUE</code></pre><ul>
+<li><code>0 LOAD_BUILD_CLASS: 我们注意到这又是一条我们没见过的新指令，从名字也能看出来这是要构建一个类;</code></li>
+<li><code>2 LOAD_CONST: 加载Girl对应的PyCodeObject对象;</code></li>
+<li><code>4 LOAD_CONST: 加载字符串&quot;Girl&quot;</code></li>
+<li><code>6 MAKE_FUNCTION: 问题来了, 我们看到出现了MAKE_FUNCTION, 不是说要构建类吗? 为什么是MAKE_FUNCTION呢? 别急, 往下看;</code></li>
+<li><code>8 LOAD_CONST: 再次加载字符串&quot;Girl&quot;;</code></li>
+<li><code>10 CALL_FUNCTION: 你看到了什么?函数调用?是的, 这个CALL_FUNCTION是用来构建类的, 至于怎么构建我们后面会说;</code></li>
+<li><code>12 STORE_NAME: 将上一步构建好的类使用符号Girl保存;</code></li>
+</ul>
+<p><strong>我们看一下LOAD_BUILD_CLASS这个指令都干了哪些事情吧。</strong></p>
+<pre><code>case TARGET(LOAD_BUILD_CLASS): {
+    _Py_IDENTIFIER(__build_class__);
+
+    PyObject *bc;
+    if (PyDict_CheckExact(f-&gt;f_builtins)) {
+        //从f_builtins里面获取PyId___build_class__
+        bc = _PyDict_GetItemIdWithError(f-&gt;f_builtins, &amp;PyId___build_class__);
+        if (bc == NULL) {
+            if (!_PyErr_Occurred(tstate)) {
+                _PyErr_SetString(tstate, PyExc_NameError,
+                                 &quot;__build_class__ not found&quot;);
+            }
+            goto error;
+        }
+        Py_INCREF(bc);
+    }
+    else {
+        PyObject *build_class_str = _PyUnicode_FromId(&amp;PyId___build_class__);
+        if (build_class_str == NULL)
+            goto error;
+        bc = PyObject_GetItem(f-&gt;f_builtins, build_class_str);
+        if (bc == NULL) {
+            if (_PyErr_ExceptionMatches(tstate, PyExc_KeyError))
+                _PyErr_SetString(tstate, PyExc_NameError,
+                                 &quot;__build_class__ not found&quot;);
+            goto error;
+        }
+    }
+    //入栈
+    PUSH(bc);
+    DISPATCH();
+}</code></pre><p><strong>LOAD_BUILD_CLASS做的事情很简单，就是从Python的内置函数中取得__build_class__将其入栈，然后下面的几个指令很好理解，但是却出现了一个CALL_FUNCTION，显然它是调用__build_class__创建类的。我们看到它的参数个数是2个，这两个参数分别是：A的PyFunctionObject、字符串”A”，因此：</strong></p>
+<pre><code>class A(object):
+    pass
+
+
+# 在底层将会被翻译成
+A = __build_class__(&lt;PyFunctionObject A&gt;, &quot;A&quot;)
+
+
+# 如果是
+class A(int):
+    pass
+
+
+# 在底层将会被翻译成
+A = __build_class__(&lt;PyFunctionObject A&gt;, &quot;A&quot;, int)</code></pre><p><strong>我们实际操作一下：</strong></p>
+<pre><code># 在Python中我们可以导入 builtins 来调用__build_class__，也可以直接使用
+import builtins
+
+# 构建一个类, 叫MyInt, 继承自int
+c = builtins.__build_class__(lambda: None, &quot;MyInt&quot;, int)
+
+print(c.__name__)  # MyInt
+print(c.__base__)  # &lt;class &apos;int&apos;&gt;
+
+
+print(c(3) * c(5))  # 15</code></pre><p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200901005728755-1725864266.png" alt=""></p>
+<p><strong>如果参数类型不正确的话，就会报出如下错误：</strong></p>
+<pre><code>import sys
+import builtins
+
+try:
+    builtins.__build_class__()
+except Exception as e:
+    exc_type, exc_value, _ = sys.exc_info()
+    print(exc_type, exc_value)  # &lt;class &apos;TypeError&apos;&gt; __build_class__: not enough arguments
+
+try:
+    builtins.__build_class__(&quot;&quot;, &quot;&quot;)
+except Exception as e:
+    exc_type, exc_value, _ = sys.exc_info()
+    print(exc_type, exc_value)  # &lt;class &apos;TypeError&apos;&gt; __build_class__: func must be a function
+
+try:
+    builtins.__build_class__(lambda: 123, 123)
+except Exception as e:
+    exc_type, exc_value, _ = sys.exc_info()
+    print(exc_type, exc_value)  # &lt;class &apos;TypeError&apos;&gt; __build_class__: name is not a string</code></pre><p><strong>记住这几个报错信息，后面马上就会看到。此外我们也看到，这个函数的一个参数叫func、第二个参数叫name。</strong></p>
+<p><strong>所以现在就明白为什么会出现CALL_FUNCTION这条指令，__build_class__就是用来将一个函数对象变成一个class对象。</strong></p>
+<p><strong>class对象的字节码</strong>：</p>
+<pre><code> 1           0 LOAD_NAME                0 (__name__)
+             2 STORE_NAME               1 (__module__)
+             4 LOAD_CONST               0 (&apos;Girl&apos;)
+             6 STORE_NAME               2 (__qualname__)
+
+ 3           8 LOAD_CONST               1 (&apos;夏色祭&apos;)
+            10 STORE_NAME               3 (name)
+
+ 4          12 LOAD_CONST               2 (&lt;code object __init__ at 0x0000026FB0961450, file &quot;class&quot;, line 4&gt;)
+            14 LOAD_CONST               3 (&apos;Girl.__init__&apos;)
+            16 MAKE_FUNCTION            0
+            18 STORE_NAME               4 (__init__)
+
+ 7          20 LOAD_CONST               4 (&lt;code object f at 0x0000026FB095AB30, file &quot;class&quot;, line 7&gt;)
+            22 LOAD_CONST               5 (&apos;Girl.f&apos;)
+            24 MAKE_FUNCTION            0
+            26 STORE_NAME               5 (f)
+
+10          28 LOAD_CONST               6 (&lt;code object g at 0x0000026FB0B472F0, file &quot;class&quot;, line 10&gt;)
+            30 LOAD_CONST               7 (&apos;Girl.g&apos;)
+            32 MAKE_FUNCTION            0
+            34 STORE_NAME               6 (g)
+            36 LOAD_CONST               8 (None)
+            38 RETURN_VALUE</code></pre><p><strong>对于一个类而言，调用其__module__属性，可以获取所在的模块。所以开始的LOAD_NAME和STORE_NAME是将符号__module__和全局命名空间中符号__name__的值关联了起来，并放入到该类的local名字空间中。</strong></p>
+<p><strong>需要说明的是，我们在介绍函数的时候提过，当时我们说：”函数的局部变量是不可变的，在编译的时候就已经确定了，是以一种静态方式放在了运行时栈前面的那段内存中，并没有放在f_locals中，f_locals其实是一个NULL，我们通过locals()拿到的只是对运行时栈前面的内存的一个拷贝，函数里面的局部变量是通过静态方式来访问的”。但是类则不一样，类是可以动态修改的，可以随时增加属性、方法，这就意味着类是不可能通过静态方式来查找属性的。而事实上也确实如此，类也有一个f_locals，但它指向的就不再是NULL了，而和f_globals一样，也是一个PyDictObject对象。然后是LOAD_CONST，将字符串”Girl”加载进来，和__qualname__组成一个entry存储在Girl的local空间中。</strong></p>
+<pre><code>class Girl:
+
+    name = &quot;夏色祭&quot;
+    def __init__(self):
+        print(&quot;__init__&quot;)
+
+    def f(self):
+        print(&quot;f&quot;)
+
+    def g(self, name):
+        self.name = name
+        print(self.name)
+
+
+print(__name__)  # __main__
+print(Girl.__module__)  # __main__
+print(Girl.__qualname__)  # Girl</code></pre><p><strong>所以整体过程就是：先将PyCodeObject构建成函数，再通过__build_class__将函数变成一个类，当然__build_class__结束之后我们的Girl这个类就横空出世了。</strong></p>
+<p><strong>因此剩下的来问题就是__build_class__是如何将一个函数变成类的，想要知道答案，那么只能去源码中一探究竟了。不过在看源码之前，我们还需要了解一样东西：metaclass。</strong></p>
+<h3 id="回顾metaclass"><a href="#回顾metaclass" class="headerlink" title="回顾metaclass"></a>回顾metaclass</h3><p><strong>元类，被誉为是深度的魔法，但是个人觉得有点夸张了。首先元类是做什么的，它是用来控制我们类的生成过程的，默认情况下，我们自定义的类都是由type创建的。但是我们可以手动指定某个类的元类，但是在介绍元类之前，我们还需要看一下Python中的两个特殊的魔法方法：__new__和__init__。</strong></p>
+<h4 id="new-和-init"><a href="#new-和-init" class="headerlink" title="__new__和__init__"></a>__new__和__init__</h4><p><strong>类在实例化的时候会自动调用__init__，但其实在调用__init__之前会先调用__new__。</strong></p>
+<ul>
+<li><p><code>__new__: 为实例对象申请一片内存;</code></p>
+</li>
+<li><p><code>__init__: 为实例对象设置属性;</code></p>
+<p>class A:</p>
+<pre><code>def __new__(cls, *args, **kwargs):
+    print(&quot;__new__&quot;)
+
+def __init__(self):
+    print(&quot;__init__&quot;)</code></pre></li>
+</ul>
+<pre><code>A()  # __new__</code></pre><p><strong>然而我们看到只有__new__被调用了，__init__则没有。原因就在于__new__中必须将A的实例对象返回，才会执行__init__，并且执行的时候会自动将__new__的返回值作为参数传给self。</strong></p>
+<pre><code>class A:
+
+    def __new__(cls, *args, **kwargs):
+        print(&quot;__new__&quot;)
+        # 这里的参数cls就表示A这个类本身
+        # object.__new__(cls) 便是根据cls创建cls的实例对象
+        return object.__new__(cls)
+
+    def __init__(self):
+        # 然后执行__init__, 里面的self指的就是实例对象
+        # 在执行__init__的时候, __new__的返回值会自动作为参数传递给这里的self
+        print(&quot;__init__&quot;)
+
+
+A()  
+&quot;&quot;&quot;
+__new__
+__init__
+&quot;&quot;&quot;</code></pre><p><strong>所以一个对象是什么，取决于其类型对象的__new__返回了什么。</strong></p>
+<pre><code>class A:
+
+    def __new__(cls, *args, **kwargs):
+        print(&quot;__new__&quot;)
+        # 这里必须返回A的实例对象, 否则__init__函数是不会执行的
+        return 123
+
+    def __init__(self):
+        print(&quot;__init__&quot;)
+
+
+a = A()
+print(a + 1)  
+&quot;&quot;&quot;
+__new__
+124
+&quot;&quot;&quot;</code></pre><p><strong>我们看到A在实例化之后得到的是一个整型，原因就是__new__返回了123。最后一个就是参数问题，首先我们说__new__是创建实例对象的，__init__是为实例对象绑定属性的。</strong></p>
+<pre><code>class A:
+
+    def __new__(cls, name, age):
+        # __new__里面的参数一定要和__init__是匹配的, 除了第一个参数之外
+        return object.__new__(cls)
+
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+
+
+a = A(&quot;夏色祭&quot;, -1)
+# 我们这里传入了两个参数, 那么: A、&quot;夏色祭&quot;、-1 就会组合起来, 分别传给__new__的 cls、name、age
+# 然后__new__里面返回了一个实例对象
+# 那么: object.__new__(cls)、__new__接收的name、__new__接收的age 会组合起来, 分别传给__init__的 self、name、age</code></pre><h4 id="创建类的另一种方式"><a href="#创建类的另一种方式" class="headerlink" title="创建类的另一种方式"></a>创建类的另一种方式</h4><p><strong>创建类的时候可以使用class关键字创建，除了class关键字之外，我们还可以使用type这个古老却又强大的类来创建。</strong></p>
+<pre><code># type这个类里面可以接收一个参数或者三个参数
+# 如果接收一个参数, 那么表示查看类型; 如果接收三个参数, 那么表示创建一个类
+
+try:
+    A = type(&quot;A&quot;, &quot;&quot;)
+except Exception as e:
+    print(e)  # type() takes 1 or 3 arguments</code></pre><p><strong>告诉我们type要么接收一个参数，要么接收三个参数。显然接收一个参数查看类型不需要再说了，我们看看怎么用来用type创建一个类。</strong></p>
+<pre><code># type接收的三个参数: 类名、继承的基类、属性
+class A(list):
+    name = &quot;夏色祭&quot;
+
+# 上面这个类翻译过来就是
+val = type(&quot;A&quot;, (list, ), {&quot;name&quot;: &quot;夏色祭&quot;})
+print(val)  # &lt;class &apos;__main__.A&apos;&gt;
+print(val.__name__)  # A
+print(val.__base__)  # &lt;class &apos;list&apos;&gt;
+print(val.name)  # 夏色祭</code></pre><p><strong>所以还是很简单的，我们还可以自定义一个类继承自type。</strong></p>
+<pre><code>class MyType(type):
+
+    def __new__(mcs, name, bases, attr):
+        print(name)
+        print(bases)
+        print(attr)
+
+
+# 指定metaclass, 表示A这个类由MyType创建
+# 我们说__new__是为实例对象开辟内存的, 那么MyType的实例对象是谁呢? 显然就是这里的A
+# 因为A指定了metaclass为MyType, 所以A的类型就是MyType
+class A(int, object, metaclass=MyType):
+    name = &quot;夏色祭&quot;
+&quot;&quot;&quot;
+A
+(&lt;class &apos;int&apos;&gt;, &lt;class &apos;object&apos;&gt;)
+{&apos;__module__&apos;: &apos;__main__&apos;, &apos;__qualname__&apos;: &apos;A&apos;, &apos;name&apos;: &apos;夏色祭&apos;}
+&quot;&quot;&quot;
+
+# 我们看到一个类在创建的时候会向元类的__new__中传递三个值
+# 分别是类名、继承的基类、类的属性
+
+# 但是此时A并没有被创建出来
+print(A)  # None
+
+&quot;&quot;&quot;
+我们说__new__一定要将创建的实例对象返回才可以, 这里的MyType是元类
+所以类对象A就等于MyType的实例对象, MyType的__new__就负责为类对象A分配空间
+但是显然我们这里并没有分配, 而且返回的还是一个None, 如果我们返回的是123, 那么print(a)就是123
+&quot;&quot;&quot;</code></pre><p><strong>所以元类和类之间的关系 和 类与实例对象的关系，之间是很相似的，因为完全可以把类对象看成是元类的实例对象。因此A既然指定了metaclass为MyType，表示A这个类由MyType创建，那么MyType的__new__函数返回了什么，A就是什么。</strong></p>
+<pre><code>class MyType(type):
+
+    def __new__(mcs, name, bases, attr):
+        return &quot;嘿嘿嘿&quot;
+
+
+class A(metaclass=MyType):
+    pass
+
+
+print(A + &quot;哟哟哟&quot;)  # 嘿嘿嘿哟哟哟</code></pre><p><strong>这便是Python语言具备的高度动态特性，那么问题来了，如果我想把A创建出来、像普通的类一样使用的话，该咋办呢？因为默认情况下是由type创建，底层帮你做好了，但是现在是我们手动指定元类，那么一切就需要我们来手动指定了。显然，这里创建还是要依赖于type，只不过需要我们手动指定，而且在手动指定的同时我们还可以增加一些我们自己的操作。</strong></p>
+<pre><code>class MyType(type):
+
+    def __new__(mcs, name, bases, attr):
+        name = name * 2
+        bases = (list,)
+        attr.update({&quot;name&quot;: &quot;神乐mea&quot;, &quot;nickname&quot;: &quot;屑女仆&quot;})
+
+        # 这里直接交给type即可, 然后type来负责创建
+        # 所以super().__new__实际上会调用type.__new__
+        # type(name, bases, attr) 等价于 type.__new__(type, name, bases, attr)
+        return super().__new__(mcs, name, bases, attr)
+        # 但是这里我们将__new__的第一个参数换成了mcs, 也就是这里的MyType
+        # 等价于type.__new__(mcs, name, bases, attr)表示将元类设置成MyType
+        # 注意: 不能写type(name, bases, attr), 因为这样的话类还是由type创建的
+
+
+class Girl(metaclass=MyType):
+    pass
+
+
+# 我们看到类的名字变了, 默认情况下是Girl, 但是我们在创建的时候将name成了个2
+print(Girl.__name__)  # GirlGirl
+
+# 那么显然Girl这里也要继承自list
+print(Girl(&quot;你好呀&quot;))  # [&apos;你&apos;, &apos;好&apos;, &apos;呀&apos;]
+
+# 同理Girl还有两个属性
+print(Girl.name, Girl.nickname)  # 神乐mea 屑女仆</code></pre><p><strong>我们之前还说过，一个类在没有指定的metaclass的时候，如果它的父类指定了，那么这个类的metaclass等于父类的metaclass。</strong></p>
+<pre><code>class MyType(type):
+
+    def __new__(mcs, name, bases, attr):
+        name = name * 2
+        bases = (list,)
+        attr.update({&quot;name&quot;: &quot;神乐mea&quot;, &quot;nickname&quot;: &quot;屑女仆&quot;})
+        return super().__new__(mcs, name, bases, attr)
+
+
+class Girl(metaclass=MyType):
+    pass
+
+
+class A(Girl):
+    pass
+
+
+print(A.__class__)  # &lt;class &apos;__main__.MyType&apos;&gt;
+print(A.__name__)  # AA</code></pre><p><strong>我们之前还举了个flask的例子，一种更加优雅的写法。</strong></p>
+<pre><code>class MyType(type):
+
+    def __new__(mcs, name, bases, attr):
+        return super().__new__(mcs, name, bases, attr)
+
+
+def with_metaclass(meta, bases):
+    return meta(&quot;tmp&quot;, bases, {&quot;gender&quot;: &quot;female&quot;})
+
+
+# with_metaclass(MyType, (list,))便会返回一个类
+# 这个类由MyType创建, 并且继承自list
+# 那么Girl再继承这个类, 等价于Girl也是有MyType创建, 并且也会继承自list
+class Girl(with_metaclass(MyType, (list,))):
+    pass
+
+print(Girl.__class__)  # &lt;class &apos;__main__.MyType&apos;&gt;
+print(Girl.__bases__)  # (&lt;class &apos;__main__.tmp&apos;&gt;,)
+print(Girl.__mro__)  # (&lt;class &apos;__main__.Girl&apos;&gt;, &lt;class &apos;__main__.tmp&apos;&gt;, &lt;class &apos;list&apos;&gt;, &lt;class &apos;object&apos;&gt;)
+
+# 所以with_metaclass(meta, bases)只是为了帮助我们找到元类和继承的类
+# 至于其本身并没有太大的意义, 但我们毕竟继承它了, 就意味着我们也可以找到它的属性
+print(Girl.gender)  # female</code></pre><p><strong>注意：我们说创建类的对象是元类，元类要么是type、要么是继承自type的子类。</strong></p>
+<pre><code>class MyType(type):
+
+    def __new__(mcs, name, bases, attr):
+        return super().__new__(mcs, name, bases, attr)
+
+
+# type直接加括号表示由type创建, 我们需要通过__new__手动指定
+Girl = type.__new__(MyType, &quot;GirlGirlGirl&quot;, (list,), {&quot;foo&quot;: lambda self, value: value + 123})
+print(Girl.__name__)  # GirlGirlGirl
+
+g = Girl()
+print(g.foo(123))  # 246
+
+
+try:
+    type.__new__(int, &quot;A&quot;, (object,), {})
+except TypeError as e:
+    # 指定为int则报错, 告诉我们int不是type的子类
+    # 因为只有两种情况: 要么是type、要么是type的子类
+    print(e)  # type.__new__(int): int is not a subtype of type</code></pre><p><strong>怎么样，是不是觉得元类很简单呢？其实元类没有什么复杂的。</strong></p>
+<p><strong>再举个例子：</strong></p>
+<pre><code>class MyType(type):
+
+    def __new__(mcs, name, bases, attr):
+        if &quot;f&quot; in attr:
+            attr.pop(&quot;f&quot;)
+        return super().__new__(mcs, name, bases, attr)
+
+
+class Girl(metaclass=MyType):
+
+    def f(self):
+        return &quot;f&quot;
+
+    def g(self):
+        return &quot;g&quot;
+
+
+print(Girl().g())  # g
+try:
+    print(Girl().f())
+except AttributeError as e:
+    print(e)  # &apos;Girl&apos; object has no attribute &apos;f&apos;
+
+&quot;&quot;&quot;
+惊了, 我们看到居然没有f这个属性, 我们明显定义了啊, 原因就是我们在创建类的时候将其pop掉了
+首先创建一个类需要三个元素: 类名、继承的基类、类的一些属性(以字典的形式, 属性名: 属性值)
+
+然后会将这三个元素交给元类进行创建, 但是我们在创建的时候偷偷地将f从attr里面给pop掉了
+因此创建出来的类是没有f这个函数的 
+&quot;&quot;&quot; </code></pre><p><strong>元类确实蛮有趣的，而且也没有想象中的那么难，可以多了解一下。</strong></p>
+<h4 id="特殊的魔法函数"><a href="#特殊的魔法函数" class="headerlink" title="特殊的魔法函数"></a>特殊的魔法函数</h4><p><strong>此外我们再来看两个和元类有关的魔法函数：</strong></p>
+<p><strong>__prepared__</strong></p>
+<pre><code>class MyType(type):
+
+    @ classmethod
+    def __prepare__(mcs, name, bases):
+        print(&quot;__prepared__&quot;)
+        # 必须返回一个mapping, 至于它是干什么的我们后面说
+        return {}
+
+    def __new__(mcs, name, bases, attr):
+        print(&quot;__new__&quot;)
+        return super().__new__(mcs, name, bases, attr)
+
+
+class Girl(metaclass=MyType):
+    pass
+&quot;&quot;&quot;
+__prepared__
+__new__
+&quot;&quot;&quot;</code></pre><p><strong>我们看到__prepare__会在__new__方法之前被调用，那么它是做什么的呢？答案是添加属性的，我们解释一下。</strong></p>
+<pre><code>class MyType(type):
+
+    @ classmethod
+    def __prepare__(mcs, name, bases):
+        return {&quot;name&quot;: &quot;夏色祭&quot;}
+
+    def __new__(mcs, name, bases, attr):
+        return super().__new__(mcs, name, bases, attr)
+
+
+class Girl(metaclass=MyType):
+
+    def f(self):
+        return &quot;f&quot;
+
+    def g(self):
+        return &quot;g&quot;
+
+
+print(Girl.name)  # 夏色祭
+
+# 现在你应该知道__prepare__是干什么的了吧, 它接收一个name、一个bases, 返回有个mapping
+# 我们说name、bases、attr会传递给__new__, 但是在__new__之前会先经过__prepared__
+# __prepared__返回一个字典(mapping), 假设叫m吧, 那会将attr和m合并, 相当于执行了attr.update(m)
+# 然后再将 name、bases、attr交给__new__</code></pre><p><strong>此外__prepared__这个方法是被classmethod装饰的，另外里面一定要返回一个mapping，否则报错：TypeError: MyType.__prepare__() must return a mapping, not xxx</strong></p>
+<p><strong>__init_subclass__</strong></p>
+<p><strong>它类似于一个钩子函数，在一些简单地场景下可以代替元类。</strong></p>
+<pre><code>class Base:
+
+    def __init_subclass__(cls, **kwargs):
+        print(cls, kwargs)
+
+
+# 当A被创建的时候, 会触发其父类的__init_subclass__
+class A(Base):
+    pass
+&quot;&quot;&quot;
+&lt;class &apos;__main__.A&apos;&gt; {}
+&quot;&quot;&quot;
+
+
+class B(Base, name=&quot;夏色祭&quot;, age=-1):
+    pass
+&quot;&quot;&quot;
+&lt;class &apos;__main__.B&apos;&gt; {&apos;name&apos;: &apos;夏色祭&apos;, &apos;age&apos;: -1}
+&quot;&quot;&quot;</code></pre><p><strong>所以父类的__init_subclass__里面的cls并不是父类本身，而是继承它的类。kwargs，就是额外设置的一些属性。因此我们可以实现一个属性添加器。</strong></p>
+<pre><code>class Base:
+
+    def __init_subclass__(cls, **kwargs):
+        for k, v in kwargs.items():
+            setattr(cls, k, v)
+
+
+class A(Base, name=&quot;夏色祭&quot;, age=-1, __str__=lambda self: &quot;__str__&quot; ):
+    pass
+
+
+print(A.name, A.age)  # 夏色祭 -1
+print(A())  # __str__</code></pre><p><strong>除了属性添加器，我们还可以实现一个属性拦截器。</strong></p>
+<pre><code>class Base:
+
+    def __init_subclass__(cls, **kwargs):
+        if hasattr(cls, &quot;yoyoyo&quot;) and hasattr(cls.yoyoyo, &quot;__code__&quot;):
+            raise Exception(f&quot;{cls.__name__}不允许定义&apos;yoyoyo&apos;函数&quot;)
+
+
+class A(Base):
+    yoyoyo = 123
+
+
+# 由于在创建类的时候就会触发, 所以必须加上try语句
+try:
+    class B(Base):
+        def yoyoyo(self):
+            pass
+except Exception as e:
+    print(e)  # B不允许定义&apos;yoyoyo&apos;函数</code></pre><p><strong>有了这些元类相关的知识，我们后面在分析源码的时候就会轻松一些。</strong></p>
+<h3 id="源码分析类机制与metaclass"><a href="#源码分析类机制与metaclass" class="headerlink" title="源码分析类机制与metaclass"></a>源码分析类机制与metaclass</h3><p><strong>我们说LOAD_BUILD_CLASS是将一个PyFunctionObject变成一个类，尽管它写在最前面，但实际上是需要将class A对应的PyCodeObject对象包装成一个PyFunctionObject对象之后才能执行。我们说__build_class__是用来将PyFunctionObject变成类的函数，我们来看看它长什么样子。</strong></p>
+<pre><code>//python/bltinmodule.c
+static PyMethodDef builtin_methods[] = {
+    {&quot;__build_class__&quot;, (PyCFunction)(void(*)(void))builtin___build_class__,
+     METH_FASTCALL | METH_KEYWORDS, build_class_doc},
+    //...
+    //...
+}    
+
+static PyObject *
+builtin___build_class__(PyObject *self, PyObject *const *args, Py_ssize_t nargs,
+                        PyObject *kwnames)
+{
+    PyObject *func, *name, *bases, *mkw, *meta, *winner, *prep, *ns, *orig_bases;
+    PyObject *cls = NULL, *cell = NULL;
+    int isclass = 0;   /* initialize to prevent gcc warning */
+
+    //我们说了底层调用的是builtin___build_class__
+    //class A: 会被翻译成builtin.__build_class__(PyFunctionObject, &quot;class name&quot;)
+    //所以这个函数至少需要两个参数
+    if (nargs &lt; 2) {
+        //参数不足，报错，还记的这个报错信息吗？上面测试过的
+        PyErr_SetString(PyExc_TypeError,
+                        &quot;__build_class__: not enough arguments&quot;);
+        return NULL;
+    }
+    //类对应的PyFunctionObject
+    func = args[0];   /* Better be callable */
+    if (!PyFunction_Check(func)) {
+        //如果不是PyFunctionObject，报错，这个信息有印象吗？
+        PyErr_SetString(PyExc_TypeError,
+                        &quot;__build_class__: func must be a function&quot;);
+        return NULL;
+    }
+
+    //类对应的名字，__build_class__的时候 总要给类起一个名字吧
+    name = args[1];
+    if (!PyUnicode_Check(name)) {
+        //如果不是一个PyUnicodeObject，报错，这个有印象吗？
+        PyErr_SetString(PyExc_TypeError,
+                        &quot;__build_class__: name is not a string&quot;);
+        return NULL;
+    }
+
+    //原始基类
+    orig_bases = _PyTuple_FromArray(args + 2, nargs - 2);
+    if (orig_bases == NULL)
+        return NULL;
+
+    //获取class的基类列表
+    bases = update_bases(orig_bases, args + 2, nargs - 2);
+    if (bases == NULL) {
+        Py_DECREF(orig_bases);
+        return NULL;
+    }
+
+    if (kwnames == NULL) {
+        meta = NULL;
+        mkw = NULL;
+    }
+    else {
+        mkw = _PyStack_AsDict(args + nargs, kwnames);
+        if (mkw == NULL) {
+            Py_DECREF(bases);
+            return NULL;
+        }
+
+        //这里获取meta
+        meta = _PyDict_GetItemIdWithError(mkw, &amp;PyId_metaclass);
+        if (meta != NULL) {
+            Py_INCREF(meta);
+            if (_PyDict_DelItemId(mkw, &amp;PyId_metaclass) &lt; 0) {
+                Py_DECREF(meta);
+                Py_DECREF(mkw);
+                Py_DECREF(bases);
+                return NULL;
+            }
+            /* metaclass is explicitly given, check if it&apos;s indeed a class */
+            isclass = PyType_Check(meta);
+        }
+        else if (PyErr_Occurred()) {
+            Py_DECREF(mkw);
+            Py_DECREF(bases);
+            return NULL;
+        }
+    }
+    //如果meta为NULL，这意味着用户没有指定metaclass
+    if (meta == NULL) {
+        //然后尝试获取基类，如果没有基类
+        if (PyTuple_GET_SIZE(bases) == 0) {
+            //指定metaclass为type
+            meta = (PyObject *) (&amp;PyType_Type);
+        }
+        //否则获取第一个继承的基类的metaclass
+        else {
+            PyObject *base0 = PyTuple_GET_ITEM(bases, 0);//拿到第一个基类
+            meta = (PyObject *) (base0-&gt;ob_type);//拿到第一个基类的__class__
+        }
+        Py_INCREF(meta);//meta也是一个类
+        isclass = 1;  /* meta is really a class */
+    }
+
+    //如果设置了元类, 那么isclass为1, 会执行下面的代码
+    if (isclass) {
+        //既然已经选择出了元类, 那么这一步是做什么的呢?
+        //这一步是为了解决元类冲突的, 假设有两个继承type的元类MyType1和MyType2, 然后Base1的元类是MyType1、Base2的元类是MyType2
+        //那么如果class A(Base1, Base2)的话, 就会报错
+        //在Python中有一个要求, 假设class A(Base1, Base2, ..., BaseN), Base1的元类叫Type1、BaseN的元类叫TypeN
+        //那么必须满足：
+        /*
+        Type1是Type2的子类或者父类;
+        Type1是Type3的子类或者父类;
+        Type1是Type4的子类或者父类;
+        ....
+        Type1是TypeN的子类或者父类;
+        */
+        //而之所以存在这一限制, 原因就是为了避免属性冲突
+        winner = (PyObject *)_PyType_CalculateMetaclass((PyTypeObject *)meta,
+                                                        bases);
+        if (winner == NULL) {
+            Py_DECREF(meta);
+            Py_XDECREF(mkw);
+            Py_DECREF(bases);
+            return NULL;
+        }
+        if (winner != meta) {
+            Py_DECREF(meta);
+            meta = winner;
+            Py_INCREF(meta);
+        }
+    }
+    /* else: meta is not a class, so we cannot do the metaclass
+       calculation, so we will use the explicitly given object as it is */
+
+    //寻找__prepare__方法
+    if (_PyObject_LookupAttrId(meta, &amp;PyId___prepare__, &amp;prep) &lt; 0) {
+        ns = NULL;
+    }
+    //这个__prepare__方法必须返回一个mapping，如果返回None，那么默认返回一个空字典
+    else if (prep == NULL) {
+        ns = PyDict_New();
+    }
+    else {
+        //否则将字典返回
+        PyObject *pargs[2] = {name, bases};
+        //我们看到这里涉及到了一个函数调用, 这个函数应该有印象吧
+        ns = _PyObject_FastCallDict(prep, pargs, 2, mkw);
+        Py_DECREF(prep);
+    }
+    if (ns == NULL) {
+        Py_DECREF(meta);
+        Py_XDECREF(mkw);
+        Py_DECREF(bases);
+        return NULL;
+    }
+    if (!PyMapping_Check(ns)) {
+        //如果返回的不是一个字典，那么报错，这个错误等信息我们也见过了
+        PyErr_Format(PyExc_TypeError,
+                     &quot;%.200s.__prepare__() must return a mapping, not %.200s&quot;,
+                     isclass ? ((PyTypeObject *)meta)-&gt;tp_name : &quot;&lt;metaclass&gt;&quot;,
+                     Py_TYPE(ns)-&gt;tp_name);
+        goto error;
+    }
+    //......
+}</code></pre><p><strong>可以看到，一个简单的类定义，Python底层究竟做了多少事情啊，不过显然这还没完。</strong></p>
+<p><strong>我们前面说，Python虚拟机获得了关于class的属性表(动态元信息)，比如所有的方法、属性，所以我们可以说，class的动态元信息包含了class的所有属性。但是对于这个class对象的类型是什么，应该如何创建、要分配多少内存，却没有任何的信息。而在<code>builtin___build_class__</code>中，metaclass正是关于class对象的另一部分元信息，我们称之为静态元信息。在静态元信息中，隐藏着所有的类对象应该如何创建的信息，注意：是所有的类对象。</strong></p>
+<p><strong>从源码中我们可以看到，如果用户指定了metaclass，那么会选择指定的metaclass，如果没有指定，那么会使用第一个继承的基类的__class__作为该class的metaclass。</strong></p>
+<p><strong>对于PyLongObject、PyDictObject这些Python中的实例对象，所有的元信息存储在对应的类对象中(PyLong_Type，PyDict_Type)。但是对于类对象来说，其元信息的静态元信息存储在对应的元类(PyType_Type)中，动态元信息则存储在本身的local名字空间中。但是为什么这么做呢？为什么对于类对象来说，其元信息要游离成两部分呢？都存在metaclass里面不香吗？这是因为，用户在.py文件中可以定义不同的class，这个元信息必须、且只能是动态的，所以它是不适合保存在metaclass中的，因此类对象的创建策略等这些所有class都会共用的元信息，会存储在metaclass里面。</strong></p>
+<p><strong>像Python的内建对象都是Python静态提供的，它们都具备相同的接口集合(底层都是PyTypeObject结构体实例)，支持什么操作一开始就定义好了。只不过有的可以用，有的不能用。比如PyLongObject可以使用nb_add，但是PyDictObject不能。而PyDictObject可以使用mp_subscript，但是PyLongObject不可以。尽管如此，但这不影响它们的所有元信息都可以完全存储在类型对象中。但是用户自定义的class对象，接口是动态的，不可能在metaclass中静态指定。</strong></p>
+<p><strong>既然创建了元类，那么下面显然就开始调用了。通过函数 <em>PyObject_Call</em> 调用。</strong></p>
+<pre><code>//Objects/call.c
+PyObject *
+PyObject_Call(PyObject *callable, PyObject *args, PyObject *kwargs)
+{
+    //...
+    else {
+        //调用了tp_call，指向type_call
+        call = callable-&gt;ob_type-&gt;tp_call;
+        if (call == NULL) {
+            PyErr_Format(PyExc_TypeError, &quot;&apos;%.200s&apos; object is not callable&quot;,
+                         callable-&gt;ob_type-&gt;tp_name);
+            return NULL;
+        }
+
+        //......
+    }
+}
+
+
+//Objects/typeobject.c
+static PyObject *
+type_call(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+    PyObject *obj;
+
+    if (type-&gt;tp_new == NULL) {
+        PyErr_Format(PyExc_TypeError,
+                     &quot;cannot create &apos;%.100s&apos; instances&quot;,
+                     type-&gt;tp_name);
+        return NULL;
+    }
+    //调用tp_new申请内存
+    obj = type-&gt;tp_new(type, args, kwds);
+    obj = _Py_CheckFunctionResult((PyObject*)type, obj, NULL);
+    if (obj == NULL)
+        return NULL;
+
+    //如果是PyType_Type, 那么执行完__new__之后直接返回
+    if (type == &amp;PyType_Type &amp;&amp;
+        PyTuple_Check(args) &amp;&amp; PyTuple_GET_SIZE(args) == 1 &amp;&amp;
+        (kwds == NULL ||
+         (PyDict_Check(kwds) &amp;&amp; PyDict_GET_SIZE(kwds) == 0)))
+        return obj;
+
+    //还记得我们之前说过, __new__里面一定要返回类的实例对象, 否则是不会执行__init__函数的
+    //从这里我们也看到了, 如果obj的类型不是对应的类、或者其子类, 那么直接返回
+    if (!PyType_IsSubtype(Py_TYPE(obj), type))
+        return obj;
+
+    //然后获取obj的类型
+    type = Py_TYPE(obj);
+    //如果存在__init__函数, 那么执行构造函数
+    if (type-&gt;tp_init != NULL) {
+        int res = type-&gt;tp_init(obj, args, kwds);
+        if (res &lt; 0) {
+            assert(PyErr_Occurred());
+            Py_DECREF(obj);
+            obj = NULL;
+        }
+        else {
+            assert(!PyErr_Occurred());
+        }
+    }
+    //执行完构造函数之后, 再将实例对象返回
+    //注意: 执行了__init__说明obj是实例对象, 如果obj是类对象, 那么是不会走到这里来的
+    //执行完元类的__new__之后就返回了
+    return obj;
+}</code></pre><p><strong>tp_new指向type_new，这个type_new是我们创建class对象的第一案发现场。我们看一下type_new的源码，位于 <em>Objects/typeobject.c</em> 中，这个函数的代码比较长，我们会有删减，像那些检测的代码我们就省略掉了。</strong></p>
+<pre><code>static PyObject *
+type_new(PyTypeObject *metatype, PyObject *args, PyObject *kwds)
+{    
+    //都是类的一些动态元信息
+    PyObject *name, *bases = NULL, *orig_dict, *dict = NULL;
+    PyObject *qualname, *slots = NULL, *tmp, *newslots, *cell;
+    PyTypeObject *type = NULL, *base, *tmptype, *winner;
+    PyHeapTypeObject *et;
+    PyMemberDef *mp;
+    Py_ssize_t i, nbases, nslots, slotoffset, name_size;
+    int j, may_add_dict, may_add_weak, add_dict, add_weak;
+    _Py_IDENTIFIER(__qualname__);
+    _Py_IDENTIFIER(__slots__);
+    _Py_IDENTIFIER(__classcell__);
+
+    //如果metaclass是type的话
+    if (metatype == &amp;PyType_Type) {
+        //获取位置参数和关键字参数个数
+        const Py_ssize_t nargs = PyTuple_GET_SIZE(args);
+        const Py_ssize_t nkwds = kwds == NULL ? 0 : PyDict_GET_SIZE(kwds);
+
+        //位置参数为1，关键字参数为0，你想到了什么
+        //type(xxx)，是不是这个呀
+        if (nargs == 1 &amp;&amp; nkwds == 0) {
+            PyObject *x = PyTuple_GET_ITEM(args, 0);
+            Py_INCREF(Py_TYPE(x));
+            //这显然是初学Python的时候，就知道的，查看一个变量的类型。
+            //获取类型之后直接返回
+            return (PyObject *) Py_TYPE(x);
+        }
+
+        //如果上面的if不满足，会走这里，表示现在不再是查看类型了，而是创建类
+        //而这里要求位置参数必须是3个，否则报错。
+        //我们知道type查看类型，输入一个参数即可，但是创建类需要3个
+        if (nargs != 3) {
+            PyErr_SetString(PyExc_TypeError,
+                            &quot;type() takes 1 or 3 arguments&quot;);
+            return NULL;
+        }
+    }
+
+    /* Check arguments: (name, bases, dict) */
+    //现在显然是确定参数类型，对于type来说，你传递了三个参数，但是这三个参数是有类型要求的
+    //必须是PyUnicodeObject、PyTupleObject、PyDictObject
+    if (!PyArg_ParseTuple(args, &quot;UO!O!:type.__new__&quot;, &amp;name, &amp;PyTuple_Type,
+                          &amp;bases, &amp;PyDict_Type, &amp;orig_dict))
+    /*
+    type(123, (object, ), {})  # TypeError: type.__new__() argument 1 must be str, not int
+    type(&quot;xx&quot;, [object], {})  # TypeError: type.__new__() argument 2 must be tuple, not list
+    type(&quot;xx&quot;, (object, ), [])  # TypeError: type.__new__() argument 3 must be dict, not list
+    */        
+        return NULL;
+
+    //处理bases为空的情况，另外我们使用class关键字定义类，本质上会转为type定义类的方式
+    nbases = PyTuple_GET_SIZE(bases);
+    if (nbases == 0) {
+        //如果发现我们没有继承基类，那么在Python3中会默认继承object
+        base = &amp;PyBaseObject_Type; //base设置为object
+        bases = PyTuple_Pack(1, base); //bases设置为(object,)
+        if (bases == NULL)
+            return NULL;
+        nbases = 1;
+    }
+    else {
+        _Py_IDENTIFIER(__mro_entries__);
+        //如果我们继承了基类
+        //那么循环遍历bases
+        for (i = 0; i &lt; nbases; i++) {
+            //拿到每一个基类
+            tmp = PyTuple_GET_ITEM(bases, i);
+            //如果是PyType_Type类型，进行下一次循环
+            if (PyType_Check(tmp)) {
+                continue;
+            }
+            if (_PyObject_LookupAttrId(tmp, &amp;PyId___mro_entries__, &amp;tmp) &lt; 0) {
+                return NULL;
+            }
+            if (tmp != NULL) {
+                PyErr_SetString(PyExc_TypeError,
+                                &quot;type() doesn&apos;t support MRO entry resolution; &quot;
+                                &quot;use types.new_class()&quot;);
+                Py_DECREF(tmp);
+                return NULL;
+            }
+        }
+        /* Search the bases for the proper metatype to deal with this: */
+        //寻找父类的metaclass, 就是我们之前说的解决元类冲突所采取的策略
+        winner = _PyType_CalculateMetaclass(metatype, bases);
+        if (winner == NULL) {
+            return NULL;
+        }
+
+        if (winner != metatype) {
+            if (winner-&gt;tp_new != type_new) /* Pass it to the winner */
+                return winner-&gt;tp_new(winner, args, kwds);
+            metatype = winner;
+        }
+
+        /* Calculate best base, and check that all bases are type objects */
+        //确定最佳base，存储在PyTypeObject *base中
+        base = best_base(bases);
+        if (base == NULL) {
+            return NULL;
+        }
+
+        Py_INCREF(bases);
+    }
+
+    /* Use &quot;goto error&quot; from this point on as we now own the reference to &quot;bases&quot;. */
+
+    dict = PyDict_Copy(orig_dict);
+    if (dict == NULL)
+        goto error;
+
+    //处理用户定义了__slots__属性的逻辑，一旦程序猿定义了__slots__, 那么类的实例对象就没有属性字典了
+    slots = _PyDict_GetItemIdWithError(dict, &amp;PyId___slots__);
+    nslots = 0;
+    add_dict = 0;
+    add_weak = 0;
+    may_add_dict = base-&gt;tp_dictoffset == 0;
+    may_add_weak = base-&gt;tp_weaklistoffset == 0 &amp;&amp; base-&gt;tp_itemsize == 0;
+    if (slots == NULL) {
+        //.....
+    }
+    else {
+        //.....
+    }
+
+    /* Allocate the type object */
+    //为class对象申请内存
+    type = (PyTypeObject *)metatype-&gt;tp_alloc(metatype, nslots);
+    if (type == NULL)
+        goto error;
+
+    /* Keep name and slots alive in the extended type object */
+    et = (PyHeapTypeObject *)type;
+    Py_INCREF(name);
+    et-&gt;ht_name = name;
+    et-&gt;ht_slots = slots;
+    slots = NULL;
+
+    /* 初始化tp_flags */
+    type-&gt;tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HEAPTYPE |
+        Py_TPFLAGS_BASETYPE;
+    if (base-&gt;tp_flags &amp; Py_TPFLAGS_HAVE_GC)
+        type-&gt;tp_flags |= Py_TPFLAGS_HAVE_GC;
+
+     //设置PyTypeObject中的各个域
+    type-&gt;tp_as_async = &amp;et-&gt;as_async;
+    type-&gt;tp_as_number = &amp;et-&gt;as_number;
+    type-&gt;tp_as_sequence = &amp;et-&gt;as_sequence;
+    type-&gt;tp_as_mapping = &amp;et-&gt;as_mapping;
+    type-&gt;tp_as_buffer = &amp;et-&gt;as_buffer;
+    type-&gt;tp_name = PyUnicode_AsUTF8AndSize(name, &amp;name_size);
+    if (!type-&gt;tp_name)
+        goto error;
+    if (strlen(type-&gt;tp_name) != (size_t)name_size) {
+        PyErr_SetString(PyExc_ValueError,
+                        &quot;type name must not contain null characters&quot;);
+        goto error;
+    }
+
+    /* 设置基类和基类列表 */
+    type-&gt;tp_bases = bases;
+    bases = NULL;
+    Py_INCREF(base);
+    type-&gt;tp_base = base;
+
+    /* 设置属性表 */
+    Py_INCREF(dict);
+    type-&gt;tp_dict = dict;
+
+    //设置__module__
+    if (_PyDict_GetItemIdWithError(dict, &amp;PyId___module__) == NULL) {
+        if (PyErr_Occurred()) {
+            goto error;
+        }
+        tmp = PyEval_GetGlobals();
+        if (tmp != NULL) {
+            tmp = _PyDict_GetItemIdWithError(tmp, &amp;PyId___name__);
+            if (tmp != NULL) {
+                if (_PyDict_SetItemId(dict, &amp;PyId___module__,
+                                      tmp) &lt; 0)
+                    goto error;
+            }
+            else if (PyErr_Occurred()) {
+                goto error;
+            }
+        }
+    }
+
+     //设置__qualname__，即&quot;全限定名&quot;
+    qualname = _PyDict_GetItemIdWithError(dict, &amp;PyId___qualname__);
+    //......
+
+    //如果自定义的class中重写了__new__方法，将__new__对应的函数改造为static函数
+    tmp = _PyDict_GetItemIdWithError(dict, &amp;PyId___new__);
+    if (tmp != NULL &amp;&amp; PyFunction_Check(tmp)) {
+        tmp = PyStaticMethod_New(tmp);
+        if (tmp == NULL)
+            goto error;
+        if (_PyDict_SetItemId(dict, &amp;PyId___new__, tmp) &lt; 0) {
+            Py_DECREF(tmp);
+            goto error;
+        }
+        Py_DECREF(tmp);
+    }
+    else if (tmp == NULL &amp;&amp; PyErr_Occurred()) {
+        goto error;
+    }
+
+    //设置__init_subclass__，如果子类继承了父类，那么会触发父类的__init_subclass__方法
+    tmp = _PyDict_GetItemIdWithError(dict, &amp;PyId___init_subclass__);
+    if (tmp != NULL &amp;&amp; PyFunction_Check(tmp)) {
+        tmp = PyClassMethod_New(tmp);
+        if (tmp == NULL)
+            goto error;
+        if (_PyDict_SetItemId(dict, &amp;PyId___init_subclass__, tmp) &lt; 0) {
+            Py_DECREF(tmp);
+            goto error;
+        }
+        Py_DECREF(tmp);
+    }
+    else if (tmp == NULL &amp;&amp; PyErr_Occurred()) {
+        goto error;
+    }
+
+    //设置__class_getitem__，这个是什么？类似于__getitem__
+    //__class_getitem__支持通过 类[&quot;xxx&quot;] 的方式访问
+    tmp = _PyDict_GetItemIdWithError(dict, &amp;PyId___class_getitem__);
+    //......
+
+    //为class对象对应的instance对象设置内存大小信息 
+    type-&gt;tp_basicsize = slotoffset;
+    type-&gt;tp_itemsize = base-&gt;tp_itemsize;
+    type-&gt;tp_members = PyHeapType_GET_MEMBERS(et);
+    //......
+
+
+    //调用PyType_Ready对class对象进行初始化
+    if (PyType_Ready(type) &lt; 0)
+        goto error;
+
+    /* Put the proper slots in place */
+    fixup_slot_dispatchers(type);
+
+    if (type-&gt;tp_dictoffset) {
+        et-&gt;ht_cached_keys = _PyDict_NewKeysForClass();
+    }
+
+    if (set_names(type) &lt; 0)
+        goto error;
+
+    if (init_subclass(type, kwds) &lt; 0)
+        goto error;
+
+    Py_DECREF(dict);
+    return (PyObject *)type;
+
+error:
+    Py_XDECREF(dict);
+    Py_XDECREF(bases);
+    Py_XDECREF(slots);
+    Py_XDECREF(type);
+    return NULL;
+}</code></pre><p><strong>Python虚拟机首先会将类名、基类列表和属性表从tuple对象中解析出来，然后会基于基类列表及传入的metaclass(参数metatype)确定最佳的metaclass和base。</strong></p>
+<p><strong>随后，python虚拟机会调用<code>metatype-&gt;tp_alloc</code>尝试为要创建的类对象分配内存。这里需要注意的是，在PyType_Type中，我们发现tp_alloc是一个NULL，这显然不正常。但是不要忘记，我们之前提到，在Python进行初始化时，会对所有的内建对象通过PyType_Ready进行初始化，在这个初始化过程中，有一项动作就是从基类继承各种操作。由于type.__bases__中的第一个基类是object，所以type会继承object中的tp_alloc操作，即 <em>PyType_GenericAlloc</em> 。对于我们的任意继承自object的class对象来说， <em>PyType_GenericAlloc</em> 将申请<code>metatype-&gt;tp_basicsize + metatype-&gt;tp_itemsize</code>大小的内存空间。从PyType_Type的定义中我们看到，这个大小实际就是 <em>sizeof(PyHeapTypeObject) + sizeof(PyMemerDef)</em> 。因此在这里应该就明白了PyHeapTypeObject这个老铁到底是干嘛用的了，之前因为偏移量的问题，折腾了不少功夫，甚至让人觉得这有啥用啊，但是现在意识到了，这个老铁是为用户自定义class准备的。</strong></p>
+<p><strong>接下来就是设置class对象的各个域，其中包括了在tp_dict上设置属性表，也就是__dict__。另外注意的是，这里还计算了类对象对应的实例对象所需要的内存大小信息，换言之，我们类创建一个实例对象时，需要为这个实例对象申请多大的内存空间呢？对于任意继承object的class对象来说，这个大小为<code>PyBaseObject_Type-&gt;tp_basicsize + 16</code>。其中的16是2 * sizeof(PyObject *)。为什么后面要跟着两个PyObject *的空间，因为这些空间的地址被设置给了 <em>tp_dictoffset</em> 和 <em>tp_weaklistoffset</em> 了呢？这一点将在下一篇博客中进行解析，它是和实例对象的属性字典密切相关的。</strong></p>
+<p><strong>最后，Python虚拟机还会调用PyType_Ready对class定义的类对象<code>(这里简称class对象)</code>进行和内建对象一样的初始化动作，到此class对象才算正式创建完毕。那么内建对象和class对象在内存布局上面有什么区别呢？毕竟都是类对象。</strong></p>
+<p><img src="https://img2020.cnblogs.com/blog/1229382/202009/1229382-20200901005736206-1581059838.png" alt=""></p>
+<p><strong>本质上，无论用户自定义的class对象还是内建对象，在Python虚拟机内部，都可以用一个PyTypeObject来表示。但不同的是，内建对象的PyTypeObject以及与其关联的PyNumberMethods等属性的内存位置都是在编译时确定的，它们在内存中的位置是分离的。而用户自定义的class对象的PyTypeObject和PyNumberMethods等内存位置是连续的，必须在运行时动态分配内存。</strong></p>
+<p><strong>现在我们算是对python中可调用(callable)这个概念有一个感性认识了，在python中可调用这个概念是一个相当通用的概念，不拘泥于对象、大小，只要对象定义了tp_call操作，就能进行调用操作。我们已经看到，python中的对象class对象是调用metaclass创建。那么显然，调用class对象就能得到实例对象。</strong></p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p><strong>这一次我们介绍了自定义的类在底层是如何实现的，但是关于类的知识点还有很多，比如：魔法方法、描述符等等，我们可能还需要两到三篇来进行介绍。</strong></p>
+<p>posted @  2020-09-01 00:58  <a href="https://www.cnblogs.com/traditional/" target="_blank" rel="noopener">古明地盆</a>  阅读(179)  评论(1)  <a href="https://i.cnblogs.com/EditPosts.aspx?postid=13593927" target="_blank" rel="noopener">编辑</a>  <a href="https://www.cnblogs.com/traditional/p/13593927.html" target="_blank" rel="noopener">收藏</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-1013/" rel="prev" title="《深度剖析CPython解释器》17. Python类机制的深度解析(第一部分): 回顾Python中的对象模型 - 古明地盆 - 博客园">
+      <i class="fa fa-chevron-left"></i> 《深度剖析CPython解释器》17. Python类机制的深度解析(第一部分): 回顾Python中的对象模型 - 古明地盆 - 博客园
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-1017/" rel="next" title="《深度剖析CPython解释器》21. Python类机制的深度解析(第五部分): 全方位介绍Python中的魔法方法，一网打尽 - 古明地盆 - 博客园">
+      《深度剖析CPython解释器》21. Python类机制的深度解析(第五部分): 全方位介绍Python中的魔法方法，一网打尽 - 古明地盆 - 博客园 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#《深度剖析CPython解释器》19-Python类机制的深度解析-第三部分-自定义类的底层实现、以及metaclass-古明地盆-博客园"><span class="nav-number"></span> <span class="nav-text">《深度剖析CPython解释器》19. Python类机制的深度解析(第三部分): 自定义类的底层实现、以及metaclass - 古明地盆 - 博客园</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#《深度剖析CPython解释器》19-Python类机制的深度解析-第三部分-自定义类的底层实现、以及metaclass"><span class="nav-number"></span> <span class="nav-text">《深度剖析CPython解释器》19. Python类机制的深度解析(第三部分): 自定义类的底层实现、以及metaclass</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#楔子"><span class="nav-number"></span> <span class="nav-text">楔子</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#自定义class"><span class="nav-number"></span> <span class="nav-text">自定义class</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#class对象的动态元信息"><span class="nav-number">1.</span> <span class="nav-text">class对象的动态元信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#回顾metaclass"><span class="nav-number">2.</span> <span class="nav-text">回顾metaclass</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#new-和-init"><span class="nav-number">2.1.</span> <span class="nav-text">__new__和__init__</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#创建类的另一种方式"><span class="nav-number">2.2.</span> <span class="nav-text">创建类的另一种方式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#特殊的魔法函数"><span class="nav-number">2.3.</span> <span class="nav-text">特殊的魔法函数</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#源码分析类机制与metaclass"><span class="nav-number">3.</span> <span class="nav-text">源码分析类机制与metaclass</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#小结"><span class="nav-number"></span> <span class="nav-text">小结</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

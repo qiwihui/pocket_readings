@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="布谷鸟过滤器：实际上优于布隆过滤器 - Linvon">
+<meta property="og:type" content="article">
+<meta property="og:title" content="布谷鸟过滤器：实际上优于布隆过滤器 - Linvon">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/03/09/qiwihui-pocket_readings-1042/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="布谷鸟过滤器：实际上优于布隆过滤器 - Linvon">
+<meta property="og:image" content="http://www.linvon.cn/img/cuckoo/1.jpg">
+<meta property="og:image" content="http://www.linvon.cn/img/cuckoo/2.jpg">
+<meta property="og:image" content="http://www.linvon.cn/img/cuckoo/3.jpg">
+<meta property="og:image" content="http://www.linvon.cn/img/cuckoo/4.jpg">
+<meta property="og:image" content="http://www.linvon.cn/img/cuckoo/5.jpg">
+<meta property="og:image" content="http://www.linvon.cn/img/cuckoo/6.jpg">
+<meta property="og:image" content="http://www.linvon.cn/img/cuckoo/7.jpg">
+<meta property="og:image" content="http://www.linvon.cn/img/cuckoo/8.jpg">
+<meta property="article:published_time" content="2021-03-09T03:21:18.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.422Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.linvon.cn/img/cuckoo/1.jpg">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/03/09/qiwihui-pocket_readings-1042/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>布谷鸟过滤器：实际上优于布隆过滤器 - Linvon | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/03/09/qiwihui-pocket_readings-1042/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          布谷鸟过滤器：实际上优于布隆过滤器 - Linvon
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-03-09 03:21:18" itemprop="dateCreated datePublished" datetime="2021-03-09T03:21:18+00:00">2021-03-09</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">布谷鸟过滤器：实际上优于布隆过滤器 - Linvon</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#22312;&#35768;&#22810;&#32593;&#32476;&#31995;&#32479;&#20013;&#65292;&#24067;&#38534;&#36807;&#28388;&#22120;&#29992;&#20110;&#39640;&#36895;&#25968;&#25454;&#38598;&#30340;&#38582;&#23646;&#27979;&#35797;&#12290;&#23427;&#20801;&#35768;&#19968;&#23567;&#37096;&#20998;&#20551;&#38451;&#24615;&#32467;&#26524;&#65292;&#20294;&#20855;&#26377;&#24456;&#22909;&#30340;&#31354;&#38388;&#25928;&#29575;&#12290;&#20294;&#26159;&#23427;&#19981;&#20801;&#35768;&#20174;&#38598;&#21512;&#20013;&#21024;&#38500;&#39033;&#65292;&#32780;&#27492;&#21069;&#35797;&#22270;&#25193;&#23637;&ldquo;&#26631;&#20934;&rdquo;&#24067;&#38534;&#36807;&#28388;&#22120;&#20197;&#25903;&#25345;&#21024;&#38500;&#30340;&#23581;&#35797;&#37117;&#20250;&#22686;&#22823;&#31354;&#38388;&#25110;&#38477;&#20302;&#24615;&#33021;<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/3v41lcS" target="_blank" rel="noopener">https://ift.tt/3v41lcS</a> original site<br><br><br><br>March 09, 2021 at 10:30AM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1042#issuecomment-793319675" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>3/9/2021</strong></p>
+</blockquote>
+<h2 id="布谷鸟过滤器：实际上优于布隆过滤器-Linvon"><a href="#布谷鸟过滤器：实际上优于布隆过滤器-Linvon" class="headerlink" title="布谷鸟过滤器：实际上优于布隆过滤器 - Linvon"></a>布谷鸟过滤器：实际上优于布隆过滤器 - Linvon</h2><p>Feb 10, 2021</p>
+<h1 id="布谷鸟过滤器：实际上优于布隆过滤器"><a href="#布谷鸟过滤器：实际上优于布隆过滤器" class="headerlink" title="布谷鸟过滤器：实际上优于布隆过滤器"></a>布谷鸟过滤器：实际上优于布隆过滤器</h1><p>本文译自原论文:<a href="https://www.cs.cmu.edu/~dga/papers/cuckoo-conext2014.pdf" target="_blank" rel="noopener">https://www.cs.cmu.edu/~dga/papers/cuckoo-conext2014.pdf</a></p>
+<h1 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要<a href="http://www.linvon.cn/#%E6%91%98%E8%A6%81" target="_blank" rel="noopener"></a></h1><p>在许多网络系统中，布隆过滤器用于高速数据集的隶属测试。它允许一小部分假阳性结果，但具有很好的空间效率。但是它不允许从集合中删除项，而此前试图扩展“标准”布隆过滤器以支持删除的尝试都会增大空间或降低性能。</p>
+<p>我们提出了一种新的数据结构，称为<strong>布谷鸟过滤器</strong>，它可以代替布隆过滤器进行集合近似隶属度测试。 布谷鸟过滤器支持动态添加和删除项，同时实现比布隆过滤器更高的性能。对于存储了许多条目且设置较低假阳性率的应用程序，布谷鸟过滤器比空间优化过的布隆过滤器具有更低的空间开销。我们的实验结果还表明，布谷鸟过滤器在时间和空间上的性能都优于此前那些扩展了布隆过滤器以支持删除的数据结构。</p>
+<h1 id="1-导言"><a href="#1-导言" class="headerlink" title="1. 导言"></a>1. 导言<a href="http://www.linvon.cn/#sec1" target="_blank" rel="noopener"></a></h1><p>许多数据库、缓存、路由器和存储系统使用近似集合隶属测试来决定给定的项是否在一个集合（通常是很大的）中，并伴随有一些小的假阳性概率。这个测试最广泛使用的数据结构是布隆过滤器[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">3</a>]，由于其内存效率而被广泛研究。布隆过滤器已经被用来：减少概率路由表中所需的空间[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">25</a>]；加速最长前缀匹配的IP地址[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">9</a>]；改进网络状态管理和监控[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">24</a>, <a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">4</a>]；在数据包中编码多播转发信息[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">15</a>]；以及其他许多应用[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">6</a>]。</p>
+<p>标准布隆过滤器的一个限制是，如果不重建整个过滤器（或者可能引入通常不期望出现的假阴性)，就无法删除现有的项。有些方法扩展了标准的布隆过滤器以支持删除，但具有很大的空间或性能开销。<strong>计数布隆过滤器</strong>[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">12</a>]已被建议用于多种应用[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">24</a>, <a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">25</a>, <a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">9</a>]，但它们通常使用3-4倍的空间来保持与空间优化的布隆过滤器相同的假阳性率。 其他变种包括<strong>d-left计数布隆过滤器</strong>[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">5</a>]，仍然是1.5倍的大小，<strong>商过滤器</strong>[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">2</a>]显著降低了查找性能，从而提供了与布隆过滤器可相比的空间开销。</p>
+<p>本文表明，与标准布隆过滤器相比，支持删除的近似集合隶属测试不需要在空间或性能上施加更高的开销。 我们提出了布谷鸟过滤器，一种实用的数据结构，提供了四个主要优点。</p>
+<ol>
+<li><p>它支持动态添加和删除项；</p>
+</li>
+<li><p>它提供了比传统的布隆过滤器更高的查找性能，即使当其接近满载（例如，95%的空间已被使用）；</p>
+</li>
+<li><p>它比诸如商过滤器等替代品更容易实现；</p>
+</li>
+<li><p>在许多实际应用中，如果目标假阳性率ε小于3%，则它使用的空间小于布隆过滤器。</p>
+</li>
+</ol>
+<p>布谷鸟过滤器是布谷鸟哈希表的一个紧凑变体[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">21</a>]，对于插入的每个项，只存储其指纹——使用散列函数从项生成的位字符串，而不是键值对。过滤器中充满了指纹（例如，95%的条目都是指纹），这使得空间效率很高。 项x的隶属查询只需搜索x的指纹的哈希表，如果找到相同的指纹，则返回true。</p>
+<p>在构造布谷鸟过滤器时，其指纹大小由目标假阳性率ϵ决定。较小的ϵ值需要较长的指纹才能拒绝更多的假阳性查询。 有趣的是，虽然我们表明对于许多实际工作，布谷鸟过滤器实际上比布隆过滤器更好，但它们是会逐渐变糟糕的：布谷鸟过滤器中使用的最小指纹大小随着表中条目的数量呈对数增长(正如我们在章节<a href="http://www.linvon.cn/#sec4" target="_blank" rel="noopener">4</a>中所解释的那样)。 因此对于较大的表，每个插入项的空间开销更高，但这种额外空间的使用会降低假阳性率。对于拥有几十亿或更少插入项的实际问题，当ϵ&lt;3%时，布谷鸟过滤器在支持删除的同时使用的空间小于不可删除的、空间优化的布隆过滤器。布谷鸟过滤器与常规哈希表有很大的不同，因为只有指纹存储在过滤器中，每个项的原始密钥和值位不再可检索。由于没有存储完整的键，布谷鸟过滤器甚至无法执行标准的布谷鸟散列来插入新项，这涉及到根据其哈希值移动现有键。这种差异意味着适用于布谷鸟散列的标准技术、分析和优化不一定适用于布谷鸟过滤器。</p>
+<h5 id="表1"><a href="#表1" class="headerlink" title="表1"></a>表1<a href="http://www.linvon.cn/#%E8%A1%A81" target="_blank" rel="noopener"></a></h5><p>fifilter type</p>
+<p>space cost</p>
+<p>cache misses per lookup</p>
+<p>deletion support</p>
+<p>Bloom</p>
+<p>1</p>
+<p><strong>k</strong></p>
+<p>no</p>
+<p>blocked Bloom</p>
+<p>1x</p>
+<p>1</p>
+<p>no</p>
+<p>counting Bloom</p>
+<p>3x ∼ 4x</p>
+<p><strong>k</strong></p>
+<p>yes</p>
+<p>d-left counting Bloom</p>
+<p>1.5x ∼ 2x</p>
+<p><strong>d</strong></p>
+<p>yes</p>
+<p>quotient</p>
+<p>1x ∼ 1.2x</p>
+<p>≥ 1</p>
+<p>yes</p>
+<p>cuckoo</p>
+<p>≤1x</p>
+<p>2</p>
+<p>yes</p>
+<p>表1：布隆过滤器和变体的特性。假设标准和计数布隆过滤器使用k个哈希函数，而d-left计数布隆过滤器有d个分区。本文的技术贡献包括</p>
+<ul>
+<li>应用标准布谷鸟散列的一种变体-部分键布谷鸟散列来构建支持动态添加和删除项的布谷鸟过滤器(章节<a href="http://www.linvon.cn/#sec3" target="_blank" rel="noopener">3</a>).。</li>
+<li>探索为什么部分键布谷鸟散列确保高表占用大多数现实世界的应用程序(章节<a href="http://www.linvon.cn/#sec4" target="_blank" rel="noopener">4</a>)。</li>
+<li>优化布谷鸟过滤器，以在空间效率方面优于布隆过滤器(章节<a href="http://www.linvon.cn/#sec5" target="_blank" rel="noopener">5</a>)。</li>
+</ul>
+<h1 id="2-背景和相关工作"><a href="#2-背景和相关工作" class="headerlink" title="2. 背景和相关工作"></a>2. 背景和相关工作<a href="http://www.linvon.cn/#sec2" target="_blank" rel="noopener"></a></h1><h2 id="2-1-布隆过滤器和变体"><a href="#2-1-布隆过滤器和变体" class="headerlink" title="2.1 布隆过滤器和变体"></a>2.1 布隆过滤器和变体<a href="http://www.linvon.cn/#sec21" target="_blank" rel="noopener"></a></h2><p>我们比较了标准的布隆过滤器和包括支持删除或更好的查找性能在内的部分变体，如表<a href="http://www.linvon.cn/#%E8%A1%A81" target="_blank" rel="noopener">1</a>中所总结的。 这些数据结构在章节<a href="http://www.linvon.cn/#sec7" target="_blank" rel="noopener">7</a>中进行了实证评估.。布谷鸟过滤器比这些数据结构拥有更高的空间效率和性能。</p>
+<p><strong>标准布隆过滤器</strong>[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">3</a>]提供项集合的紧凑表示，其支持两个操作：插入和查找。一个布隆过滤器允许一个可调的假阳性率ϵ，以便查询返回“绝对不存在”（没有错误)或“可能存在”(有错误的概率）。 ϵ越低，过滤器所需的空间越大。</p>
+<p>一个布隆过滤器由k个散列函数和一个位数组组成，所有位最初设置为“0”。 若要插入项，它将此项用k个哈希函数散列到位数组中的k个位置，然后将所有k位设置为“1”。 查找处理类似，读取数组中的k个对应位：如果所有位都被设置了，查询返回true；否则返回false。</p>
+<p>布隆过滤器不支持删除。</p>
+<p>布隆过滤器可以非常节省空间，但不是最优的[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">20</a>]。 对于假阳性率ϵ，空间优化的布隆过滤器使用 <em>k</em> = log2 (1/ϵ) 个散列函数。 这样的布隆过滤器可以使用1.44 log2 (1/ϵ) 个bit存储每个项，它只取决于ϵ，而不是项大小或项总数。 信息论最小值需要每项log2 (1/ϵ)位，因此空间优化的布隆过滤器施加高于信息论下限44%的空间开销。</p>
+<p>信息论上的最优基本上可以通过使用指纹(长度1/ϵ位)和一个完美的哈希表[<a href="http://www.linvon.cn/#%E8%A1%A86" target="_blank" rel="noopener">6</a>]来实现。 为了有效地处理删除，我们用设计良好的布谷鸟哈希表来替换一个完美的哈希函数。</p>
+<p><strong>计数布隆过滤器</strong>[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">12</a>]扩展布隆过滤器以允许删除。 计数布隆过滤器使用计数器数组代替位数组。插入增加k个计数器的值，而不是简单地设置k位，查找时检查每个所需计数器是否为非零。 删除操作则减少这些k个计数器的值。为了防止算术溢出（即增加具有最大可能值的计数器），数组中的每个计数器必须足够大，才能保留布隆过滤器的属性。 在实践中，计数器由四个或更多位组成，因此计数布隆过滤器比标准布隆过滤器需要4倍多空间。 (可以通过引入二次哈希表结构来管理溢出计数器来构造计数布隆过滤器，以减少使用空间，但牺牲是额外的复杂性。)</p>
+<p><strong>块布隆过滤器</strong>[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">22</a>]不支持删除，但在查找时提供更好的位置定位。 块布隆过滤器由一个小的布隆过滤器阵列组成，每个过滤器安装在一个CPU缓存行中。 每个项只存储在这些由散列分区确定的小布隆过滤器中的一个。 因此，每个查询加载布隆过滤器最多只会导致一次缓存缺失，这大大提高了性能。 一个缺点是，由于小布隆过滤器阵列的负载不平衡，假阳性率变得更高。</p>
+<p><strong>d-left计数布隆过滤器</strong>[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">5</a>]与我们在这里使用的方法相似。 使用d-left散列[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">19</a>]的哈希表储存物品的指纹。 这些过滤器通过删除它们的指纹来删除项。与计数布隆过滤器相比，它们降低了50%的空间成本，与空间优化的不可删除的布隆过滤器相比，通常需要1.5-2倍的空间。 如我们所表明的，布谷鸟过滤器比d-left计数布隆过滤器拥有更好的空间效率，并且具有其他优点，包括简单性。</p>
+<p><strong>商过滤器</strong>[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">2</a>]也是存储指纹以支持删除的紧凑哈希表。 商过滤器使用类似于线性探测的技术来定位指纹，从而提供更好的位置定位。 然而，它们需要额外的元数据来编码每个条目，这需要比同等的标准布隆过滤器多10∼25%的空间。 此外，它的所有操作都必须在获取目标项之前解码一个项表的序列，哈希表填充得越多，这些序列变得越长。 因此，当哈希表的占用率超过75%时，其性能显著下降。</p>
+<p><strong>其他变体</strong>：无论是在空间上还是在性能上，很多其他变体已经被提出来改进布隆过滤器。排名索引哈希[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">14</a>]构建线性链式哈希表来存储压缩指纹。 虽然与d-left计数布隆过滤器相似，而且空间效率更高，但更新内部索引以降低链的成本消耗是非常耗时的，因此在动态设置中不那么吸引人。 Putze等人提出了布隆过滤器的两种变体[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">22</a>]。 一个是前面讨论过的_块布隆过滤器_；另一个称为_Golomb压缩序列_的过滤器将所有项的指纹存储在一个排序列表中。 它的空间接近最优，但数据结构是静态的，需要非恒定的查找时间来解码被编码的序列。 因此，本文没有拿他与其他过滤器比较。 Pagh等人基于Cleary[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">8</a>]提出了一种渐近空间最优数据结构[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">20</a>]。 然而，这种数据结构比其替代方案要复杂得多，似乎不适合高性能的实现。 相反，布谷鸟过滤器易于实现。</p>
+<h2 id="2-2-布谷鸟哈希表"><a href="#2-2-布谷鸟哈希表" class="headerlink" title="2.2 布谷鸟哈希表"></a>2.2 布谷鸟哈希表<a href="http://www.linvon.cn/#sec22" target="_blank" rel="noopener"></a></h2><h5 id="图1"><a href="#图1" class="headerlink" title="图1"></a>图1<a href="http://www.linvon.cn/#%E5%9B%BE1" target="_blank" rel="noopener"></a></h5><p><img src="http://www.linvon.cn/img/cuckoo/1.jpg" alt="1"></p>
+<p>图1：布谷鸟散列的图解</p>
+<p><strong>布谷鸟哈希基础</strong>：一个基本的布谷鸟哈希表[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">21</a>]由一个桶数组组成，每个插入项都有由散列函数h1(x)和h2(x)确定的两个候选桶。 查找过程会检查两个桶是否任意一个桶包含此项。 图<a href="http://www.linvon.cn/#%E5%9B%BE1" target="_blank" rel="noopener">1(a)</a>显示将新项 x 插入到8个桶的哈希表中的示例，其中 x 可以放置在桶2或6中。 如果x的两个桶中的任何一个是空的，则算法将x插入到该空桶中，插入完成。如果两个桶都没有空间，如例所示，项选择一个候选桶 (例如桶 6), 踢出去现有的项 (在本例中为“a”) 并将此被踢出项重新插入到它的备用位置。 在我们的例子中，重新放置“a”触发了另一个重置，将现有的项“c”从桶4踢到桶1。这个过程可能会重复，直到找到一个空桶，如图<a href="http://www.linvon.cn/#%E5%9B%BE1" target="_blank" rel="noopener">1(b)</a>所示或直到达到最大位移次数（例如在我们的实现中为500次）。如果没有找到空桶则认为此哈希表太满，无法插入。 虽然布谷鸟散列可能执行一系列重置，但其均摊插入时间为O（1）。</p>
+<p>布谷鸟散列确保了高空间占用率，因为它改进了在插入新项时对先前项放置决策。 布谷鸟散列的大多数实际实现是通过使用包含多个项的桶来扩展上面的基本描述，如[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">10</a>]中所建议的那样.。在假设所有散列函数都是完全随机的情况下，使用k个哈希函数和大小为b的桶时的最大可能负载已经被分析过了[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">13</a>]。通过配置适当的布谷鸟哈希表参数(在章节<a href="http://www.linvon.cn/#sec5" target="_blank" rel="noopener">5</a>中探索），其95%的表空间可以被填充。</p>
+<p><strong>使用布谷鸟散列进行集合隶属测试</strong>：最近，标准布谷鸟哈希表已被用于在一些应用程序中提供集合隶属信息。 为了支持事务性内存，Sanchez等人建议将每个事务的读/写内存地址集存储在布谷鸟哈希表中，并在填满时将此表转换为布隆过滤器[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">23</a>]。 他们的设计使用了标准的布谷鸟哈希表，因此比布谷鸟过滤器需要更多的空间。 我们以前在建立高速和高内存利用率的键值存储[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">17</a>, <a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">11</a>]和基于软件的以太网交换机[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">26</a>]时都应用布谷鸟哈希表作为内部数据结构。 这项工作的动机是通过一种称为_部分键布谷鸟散列_的优化来提高哈希表的性能。 然而正如我们在本文中所显示的，这种技术也使得一种新的方法能够构建一个布隆过滤器替代品，这是以前没有研究过的。 因此本文还应用了部分键布谷鸟散列，但更重要的是，它提供了一个深入的分析，使用这种技术专门服务于集合隶属测试（而不是键值查询），并进一步比较了布谷鸟过滤器与集合隶属数据结构替代品的性能。</p>
+<p><strong>布谷鸟过滤器的挑战</strong>：为了使布谷鸟过滤器具有很高的空间效率，我们使用多方式关联的布谷鸟哈希表来提供高速查找和高表使用率（例如，填充95%的哈希表插槽）；为了进一步减少哈希表的大小，每个项首先被散列到一个恒定大小的指纹中，然后插入到这个哈希表中。应用这种数据结构的挑战是重新设计插入过程，并仔细配置哈希表，以尽量减少每个项的空间使用：</p>
+<ul>
+<li><p>首先，只在哈希表中存储指纹而不是使用标准的布谷鸟散列方法插入项。因为在布谷鸟散列中，插入算法必须能够将现有指纹重新定位到它们的替代位置。 一个空间效率低但简单的解决方案是将每个插入的项全部存储到它的条目中（可能是表外部)；提供原始项(“键”），计算其备用位置很容易。相反，布谷鸟过滤器使用_部分键布谷鸟散列_来寻找一个项的替代位置，只基于它的指纹(章节<a href="http://www.linvon.cn/#sec3" target="_blank" rel="noopener">3</a>).</p>
+</li>
+<li><p>其次，布谷鸟过滤器将每个项与哈希表中的多个可能位置关联。 这种项存储位置的灵活性提高了表的使用率，但是对于每次查找探测可能位置时， 保持相同的假阳性率需要更多的空间来存储更长的指纹。 在章节<a href="http://www.linvon.cn/#sec5" target="_blank" rel="noopener">5</a>中我们展示了我们对优化表占用与其大小之间的平衡相关分析，以最小化每个项的平均空间成本。</p>
+</li>
+</ul>
+<h1 id="3-布谷鸟过滤器算法"><a href="#3-布谷鸟过滤器算法" class="headerlink" title="3. 布谷鸟过滤器算法"></a>3. 布谷鸟过滤器算法<a href="http://www.linvon.cn/#sec3" target="_blank" rel="noopener"></a></h1><p>在本文中，用于我们的布谷鸟过滤器的布谷鸟哈希表的基本单位称为条目。 每个条目存储一个指纹。哈希表由一个桶数组组成，其中一个桶可以有多个条目。</p>
+<p>本节描述布谷鸟过滤器如何执行插入、查找和删除操作。章节<a href="http://www.linvon.cn/#sec31" target="_blank" rel="noopener">3.1</a> 展示了_部分键布谷鸟散列_，一个标准布谷鸟散列的变体，使布谷鸟过滤器可以<strong>动态</strong>插入新项。 这项技术是在以前的工作中首次引入的[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">11</a>]，但当时的背景是改进存储全键的常规布谷鸟哈希表的查找和插入性能。与此相反，本文重点对仅使用指纹的部分键布谷鸟散列时的空间效率进行了优化和分析，使布谷鸟过滤器与布隆过滤器相比有竞争力，甚至比布隆过滤器更紧凑。</p>
+<h2 id="3-1-插入"><a href="#3-1-插入" class="headerlink" title="3.1 插入"></a>3.1 插入<a href="http://www.linvon.cn/#sec31" target="_blank" rel="noopener"></a></h2><p>如前所述，在标准布谷鸟散列中，将新项插入到现有哈希表中需要一些方法来访问原始现有项，以便确定在需要时将它们迁移到哪里，以便为新项腾出空间(章节<a href="http://www.linvon.cn/#sec2.2" target="_blank" rel="noopener">2.2</a>)。 然而，布谷鸟过滤器只存储指纹，因此没有办法恢复和重新散列原始键以找到它们的替代位置。为了突破这个限制，我们利用一种称为_部分键布谷鸟散列_的技术来根据其指纹导出一个项的备用位置。 对于项x，我们的散列方案计算两个候选桶的索引如下</p>
+<h5 id="式1"><a href="#式1" class="headerlink" title="式1"></a>式1<a href="http://www.linvon.cn/#%E5%BC%8F1" target="_blank" rel="noopener"></a></h5><p>$$ h1(x) = hash(x), h2(x) = h1(x) ⊕ hash(x’s fingerprint) $$ 公式(<a href="http://www.linvon.cn/#%E5%BC%8F1" target="_blank" rel="noopener">1</a>)中的异或操作确保了一个重要特性：</p>
+<p>h1(x)也可以通过h2(x)和同一公式中的指纹来计算。 换句话说，在桶i中迁走一个键(不管i是h1(x)或h2(x))，我们直接用当前桶的索引i和存储在桶中的指纹计算它的备用桶j：</p>
+<h5 id="式2"><a href="#式2" class="headerlink" title="式2"></a>式2<a href="http://www.linvon.cn/#%E5%BC%8F2" target="_blank" rel="noopener"></a></h5><p>$$ j = i ⊕ hash(fingerprint) $$ 因此，插入只使用表中的信息，而不必检索原始项x。</p>
+<pre><code>Algorithm 1: Insert(x)
+f = fingerprint(x);
+i1 = hash(x);
+i2 = i1 ⊕ hash(f);
+if bucket[i1] or bucket[i2] has an empty entry then
+    add f to that bucket;
+    return Done;
+// must relocate existing items;
+i = randomly pick i1 or i2;
+for n = 0; n &lt; MaxNumKicks; n++ do
+    randomly select an entry e from bucket[i];
+    swap f and the fingerprint stored in entry e;
+    i = i ⊕ hash(f);
+    if bucket[i] has an empty entry then
+        add f to bucket[i];
+        return Done;
+// Hashtable is considered full;
+return Failure;</code></pre><p>此外，指纹在与当前桶的索引进行异或之前会进行散列，以帮助在表中均匀地分配项。 如果备用位置用“i⊕指纹”计算时不将指纹进行散列，且指纹的大小与表的大小相比很小，那么从邻近的桶中被踢出的项会落在表中的相邻近的位置。 例如，使用8位指纹，从桶中踢出的项i将被放置到离桶i最多256个桶的桶中，因为异或操作将改变桶索引的八个低阶位，而高阶位不会改变。散列指纹可以确保这些项可以重新定位到哈希表的完全不同部分的桶中，从而减少哈希冲突并提高表的利用率。</p>
+<p>利用部分键布谷鸟散列，布谷鸟过滤器通过算法<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">1</a>中所示的过程动态地添加新项，因为这些指纹可以明显短于 h1 或 h2 的尺寸，这有两个后果。 一，通过公式 (<a href="http://www.linvon.cn/#%E5%BC%8F1" target="_blank" rel="noopener">1</a>)计算的(h1,h2)不同可能选择的总数，可以比标准的布谷鸟散列中使用完美的散列来导出h1和h2小得多。 这个可能会造成更多的碰撞，尤其是以前对布谷鸟散列的分析(如[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">10</a>, <a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">13</a>])不足以涵盖。 对部分键布谷鸟散列的完整分析仍然保持开放(远不止本文)；在章节<a href="http://www.linvon.cn/#sec4" target="_blank" rel="noopener">4</a>中我们提供了一个这个问题的详细讨论，并考虑如何为实际工作实现高利用率。</p>
+<p>第二，插入两个有相同指纹的不同项x和y是没问题的；在桶中多次出现相同的指纹是可能的。然而，布谷鸟过滤器不适合插入相同项超过2b次(b是桶大小)的应用程序，因为此重复项的两个桶将变得过载。 这种情况有几种解决办法。 首先，如果表不需要支持删除，那么这个问题就不会出现，因为每个指纹只有一份必须存储。其次，您可以在一定的空间成本下，将计数器与桶关联起来，并适当地增加/减少它们。 最后，如果原始密钥存储在某个地方（可能是在较慢的外部存储中)，如果表已经包含（假阳性）桶和指纹的匹配条目，则以减慢插入为代价，可以查阅该记录以完全防止重复插入。类似的要求适用于传统的和d-left计数布隆过滤器。</p>
+<pre><code>Algorithm 2: Lookup(x)
+f = fingerprint(x);
+i1 = hash(x);
+i2 = i1 ⊕ hash(f);
+if bucket[i1] or bucket[i2] has f then
+    return True;
+return False; </code></pre><h2 id="3-2-查找"><a href="#3-2-查找" class="headerlink" title="3.2 查找"></a>3.2 查找<a href="http://www.linvon.cn/#sec32" target="_blank" rel="noopener"></a></h2><p>布谷鸟过滤器的查找过程很简单，如算法<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">2</a>所示。给定一个项x，算法首先根据公式 (<a href="http://www.linvon.cn/#%E5%BC%8F1" target="_blank" rel="noopener">1</a>)计算x的指纹和两个候选桶。然后读取这两个桶：如果两个桶中的任何现有指纹匹配，则布谷鸟过滤器返回true，否则过滤器返回false。请注意，只要不发生桶溢出，就可以确保没有假阴性。</p>
+<pre><code>Algorithm 3: Delete(x)
+f = fingerprint(x);
+i1 = hash(x);
+i2 = i1 ⊕ hash(f);
+if bucket[i1] or bucket[i2] has f then
+    remove a copy of f from this bucket;
+    return True;
+return False;</code></pre><h2 id="3-3-删除"><a href="#3-3-删除" class="headerlink" title="3.3 删除"></a>3.3 删除<a href="http://www.linvon.cn/#sec33" target="_blank" rel="noopener"></a></h2><p>标准布隆过滤器不能删除，因此删除单个项需要重建整个过滤器，而计数布隆过滤器需要更多的空间。布谷鸟过滤器就像计数布隆过滤器，可以通过从哈希表删除相应的指纹删除插入的项。其他具有类似删除过程的过滤器比布谷鸟过滤器更复杂。例如，d-left计数布隆过滤器必须使用额外的计数器，以防止指纹碰撞<a href="http://www.linvon.cn/#fn:1" target="_blank" rel="noopener">1</a>的“假删除”问题，商过滤器必须移动指纹序列去填补删除之后的“空”条目并维持其“桶结构”<a href="http://www.linvon.cn/#fn:2" target="_blank" rel="noopener">2</a>。</p>
+<p>算法<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">3</a> 中给出的布谷鸟过滤器的删除过程更简单。 它检查给定项的两个候选桶；如果任何桶中的指纹匹配，则从该桶中删除匹配指纹的一份副本。</p>
+<p>删除不需要在删除项后清除条目。 它还避免了两个项共享一个候选桶并具有相同指纹时的“错误删除”问题。 例如，如果项x和y都驻留在桶$i_1$中并在指纹f上碰撞，部分键布谷鸟散列确保它们也可以驻留在桶$i_2$中，因为$i_2 = i_1 ⊕ hash(f)$。 删除x时，进程是否删除插入x或y时添加的f的副本并不重要。 x删除后， y仍被视为集合成员，因为在任何一个桶$i_1$和$i_2$中都留下了相应的指纹。这样做的一个重要结果是，删除后过滤器的假阳性行为保持不变。（在上面的示例中，表中的y会导致查找x时出现假阳性，根据定义：它们共享相同的桶和指纹。）这是近似集合隶属数据结构的预期假阳性行为，其概率仍以ϵ为界。</p>
+<p>请注意，要安全地删除项x，必须事先插入它。 否则，删除非插入项可能会无意中删除碰巧共享相同指纹的真实、不同的项。 这一要求也适用于所有其他支持删除的过滤器。</p>
+<h1 id="4-渐近行为"><a href="#4-渐近行为" class="headerlink" title="4. 渐近行为"></a>4. 渐近行为<a href="http://www.linvon.cn/#sec4" target="_blank" rel="noopener"></a></h1><p>在这里，我们表明，在布谷鸟过滤器中使用部分键布谷鸟散列存储指纹，会让指纹大小的下限随着过滤器大小而缓慢增长。这与其他方法（例如指纹和静态布隆过滤器的完美散列，前面讨论过）形成了对比，其中指纹大小仅取决于所需的假阳性概率。 虽然这似乎是负面的，但在实践中这个影响似乎并不重要。 从经验上讲，当每个桶持有6位或更大的四个指纹时，包含多达40亿个项的过滤器可以有效地填充其哈希表95%的负载。</p>
+<p>在本部分和下一节中，用于我们分析的符号是：</p>
+<p>符号</p>
+<p>含义</p>
+<p><strong>ϵ</strong></p>
+<p><strong>目标假阳性率</strong></p>
+<p><em><strong>f</strong></em></p>
+<p><strong>指纹长度(位)</strong></p>
+<p><strong>α</strong></p>
+<p><strong>负载因子 (0 ≤ α ≤ 1)</strong></p>
+<p><em><strong>b</strong></em></p>
+<p><strong>每个桶的条目数</strong></p>
+<p><em><strong>m</strong></em></p>
+<p><strong>桶的数量</strong></p>
+<p><em><strong>n</strong></em></p>
+<p><strong>项数</strong></p>
+<p><strong>C</strong></p>
+<p><strong>每个项的平均位</strong></p>
+<p><strong>最小指纹大小</strong>：我们提出的部分键布谷鸟散列法基于给定项的当前位置和指纹导出其备用存储桶（章节<a href="http://www.linvon.cn/#sec3" target="_blank" rel="noopener">3</a>）。因此每个项的候选存储桶不是独立的。例如，假设一个项可以放置在桶$i_1$或$i_2$中。根据式 (<a href="http://www.linvon.cn/#%E5%BC%8F1" target="_blank" rel="noopener">1</a>)，当使用f位指纹时，$i_2$的可能值的数目最多为 $2^f$ 。使用1字节指纹，给定$i_1$，$i_2$最多只有$2^f=256$个不同的可能值。对于m个桶的表，当$2^f&lt;m$（或相当于$f&lt;log_2m$位）时，$i_2$的选择只是整个哈希表的所有m个桶的子集。</p>
+<p>直观地说，如果指纹足够长，部分键布谷鸟散列仍然可以很好地近似于标准布谷鸟散列；然而，如果哈希表非常大，并且存储相对较短的指纹，则由于哈希碰撞而导致插入失败的机会将增加，这可能会降低表的占用率。 这种情况可能出现在将布谷鸟过滤器用于项数很大，但只设定中等低的假阳性率情况。 在下面，我们确定性地解析了插入失败概率的下界。</p>
+<p>让我们首先推导给定一个含有q个项的集合在同一个桶中碰撞的概率。假设第一个项x有它的第一个桶 $i_1$和一个指纹 $t_x$。如果其他q-1个项和这个项x有相同的两个桶，它们必须<a href="http://www.linvon.cn/#fn:3" target="_blank" rel="noopener">3</a>:</p>
+<p>（1） 具有相同的指纹$t_x$，发生概率为$1/2^f$；</p>
+<p>（2）第一个存储桶为$i_1$或$i_1$⊕h($t_x$)，发生概率为2/m。</p>
+<p>因此，这些q个项共享相同两个存储桶的概率为$ (2/m·1/2^f)^q-1$。</p>
+<p>现在考虑一个构造过程，该过程将n个随机项插入到 m=cn 个桶的空表中（对于常数c和常数桶大小 b）。每当有q=2b+1个项映射到相同的两个桶时，插入就失败了。这个概率为失败提供了一个下限（而且我们相信，这个构造过程的失败概率占主导地位，虽然我们没有证明这一点，也不需要为了获得一个下界而去证明）。由于n个项中总共有$\begin{pmatrix}n\\ 2b + 1\end{pmatrix}$个不同的2b+1个项的可能集合，因此在构造过程中发生碰撞的2b+1个项的组的预期数量为</p>
+<h5 id="式3"><a href="#式3" class="headerlink" title="式3"></a>式3<a href="http://www.linvon.cn/#%E5%BC%8F3" target="_blank" rel="noopener"></a></h5><p>$$ \begin{pmatrix}n\\ 2b + 1\end{pmatrix} \begin{pmatrix}\frac{2}{2^f·m}\end{pmatrix}^{2b}= \begin{pmatrix}n\\ 2b + 1\end{pmatrix} \begin{pmatrix}\frac{2}{2^f·cn}\end{pmatrix}=Ω\begin{pmatrix}\frac{n}{4^{bf}}\end{pmatrix} $$</p>
+<p>我们得出结论$4^bf$必须是Ω(n)以避免非微小的失败概率，否则这种期望是Ω(1)的。因此，指纹的大小必须是$f=Ω(log n/b)$位。</p>
+<p>这一结果似乎有点不走运，因为指纹所需的位数量是Ω(logn)；请记住，布隆过滤器每个项使用一个常数(大约$ln(1/ϵ)$位。 因此我们可能会担心这种方法的可伸缩性。然而正如我们接下来所展示的，布谷鸟过滤器的实际应用是通过下界分母中的b因子来存储的：只要我们使用合理大小的桶，指纹大小就可以保持较小。</p>
+<h5 id="图2"><a href="#图2" class="headerlink" title="图2"></a>图2<a href="http://www.linvon.cn/#%E5%9B%BE2" target="_blank" rel="noopener"></a></h5><p><img src="http://www.linvon.cn/img/cuckoo/2.jpg" alt="2"></p>
+<p>图2：通过使用f位指纹实现的部分键布谷鸟散列，在不同大小的表中(m=215, 220, 225 和230 桶)的负载因子α。<br>通过使用两个完全独立的哈希函数，短指纹足以接近最佳负载因子 α=0表示空，1表示完全满。每个点是10次独立运行中看到的最小负载因子。</p>
+<p><strong>经验评估</strong>：图<a href="http://www.linvon.cn/#%E5%9B%BE2" target="_blank" rel="noopener">2</a> 显示了部分键布谷鸟散列实现的负载因子，我们改变了表m中的指纹大小f、桶大小b和桶数量。在实验中，我们将指纹大小f从1位变化到20位。随机64位键被插入到空过滤器中，直到一次插入重新定位现有指纹超过500次，然后找到一个空条目（我们的“满”条件），然后我们停止并测量当前的负载因子α。 我们对m=$2^15$, $2^20$, $2^25$和$2^30$个桶的过滤器进行了十次实验，并测量了他们在十个试验中的最小负荷。 由于我们测试机的内存约束，我们没有使用更大的表。</p>
+<p>如图<a href="http://www.linvon.cn/#%E5%9B%BE2" target="_blank" rel="noopener">2</a>所示，在不同的配置下，有b=4的过滤器可以填充到95%的使用率，而b=8时使用足够长的指纹可以填充到98%。 在此之后，增加指纹大小在提高负载因子方面几乎没有回报（当然，它降低了假阳性率）。 正如该理论所建议的，当过滤器变大时，实现接近最优利用率所需的最小f增加。 此外，比较图<a href="http://www.linvon.cn/#%E5%9B%BE2" target="_blank" rel="noopener">2(a)</a>还有图<a href="http://www.linvon.cn/#%E5%9B%BE2" target="_blank" rel="noopener">2(b)</a>，当桶大小b变大时，高利用率的最小f减小，这也是理论的建议。 总的来说，短指纹似乎足以满足现实大小的项集。 即使b=4且m=$2^30$，因此哈希表可以包含多达40亿个项，一旦指纹超过六个比特，α接近实验中使用两个完全独立的散列函数得到的“最佳负载因子”。</p>
+<p><strong>洞察</strong>：在公式 (<a href="http://www.linvon.cn/#%E5%BC%8F3" target="_blank" rel="noopener">3</a>)中导出的指纹大小下界，以及图<a href="http://www.linvon.cn/#%E5%9B%BE2" target="_blank" rel="noopener">2</a>中所示的经验结果给出了对于布谷鸟过滤器的重要见解。理论上布谷鸟过滤器的空间成本比布隆过滤器“更差”—$Ω(logn)$相比于常数—在这种设置中，常数项是非常重要的。 对于布隆过滤器，实现ϵ=1%需要每个项大约10位，而不管是否存储1000、100万或10亿个项。 相反，布谷鸟过滤器需要更长的指纹来保持其哈希表相同的高空间效率，但相应地实现了较低的假阳性率。如理论所预测的，如果桶大小b足够大，每个指纹的Ω(logn)位则增长较缓慢。 我们发现，出于实际目的，它可以被视为一个合理大小的常量来实现。图<a href="http://www.linvon.cn/#%E5%9B%BE2" target="_blank" rel="noopener">2</a>表明布谷鸟过滤器针对数十亿个项，6位指纹足以确保哈希表的利用率非常高。</p>
+<p>作为一个探索，部分键布谷鸟散列是非常有效的，正如我们在章节<a href="http://www.linvon.cn/#sec7" target="_blank" rel="noopener">7</a>中进一步展示的。然而，关于这一技术的几个理论问题仍有待今后的研究，包括证明插入一个新项的成本的界限和研究该项需要多少独立的哈希函数。</p>
+<h1 id="5-空间优化"><a href="#5-空间优化" class="headerlink" title="5. 空间优化"></a>5. 空间优化<a href="http://www.linvon.cn/#sec5" target="_blank" rel="noopener"></a></h1><p>在章节<a href="http://www.linvon.cn/#sec3" target="_blank" rel="noopener">3</a>中介绍的布谷鸟过滤器操作插入、查找和删除的基本算法独立于哈希表配置（如，每个桶有多少个条目）。然而选择合适的布谷鸟过滤器参数会显著影响空间效率。本节重点通过参数选择和附加机制优化布谷鸟过滤器的空间效率。</p>
+<p>空间效率是通过一个完整的过滤器中表示每个项的平均位数来衡量的，由表大小除以过滤器可以有效存储的项总数得出。 回想一下，虽然哈希表的每个条目存储一个指纹，但并不是所有的条目都被占用：对于布谷鸟过滤器，表中必须有一些松弛，否则插入项时会出现故障。 因此每个项实际地存储成本比指纹本身更高：如果每个指纹为f位，哈希表具有α的负载因子，则每个项的均摊空间成本C为</p>
+<h5 id="式4"><a href="#式4" class="headerlink" title="式4"></a>式4<a href="http://www.linvon.cn/#%E5%BC%8F4" target="_blank" rel="noopener"></a></h5><p>$$ C =\frac{table\ size}{avg\ of\ items}=\frac{f · (avg\ of\ entries)}{α · (avg\ of\ entries)}= \frac{f}{α}\ \ bits $$</p>
+<p>正如我们将展示的，f和α都与桶的大小b有关。下面的部分研究如何（近似）最小化式 (<a href="http://www.linvon.cn/#%E5%BC%8F4" target="_blank" rel="noopener">4</a>)。通过选择最佳桶大小b，给出目标假阳性率ϵ。</p>
+<h2 id="5-1-最佳桶尺寸"><a href="#5-1-最佳桶尺寸" class="headerlink" title="5.1 最佳桶尺寸"></a>5.1 最佳桶尺寸<a href="http://www.linvon.cn/#sec51" target="_blank" rel="noopener"></a></h2><p>保持布谷鸟过滤器的总大小不变，但改变桶的大小会导致两个后果：</p>
+<p><strong>(1)</strong> <strong>较大的桶可以提高表的利用率</strong>(即b越大α越大) ，使用k=2个哈希函数时，当桶大小b=1（即直接映射哈希表）时，负载因子α为50%，但使用桶大小b=2、4或8时则分别会增加到84%、95%和98%。</p>
+<p><strong>(2)</strong> <strong>较大的桶需要较长的指纹才能保持相同的假阳性率</strong>(即b越大f越大)。 使用较大的桶时，每次查找都会检查更多的条目，从而有更大的概率产生指纹冲突。在查找不存在项的最坏情况下，查询必须探测两个桶，其中每个桶可以有b个项。 (虽然并非所有的桶都能装满，我们在这里分析其最坏的情况；这给了我们对于一个95%满的表合理准确的估计。) 在每个条目中，一次查询能与存储的指纹匹配并返回假阳性成功匹配的概率最大为$1/2^f$ 。 做了2b次这样的匹配后，命中假指纹的概率上限为</p>
+<h5 id="式5"><a href="#式5" class="headerlink" title="式5"></a>式5<a href="http://www.linvon.cn/#%E5%BC%8F5" target="_blank" rel="noopener"></a></h5><p>$$ 1 - (1- 1/2^f)^{2b} ≈ 2b/2^f $$</p>
+<p>这与桶的大小b成正比。 为了保留目标假阳性率ϵ，过滤器确保$2b/2^f\leqϵ$ ，因此需要的最小的指纹大小大约是：</p>
+<h5 id="式6"><a href="#式6" class="headerlink" title="式6"></a>式6<a href="http://www.linvon.cn/#%E5%BC%8F6" target="_blank" rel="noopener"></a></h5><p>$$ f ≥ log_2(2b/ϵ)=log_2(1/ϵ) + log_2(2b)\ \ bits $$</p>
+<p><strong>空间成本的上限</strong> 如我们所展示的，f和α都取决于桶大小b。 由公式(<a href="http://www.linvon.cn/#%E5%BC%8F4" target="_blank" rel="noopener">4</a>)得平均空间成本C受下列约束：</p>
+<h5 id="式7"><a href="#式7" class="headerlink" title="式7"></a>式7<a href="http://www.linvon.cn/#%E5%BC%8F7" target="_blank" rel="noopener"></a></h5><p>$$ C ≤ [log_2(1/ϵ) + log_2(2b)]/α $$</p>
+<p>其中α随b增加。 例如当b=4时，1/α ≈1.05，公式 (<a href="http://www.linvon.cn/#%E5%BC%8F7" target="_blank" rel="noopener">7</a>)结果表明，布谷鸟过滤器渐近优于（通过一个常数因子）每项需要$1.44 log_2 (1/ϵ)$ 个位的布隆过滤器。</p>
+<h5 id="表2"><a href="#表2" class="headerlink" title="表2"></a>表2<a href="http://www.linvon.cn/#%E8%A1%A82" target="_blank" rel="noopener"></a></h5><p><strong>bits per item</strong></p>
+<p><strong>load factor</strong> α</p>
+<p><strong>avg. # memory references</strong> / <strong>lookup</strong>（positive query|negative query）</p>
+<p>space-optimized Bloom fifilter</p>
+<p>1.44 log<del>2</del> (1/ϵ)</p>
+<p>-</p>
+<p>log<del>2</del>(1/ϵ)|2</p>
+<p>cuckoo fifilter</p>
+<p>(log2 (1/ϵ) + 3)/α</p>
+<p>95.5%</p>
+<p>2|2</p>
+<p>cuckoo fifilter w/ semi-sort</p>
+<p>(log2 (1/ϵ) + 2)/α</p>
+<p>95.5%</p>
+<p>2|2</p>
+<p>表2：布隆过滤器和三个布谷鸟过滤器的空间和查找成本</p>
+<h5 id="图3"><a href="#图3" class="headerlink" title="图3"></a>图3<a href="http://www.linvon.cn/#%E5%9B%BE3" target="_blank" rel="noopener"></a></h5><p><img src="http://www.linvon.cn/img/cuckoo/3.jpg" alt="3"></p>
+<p>图3：每个项的均摊空间成本与测量的假阳性率，不同桶大小b=2，4，8。<br>每个点为10次运行的平均值</p>
+<p><strong>最优桶大小b</strong> 为了比较使用不同桶大小b的空间效率，我们进行了实验，首先用不同指纹大小的部分键布谷鸟散列构造布谷鸟哈希表，并测量了每个项的均摊空间成本及其实现的假阳性率。 作为如图<a href="http://www.linvon.cn/#%E5%9B%BE3" target="_blank" rel="noopener">3</a>所示空间最优桶大小取决于目标假阳性率ϵ：当ϵ&gt;0.002时。每桶有两个条目比每桶使用四个条目产生的结果略好；当ϵ减小到0.00001&lt;ϵ≤0.002时，每个桶四个条目可以最小化空间。</p>
+<p>总之，我们选择(2,4)-布谷鸟过滤器(即每个项有两个候选桶，每个桶最多有四个指纹)作为默认配置，因为它达到了大多数实际应用[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">6</a>]可能需要的最佳或接近最佳的空间效率的假阳性率。 在下面，我们提出了一种技术，通过编码每个桶，进一步节省了b=4的布谷鸟过滤器的空间。</p>
+<h2 id="5-2-半排序桶以节省空间"><a href="#5-2-半排序桶以节省空间" class="headerlink" title="5.2 半排序桶以节省空间"></a>5.2 半排序桶以节省空间<a href="http://www.linvon.cn/#sec52" target="_blank" rel="noopener"></a></h2><p>本小节描述了一种针对于每个桶有b=4个条目的布谷鸟过滤器的技术，可以每项节省一位的存储空间。这种优化是基于这样一个事实，即桶内指纹的顺序不会影响查询结果。 基于这一观察，我们可以压缩每个桶，首先对其指纹进行排序，然后对排序后的指纹序列进行编码。 该方案类似于[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">5</a>]中使用的“半排序桶”优化。</p>
+<p>下面的示例说明了压缩如何节省空间。 假设每个桶包含b=4个指纹，每个指纹为f=4位（更多的情况将在稍后讨论）。 一个未压缩的桶占4x4=16位。 然而，如果我们对存储在这个桶中的所有四个4位指纹进行排序（空项被视为存储值为”0”的指纹)，那么总共只有3876个可能的结果(包含替换位置的唯一组合数量）。如果我们预先计算并将这些3876个可能的桶值存储在一个额外的表中，并将原始桶替换为一个到这个预先计算的表中的索引，那么每个原始桶可以用12位索引（$2^{12}=4096&gt;3876$）表示，而不是 16 比特， 对每个指纹可以节省1比特<a href="http://www.linvon.cn/#fn:4" target="_blank" rel="noopener">4</a>。</p>
+<p>请注意，这种基于置换的编码（即索引所有可能的结果）需要额外对表编码/解码并且每个查找都变为间接查找。 因此，为了获得高的查找性能，必须使编码/解码表足够小以适合使用缓存。 因此我们的“半排序”优化只应用于具有四个条目的表。此外，当指纹大于四位时，每个指纹只有四个有效比特被编码，其余的会直接且独立的存储。</p>
+<h1 id="6-与布隆过滤器的比较"><a href="#6-与布隆过滤器的比较" class="headerlink" title="6. 与布隆过滤器的比较"></a>6. 与布隆过滤器的比较<a href="http://www.linvon.cn/#sec6" target="_blank" rel="noopener"></a></h1><h5 id="图4"><a href="#图4" class="headerlink" title="图4"></a>图4<a href="http://www.linvon.cn/#%E5%9B%BE4" target="_blank" rel="noopener"></a></h5><p><img src="http://www.linvon.cn/img/cuckoo/4.jpg" alt="4"></p>
+<p>图4：假阳性率与每个元素的空间成本。对于低假阳性率（&lt;3%），布谷鸟过滤器比空间优化的布隆过滤器每个元素需要更少的比特。<br>计算布谷鸟过滤器空间开销使用的负载因子是基于经验的。</p>
+<p>我们使用表<a href="http://www.linvon.cn/#%E8%A1%A82" target="_blank" rel="noopener">2</a>中所示的度量以及几个额外的因素来比较布隆过滤器和布谷鸟过滤器。</p>
+<p><strong>空间效率</strong>：表<a href="http://www.linvon.cn/#%E8%A1%A82" target="_blank" rel="noopener">2</a>比较了空间优化的布隆过滤器和有与没有半排序的布谷鸟过滤器。图<a href="http://www.linvon.cn/#%E5%9B%BE4" target="_blank" rel="noopener">4</a>进一步显示了这些方案存储一个项所需的位，当ϵ从0.001%变化至10%时。 信息论下限中每个项需要$log_2 (1/ϵ)$位，一个最佳的布隆过滤器使用$1.44log_2(1/ϵ)$位，有44%的开销。 因此当ϵ&lt;3%时有半排序的布谷鸟过滤器比布隆过滤器空间效率更高。</p>
+<p><strong>内存访问次数</strong>：对于具有k个哈希函数的布隆过滤器，一次阳性查询必须从位数组中读取k位。对于空间优化的布隆过滤器则需要$k=log_2(1/ϵ)$，随着ϵ越来越小，阳性查询必须探测更多的位，并且在读取每个位时可能会导致更多的缓存行缺失。 例如，当ϵ=25%时，k=2；但ϵ=1%时，k=7，这是实际中更常见的情况。对空间优化的布隆过滤器的阴性查询在返回之前平均读取两位，因为有一半的位是被设置过的。 任何对布谷鸟过滤器的查询，无论是阳性还是阴性，总是读取固定数量的桶，这样（最多）只会有两个缓存行缺失。</p>
+<p><strong>值关联</strong>：布谷鸟过滤器可以扩展为同时为每个匹配指纹返回一个关联值(存储在过滤器外部）。 布谷鸟过滤器的这一特性提供了一种近似表查找机制，它为每个现有项平均返回1+ϵ个值（由于假阳性命中，它可以匹配多个指纹），并为每个不存在的项返回平均ϵ个值。标准布隆过滤器不提供此功能。 虽然像Bloomier过滤器这样的变体可以扩展布隆过滤器来实现这类功能，但这些结构比布谷鸟过滤器更复杂，需要更多的空间[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">7</a>].</p>
+<p><strong>最大容量</strong>：布谷鸟过滤器有一个负载阈值。 在达到最大可行负载因子后，插入不再稳定，并且越来越有可能失败，因此哈希表必须扩容才能存储更多的项。 相反，您可以继续将新项插入到布隆过滤器中，不过是以增加假阳性率为代价。 为了保持相同的目标假阳性率，布隆过滤器也必须扩容。</p>
+<p><strong>重复限制</strong>：如果布谷鸟过滤器支持删除，则必须存储同一项的多个副本。 插入同一项kb+1次将导致插入失败。 这类似于计数布隆过滤器，其中重复插入会导致计数器溢出。 然而将相同的项多次插入布隆过滤器或不可删除的布谷鸟过滤器是没有效果的。</p>
+<h1 id="7-评估"><a href="#7-评估" class="headerlink" title="7. 评估"></a>7. 评估<a href="http://www.linvon.cn/#sec7" target="_blank" rel="noopener"></a></h1><p>我们实现的标准布谷鸟过滤器<a href="http://www.linvon.cn/#fn:5" target="_blank" rel="noopener">5</a>有大约500行C++代码，以及另外500行用于支持在章节<a href="http://www.linvon.cn/#sec52" target="_blank" rel="noopener">5.2</a>中提到的“半排序”优化。在下面，我们将标准布谷鸟过滤器表示为“CF”，半排序布谷鸟过滤器表示为“ss-CF”。除了布谷鸟过滤器，我们实现了其他四个过滤器用于比较：</p>
+<ul>
+<li><p>标准布隆过滤器(BF)[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">3</a>]：我们评估了标准的布隆过滤器作为基准。 在我们所有的实验中，会根据过滤器的大小和项的总数来配置哈希函数k的数量以达到最低的假阳性率。此外还应用了性能优化来通过减少散列来加速查找和插入[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">16</a>]。 每次插入或查找只需要两个散列函数$h_1(x)$和$h_2(x)$，然后使用这两个散列来模拟额外的k-2个哈希基于以下格式：</p>
+<h5 id="式8"><a href="#式8" class="headerlink" title="式8"></a>式8<a href="http://www.linvon.cn/#%E5%BC%8F8" target="_blank" rel="noopener"></a></h5><p>$$ gi(x) = h1(x) + i · h2(x) $$</p>
+</li>
+<li><p>块布隆过滤器(blk-BF)[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">22</a>]：每个过滤器由一个块数组组成，每个块是一个小的布隆过滤器。每个块的大小是64字节，以匹配我们测试机中的CPU缓存行。对于每个小型布隆过滤器，我们还应用了与标准布隆过滤器相同的模拟多个哈希函数的优化。</p>
+</li>
+<li><p>商过滤器(QF)[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">2</a>]:我们评估了我们自己实现商过滤器<a href="http://www.linvon.cn/#fn:6" target="_blank" rel="noopener">6</a>。 此过滤器存储每个项的三个额外位作为元数据，以帮助定位项。 由于商过滤器的性能随着负载的增加而下降，我们在[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">2</a>]的评估中设置了最大负载因子为90%.</p>
+</li>
+<li><p>d-left计数布隆过滤器(dl-CBF)[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">5</a>]：过滤器配置为具有d=4个哈希表。所有的哈希表有相同数量的桶；每个桶有四个条目。</p>
+</li>
+</ul>
+<p>我们强调标准和块布隆过滤器不支持删除，因此它们可以作为基线进行比较。</p>
+<p>实验设置：所有要插入的项都是从随机数生成器中预先生成的64位整数。我们没有消除重复项，因为重复的概率很小。</p>
+<p>在每个查询上，所有过滤器首先使用CityHash[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">1</a>]生成项的64位散列。 然后，每个过滤器根据需要在这个散列中划分这64位。 例如，布隆过滤器将高32位和低32位分别视为前两个独立散列，然后使用这两个32位值计算其他k-2个散列。计算64位哈希的时间(在我们的测试中，每个项大约20ns)也包含在我们的测试中。 所有实验都使用一台带有两个IntelXeon处理器([L5640@ 2.27GHz](mailto:L5640@ 2.27ghz) 12MBL3缓存)和32GB DRAM的机器。</p>
+<p>度量：为了充分理解不同的过滤器如何在功能、空间和性能方面实现权衡，我们通过以下度量来比较上述过滤器：</p>
+<ul>
+<li>空间效率：由过滤器大小（以位为单位）除以完整过滤器包含的项数来测量。</li>
+<li>实现的假阳性率：通过查询具有不存在项的过滤器和计统计阳性返回值数量的分数来测量。</li>
+<li>构造率：用一个全过滤器包含的项数除以从空构建这个全过滤器的时间来衡量。</li>
+<li>查找、插入和删除吞吐量：由过滤器每秒可以执行的平均操作数来衡量。 值可以取决于过滤器的工作负载和占用率。</li>
+</ul>
+<h5 id="表3"><a href="#表3" class="headerlink" title="表3"></a>表3<a href="http://www.linvon.cn/#%E8%A1%A83" target="_blank" rel="noopener"></a></h5><p><strong>metrics</strong></p>
+<p>CF</p>
+<p>ss-CF</p>
+<p>BF</p>
+<p>blk-BF</p>
+<p>QF</p>
+<p>dl-CBF</p>
+<p># of items (million)</p>
+<p>127.78</p>
+<p><strong>128.04</strong></p>
+<p>123.89</p>
+<p>123.89</p>
+<p>120.80</p>
+<p>103.82</p>
+<p>bits per item</p>
+<p>12.60</p>
+<p><strong>12.58</strong></p>
+<p>13.00</p>
+<p>13.00</p>
+<p>13.33</p>
+<p>15.51</p>
+<p>false positive rate</p>
+<p>0.19%</p>
+<p><strong>0.09%</strong></p>
+<p>0.19%</p>
+<p>0.43%</p>
+<p>0.18%</p>
+<p>0.76%</p>
+<p>constr. speed (million keys/sec)</p>
+<p>5.00</p>
+<p>3.13</p>
+<p>3.91</p>
+<p><strong>7.64</strong></p>
+<p>1.91</p>
+<p>4.78</p>
+<p>表3：空间效率和构建速度。所有过滤器均为192MB。黑体字是行中最好的。</p>
+<h2 id="7-1-达到目标假阳性率"><a href="#7-1-达到目标假阳性率" class="headerlink" title="7.1 达到目标假阳性率"></a>7.1 达到目标假阳性率<a href="http://www.linvon.cn/#sec71" target="_blank" rel="noopener"></a></h2><p>我们首先评估空间效率和假阳性率。 在每次运行中，所有过滤器都被配置为具有相同的大小(192MB)。 布隆过滤器被配置为使用九个散列函数，这将在每项占用13位是最小化假阳性率。对于布谷鸟过滤器，它们的哈希表有m=225个桶，每个由四个12位条目组成。d-left计数布隆过滤器具有相同数量的哈希表条目，但是分位d=4个分区。商过滤器也有$2^27$个条目，其中每个条目存储3位元数据和9位的其余部分。</p>
+<p>每个过滤器最初是空的，持续放置项直到过滤器要么看到插入失败(对于CF和dl-CBF)，要么达到目标容量限制(对于BF、BLK-BF和QF)。 不同过滤器的构建速率和假阳性率见表<a href="http://www.linvon.cn/#%E8%A1%A83" target="_blank" rel="noopener">3</a>。</p>
+<p>在所有过滤器中，ss-CF达到最低的假阳性率。使用大约相同数量的空间(12.60位/项)，启用半排序可以节省一个位，将其编码到每个项的指纹中，从而将假阳性率从0.19%降低到0.09%。另一方面，在访问每个桶时，半排序需要编码和解码，从而使构造速率从5.00降低到3.13百万项每秒。</p>
+<p>BF和blk-BF都使用13.00位每项，k=9个哈希函数的配置，但块过滤器的假阳性率比BF高2倍，比最佳CF高4倍。 这种差异是因为blk-BF通过散列将每个项分配给单个块，并且不平衡的映射将创建“热”块，该块要服务更多的项，而“冷”块则很少使用。 不幸的是，即使使用强哈希函数，这种不平衡的赋值也会发生在块之间[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">18</a>]这增加了总体假阳性率。另一方面，通过在单个缓存行中操作任何查询，blk-BF实现了最高的构造速率。</p>
+<p>QF每个项花费的比特比BFs和CFs更多，实现了第二佳的假阳性率。由于每个桶的编码和解码成本，其建造效率最低。</p>
+<p>最后，dl-CBF在当整个表约78%满时出现插入失败并停止构建，因此存储的项更少。它实现的假阳性率比其他过滤器差得多，因为每个查找必须检查16个条目，因此哈希冲突的可能性更高。</p>
+<h2 id="7-2-查找性能"><a href="#7-2-查找性能" class="headerlink" title="7.2 查找性能"></a>7.2 查找性能<a href="http://www.linvon.cn/#sec72" target="_blank" rel="noopener"></a></h2><h5 id="图5"><a href="#图5" class="headerlink" title="图5"></a>图5<a href="http://www.linvon.cn/#%E5%9B%BE5" target="_blank" rel="noopener"></a></h5><p><img src="http://www.linvon.cn/img/cuckoo/5.jpg" alt="5"></p>
+<p>图5：当过滤器达到其容量时的查找性能。 每点为10次运行的平均值。</p>
+<p><strong>不同的工作负载</strong> 我们接下来测试在过滤器被填充后的查找性能。本节将比较不同工作负载下的查找吞吐量和延迟。工作负载的是由阳性查询（即表中存在项)和阴性查询(即表中不存在项）的分数来表现的，这会影响查找速度。我们将输入工作负载中阳性查询的分数p从0%（所有查询都是阴性的)变化到100%(所有查询都是阳性的）。</p>
+<p>查找吞吐量的测试结果如图<a href="http://www.linvon.cn/#%E5%9B%BE5" target="_blank" rel="noopener">5</a>所示。每个过滤器占用192MB，远远大于我们测试机中的L3缓存(20MB）。当所有查询都为阴性时，blk-BF表现良好，因为每次查找都可以在获取第一个“0”位后立即返回。然而当更多的查询是阳性时，它的性能就会下降，因为它必须读取额外的位作为查找的一部分。当p增加时，BF的吞吐量变化相似，但大约要慢4MOPS。 这是因为BF在完成一次查找中可能会出现多个缓存缺失，而块的版本总是可以在一个缓存行中操作，并且每次查找最多有一次缓存缺失。</p>
+<p>相反，CF总是取两个桶<a href="http://www.linvon.cn/#fn:7" target="_blank" rel="noopener">7</a>，从而在查询为100%阳性和100%阴性时达到相同的高性能。 当p=50%时，性能略有下降，因为CPU的分支预测此时最不准确（匹配或不匹配的概率正好是1/2）。 在半排序的情况下，当阳性查询的分数增加时，CF的吞吐量展现出相似的趋势，但是由于读每个桶时额外的解码开销其吞吐要更低一点。作为性能惩罚的回报，半排序版本与标准布谷鸟过滤器相比，假阳性率降低了两倍。但是，当阳性查询超过25%时，ss-CF仍然优于BF。</p>
+<p>QF在所有过滤器中表现最差。 当QF为90%满时，查找必须搜索一长串表条目并为了目标项对每一个进行解码。</p>
+<p>dl-CBF的性能优于ss-CF，但比BF慢30%。在服务所有都为阴性查询和所有都为阳性查询时，它也能保持大约相同的性能，因为其在每次查找中只搜索恒定数量的条目。</p>
+<h5 id="图6"><a href="#图6" class="headerlink" title="图6"></a>图6<a href="http://www.linvon.cn/#%E5%9B%BE6" target="_blank" rel="noopener"></a></h5><p><img src="http://www.linvon.cn/img/cuckoo/6.jpg" alt="6"></p>
+<p>图6：在不同的占用率下查找吞吐量（MOPS）。 每点为10次运行的平均值。</p>
+<p><strong>不同的利用率</strong> 在本实验中，我们测量当这些过滤器在不同的利用率时的查找吞吐量。我们将每个过滤器的负载因子α从0（空）变化到最大占用率。图<a href="http://www.linvon.cn/#%E5%9B%BE6" target="_blank" rel="noopener">6</a>展示了当所有查询都为阴性（即，对于不存在的项）和所有查询都为阳性（即现有项）时的平均瞬时查找吞吐量。</p>
+<p>在阴性查询和阳性查询中，CF和ss-CF的吞吐量在不同的负载因子级别上都是最稳定的。 这是因为要读取和比较的条目总数保持不变，即使插入了更多的项。</p>
+<p>相反，当负载更多时，QF的吞吐量大大降低。 随着负载因子的增加，该筛选器搜索目标项的条目链越来越长。</p>
+<p>当服务阴性查询和阳性查询时，BF和blk-BF的行为都表现出不同。 对于阳性查询，无论插入了多少项，它们必须始终检查总计k个位，从而提供恒定的查找吞吐量；而对于阴性查询，当过滤器加载较少时，设置的位较少，当看到“0”时，查找可以更早返回。</p>
+<p>dl-CBF的行为与BF不同。 当所有查找都为负值时，它确保了与CF一样的恒定吞吐量，因为无论这个过滤器包含多少项，都必须搜索来自四个桶的总共16个条目。 对于阳性查询，如果插入的项较少，在检查所有四个桶之前，查找可能会更早返回；但是，在dl-CBF大约20%满之后，这种差异变得可以忽略不计。</p>
+<h2 id="7-3-插入性能"><a href="#7-3-插入性能" class="headerlink" title="7.3 插入性能"></a>7.3 插入性能<a href="http://www.linvon.cn/#sec73" target="_blank" rel="noopener"></a></h2><h5 id="图7"><a href="#图7" class="headerlink" title="图7"></a>图7<a href="http://www.linvon.cn/#%E5%9B%BE7" target="_blank" rel="noopener"></a></h5><p><img src="http://www.linvon.cn/img/cuckoo/7.jpg" alt="7"></p>
+<p>图7：在不同的占用率下的插入吞吐量。 插入随机键，直到每个数据结构达到其设计容量。 每点为10次运行的平均值。</p>
+<p>根据一个完整过滤器包含的项总数和插入这些项的总时间来测量的总体构建速度如表<a href="http://www.linvon.cn/#%E8%A1%A83" target="_blank" rel="noopener">3</a>所示. 我们还研究了整个构建过程中的瞬时插入吞吐量。也就是说，我们测量不同过滤器在不同负载因子级别时的插入吞吐量，如图<a href="http://www.linvon.cn/#%E5%9B%BE7" target="_blank" rel="noopener">7</a>所示。与图<a href="http://www.linvon.cn/#%E5%9B%BE6" target="_blank" rel="noopener">6</a>中所示的查找吞吐量相反，当它们被填充的越多时，两种类型的CF都降低了插入吞吐量（尽管它们的总体构建速度仍然很高），而BF和blk-BF都保证了几乎恒定的插入吞吐量。在成功插入新项之前，CF可能要递归地移动现有键序列，当负载因子增加时，此过程变得更耗时。相反，两个布隆过滤器总是只需要设置k个位，而不考虑负载因子。</p>
+<p>QF也降低了插入吞吐量，因为它必须在插入新项之前移动一个项序列，并且当表更满时，这个序列会增加的更长。</p>
+<p>dl-CBF保持恒定的吞吐量。 对于每个插入，它必须在最多四个桶中找到一个空条目；如果找不到这样的条目，则插入停止，而不像布谷鸟散列中那样重新定位现有项。这也是为什么它的最大负载因子不超过80%。</p>
+<h2 id="7-4-删除性能"><a href="#7-4-删除性能" class="headerlink" title="7.4 删除性能"></a>7.4 删除性能<a href="http://www.linvon.cn/#sec74" target="_blank" rel="noopener"></a></h2><h5 id="图8"><a href="#图8" class="headerlink" title="图8"></a>图8<a href="http://www.linvon.cn/#%E5%9B%BE8" target="_blank" rel="noopener"></a></h5><p><img src="http://www.linvon.cn/img/cuckoo/8.jpg" alt="8"></p>
+<p>图8：在不同的占用率下删除至空的吞吐量(MOPS)。 每点为10次运行的平均值。</p>
+<p>图<a href="http://www.linvon.cn/#%E5%9B%BE8" target="_blank" rel="noopener">8</a>比较了支持删除的过滤器之间的删除性能。 实验从最初的满过滤器中删除键，直到它为空。CF达到了最高的吞吐量。CF和ss-CF在整个过程中都提供了稳定的性能。在所有过滤器中，dl-CBF的性能第二好。当接近满时，QF是最慢的，但当接近空时，QF比ss-CF更快。</p>
+<p>评估摘要：CF确保了不同工作负载和不同占用水平下的高稳定查找性能。它的插入吞吐量随着过滤器的填充而下降，但总体构建速率仍然是比其他过滤器更快，除了blk-BF。使用半-排序使布谷鸟过滤器比空间优化的BFs更具有空间效率。它虽然让查找、插入和删除慢了一点， 但是仍然比传统的BFs更快。</p>
+<h1 id="8-结论"><a href="#8-结论" class="headerlink" title="8. 结论"></a>8. 结论<a href="http://www.linvon.cn/#sec8" target="_blank" rel="noopener"></a></h1><p>_布谷鸟过滤器_是一种新的近似集隶属查询数据结构，可以用于以前使用布隆过滤器解决的许多网络问题。布谷鸟过滤器通过三种方式改进了布隆过滤器：</p>
+<p>（1）支持动态删除项；（2）更好的查找性能；（3）对于需要低假阳性率的应用程序(ϵ&lt;3%)有更好的空间利用率</p>
+<p>布谷鸟过滤器基于布谷鸟散列来存储项集的指纹。一个进一步的关键贡献，我们已经应用了部分键布谷鸟散列，通过只允许基于存储的指纹重新定位，这使得布谷鸟过滤器大大提高了效率。 我们的配置探索表明，布谷鸟过滤器使用大小为4的桶，将在广泛的应用中表现良好，同时布谷鸟过滤器参数可以很容易地根据应用程序进行调整。</p>
+<p>我们认为进一步扩展和优化布谷鸟过滤器是可能的，并将进一步推进它们的使用，上述的数据结构是一个快速和高效的构建块，已经很好地适应了网络和分布式系统的实际需求。</p>
+<h1 id="9-感谢"><a href="#9-感谢" class="headerlink" title="9. 感谢"></a>9. 感谢<a href="http://www.linvon.cn/#sec9" target="_blank" rel="noopener"></a></h1><p>这项工作得到了英特尔通过英特尔云计算科学技术中心(ISTC-CC)和国家科学基金会提供的资金的支持，这些捐赠是CCF-0964474、CNS-1040801、CCF-1320231、CNS-1228598和IIS-0964473。 我们感谢CoNEXT评审员的反馈和建议；RasmusPagh讨论分析的布谷鸟过滤器的空间使用，这产出了许多关于渐近行为的见解；HyeontaekLim的代码优化；IulianMoraru，AndrewPavlo，PeterSteenkiste的写作建议。</p>
+<h1 id="10-参考资料"><a href="#10-参考资料" class="headerlink" title="10. 参考资料"></a>10. 参考资料<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener"></a></h1><p>[1] CityHash. <a href="https://code.google.com/p/cityhash/" target="_blank" rel="noopener">https://code.google.com/p/cityhash/</a>.</p>
+<p>[2] M. A. Bender, M. Farach-Colton, R. Johnson, R. Kraner, B. C.Kuszmaul, D. Medjedovic, P. Montes, P. Shetty, R. P. Spillane, and E. Zadok. Don’t thrash: How to cache your hash on flflash. <em>PVLDB</em>, 5(11):1627–1637, 2012.</p>
+<p>[3] B. H. Bloom. Space/time trade-offffs in hash coding with allowable errors. <em>Communications of the ACM</em>, 13(7):422–426, 1970.</p>
+<p>[4] F. Bonomi, M. Mitzenmacher, and R. Panigrahy. Beyond Bloom fifilters: From approximate membership checks to approximate state machines. In <em>Proc. ACM SIGCOMM</em>, Pisa, Italy, Aug. 2006.</p>
+<p>[5] F. Bonomi, M. Mitzenmacher, R. Panigrahy, S. Singh, and G. Varghese. An improved construction for counting bloom fifilters. In <em>14th Annual European Symposium on Algorithms,</em> <em>LNCS 4168</em>, pages 684–695, 2006.</p>
+<p>[6] A. Broder, M. Mitzenmacher, and A. Broder. Network Applications of Bloom Filters: A Survey. In <em>Internet Mathematics</em>, volume 1, pages 636–646, 2002.</p>
+<p>[7] B. Chazelle, J. Kilian, R. Rubinfeld, A. Tal, and O. Boy. The Bloomier fifilter: An effiffifficient data structure for static support lookup tables. In <em>Proceedings of SODA</em>, pages 30–39, 2004.</p>
+<p>[8] J. G. Cleary. Compact Hash Tables Using Bidirectional Linear Probing. <em>IEEE Transactions on Computer</em>, C-33(9), Sept. 1984.</p>
+<p>[9] S. Dharmapurikar, P. Krishnamurthy, and D. E. Taylor. Longest prefifix matching using Bloom fifilters. In <em>Proc. ACM SIGCOMM</em>,Karlsruhe, Germany, Aug. 2003.</p>
+<p>[10] M. Dietzfelbinger and C. Weidling. Balanced allocation and dictionaries with tightly packed constant size bins. <em>Theoretical</em> <em>Computer Science</em>, 380(1):47–68, 2007.</p>
+<p>[11] B. Fan, D. G. Andersen, and M. Kaminsky. MemC3: Compact and concurrent memcache with dumber caching and smarter hashing. In <em>Proc. 10th USENIX NSDI</em>, Lombard, IL, Apr. 2013.</p>
+<p>[12] L. Fan, P. Cao, J. Almeida, and A. Z. Broder. Summary cache: A scalable wide-area Web cache sharing protocol. In <em>Proc.</em> <em>ACM SIGCOMM</em>, Vancouver, BC, Canada, Sept. 1998.</p>
+<p>[13] N. Fountoulakis, M. Khosla, and K. Panagiotou. The multiple orientability thresholds for random hypergraphs. In <em>Proceedings of the Twenty-Second Annual ACM-SIAM Symposium on</em> Discrete Algorithms*, pages 1222–1236. SIAM, 2011.</p>
+<p>[14] N. Hua, H. C. Zhao, B. Lin, and J. J. Xu. Rank-Indexed Hashing: A Compact Construction of Bloom Filters and Variants. In <em>Proc. of IEEE Int’l Conf. on Network Protocols (ICNP) 2008</em>, Orlando, Florida, USA, Oct. 2008.</p>
+<p>[15] P. Jokela, A. Zahemszky, C. Esteve Rothenberg, S. Arianfar, and P. Nikander. Lipsin: Line speed publish/subscribe internetworking. In <em>Proc. ACM SIGCOMM</em>, Barcelona, Spain, Aug. 2009.</p>
+<p>[16] A. Kirsch and M. Mitzenmacher. Less hashing, same performance: Building a better Bloom fifilter. <em>Random Structures</em> &amp; <em>Algorithms</em>, 33(2):187–218, 2008.</p>
+<p>[17] H. Lim, B. Fan, D. G. Andersen, and M. Kaminsky. SILT: A memory-effiffifficient, high-performance key-value store. In <em>Proc. 23rd ACM Symposium on Operating Systems Principles(SOSP)</em>, Cascais, Portugal, Oct. 2011.</p>
+<p>[18] M. Mitzenmacher, A. W. Richa, and R. Sitaraman. The power of two random choices: A survey of techniques and results. In <em>Handbook of Randomized Computing</em>, pages 255–312. Kluwer, 2000.</p>
+<p>[19] M. Mitzenmacher and B. Vocking. The asymptotics of selecting the shortest of two, improved. In <em>Proc. the Annual Allerton</em> Conference on Communication Control and Computing, volume 37, pages 326–327, 1999.</p>
+<p>[20] A. Pagh, R. Pagh, and S. S. Rao. An optimal bloom fifilter replacement. In <em>Proc. ASM-SIAM Symposium on Discrete</em> <em>Algorithms, SODA</em>, 2005.</p>
+<p>[21] R. Pagh and F. Rodler. Cuckoo hashing. <em>Journal of Algorithms</em>, 51(2):122–144, May 2004.</p>
+<p>[22] F. Putze, P. Sanders, and S. Johannes. Cache-, hash- and space effiffifficient bloom fifilters. In <em>Experimental Algorithms</em>, pages 108–121. Springer Berlin / Heidelberg, 2007.</p>
+<p>[23] D. Sanchez, L. Yen, M. D. Hill, and K. Sankaralingam. Implementing signatures for transactional memory. In <em>Proc. the 40th Annual IEEE</em>/<em>ACM International Symposium on Microarchitecture</em>, pages 123–133, Washington, DC, USA, 2007.</p>
+<p>[24] H. Song, S. Dharmapurikar, J. Turner, and J. Lockwood. Fast hash table lookup using extended bloom fifilter: An aid to net work processing. In <em>Proc. ACM SIGCOMM</em>, pages 181–192, Philadelphia, PA, Aug. 2005.</p>
+<p>[25] M. Yu, A. Fabrikant, and J. Rexford. BUFFALO: Bloom fifilter forwarding architecture for large organizations. In <em>Proc.</em> <em>CoNEXT</em>, Dec. 2009.</p>
+<p>[26] D. Zhou, B. Fan, H. Lim, D. G. Andersen, and M. Kaminsky. Scalable, High Performance Ethernet Forwarding with CuckooSwitch. In <em>Proc. 9th International Conference on emerging Networking EXperiments and Technologies (CoNEXT)</em>, Dec. 2013.</p>
+<hr>
+<ol>
+<li><p>一个原生的d-left计数布隆过滤器的实现有一个“错误删除”问题。 一个d-left计数布隆过滤器将每个项映射到d个候选桶，每个候选桶来自表的一个分区，并将指纹存储在其d个桶中的一个。 如果两个不同的项共用一个或只有一个桶，并且它们有相同的指纹（当指纹很小时很可能会发生这种情况），直接从这个特定的桶中删除指纹可能会导致错误的项被删除。 为了解决这个问题，d-left计数布隆过滤器在每个表项中使用一个额外的计数器和额外的指示[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">5</a>]。 <a href="http://www.linvon.cn/#fnref:1" target="_blank" rel="noopener">↩︎</a></p>
+</li>
+<li><p>在商过滤器中，所有的有相同的商(即q个有效比特)的指纹必须按照其数字顺序存储在连续的条目中。 因此，从一组指纹中删除一个指纹必须将其后的所有指纹移动一个插槽，并修改它们的元数据位[<a href="http://www.linvon.cn/#reference" target="_blank" rel="noopener">2</a>]。 <a href="http://www.linvon.cn/#fnref:2" target="_blank" rel="noopener">↩︎</a></p>
+</li>
+<li><p>在这里，我们假设指纹(即$t_x$-&gt; h($t_x$)是无碰撞的，因为在实际中，$t_x$只有几位而h($t_x$)要长得多。 <a href="http://www.linvon.cn/#fnref:3" target="_blank" rel="noopener">↩︎</a></p>
+</li>
+<li><p>如果布谷鸟过滤器不需要支持删除，那么它可以忽略指纹列表中的重复条目，从而为每个条目节省额外的一小部分创造了潜在机会 <a href="http://www.linvon.cn/#fnref:4" target="_blank" rel="noopener">↩︎</a></p>
+</li>
+<li><p><a href="https://github.com/efficient/cuckoofilter" target="_blank" rel="noopener">https://github.com/efficient/cuckoofilter</a> <a href="http://www.linvon.cn/#fnref:5" target="_blank" rel="noopener">↩︎</a></p>
+</li>
+<li><p>由于许可证问题，原始作者的源代码不能公开用于比较。 <a href="http://www.linvon.cn/#fnref:6" target="_blank" rel="noopener">↩︎</a></p>
+</li>
+<li><p>我们的实现不会逐个检查每个项的两个桶，而是应用性能优化，试图将两个内存负载一起发出，以隐藏第二次读取的延迟。 <a href="http://www.linvon.cn/#fnref:7" target="_blank" rel="noopener">↩︎</a></p>
+</li>
+</ol>
+<hr>
+<p>18669 Words</p>
+<p>2021-02-10 08:00 +0800</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/03/08/qiwihui-pocket_readings-1041/" rel="prev" title="asyncio：python3未来并发编程主流、充满野心的模块 - 古明地盆 - 博客园">
+      <i class="fa fa-chevron-left"></i> asyncio：python3未来并发编程主流、充满野心的模块 - 古明地盆 - 博客园
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/03/09/qiwihui-pocket_readings-1043/" rel="next" title="布谷鸟过滤器实战指南 - Linvon">
+      布谷鸟过滤器实战指南 - Linvon <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#布谷鸟过滤器：实际上优于布隆过滤器-Linvon"><span class="nav-number"></span> <span class="nav-text">布谷鸟过滤器：实际上优于布隆过滤器 - Linvon</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#布谷鸟过滤器：实际上优于布隆过滤器"><span class="nav-number"></span> <span class="nav-text">布谷鸟过滤器：实际上优于布隆过滤器</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#摘要"><span class="nav-number"></span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#1-导言"><span class="nav-number"></span> <span class="nav-text">1. 导言</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#表1"><span class="nav-number">0.0.1.</span> <span class="nav-text">表1</span></a></li></ol></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-背景和相关工作"><span class="nav-number"></span> <span class="nav-text">2. 背景和相关工作</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-布隆过滤器和变体"><span class="nav-number"></span> <span class="nav-text">2.1 布隆过滤器和变体</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-布谷鸟哈希表"><span class="nav-number"></span> <span class="nav-text">2.2 布谷鸟哈希表</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#图1"><span class="nav-number">0.0.1.</span> <span class="nav-text">图1</span></a></li></ol></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-布谷鸟过滤器算法"><span class="nav-number"></span> <span class="nav-text">3. 布谷鸟过滤器算法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-1-插入"><span class="nav-number"></span> <span class="nav-text">3.1 插入</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#式1"><span class="nav-number">0.0.1.</span> <span class="nav-text">式1</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#式2"><span class="nav-number">0.0.2.</span> <span class="nav-text">式2</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-2-查找"><span class="nav-number"></span> <span class="nav-text">3.2 查找</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-3-删除"><span class="nav-number"></span> <span class="nav-text">3.3 删除</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-渐近行为"><span class="nav-number"></span> <span class="nav-text">4. 渐近行为</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#式3"><span class="nav-number">0.0.1.</span> <span class="nav-text">式3</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#图2"><span class="nav-number">0.0.2.</span> <span class="nav-text">图2</span></a></li></ol></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#5-空间优化"><span class="nav-number"></span> <span class="nav-text">5. 空间优化</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#式4"><span class="nav-number">0.0.1.</span> <span class="nav-text">式4</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-1-最佳桶尺寸"><span class="nav-number"></span> <span class="nav-text">5.1 最佳桶尺寸</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#式5"><span class="nav-number">0.0.1.</span> <span class="nav-text">式5</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#式6"><span class="nav-number">0.0.2.</span> <span class="nav-text">式6</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#式7"><span class="nav-number">0.0.3.</span> <span class="nav-text">式7</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#表2"><span class="nav-number">0.0.4.</span> <span class="nav-text">表2</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#图3"><span class="nav-number">0.0.5.</span> <span class="nav-text">图3</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-2-半排序桶以节省空间"><span class="nav-number"></span> <span class="nav-text">5.2 半排序桶以节省空间</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#6-与布隆过滤器的比较"><span class="nav-number"></span> <span class="nav-text">6. 与布隆过滤器的比较</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#图4"><span class="nav-number">0.0.1.</span> <span class="nav-text">图4</span></a></li></ol></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#7-评估"><span class="nav-number"></span> <span class="nav-text">7. 评估</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#式8"><span class="nav-number">0.0.1.</span> <span class="nav-text">式8</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#表3"><span class="nav-number">0.0.2.</span> <span class="nav-text">表3</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-1-达到目标假阳性率"><span class="nav-number"></span> <span class="nav-text">7.1 达到目标假阳性率</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-2-查找性能"><span class="nav-number"></span> <span class="nav-text">7.2 查找性能</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#图5"><span class="nav-number">0.0.1.</span> <span class="nav-text">图5</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#图6"><span class="nav-number">0.0.2.</span> <span class="nav-text">图6</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-3-插入性能"><span class="nav-number"></span> <span class="nav-text">7.3 插入性能</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#图7"><span class="nav-number">0.0.1.</span> <span class="nav-text">图7</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-4-删除性能"><span class="nav-number"></span> <span class="nav-text">7.4 删除性能</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#图8"><span class="nav-number">0.0.1.</span> <span class="nav-text">图8</span></a></li></ol></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#8-结论"><span class="nav-number"></span> <span class="nav-text">8. 结论</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#9-感谢"><span class="nav-number"></span> <span class="nav-text">9. 感谢</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#10-参考资料"><span class="nav-number"></span> <span class="nav-text">10. 参考资料</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

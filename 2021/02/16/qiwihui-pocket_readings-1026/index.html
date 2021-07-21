@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="《深度剖析CPython解释器》30. 源码解密内置函数 iter、next - 古明地盆 - 博客园">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《深度剖析CPython解释器》30. 源码解密内置函数 iter、next - 古明地盆 - 博客园">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1026/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="《深度剖析CPython解释器》30. 源码解密内置函数 iter、next - 古明地盆 - 博客园">
+<meta property="article:published_time" content="2021-02-16T14:17:27.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.430Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1026/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>《深度剖析CPython解释器》30. 源码解密内置函数 iter、next - 古明地盆 - 博客园 | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-1026/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          《深度剖析CPython解释器》30. 源码解密内置函数 iter、next - 古明地盆 - 博客园
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-02-16 14:17:27" itemprop="dateCreated datePublished" datetime="2021-02-16T14:17:27+00:00">2021-02-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+
+          
+            <div class="post-description">《深度剖析CPython解释器》30. 源码解密内置函数 iter、next - 古明地盆 - 博客园</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#36825;&#27425;&#25105;&#20204;&#26469;&#30475;&#30475; iter &#21644; next &#36825;&#20004;&#20010;&#20869;&#32622;&#20989;&#25968;&#30340;&#29992;&#27861;&#65292;&#25105;&#20204;&#30693;&#36947; iter &#26159;&#23558;&#19968;&#20010;&#21487;&#36845;&#20195;&#23545;&#35937;&#21464;&#25104;&#19968;&#20010;&#36845;&#20195;&#22120;&#65292;next &#26159;&#23558;&#36845;&#20195;&#22120;&#37324;&#30340;&#20540;&#19968;&#27493;&#19968;&#27493;&#36845;&#20195;&#20986;&#26469;&#12290;<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/3qutas0" target="_blank" rel="noopener">https://ift.tt/3qutas0</a> original site<br><br><br><br>February 16, 2021 at 10:16PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1026#issuecomment-781000225" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>2/18/2021</strong></p>
+</blockquote>
+<h2 id="《深度剖析CPython解释器》30-源码解密内置函数-iter、next-古明地盆-博客园"><a href="#《深度剖析CPython解释器》30-源码解密内置函数-iter、next-古明地盆-博客园" class="headerlink" title="《深度剖析CPython解释器》30. 源码解密内置函数 iter、next - 古明地盆 - 博客园"></a>《深度剖析CPython解释器》30. 源码解密内置函数 iter、next - 古明地盆 - 博客园</h2><h1 id="《深度剖析CPython解释器》30-源码解密内置函数-iter、next"><a href="#《深度剖析CPython解释器》30-源码解密内置函数-iter、next" class="headerlink" title="《深度剖析CPython解释器》30. 源码解密内置函数 iter、next"></a><a href="https://www.cnblogs.com/traditional/p/14040093.html" target="_blank" rel="noopener">《深度剖析CPython解释器》30. 源码解密内置函数 iter、next</a></h1><h2 id="楔子"><a href="#楔子" class="headerlink" title="楔子"></a>楔子</h2><p><strong>这次我们来看看 iter 和 next 这两个内置函数的用法，我们知道 iter 是将一个可迭代对象变成一个迭代器，next 是将迭代器里的值一步一步迭代出来。</strong></p>
+<pre><code>lst = [1, 2, 3]
+it = iter(lst)
+print(it)  # &lt;list_iterator object at 0x000001DC6E898640&gt;
+
+# 调用next, 可以对迭代器进行迭代
+print(next(it))  # 1</code></pre><p><strong>注意：iter 还有一个鲜为人知的用法，我们来看一下：</strong></p>
+<pre><code>val = 0
+
+def foo():
+    global val
+    val += 1
+    return val
+
+
+# iter可以接收一个参数: iter(可迭代对象)
+# iter可以接收两个参数: iter(可调用对象, value)
+for i in iter(foo, 5):
+    print(i)
+&quot;&quot;&quot;
+1
+2
+3
+4
+&quot;&quot;&quot;
+
+# 进行迭代的时候, 会不停的调用内部接收的 可调用对象
+# 直到返回值等于传递第二个参数 value(在底层被称为哨兵), 然后终止迭代</code></pre><p><strong>当然 next 函数也有一个特殊用法，就是它在接收一个迭代器的时候，还可以指定一个默认值；如果元素迭代完毕之后再次迭代的话，不会抛出StopIteration，而是会返回默认值。</strong></p>
+<pre><code>it = iter([1, 2, 3])
+print(next(it))  # 1
+print(next(it))  # 2
+print(next(it))  # 3
+print(next(it, &quot;xxx&quot;))  # xxx
+print(next(it, &quot;yyy&quot;))  # yyy</code></pre><p><strong>注意：iter 内部接收可迭代对象的类型不同，那么得到的迭代器种类也不同。</strong></p>
+<pre><code>print(iter(&quot;xyz&quot;))  # &lt;str_iterator object at 0x00000234493B8640&gt;
+print(iter((1, 2, 3)))  # &lt;tuple_iterator object at 0x00000234493B8640&gt;
+print(iter([1, 2, 3]))  # &lt;list_iterator object at 0x00000234493B8640&gt;</code></pre><h2 id="iter-函数底层实现"><a href="#iter-函数底层实现" class="headerlink" title="iter 函数底层实现"></a>iter 函数底层实现</h2><p><strong>我们看一下 iter 函数底层是如何实现的，其实之前已经见识过了，还想的起来吗？</strong></p>
+<pre><code>static PyObject *
+builtin_iter(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
+{
+    PyObject *v;
+
+    // iter函数要么接收一个参数, 要么接收两个参数
+    if (!_PyArg_CheckPositional(&quot;iter&quot;, nargs, 1, 2))
+        return NULL;
+    v = args[0];
+    // 如果接收一个参数, 那么直接使用 PyObject_GetIter 获取对应的迭代器即可
+    // 在这个函数中, 可迭代对象的类型不同, 那么得到的迭代器也不同
+    if (nargs == 1)
+        return PyObject_GetIter(v);
+    // 如果接收的不是一个参数, 那么一定是两个参数
+    // 如果是两个参数, 那么第一个参数一定是可调用对象
+    if (!PyCallable_Check(v)) {
+        PyErr_SetString(PyExc_TypeError,
+                        &quot;iter(v, w): v must be callable&quot;);
+        return NULL;
+    }
+    // 获取value(哨兵)
+    PyObject *sentinel = args[1];
+    // 调用PyCallIter_New, 得到一个可调用的迭代器, calliterobject 对象
+    /*
+    位于 Objects/iterobject.c 中
+    typedef struct {
+        PyObject_HEAD
+        PyObject *it_callable; 
+        PyObject *it_sentinel; 
+    } calliterobject;
+    */
+    return PyCallIter_New(v, sentinel);
+}</code></pre><p><strong>所以核心就在于 <em>PyObject_GetIter</em> 中，它是根据可迭代对象生成迭代器的关键，那么它都做了哪些事情呢？不用想肯定是执行：<code>obj.__iter__()</code>，当然更准确的说应该是：<code>type(obj).__iter__(obj)</code>，我们来看一下。该函数定义在 <em>Objects/abstract.c</em> 中：</strong></p>
+<pre><code>PyObject *
+PyObject_GetIter(PyObject *o)
+{    
+    // 获取该可迭代对象的类型对象
+    PyTypeObject *t = Py_TYPE(o);
+    // 我们说类型对象的方法和属性 决定了 实例对象的行为, 实例对象调用的那些方法都是属于类型对象的
+    // 还是那句话 obj.func()  等价于  type(obj).func(obj)
+    getiterfunc f;
+    // 所以这里是获取类型对象的 tp_iter成员, 也就是Python中的 __iter__
+    f = t-&gt;tp_iter;
+    // 如果 f 为 NULL, 说明该类型对象内部的 tp_iter 成员被初始化为NULL, 即内部没有定义 __iter__ 方法
+    // 像str、tuple、list等类型对象, 它们的 tp_iter 成员都是不为NULL的
+    if (f == NULL) {
+        // 如果 tp_iter 为 NULL, 那么解释器会退而求其次, 检测该类型对象中是否定义了 __getitem__, 我们后面会介绍
+        // 如果定义了, 那么直接调用PySeqIter_New, 得到一个 seqiterobject 对象, 我们在上一篇博客介绍过的
+        // PySequence_Check 里面的逻辑就是检测类型对象是否初始化了 tp_as_sequence-&gt;sq_item 成员, 它对应 __getitem__
+        if (PySequence_Check(o))
+            return PySeqIter_New(o);
+        // 走到这里说明该类型对象的实例对象不具备可迭代的性质, 抛出异常
+        return type_error(&quot;&apos;%.200s&apos; object is not iterable&quot;, o);
+    }
+    else {
+        // 否则的话, 直接进行调用, Py_TYPE(o)-&gt;tp_iter(o)
+        PyObject *res = (*f)(o);
+        // 如果返回值 res 不为NULL, 并且它还不是一个迭代器, 抛出异常
+        if (res != NULL &amp;&amp; !PyIter_Check(res)) {
+            PyErr_Format(PyExc_TypeError,
+                         &quot;iter() returned non-iterator &quot;
+                         &quot;of type &apos;%.100s&apos;&quot;,
+                         Py_TYPE(res)-&gt;tp_name);
+            Py_DECREF(res);
+            res = NULL;
+        }
+        // 返回 res
+        return res;
+    }
+}</code></pre><p><strong>所以我们看到这便是 iter 函数的底层实现，里面我们提到了 __getitem__。我们说如果类型对象内部没有定义 __iter__，那么解释器会退而求其次检测内部是否定义了 __getitem__。</strong></p>
+<pre><code>class A:
+
+    def __getitem__(self, item):
+        return f&quot;参数item: {item}&quot;
+
+
+a = A()
+# 内部定义了 __getitem__, 首先可以让实例对象像字典一样
+print(a[&quot;name&quot;])  # 参数item: name
+print(a[&quot;夏色祭&quot;])  # 参数item: 夏色祭
+
+# 此外还可以像迭代器一个被for循环
+for idx, val in enumerate(a):
+    print(val)
+    if idx == 5:
+        break
+&quot;&quot;&quot;
+参数item: 0
+参数item: 1
+参数item: 2
+参数item: 3
+参数item: 4
+参数item: 5
+&quot;&quot;&quot;
+
+# 我们看到循环的时候会自动给item传值, 这个值是0 1 2 3...., 因此这个循环是无限的
+
+class Girl:
+    def __init__(self):
+        self.names = [&quot;夏色祭&quot;, &quot;神乐七奈&quot;, &quot;夜空梅露&quot;, &quot;雫_るる&quot;]
+
+    def __getitem__(self, item):
+        try:
+            val = self.names[item]
+            return val
+        except IndexError:
+            raise StopIteration  # 让for循环结束
+
+g = Girl()
+for _ in g:
+    print(_)
+&quot;&quot;&quot;
+夏色祭
+神乐七奈
+夜空梅露
+雫_るる
+&quot;&quot;&quot;
+# 当出现 StopIteration 异常的时候, 再次循环时传递的item会被重置为0
+print(list(g))  # [&apos;夏色祭&apos;, &apos;神乐七奈&apos;, &apos;夜空梅露&apos;, &apos;雫_るる&apos;]
+
+lst = []
+lst.extend(g)
+print(lst)  # [&apos;夏色祭&apos;, &apos;神乐七奈&apos;, &apos;夜空梅露&apos;, &apos;雫_るる&apos;]</code></pre><p><strong>以上被称为解释器的退化功能，就是在找不到某个实现的时候，会进行退化、尝试寻找其它实现。类似的做法还有其它，比如：</strong></p>
+<pre><code>class A:
+
+    def __len__(self):
+        return 0
+
+# 当进行布尔判断的时候, 会尝试获取内部 __bool__ 方法的返回值
+# 如果没有定义 __bool__, 那么解释器会退化尝试寻找 __len__ 方法
+print(bool(A()))  # False</code></pre><p><strong>如果内部定义了 __iter__，则直接调用即可。</strong></p>
+<pre><code># 如果type(obj)内部定义了__iter__, 那么iter(obj)  &lt;==&gt;  type(obj).__iter__(obj)
+print(str.__iter__(&quot;123&quot;))  # &lt;str_iterator object at 0x00000213CC2A8640&gt;
+print(list.__iter__([1, 2, 3]))  # &lt;list_iterator object at 0x00000213CC2A8640&gt;
+print(tuple.__iter__((1, 2, 3)))  # &lt;tuple_iterator object at 0x00000213CC2A8640&gt;
+print(set.__iter__({1, 2, 3}))  # &lt;set_iterator object at 0x00000213CC478E80&gt;</code></pre><h2 id="next函数底层实现"><a href="#next函数底层实现" class="headerlink" title="next函数底层实现"></a>next函数底层实现</h2><p><strong>了解 iter 之后，我们再来看看 next 函数；如果内部定义了 __next__ 函数，那么不用想，结果肯定是<code>type(obj).__next__(obj)</code>，我们看一下底层实现。</strong></p>
+<pre><code>static PyObject *
+builtin_next(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
+{
+    PyObject *it, *res;
+
+    // 同样接收一个参数或者两个参数
+    if (!_PyArg_CheckPositional(&quot;next&quot;, nargs, 1, 2))
+        return NULL;
+
+    it = args[0];
+    // 第一个参数必须是一个迭代器, 也就是类型对象的tp_iternext成员不能为NULL
+    if (!PyIter_Check(it)) {
+        // 否则的话, 抛出TypeError, 表示第一个参数传递的不是一个迭代器
+        PyErr_Format(PyExc_TypeError,
+            &quot;&apos;%.200s&apos; object is not an iterator&quot;,
+            it-&gt;ob_type-&gt;tp_name);
+        return NULL;
+    }
+
+    /*
+    列表对应的迭代器是: listiterobject, 其类型为: PyListIter_Type
+    元组对应的迭代器是: tupleiterobject, 其类型为: PyTupleIter_Type
+    字符串对应的迭代器是: unicodeiterobject, 其类型为: PyUnicodeIter_Type
+    */
+    // 通过 ob_type 获取对应的类型对象, 然后获取成员 tp_iternext 的值, 相当于__next__
+    // 再传入迭代器进行迭代
+    res = (*it-&gt;ob_type-&gt;tp_iternext)(it);
+
+    // 如果 res 不为 NULL, 那么证明迭代到值了, 直接返回
+    if (res != NULL) {
+        return res;
+    } else if (nargs &gt; 1) {
+        // 否则的话, 看nargs是否大于1, 如果大于1, 说明设置了默认值
+        PyObject *def = args[1];
+        // 出现异常的话, 将异常清空
+        if (PyErr_Occurred()) {
+            if(!PyErr_ExceptionMatches(PyExc_StopIteration))
+                return NULL;
+            PyErr_Clear();
+        }
+        // 增加引用计数, 并返回
+        Py_INCREF(def);
+        return def;
+    } else if (PyErr_Occurred()) {
+        return NULL;
+    } else {
+        PyErr_SetNone(PyExc_StopIteration);
+        return NULL;
+    }
+}</code></pre><p><strong>还是比较简单的，我们以 列表 对应的迭代器为例，举个栗子：</strong></p>
+<pre><code>lst = [1, 2, 3]
+it = iter(lst)
+# 对应的类型是list_iterator, 但在底层我们知道类型是PyListIter_Type
+print(type(it))  # &lt;class &apos;list_iterator&apos;&gt;
+
+# 然后迭代
+print(type(it).__next__(it))  # 1
+print(type(it).__next__(it))  # 2
+print(type(it).__next__(it))  # 3
+
+# 以上就等价于 next(it), 但是我们知道内置函数 next 要更强大一些, 因为它还可以做一些其它处理
+# 当然默认情况下, 和 type(it).__next__(it) 最终是殊途同归的</code></pre><p><strong>怎么样，是不是很简单呢？</strong></p>
+<p><strong>我们看到一个变量 obj 不管指向什么可迭代对象，都可以交给 iter，得到对应的迭代器；不管什么迭代器，都可以交给 next 进行迭代。原因就在于它们接收的不是对象本身，而是对象对应的 PyObject * 泛型指针。不管你是谁的指针，只要你指向的对象是一个可迭代对象，那么都可以交给 iter。至于 next 也是同理，不管你指向的是哪一种迭代器，只要是迭代器，就可以交给 next，然后会自动调用迭代器内部的 __next__（底层是 tp_iternext）将值给迭代出来。所以这是不是相当于实现了多态呢？所以这就是 Python 的设计哲学，变量只是一个指针，传递变量的时候相当于传递指针（将指针拷贝一份），但是操作一个变量的时候会自动操作变量（指针）指向的内存。比如：a = 12345; b = a，相当于把 a 拷贝了一份给 b，但 a 是一个指针，所以此时 a 和 b 保存的地址是相同的，也就是指向了同一个对象。但 a + b 的时候则不是两个指针相加、而是将 a、b 指向的对象进行相加，也就是操作变量会操作变量指向的内存。因此在 Python 中，说传递方式是值传递或者引用传递都是不准确的，应该是**</strong>变量之间的赋值传递，对象之间的引用传递。**</p>
+<p>posted @ 2020-11-26 00:39  <a href="https://www.cnblogs.com/traditional/" target="_blank" rel="noopener">古明地盆</a>  阅读(223)  评论(2)  <a href="https://i.cnblogs.com/EditPosts.aspx?postid=14040093" target="_blank" rel="noopener">编辑</a>  <a href="https://www.cnblogs.com/traditional/p/14040093.html" target="_blank" rel="noopener">收藏</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-1027/" rel="prev" title="《深度剖析CPython解释器》31. Python 和 C / C++ 联合编程 - 古明地盆 - 博客园">
+      <i class="fa fa-chevron-left"></i> 《深度剖析CPython解释器》31. Python 和 C / C++ 联合编程 - 古明地盆 - 博客园
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/24/qiwihui-pocket_readings-1030/" rel="next" title="
+
+
+fbprophet方法在ueba中的应用 ">
+      
+
+
+fbprophet方法在ueba中的应用  <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#《深度剖析CPython解释器》30-源码解密内置函数-iter、next-古明地盆-博客园"><span class="nav-number"></span> <span class="nav-text">《深度剖析CPython解释器》30. 源码解密内置函数 iter、next - 古明地盆 - 博客园</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#《深度剖析CPython解释器》30-源码解密内置函数-iter、next"><span class="nav-number"></span> <span class="nav-text">《深度剖析CPython解释器》30. 源码解密内置函数 iter、next</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#楔子"><span class="nav-number"></span> <span class="nav-text">楔子</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#iter-函数底层实现"><span class="nav-number"></span> <span class="nav-text">iter 函数底层实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#next函数底层实现"><span class="nav-number"></span> <span class="nav-text">next函数底层实现</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

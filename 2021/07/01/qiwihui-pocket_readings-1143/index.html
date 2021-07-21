@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Typeclasses in Python">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Typeclasses in Python">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/07/01/qiwihui-pocket_readings-1143/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="Typeclasses in Python">
+<meta property="article:published_time" content="2021-07-01T03:21:11.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.406Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/07/01/qiwihui-pocket_readings-1143/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>Typeclasses in Python | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/07/01/qiwihui-pocket_readings-1143/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Typeclasses in Python
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-07-01 03:21:11" itemprop="dateCreated datePublished" datetime="2021-07-01T03:21:11+00:00">2021-07-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">Typeclasses in Python</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Today I am going to introduce a new concept for Python developers: typeclasses. It is a concept behind our new dry-python library called classes. I will tell you in advance, that it will look very familiar to what you already know and possibly even use.<br><br><br><br>Tags: python<br><br><br><br>via Pocket <a href="https://ift.tt/3h2N4Z4" target="_blank" rel="noopener">https://ift.tt/3h2N4Z4</a> original site<br><br><br><br>July 01, 2021 at 10:58AM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/1143#issuecomment-871883268" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>7/1/2021</strong></p>
+</blockquote>
+<h2 id="Typeclasses-in-Python"><a href="#Typeclasses-in-Python" class="headerlink" title="Typeclasses in Python"></a>Typeclasses in Python</h2><h1 id="Typeclasses-in-Python-1"><a href="#Typeclasses-in-Python-1" class="headerlink" title="Typeclasses in Python"></a>Typeclasses in Python</h1><p>June 30, 2021 24 mins read <a href="https://sobolevn.me/#discussion" target="_blank" rel="noopener">Start a discussion</a> <a href="https://github.com/sobolevn/sobolevn.github.io/blob/master/_posts/2021-06-30-typeclasses-in-python.md" target="_blank" rel="noopener">Edit this page</a></p>
+<p>Today I am going to introduce a new concept for Python developers: typeclasses. It is a concept behind our new <code>dry-python</code> library called <a href="https://github.com/dry-python/classes/" target="_blank" rel="noopener"><code>classes</code></a>.</p>
+<p>I will tell you in advance, that it will look very familiar to what you already know and possibly even use. Moreover, we reuse a lot of existing code from Python’s standard library. So, you can call this approach “native” and “pythonic”. And it is still going to be interesting: I am showing examples in 4 different languages!</p>
+<p>But, before discussing typeclasses themselves, let’s discuss what problem they do solve.</p>
+<h2 id="Some-functions-must-behave-differently"><a href="#Some-functions-must-behave-differently" class="headerlink" title="Some functions must behave differently"></a><a href="https://sobolevn.me/#some-functions-must-behave-differently" target="_blank" rel="noopener">Some functions must behave differently</a></h2><p>Ok, this one is a familiar problem to all of the devs out there. How can we write a function that will behave differently for different types?</p>
+<p>Let’s create an example. We want to <code>greet</code> different types differently (yes, “hello world” examples, here we go). We want to <code>greet</code>:</p>
+<ul>
+<li><code>str</code> instances as <code>Hello, {string_content}!</code></li>
+<li><code>MyUser</code> instances as <code>Hello again, {username}</code></li>
+</ul>
+<p>Note, that <code>greet</code> as a simple example does not really make much “business” sense, but more complicated things like <code>to_json</code>, <code>from_json</code>, <code>to_sql</code>, <code>from_sql</code>, and <code>to_binary</code> do make a lot of sense and can be found in almost any project. But, for the sake of implementation simplicity, I’m going to stick to our <code>greet</code> example.</p>
+<p>The first approach that comes to our minds is to use <code>isinstance()</code> checks inside the function itself. And it can work in some cases! The only requirement is that we <strong>must</strong> know all the types we will work with in advance.</p>
+<p>Here’s how it would look like:</p>
+<pre><code>@ dataclass
+class MyUser(object):
+    name: str
+
+def greet(instance: str | MyUser) -&gt; str:
+    if isinstance(instance, str):
+        return &apos;Hello, &quot;{0}&quot;!&apos;.format(instance)
+    elif isinstance(instance, MyUser):
+        return &apos;Hello again, {0}&apos;.format(instance.name)
+    raise NotImplementedError(
+        &apos;Cannot greet &quot;{0}&quot; type&apos;.format(type(instance)),
+    )</code></pre><p>The main limitation is that we cannot extend this function for other type easily (we can use wrapper function, but I consiser this a redefinition).</p>
+<p>But, in some cases - <code>isinstance</code> won’t be enough, because we need extendability. We need to support other types, which are unknown in advance. Our users might need to <code>greet</code> their custom types.</p>
+<p>And that’s the part where things begin to get interesting.</p>
+<p>All programming languages address this problem differently. Let’s start with Python’s traditional OOP approach.</p>
+<h2 id="OOP-extendability-and-over-abstraction-problems"><a href="#OOP-extendability-and-over-abstraction-problems" class="headerlink" title="OOP extendability and over-abstraction problems"></a><a href="https://sobolevn.me/#oop-extendability-and-over-abstraction-problems" target="_blank" rel="noopener">OOP extendability and over-abstraction problems</a></h2><p>So, how does Python solve this problem?</p>
+<p>We all know that Python has magic methods for some builtin functions like <code>len()</code> and <code>__len__</code>, it solves exactly the same problem.</p>
+<p>Let’s say we want to greet a user:</p>
+<pre><code>@ dataclass
+class MyUser(object):
+    name: str
+
+    def greet(self) -&gt; str:
+        return &apos;Hello again, {0}&apos;.format(self.name)</code></pre><p>You can use this method directly or you can create a helper with <a href="https://www.python.org/dev/peps/pep-0544/" target="_blank" rel="noopener"><code>typing.Protocol</code></a>:</p>
+<pre><code>from typing_extensions import Protocol
+
+class CanGreet(Protocol):
+    def greet(self) -&gt; str:
+        &quot;&quot;&quot;
+        It will match any object that has the ``greet`` method.
+
+        Mypy will also check that ``greet`` must return ``str``.
+        &quot;&quot;&quot;
+
+def greet(instance: CanGreet) -&gt; str:
+    return instance.greet()</code></pre><p>And then we can use it:</p>
+<pre><code>print(greet(MyUser(name=&apos;example&apos;)))
+# Hello again, example</code></pre><p>So, it works? <em>Not really</em>.</p>
+<p>There are several problems.</p>
+<p><strong>First</strong>, some classes do not want to know some details about themselves to maintain abstraction integrity. For example:</p>
+<pre><code>class Person(object):
+    def become_friends(self, friend: &apos;Person&apos;) -&gt; None:
+         ...
+
+    def is_friend_of(self, person: &apos;Person&apos;) -&gt; bool:
+        ...
+
+    def get_pets(self) -&gt; Sequence[&apos;Pet&apos;]:
+        ...</code></pre><p>Does this <code>Person</code> (pun intended) deserve to know that some <code>to_json</code> conversion exists that can turn this poor <code>Person</code> into textual data? What about binary pickling? Of course not, these details should not be added to a business-level abstraction, this is called a <a href="https://en.wikipedia.org/wiki/Leaky_abstraction" target="_blank" rel="noopener">leaky abstraction</a> when you do otherwise.</p>
+<p>Moreover, I think that mixing structure and behavior into a single abstraction is bad. Why? Because you cannot tell in advance what behavior you would need from a given structure.</p>
+<p>For abstractions on this level, it is way easier to have behavior near the structure, not inside it. Mixing these two only makes sense when we work on a higher level like <a href="https://en.wikipedia.org/wiki/Service-oriented_architecture" target="_blank" rel="noopener">services</a> or <a href="https://en.wikipedia.org/wiki/Open_Telecom_Platform" target="_blank" rel="noopener">processes</a>.</p>
+<p><strong>Second</strong>, it only works for custom types. <a href="https://en.wikipedia.org/wiki/Expression_problem" target="_blank" rel="noopener">Existing types are hard to extend</a>. For example, how would you add the <code>greet</code> method to the <code>str</code> type?</p>
+<p>You can create <code>str</code> subtype with <code>greet</code> method in it:</p>
+<pre><code>class MyStr(str):
+    def greet(self) -&gt; str:
+        return &apos;Hello, {0}!&apos;.format(self)</code></pre><p>But, this would require a change in our usage:</p>
+<pre><code>print(greet(MyStr(&apos;world&apos;)))
+# Hello, world!
+
+print(greet(&apos;world&apos;))
+# fails with TypeError</code></pre><h3 id="Monkey-patching"><a href="#Monkey-patching" class="headerlink" title="Monkey-patching"></a><a href="https://sobolevn.me/#monkey-patching" target="_blank" rel="noopener">Monkey-patching</a></h3><p>Some might suggest that we can just insert the needed methods directly into an object / type. Some dynamically typed languages went on this path: <code>JavaScript</code> (in 2000s and early 2010s, mostly popularized by <code>jQuery</code> plugins) and <code>Ruby</code> (<a href="https://guides.rubyonrails.org/active_support_core_extensions.html" target="_blank" rel="noopener">still happening right now</a>). Here’s how it looks:</p>
+<pre><code>String.prototype.greet = function (string) {
+    return `Hello, ${string}!`
+}</code></pre><p>It is quite obvious, that it is not going to work for anything complex. <a href="https://en.wikipedia.org/wiki/Monkey_patch#Pitfalls" target="_blank" rel="noopener">Why</a>?</p>
+<ul>
+<li>Different parts of your program might use monkey-patching of methods with the same name, but with different functionality. And nothing will work</li>
+<li>It is hard to read because the original source does not contain the patched method and the patching location might be hidden deeply in other files</li>
+<li>It is hard to type, for example, <code>mypy</code> does not support it at all</li>
+<li>Python community is not used to this style, it would be rather hard to persuade them to write their code like this (and that’s a good thing!)</li>
+</ul>
+<p>I hope that it is clear: we won’t fall into this trap. Let’s consider another alternative.</p>
+<h3 id="Extra-abstractions"><a href="#Extra-abstractions" class="headerlink" title="Extra abstractions"></a><a href="https://sobolevn.me/#extra-abstractions" target="_blank" rel="noopener">Extra abstractions</a></h3><p>People familiar with things like <code>django-rest-framework</code> might recommend to add <a href="https://www.django-rest-framework.org/api-guide/serializers/" target="_blank" rel="noopener">special abstractions</a> to <code>greet</code> different types:</p>
+<pre><code>import abc
+from typing import Generic, TypeVar
+
+_Wrapped = TypeVar(&apos;_Wrapped&apos;)
+
+class BaseGreet(Generic[_Wrapped]):
+    &quot;&quot;&quot;Abstract class of all other &quot;&quot;&quot;
+
+    def __init__(self, wrapped: _Wrapped) -&gt; None:
+        self._wrapped = wrapped
+
+    @ abc.abstractmethod
+    def greet(self) -&gt; str:
+        raise NotImplementedError
+
+class StrGreet(BaseGreet[str]):
+    &quot;&quot;&quot;Wrapped instance of built-in type ``str``.&quot;&quot;&quot;
+
+    def greet(self) -&gt; str:
+        return &apos;Hello, {0}!&apos;.format(self._wrapped)
+
+# Our custom type:
+
+@ dataclass
+class MyUser(object):
+    name: str
+
+class MyUserGreet(BaseGreet[MyUser]):
+    def greet(self) -&gt; str:
+        return &apos;Hello again, {0}&apos;.format(self._wrapped.name)</code></pre><p>And we can use it like so:</p>
+<pre><code>print(greet(MyStrGreet(&apos;world&apos;)))
+# Hello, world!
+
+print(greet(MyUserGreet(MyUser(name=&apos;example&apos;))))
+# Hello again, example</code></pre><p>But, now we have a different problem: we have a gap between real types and their wrappers. There’s no easy way to wrap a type into its wrapper. How can we match them? We have to do it either by hand or use some kind of registry like <code>Dict[type, Type[BaseGreet]]</code>.</p>
+<p>And it is still not enough, there will be runtime errors! In practice, it ends up like <code>&lt;X&gt; is not json-serializable</code> as many of us might have seen it with <code>drf</code>’s serializers when trying to serialize a custom unregistered type.</p>
+<h2 id="Typeclasses-and-similar-concepts"><a href="#Typeclasses-and-similar-concepts" class="headerlink" title="Typeclasses and similar concepts"></a><a href="https://sobolevn.me/#typeclasses-and-similar-concepts" target="_blank" rel="noopener">Typeclasses and similar concepts</a></h2><p>Let’s look at how functional languages (and <code>Rust</code>, people still <a href="https://www.fpcomplete.com/blog/2018/10/is-rust-functional/" target="_blank" rel="noopener">argue</a> whether it is functional or not) handle this problem.</p>
+<p>Some common knowledge:</p>
+<ul>
+<li>All these languages don’t have <code>class</code> concept as we know it in Python and, of course, there’s no subclassing</li>
+<li>All the languages below don’t have <code>object</code>s as we do in Python, they don’t mix behavior and structure (however, <code>Elixir</code> has Alan Key’s <a href="https://www.quora.com/What-does-Alan-Kay-think-about-Joe-Armstrong-claiming-that-Erlang-might-be-the-only-object-oriented-language-and-also-his-thesis-supervisor-s-claim-that-Erlang-is-extremely-object-oriented" target="_blank" rel="noopener">real objects</a>)</li>
+<li>Instead, these languages use <a href="https://en.wikipedia.org/wiki/Ad_hoc_polymorphism" target="_blank" rel="noopener">ad-hoc polymorphism</a> to make functions behave differently for different types via overloading</li>
+<li>And, of course, you don’t have to know any of the languages below to understand what is going on</li>
+</ul>
+<h3 id="Elixir"><a href="#Elixir" class="headerlink" title="Elixir"></a><a href="https://sobolevn.me/#elixir" target="_blank" rel="noopener">Elixir</a></h3><p>Let’s start with one of my favorites. <code>Elixir</code> has <a href="https://elixir-lang.org/getting-started/protocols.html" target="_blank" rel="noopener"><code>Protocol</code>s</a> to achieve what we want:</p>
+<pre><code>@ doc &quot;Our custom protocol&quot;
+defprotocol Greet do
+  # This is an abstract function,
+  # that will behave differently for each type.
+  def greet(data)
+end
+
+@ doc &quot;Enhancing built-in type&quot;
+defimpl Greet, for: BitString do
+  def greet(string), do: &quot;Hello, #{string}!&quot;
+end
+
+@ doc &quot;Custom data type&quot;
+defmodule MyUser do
+  defstruct [:name]
+end
+
+@ doc &quot;Enhancing our own type&quot;
+defimpl Greet, for: MyUser do
+  def greet(user), do: &quot;Hello again, #{user.name}&quot;
+end</code></pre><p>I am pretty sure that my readers were able to read and understand <code>Elixir</code> even if they are not familiar with this language. That’s what I call beauty!</p>
+<p>Usage of the code above:</p>
+<pre><code># Using our `Greet.greet` function with both our data types:
+IO.puts(Greet.greet(&quot;world&quot;))
+# Hello, world!
+IO.puts(Greet.greet(%MyUser{name: &quot;example&quot;}))
+# Hello again, example</code></pre><p>The thing with <code>Elixir</code>’s <code>Protocol</code>s is that it is <a href="https://github.com/elixir-lang/elixir/issues/7541" target="_blank" rel="noopener">not currently possible</a> to express that some type does support our <code>Greet.greet</code> for <code>Elixir</code>’s <a href="https://github.com/jeremyjh/dialyxir" target="_blank" rel="noopener">type checker</a>. But, this is not a big deal for <code>Elixir</code>, which is 100% dynamically typed.</p>
+<p>Protocols are very widely used, they power lots of the language’s features. Here are some real-life examples:</p>
+<ul>
+<li><a href="https://hexdocs.pm/elixir/1.11.0/Enumerable.html" target="_blank" rel="noopener"><code>Enumerable</code></a> allows to work with collections: counting elements, finding members, reducing, and slicing</li>
+<li><a href="https://hexdocs.pm/elixir/1.11.0/String.Chars.html" target="_blank" rel="noopener"><code>String.Chars</code></a> is something like <code>__str__</code> in Python, it converts structures to human-readable format</li>
+</ul>
+<h3 id="Rust"><a href="#Rust" class="headerlink" title="Rust"></a><a href="https://sobolevn.me/#rust" target="_blank" rel="noopener">Rust</a></h3><p><code>Rust</code> has <a href="https://doc.rust-lang.org/book/ch10-02-traits.html" target="_blank" rel="noopener"><code>Trait</code>s</a>. The concept is pretty similar to <code>Protocol</code>s in <code>Elixir</code>:</p>
+<pre><code>// Our custom trait
+trait Greet {
+    fn greet(&amp;self) -&gt; String;
+}
+
+// Enhancing built-in type
+impl Greet for String {
+    fn greet(&amp;self) -&gt; String {
+        return format!(&quot;Hello, {}!&quot;, &amp;self);
+    }
+}
+
+// Defining our own type
+struct MyUser {
+    name: String,
+}
+
+// Enhancing it
+impl Greet for MyUser {
+    fn greet(&amp;self) -&gt; String {
+        return format!(&quot;Hello again, {}&quot;, self.name);
+    }
+}</code></pre><p>And of course, due to <code>Rust</code>’s static typing, we can express that some function’s argument supports the trait we have just defined:</p>
+<pre><code>// We can express that `greet` function only accepts types
+// that implement `Greet` trait:
+fn greet(instance: &amp;dyn Greet) -&gt; String {
+    return instance.greet();
+}
+
+pub fn main() {
+    // Using our `greet` function with both our data types:
+    println!(&quot;{}&quot;, greet(&amp;&quot;world&quot;.to_string()));
+    // Hello, world!
+    println!(&quot;{}&quot;, greet(&amp;MyUser { name: &quot;example&quot;.to_string() }));
+    // Hello again, example
+}</code></pre><p>See? The idea is so similar, that it uses almost the same syntax as <code>Elixir</code>.</p>
+<p>Notable real-life examples of how <code>Rust</code> uses its <code>Trait</code>s:</p>
+<ul>
+<li><a href="https://doc.rust-lang.org/std/marker/trait.Copy.html" target="_blank" rel="noopener"><code>Copy</code></a> and <a href="https://doc.rust-lang.org/std/clone/trait.Clone.html" target="_blank" rel="noopener"><code>Clone</code></a> - duplicating objects</li>
+<li><a href="https://doc.rust-lang.org/std/fmt/trait.Debug.html" target="_blank" rel="noopener"><code>Debug</code></a> to show better <code>repr</code> of an object, again like <code>__str__</code> in Python</li>
+</ul>
+<p>Basically, <code>Trait</code>s are the core of this language, it is widely used in cases when you need to define any shared behavior.</p>
+<h3 id="Haskell"><a href="#Haskell" class="headerlink" title="Haskell"></a><a href="https://sobolevn.me/#haskell" target="_blank" rel="noopener">Haskell</a></h3><p><code>Haskell</code> has <a href="http://learnyouahaskell.com/making-our-own-types-and-typeclasses" target="_blank" rel="noopener">typeclasses</a> to do almost the same thing.</p>
+<p>So, what’s a typeclass? Typeclass is a group of types, all of which satisfy some common contract. It is also a form of ad-hoc polymorphism that is mostly used for overloading.</p>
+<p>I am a bit sorry for the <code>Haskell</code> syntax below, it might be not very pleasant and clear to read, especially for people who are not familiar with this brilliant language, but we have what we have:</p>
+<pre><code>{-# LANGUAGE FlexibleInstances #-}
+
+-- Our custom typeclass
+class Greet instance where
+  greet :: instance -&gt; String
+
+-- Enhancing built-in type with it
+instance Greet String where
+  greet str = &quot;Hello, &quot; ++ str ++ &quot;!&quot;
+
+-- Defining our own type
+data MyUser = MyUser { name :: String }
+
+-- Enhancing it
+instance Greet MyUser where
+  greet user = &quot;Hello again, &quot; ++ (name user)</code></pre><p>Basically, we do the same thing as we have already done for <code>Rust</code> and <code>Elixir</code>:</p>
+<ol>
+<li>We define a <code>Greet</code> typeclass that has a single function to implement: <code>greet</code></li>
+<li>Then we define instance implementation for <code>String</code> type, which is a built-in (alias for <code>[Char]</code>)</li>
+<li>Then we define custom <code>MyUser</code> type with <code>name</code> field of <code>String</code> type</li>
+<li>Implementing the <code>Greet</code> typeclass for <code>MyUser</code> is the last thing we do</li>
+</ol>
+<p>Then we can use our new <code>greet</code> function:</p>
+<pre><code>-- Here you can see that we can use `Greet` typeclass to annotate our types.
+-- I have made this alias entirely for this annotation demo,
+-- in real life we would just use `greet` directly:
+greetAlias :: Greet instance =&gt; instance -&gt; String
+greetAlias = greet
+
+main = do
+  print $ greetAlias &quot;world&quot;
+  -- Hello, world!
+  print $ greetAlias MyUser { name=&quot;example&quot; }
+  -- Hello again, example</code></pre><p>Some real-life examples of typeclasses:</p>
+<ul>
+<li><a href="https://hackage.haskell.org/package/base-4.15.0.0/docs/Text-Show.html#t:Show" target="_blank" rel="noopener"><code>Show</code></a> to convert things into user-readable representations</li>
+<li><a href="https://wiki.haskell.org/Functor" target="_blank" rel="noopener"><code>Functor</code></a>, <a href="https://hackage.haskell.org/package/base-4.10.1.0/docs/Control-Applicative.html#t:Applicative" target="_blank" rel="noopener"><code>Applicate</code></a>, and <a href="https://wiki.haskell.org/Monad" target="_blank" rel="noopener"><code>Monad</code></a> are all typeclasses</li>
+</ul>
+<p>I would say that among our three examples, <code>Haskell</code> relies on its typeclasses the heaviest.</p>
+<p>It is important to note that typeclasses from <code>Haskell</code> and traits from <code>Rust</code> <a href="https://stackoverflow.com/questions/28123453/what-is-the-difference-between-traits-in-rust-and-typeclasses-in-haskell" target="_blank" rel="noopener">are a bit different</a>, but we won’t go into these details to keep this article rather short.</p>
+<p>But, what about Python?</p>
+<h2 id="dry-python-classes"><a href="#dry-python-classes" class="headerlink" title="dry-python/classes"></a><a href="https://sobolevn.me/#dry-pythonclasses" target="_blank" rel="noopener">dry-python/classes</a></h2><p>There’s an awesome function in the Python standard library called <a href="https://docs.python.org/3/library/functools.html#functools.singledispatch" target="_blank" rel="noopener"><code>singledispatch</code></a>.</p>
+<p>It does exactly what we need. Do you still remember that we are finding a way to change the function’s behavior based on the input type?</p>
+<p>Let’s have a look!</p>
+<pre><code>from functools import singledispatch
+
+@ singledispatch
+def greet(instance) -&gt; str:
+    &quot;&quot;&quot;Default case.&quot;&quot;&quot;
+    raise NotImplementedError
+
+@ greet.register
+def _greet_str(instance: str) -&gt; str:
+    return &apos;Hello, {0}!&apos;.format(instance)
+
+# Custom type
+
+@ dataclass
+class MyUser(object):
+    name: str
+
+@ greet.register
+def _greet_myuser(instance: MyUser) -&gt; str:
+    return &apos;Hello again, {0}&apos;.format(instance.name)</code></pre><p>Looks cool, moreover, it is in standard lib, you even don’t have to install anything!</p>
+<p>And we can use it like a normal function:</p>
+<pre><code>print(greet(&apos;world&apos;))
+# Hello, world!
+print(greet(MyUser(name=&apos;example&apos;)))
+# Hello again, example</code></pre><p>So, what’s the point in writing a completely different library like we did with <code>dry-python/classes</code>?</p>
+<p>We even reuse some parts of <code>singledispatch</code> implementation, but there are several key differences.</p>
+<h3 id="Better-typing"><a href="#Better-typing" class="headerlink" title="Better typing"></a><a href="https://sobolevn.me/#better-typing" target="_blank" rel="noopener">Better typing</a></h3><p>With <code>singledispatch</code> you cannot be sure that everything will work, because it is not supported by <code>mypy</code>.</p>
+<p>For example, you can pass unsupported types:</p>
+<pre><code>greet(1)  # mypy is ok with that :(
+# runtime will raise `NotImplementedError`</code></pre><p>In <code>dry-python/classes</code> we have fixed that. You can only pass types that are supported:</p>
+<pre><code>from classes import typeclass
+
+@ typeclass
+def greet(instance) -&gt; str:
+    ...
+
+@ greet.instance(str)
+def _greet_str(instance: str) -&gt; str:
+    return &apos;Iterable!&apos;
+
+greet(1)
+# Argument 1 to &quot;greet&quot; has incompatible type &quot;int&quot;; expected &quot;str&quot;</code></pre><p>Or you can break the <code>@ singledispatch</code> signature contract:</p>
+<pre><code>@ greet.register
+def _greet_dict(instance: dict, key: str) -&gt; int:
+    return instance[key]  # still no mypy error</code></pre><p>But, not with <code>dry-python/classes</code>:</p>
+<pre><code>@ greet.instance(dict)
+def _greet_dict(instance: dict, key: str) -&gt; int:
+    ...
+# Instance callback is incompatible
+# &quot;def (instance: builtins.dict[Any, Any], key: builtins.str) -&gt; builtins.int&quot;;
+# expected
+# &quot;def (instance: builtins.dict[Any, Any]) -&gt; builtins.str&quot;</code></pre><p><code>@ singledispatch</code> also does not allow defining generic functions:</p>
+<pre><code>@ singledispatch
+def copy(instance: X) -&gt; X:
+    &quot;&quot;&quot;Default case.&quot;&quot;&quot;
+    raise NotImplementedError
+
+@ copy.register
+def _copy_int(instance: int) -&gt; int:
+    return instance
+# Argument 1 to &quot;register&quot; of &quot;_SingleDispatchCallable&quot;
+# has incompatible type &quot;Callable[[int], int]&quot;;
+# expected &quot;Callable[..., X]&quot;
+
+reveal_type(copy(1))
+# Revealed type is &quot;X`-1&quot;
+# Should be: `int`</code></pre><p>Which is, again, possible with <code>dry-python/classes</code>, we fully support <a href="https://classes.readthedocs.io/en/latest/pages/generics.html" target="_blank" rel="noopener">generic functions</a>:</p>
+<pre><code>from typing import TypeVar
+from classes import typeclass
+
+X = TypeVar(&apos;X&apos;)
+
+@ typeclass
+def copy(instance: X) -&gt; X:
+    ...
+
+@ copy.instance(int)
+def _copy_int(instance: int) -&gt; int:
+    ...  # ok
+
+reveal_type(copy(1))  # int</code></pre><p>And you cannot <a href="https://classes.readthedocs.io/en/latest/pages/concept.html#type-restrictions" target="_blank" rel="noopener">restrict</a> <code>@ singledispatch</code> to work with only subtypes of specific types, even if you want to.</p>
+<h3 id="Protocols-are-unsupported"><a href="#Protocols-are-unsupported" class="headerlink" title="Protocols are unsupported"></a><a href="https://sobolevn.me/#protocols-are-unsupported" target="_blank" rel="noopener">Protocols are unsupported</a></h3><p>Protocols are an important part of Python. Sadly, they are not supported by <code>@ singledispatch</code>:</p>
+<pre><code>@ greet.register
+def _greet_iterable(instance: Iterable) -&gt; str:
+    return &apos;Iterable!&apos;
+# TypeError: Invalid annotation for &apos;instance&apos;.
+# typing.Iterable is not a class</code></pre><p><a href="https://classes.readthedocs.io/en/latest/pages/concept.html#protocols" target="_blank" rel="noopener">Protocols</a> support is also solved with <code>dry-python/classes</code>:</p>
+<pre><code>from typing import Iterable
+from classes import typeclass
+
+@ typeclass
+def greet(instance) -&gt; str:
+    ...
+
+@ greet.instance(Iterable, is_protocol=True)
+def _greet_str(instance: Iterable) -&gt; str:
+    return &apos;Iterable!&apos;
+
+print(greet([1, 2, 3]))
+# Iterable!</code></pre><h3 id="No-way-to-annotate-types"><a href="#No-way-to-annotate-types" class="headerlink" title="No way to annotate types"></a><a href="https://sobolevn.me/#no-way-to-annotate-types" target="_blank" rel="noopener">No way to annotate types</a></h3><p>Let’s say you want to write a function and annotate one of its arguments that it must support the <code>greet</code> function. Something like:</p>
+<pre><code>def greet_and_print(instance: &apos;???&apos;) -&gt; None:
+    print(greet(instance))</code></pre><p>It is impossible with <code>@ singledispatch</code>. But, you can do it with <code>dry-python/classes</code>:</p>
+<pre><code>from classes import AssociatedType, Supports, typeclass
+
+class Greet(AssociatedType):
+    &quot;&quot;&quot;Special type to represent that some instance can `greet`.&quot;&quot;&quot;
+
+@ typeclass(Greet)
+def greet(instance) -&gt; str:
+    &quot;&quot;&quot;No implementation needed.&quot;&quot;&quot;
+
+@ greet.instance(str)
+def _greet_str(instance: str) -&gt; str:
+    return &apos;Hello, {0}!&apos;.format(instance)
+
+def greet_and_print(instance: Supports[Greet]) -&gt; None:
+    print(greet(instance))
+
+greet_and_print(&apos;world&apos;)  # ok
+greet_and_print(1)  # type error with mypy, exception in runtime
+# Argument 1 to &quot;greet_and_print&quot; has incompatible type &quot;int&quot;;
+# expected &quot;Supports[Greet]&quot;</code></pre><h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a><a href="https://sobolevn.me/#conclusion" target="_blank" rel="noopener">Conclusion</a></h2><p>We have come a long way, from basic stacked <code>isinstance()</code> conditions - through OOP - to typeclasses.</p>
+<p>I have shown, that this native and pythonic idea deserves wider recognition and usage. And our extra features in <code>dry-python/classes</code> can save you from lots of mistakes and help to write more expressive and safe business logic.</p>
+<p>As a result of using typeclasses, you will untangle your structures from behavior, which will allow you to get rid of useless and complex abstractions and write dead-simple typesafe code. You will have your behavior near the structures, not inside them. This will also solve the extendability problem of OOP.</p>
+<p>Combine it with other <code>dry-python</code> libraries for extra effect!</p>
+<h2 id="Future-work"><a href="#Future-work" class="headerlink" title="Future work"></a><a href="https://sobolevn.me/#future-work" target="_blank" rel="noopener">Future work</a></h2><p>What do we plan for the future?</p>
+<p>There are several key aspects to improve:</p>
+<ol>
+<li>Our <code>Supports</code> should take any amount of type arguments: <code>Supports[A, B, C]</code>. This type will represent a type that supports all three typeclasses <code>A</code>, <code>B</code>, and <code>C</code> <a href="https://github.com/dry-python/classes/issues/206" target="_blank" rel="noopener">at the same time</a></li>
+<li>We don’t <a href="https://github.com/dry-python/classes/issues/24" target="_blank" rel="noopener">support concrete generics</a> just yet. So, for example, it is impossible to define different cases for <code>List[int]</code> and <code>List[str]</code>. This might require adding runtime typecheker to <code>dry-python/classes</code></li>
+<li>I am planning <a href="https://sobolevn.me/2021/02/make-tests-a-part-of-your-app" target="_blank" rel="noopener">to make tests a part of this app</a> as well! We will ship a <a href="https://github.com/dry-python/classes/issues/234" target="_blank" rel="noopener">hypothesis plugin</a> to test users’ typeclasses in a single line of code</li>
+</ol>
+<p>Stay tuned!</p>
+<p>If you like this article you can:</p>
+<ol>
+<li>Donate to future <code>dry-python</code> development on <a href="https://github.com/sponsors/dry-python" target="_blank" rel="noopener">GitHub</a></li>
+<li><a href="https://github.com/dry-python/classes/stargazers" target="_blank" rel="noopener">Star our <code>classes</code> repo</a></li>
+<li><a href="https://sobolevn.me/subscribe/" target="_blank" rel="noopener">Subscribe</a> to my blog for more content!</li>
+</ol>
+<hr>
+<h2 id="Subscribe-to-my-blog-if-you-want-more"><a href="#Subscribe-to-my-blog-if-you-want-more" class="headerlink" title="Subscribe to my blog if you want more"></a><a href="https://sobolevn.me/subscribe" target="_blank" rel="noopener">Subscribe to my blog if you want more</a></h2><p>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" target="_blank" rel="noopener">comments powered by Disqus.</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/06/25/qiwihui-pocket_readings-1141/" rel="prev" title="JSON Web Tokens (JWT) are Dangerous for User Sessions—Here’s a Solution | Redis Labs">
+      <i class="fa fa-chevron-left"></i> JSON Web Tokens (JWT) are Dangerous for User Sessions—Here’s a Solution | Redis Labs
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/07/01/qiwihui-pocket_readings-1144/" rel="next" title="
+
+
+基于业务场景的漏洞挖掘 ">
+      
+
+
+基于业务场景的漏洞挖掘  <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Typeclasses-in-Python"><span class="nav-number"></span> <span class="nav-text">Typeclasses in Python</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Typeclasses-in-Python-1"><span class="nav-number"></span> <span class="nav-text">Typeclasses in Python</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Some-functions-must-behave-differently"><span class="nav-number"></span> <span class="nav-text">Some functions must behave differently</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OOP-extendability-and-over-abstraction-problems"><span class="nav-number"></span> <span class="nav-text">OOP extendability and over-abstraction problems</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Monkey-patching"><span class="nav-number">1.</span> <span class="nav-text">Monkey-patching</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Extra-abstractions"><span class="nav-number">2.</span> <span class="nav-text">Extra abstractions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Typeclasses-and-similar-concepts"><span class="nav-number"></span> <span class="nav-text">Typeclasses and similar concepts</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Elixir"><span class="nav-number">1.</span> <span class="nav-text">Elixir</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Rust"><span class="nav-number">2.</span> <span class="nav-text">Rust</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Haskell"><span class="nav-number">3.</span> <span class="nav-text">Haskell</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dry-python-classes"><span class="nav-number"></span> <span class="nav-text">dry-python&#x2F;classes</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Better-typing"><span class="nav-number">1.</span> <span class="nav-text">Better typing</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Protocols-are-unsupported"><span class="nav-number">2.</span> <span class="nav-text">Protocols are unsupported</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#No-way-to-annotate-types"><span class="nav-number">3.</span> <span class="nav-text">No way to annotate types</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Conclusion"><span class="nav-number"></span> <span class="nav-text">Conclusion</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Future-work"><span class="nav-number"></span> <span class="nav-text">Future work</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Subscribe-to-my-blog-if-you-want-more"><span class="nav-number"></span> <span class="nav-text">Subscribe to my blog if you want more</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

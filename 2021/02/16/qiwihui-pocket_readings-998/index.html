@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"pocket.qiwihui.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="《深度剖析CPython解释器》2.  解密PyObject、PyVarObject、PyTypeObject在Python对象体系中所代表的含义，用CPython来总结Python中type和object之间的关系 - 古明地盆 - 博客园">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《深度剖析CPython解释器》2.  解密PyObject、PyVarObject、PyTypeObject在Python对象体系中所代表的含义，用CPython来总结Python中type和object之间的关系 - 古明地盆 - 博客园">
+<meta property="og:url" content="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-998/index.html">
+<meta property="og:site_name" content="Pocket Readings">
+<meta property="og:description" content="《深度剖析CPython解释器》2.  解密PyObject、PyVarObject、PyTypeObject在Python对象体系中所代表的含义，用CPython来总结Python中type和object之间的关系 - 古明地盆 - 博客园">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202007/1229382-20200729175526029-1401355195.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1229382/202007/1229382-20200728145054041-1031552242.png">
+<meta property="article:published_time" content="2021-02-16T14:06:21.000Z">
+<meta property="article:modified_time" content="2021-07-21T13:58:31.434Z">
+<meta property="article:author" content="qiwihui">
+<meta property="article:tag" content="fetched">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img2020.cnblogs.com/blog/1229382/202007/1229382-20200729175526029-1401355195.png">
+
+<link rel="canonical" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-998/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>《深度剖析CPython解释器》2.  解密PyObject、PyVarObject、PyTypeObject在Python对象体系中所代表的含义，用CPython来总结Python中type和object之间的关系 - 古明地盆 - 博客园 | Pocket Readings</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Pocket Readings</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">个人阅读清单记录博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://pocket.qiwihui.com/2021/02/16/qiwihui-pocket_readings-998/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="qiwihui">
+      <meta itemprop="description" content="个人阅读清单记录博客，并不代表个人观点。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Pocket Readings">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          《深度剖析CPython解释器》2.  解密PyObject、PyVarObject、PyTypeObject在Python对象体系中所代表的含义，用CPython来总结Python中type和object之间的关系 - 古明地盆 - 博客园
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-02-16 14:06:21" itemprop="dateCreated datePublished" datetime="2021-02-16T14:06:21+00:00">2021-02-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-07-21 13:58:31" itemprop="dateModified" datetime="2021-07-21T13:58:31+00:00">2021-07-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/2019%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">2019阅读</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">《深度剖析CPython解释器》2.  解密PyObject、PyVarObject、PyTypeObject在Python对象体系中所代表的含义，用CPython来总结Python中type和object之间的关系 - 古明地盆 - 博客园</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&#25105;&#20204;&#22312;&#19978;&#19968;&#31687;&#20013;&#35828;&#21040;&#20102;&#65292;&#38754;&#21521;&#23545;&#35937;&#29702;&#35770;&#20013;”&#31867;”&#21644;”&#23545;&#35937;”&#36825;&#20004;&#20010;&#27010;&#24565;&#22312;Python&#20869;&#37096;&#37117;&#26159;&#36890;&#36807;”&#23545;&#35937;”&#23454;&#29616;&#30340;&#12290;”&#31867;”&#26159;&#19968;&#31181;&#23545;&#35937;&#65292;&#31216;&#20026;”&#31867;&#22411;&#23545;&#35937;”&#65292;”&#31867;”&#23454;&#20363;&#21270;&#24471;&#21040;&#30340;&#20063;&#26159;”&#23545;&#35937;”&#65292;&#31216;&#20026;”&#23454;&#20363;&#23545;&#35937;”&#12290;<br><br><br><br>Tags:<br><br><br><br>via Pocket <a href="https://ift.tt/3rZJEsM" target="_blank" rel="noopener">https://ift.tt/3rZJEsM</a> original site<br><br><br><br>February 16, 2021 at 10:03PM</p>
+<h3 id="Comments"><a href="#Comments" class="headerlink" title="Comments"></a>Comments</h3><hr>
+<blockquote>
+<p>from: <a href="https://github.com/qiwihui/pocket_readings/issues/998#issuecomment-779859409" target="_blank" rel="noopener"><strong>github-actions[bot]</strong></a> on: <strong>2/16/2021</strong></p>
+</blockquote>
+<h2 id="《深度剖析CPython解释器》2-解密PyObject、PyVarObject、PyTypeObject在Python对象体系中所代表的含义，用CPython来总结Python中type和object之间的关系-古明地盆-博客园"><a href="#《深度剖析CPython解释器》2-解密PyObject、PyVarObject、PyTypeObject在Python对象体系中所代表的含义，用CPython来总结Python中type和object之间的关系-古明地盆-博客园" class="headerlink" title="《深度剖析CPython解释器》2.  解密PyObject、PyVarObject、PyTypeObject在Python对象体系中所代表的含义，用CPython来总结Python中type和object之间的关系 - 古明地盆 - 博客园"></a>《深度剖析CPython解释器》2.  解密PyObject、PyVarObject、PyTypeObject在Python对象体系中所代表的含义，用CPython来总结Python中type和object之间的关系 - 古明地盆 - 博客园</h2><h1><a href="https://www.cnblogs.com/traditional/p/13398797.html" target="_blank" rel="noopener"><span>《深度剖析CPython解释器》2. 解密PyObject、PyVarObject、PyTypeObject在Python对象体系中所代表的含义，用CPython来总结Python中type和object之间的关系</span></a></h1><div><div><h2>楔子</h2><p><strong>我们在上一篇中说到了，面向对象理论中"类"和"对象"这两个概念在Python内部都是通过"对象"实现的。"类"是一种对象，称为"类型对象"，"类"实例化得到的也是"对象"，称为"实例对象"。</strong></p><p><strong>并且根据对象的不同特点还可以进一步分类：</strong></p><ul><li><code>可变对象：对象创建之后可以本地修改;</code></li><li><code>不可变对象：对象创建之后不可以本地修改;</code></li><li><code>定长对象：对象所占用的内存大小固定;</code></li><li><code>不定长对象：对象所占用的内存大小不固定;</code></li></ul><p><strong>但是"对象"在Python的底层是如何实现的呢？我们知道标准的Python解释器是C语言实现的CPython，但C并不是一个面向对象的语言，那么它是如何实现Python中的面向对象的呢？</strong></p><p><strong>首先对于人的思维来说，对象是一个比较形象的概念，但对于计算机来说，对象却是一个抽象的概念。它并不能理解这是一个整数，那是一个字符串，计算机所知道的一切都是字节。通常的说法是：对象是数据以及基于这些数据的操作的集合。在计算机中，一个对象实际上就是一片被分配的内存空间，这些内存可能是连续的，也可能是离散的。</strong></p><blockquote><p><strong>而Python中的任何对象在C中都对应一个结构体实例，在Python中创建一个对象，等价于在C中创建一个结构体实例。所以Python中的对象本质上就是C中malloc函数为结构体实例在堆区申请的一块内存。</strong></p></blockquote><p><strong>下面我们就来分析一下Python中的对象在C中是如何实现的，究竟生得一副什么模样，是三头六臂还是烈焰红唇。而第一步，就是下面要介绍的PyObject。</strong></p><h2>实现对象机制的基石--PyObject</h2><p><strong>Python中一切皆对象，而所有的对象都拥有一些共同的信息(也叫头部信息)，这些信息就在PyObject中，PyObject是Python整个对象机制的核心，我们来看看它的定义：</strong></p><pre><code>//Include/object.htypedef struct _object {_PyObject_HEAD_EXTRAPy_ssize_t ob_refcnt;struct _typeobject *ob_type;} PyObject;</code></pre><p><strong>我们看到以上便是PyObject的内部信息，我们先来看看_PyObject_HEAD_EXTRA，这是一个宏，如果将其展开的话：</strong></p><pre><code>#ifdef Py_TRACE_REFS/* Define pointers to support a doubly-linked list of all live heap objects. */#define _PyObject_HEAD_EXTRA            \struct _object *_ob_next;           \struct _object *_ob_prev;#define _PyObject_EXTRA_INIT 0, 0,#else#define _PyObject_HEAD_EXTRA#define _PyObject_EXTRA_INIT#endif</code></pre><p><strong>那么这个宏是做什么的呢？这个宏是用来实现一个名叫refchain的"双向链表"的，Python会将程序中创建的所有对象都放入到这个双向链表中，用于跟踪所有</strong><strong>活跃的堆对像</strong><strong>。每一个对象都指向了它的前一个对象和后一个对象，如果是第一个对象，那么它的前继节点为NULL；如果是最后一个节点，那么它的后继节点为NULL。不过这个宏仅仅是在debug下有用，所以我们目前不需要管这个宏。</strong></p><div><p><b>我们的重心是PyObject中的这个宏下面的两位老铁：ob_refcnt和ob_type。</b></p></div><p><strong>ob_refcnt：引用计数</strong></p><p><strong>ob_refcnt表示对象的引用计数，当一个对象被引用时，那么ob_refcnt会自增1；引用解除时，ob_refcnt自减1。而一旦对象的引用计数为0时，那么这个对象就会被回收。</strong></p><p><strong>那么在哪些情况下，引用计数会加1呢？哪些情况下，引用计数会减1呢？</strong></p><p><strong>导致引用计数加1的情况：</strong></p><ul><li><code>对象被创建：比如name = "古明地觉", 此时对象就是"古明地觉"这个字符串, 创建成功时它的引用计数为1</code></li><li><code>变量传递使得对象被新的变量引用：比如Name = name</code></li><li><code>引用该对象的某个变量作为参数传到一个函数或者类中：比如func(name)</code></li><li><code>引用该对象的某个变量作为元组、列表、集合等容器的一个元素：比如lst = [name]</code></li></ul><p><strong>导致引用计数减1的情况：</strong></p><ul><li><code>引用该对象的变量被显示的销毁：del name</code></li><li><code>对象的引用指向了别的对象：name = "椎名真白"</code></li><li><code>引用该对象的变量离开了它的作用域，比如函数的局部变量在函数执行完毕的时候会被销毁</code></li><li><code>引用该对象的变量所在的容器被销毁，或者被从容器里面删除</code></li></ul><p><strong>所以我们使用del删除一个对象，并不是删除这个对象，我们没有这个权力，del只是使对象的引用计数减一，至于到底删不删是解释器判断对象引用计数是否为0决定的。为0就删，不为0就不删，就这么简单。</strong></p><p><strong>而ob_refcnt的类型是Py_ssize_t，在64位机器上直接把这个类型看成long即可<code>(话说这都2020年了，不会还有人用32位机器吧)</code>，因此一个对象的引用计数不能超过long所表示的最大范围。但是显然，如果不是吃饱了撑的写恶意代码，是不可能超过这个范围的。</strong></p><p><strong>ob_type：类型指针</strong></p><p><strong>我们说一个对象是有类型的，类型对象描述实例对象的数据和行为，而ob_type存储的便是对应类型对象的指针，所以类型对象在底层对应的是struct _typeobject实例。从这里我们可以看出，所有的类型对象在底层都是由同一个结构体实例化得到的，因为PyObject是所有的对象共有的，它们的ob_type指向的都是struct _typeobject。</strong></p><blockquote><p><strong>所以不同的实例对象对应不同的结构体，但是类型对象对应的都是同一个结构体。</strong></p></blockquote><p><strong>因此我们看到PyObject的定义非常简单，就是一个引用计数和一个类型指针，所以Python中的任意对象都必有：引用计数和类型这两个属性。</strong></p><h2>实现变长对象的基石--PyVarObject</h2><p><strong>我们说PyObject是所有对象的核心，它包含了所有对象都共有的信息，但是还有那么一个属性虽然不是每个对象都有，但至少有一大半的对象会有，能猜到是什么吗？</strong></p><p><strong>我们说Python中的对象根据所占的内存是否固定可以分为定长对象和变长对象，而变长对象显然有一个长度的概念，比如字符串、列表、元组等等，即便是相同的实例对象，但是长度不同，所占的内存也是不同的。比如：字符串内部有多少个字符、元组、列表内部有多少个元素，显然这里的</strong><strong>多少</strong><strong>也是Python中很多对象的共有特征，虽然不像引用计数和类型那样是每个对象都必有的，但也是相当大一部分对象所具有的。</strong></p><p><strong>所以针对变长对象，Python底层也提供了一个结构体，因为Python很多都是变长对象。</strong></p><pre><code>//Include/object.htypedef struct {PyObject ob_base;Py_ssize_t ob_size; /* Number of items in variable part */} PyVarObject;</code></pre><p><strong>所以我们看到PyVarObject实际上是PyObject的一个扩展，它在PyObject的基础上提供了一个ob_size字段，用于记录内部的元素个数。比如列表，列表<code>(PyListObject实例)</code>中的ob_size维护的就是列表的元素个数，插入一个元素，ob_size会加1，删除一个元素，ob_size会减1。所以我们使用len获取列表的元素个数是一个时间复杂度为O(1)的操作，因为ob_size是时刻都和内部的元素个数保持一致，使用len获取元素个数的时候会直接访问ob_size。</strong></p><p><strong>因此在Python中，所有的变长对象都拥有PyVarObject，而所有的对象都拥有PyObject，这就使得在Python中，对"对象"的引用变得非常统一，我们只需要一个PyObject *就可以引用任意一个对象，而不需要管这个对象实际是一个什么对象。所以在Python中，所有的变量、以及容器内部的元素，本质上都是一个PyObject *。</strong></p><p><strong>由于PyObject和PyVarObject要经常被使用，所以Python提供了两个宏，方便定义。</strong></p><pre><code>#define PyObject_HEAD          PyObject ob_base;#define PyObject_VAR_HEAD      PyVarObject ob_base;</code></pre><p><strong>比如定长对象浮点数，在底层对应的结构体为PyFloatObject，只需在头部PyObject的基础上再加上一个double即可。</strong></p><pre><code>typedef struct {PyObject_HEADdouble ob_fval;} PyFloatObject;</code></pre><p><strong>而对于变长对象列表，在底层对应的结构体是PyListObject，所以它需要在PyVarObject的基础上再加上一个指向数组的二级指针和一个容量即可。</strong></p><pre><code>typedef struct {PyObject_VAR_HEADPyObject **ob_item;Py_ssize_t allocated;} PyListObject;</code></pre><p><strong>这上面的每一个成员都代表什么，我们之前已经分析过了。ob_item就是指向指针数组的二级指针，而allocated表示已经分配的容量，一旦添加元素的时候发现ob_size自增1之后会大于allocated，那么解释器就会对ob_item指向的指针数组进行扩容了。更准确的说，是申请一个容量更大数组，然后将原来指向的指针数组内部的元素按照顺序一个一个地拷贝到新的数组里面去，并让ob_item指向新的数组，这一点在分析PyListObject的时候会细说。所以我们看到列表在添加元素的时候，地址是不会改变的，即使容量不够了也没有关系，直接让ob_item指向新的数组就好了，至于PyListObject对象本身的地址是不会变化的。</strong></p><div><p><b>最后再来介绍两个宏定义，这个是针对于类型对象的，我们后面在介绍类型对象的时候会经常见到这两个宏定义。</b></p></div><pre><code>// Include/object.h#define PyObject_HEAD_INIT(type)        \{ _PyObject_EXTRA_INIT              \1, type },#define PyVarObject_HEAD_INIT(type, size)       \{ PyObject_HEAD_INIT(type) size },</code></pre><p><strong>先看PyObject_HEAD_INIT，里面的_PyObject_EXTRA_INIT是用来实现refchain这个双向链表的，我们目前不需要管。里面的1指的是引用计数，我们看到刚创建的时候默认是设置为1的，至于type就是该类型对象的类型了，这个是作为宏的参数传进来的；而PyVarObject_HEAD_INIT，则是在PyObject_HEAD_INIT的基础之上，增加了一个size，显然我们从名字也能看出来这个size是什么。当然目前只是介绍这两个宏，先有个印象，类型对象的实现我们下面就会说。</strong></p><h2>实现类型对象的基石--PyTypeObject</h2><p><strong>通过PyObject和PyVarObject，我们看到了Python中所有对象的共有信息以及变长对象的共有信息。对于任何一个对象，不管它是什么类型，内部必有引用计数<code>(ob_refcnt)</code>和类型指针<code>(ob_type)</code>；对于任意一个变长对象，不管它是什么类型，除了引用计数和类型指针之外，内部还有一个表示元素个数的ob_size。</strong></p><p><strong>显然目前是没有什么问题，一切都是符合我们的预期的，但是当我们顺着时间轴回溯的话，就会发现端倪。比如：</strong></p><ul><li><code>1. 当在内存中创建对象、分配空间的时候，解释器要给该对象分配多大的空间？显然不能随便分配，那么该对象的内存信息在什么地方？</code></li><li><code>2. 一个对象是支持相应的操作的，解释器怎么判断该对象支持哪些操作呢？再比如一个整型可以和一个整型相乘，但是一个列表也可以和一个整型相乘，即使是相同的操作，但不同类型的对象执行也会有不同的结果，那么此时解释器又是如何进行区分的？</code></li></ul><p><strong>想都不用想，这些信息肯定都在对象所对应的类型对象中。而且占用的空间大小实际上是对象的一个元信息，这样的元信息和其所属类型是密切相关的，因此它一定会出现在与之对应的类型对象当中。至于支持的操作就更不用说了，我们平时自定义类的时候，方法都写在什么地方，显然都是写在类里面，因此一个对象支持的操作显然定义在类型对象当中。</strong></p><p><strong>而将一个对象和其类型对象关联起来的，毫无疑问正是该对象内部的PyObject中的ob_type，也就是类型指针。我们通过对象的ob_type成员即可获取指向的类型对象的指针，通过该指针可以获取存储在类型对象中的某些元信息。</strong></p><p><strong>下面我们来看看类型对象在底层是怎么定义的：</strong></p><pre><code>//Include/object.htypedef struct _object {Py_ssize_t ob_refcnt;struct _typeobject *ob_type;} PyObject; //_typeobject正是PyObject里面的一个成员// 类型对象对应的结构体typedef struct _typeobject {PyObject_VAR_HEADconst char *tp_name;Py_ssize_t tp_basicsize, tp_itemsize;destructor tp_dealloc;printfunc tp_print;getattrfunc tp_getattr;setattrfunc tp_setattr;PyAsyncMethods *tp_as_async; /* formerly known as tp_compare (Python 2)or tp_reserved (Python 3) */reprfunc tp_repr;PyNumberMethods *tp_as_number;PySequenceMethods *tp_as_sequence;PyMappingMethods *tp_as_mapping;hashfunc tp_hash;ternaryfunc tp_call;reprfunc tp_str;getattrofunc tp_getattro;setattrofunc tp_setattro;PyBufferProcs *tp_as_buffer;unsigned long tp_flags;const char *tp_doc; /* Documentation string */traverseproc tp_traverse;inquiry tp_clear;richcmpfunc tp_richcompare;Py_ssize_t tp_weaklistoffset;getiterfunc tp_iter;iternextfunc tp_iternext;struct PyMethodDef *tp_methods;struct PyMemberDef *tp_members;struct PyGetSetDef *tp_getset;struct _typeobject *tp_base;PyObject *tp_dict;descrgetfunc tp_descr_get;descrsetfunc tp_descr_set;Py_ssize_t tp_dictoffset;initproc tp_init;allocfunc tp_alloc;newfunc tp_new;freefunc tp_free; /* Low-level free-memory routine */inquiry tp_is_gc; /* For PyObject_IS_GC */PyObject *tp_bases;PyObject *tp_mro; /* method resolution order */PyObject *tp_cache;PyObject *tp_subclasses;PyObject *tp_weaklist;destructor tp_del;unsigned int tp_version_tag;destructor tp_finalize;#ifdef COUNT_ALLOCSPy_ssize_t tp_allocs;Py_ssize_t tp_frees;Py_ssize_t tp_maxalloc;struct _typeobject *tp_prev;struct _typeobject *tp_next;#endif} PyTypeObject;#endif</code></pre><p><strong>类型对象在底层对应的是struct _typeobject，当然也是PyTypeObject，它里面的成员非常非常多，我们暂时挑几个重要的说，因为有一部分成员并不是那么重要，我们在后续会慢慢说。</strong></p><p><strong>目前我们了解到Python中的类型对象在底层就是一个PyTypeObject实例，它保存了实例对象的元信息，描述对象的类型。</strong></p><blockquote><p><strong>Python中的实例对象在底层对应不同的结构体实例，而类型对象则是对应同一个结构体实例，换句话说无论是int、str、dict等等等等，它们在C的层面都是由PyTypeObject这个结构体实例化得到的，只不过成员的值不同PyTypeObject这个结构体在实例化之后得到的类型对象也不同。</strong></p></blockquote><p><strong>我们看一下PyTypeObject内部几个非常关键的成员：</strong></p><ul><li><code>PyObject_VAR_HEAD：我们说这是一个宏，对应一个PyVarObject，所以类型对象是一个变长对象。而且类型对象也有引用计数和类型，这与我们前面分析的是一致的。</code></li><li><code>tp_name：类型的名称，而这是一个char *，显然它可以是int、str、dict之类的。</code></li><li><code>tp_basicsize, tp_itemsize：创建对应实例对象时所需要的内存信息。</code></li><li><code>tp_dealloc：其实例对象执行析构函数时所作的操作。</code></li><li><code>tp_print：其实例对象被打印时所作的操作。</code></li><li><code>tp_as_number：其实例对象为数值时，所支持的操作。这是一个数组指针，指向了一个指针数组，指向的指针数组中存储了大量的函数指针，其函数就是整型对象可以执行的操作，比如：四则运算、左移、右移、取模等等</code></li><li><code>tp_as_sequence：其实例对象为序列时，所支持的操作。同样是一个数组指针，指向一个指针数组。</code></li><li><code>tp_as_mapping：其实例对象为映射时，所支持的操作。也是一个数组指针，指向一个指针数组。</code></li><li><code>tp_base：继承的基类。</code></li></ul><p><strong>我们暂时就挑这么几个，事实上从名字上你也能看出来这每一个成员代表的含义。而且这里面的成员虽然多，但并非每一个类型对象都具备，比如int类型它就没有tp_as_sequence和tp_as_mapping，所以int类型的这两个成员的值都是0。</strong></p><p><strong>具体的我们就在分析具体的类型对象的时候再说吧，然后先来看看Python对象在底层都叫什么名字吧。</strong></p><ul><li><code>整型 -&gt; PyLongObject结构体实例, int -&gt; PyLong_Type(PyTypeObject结构体实例)</code></li><li><code>字符串 -&gt; PyUnicodeObject结构体实例, str -&gt; PyUnicode_Type(PyTypeObject结构体实例)</code></li><li><code>浮点数 -&gt; PyFloatObject结构体实例, float -&gt; PyFloat_Type(PyTypeObject结构体实例)</code></li><li><code>复数 -&gt; PyComplexObject结构体实例, complex -&gt; PyComplex_Type(PyTypeObject结构体实例)</code></li><li><code>元组 -&gt; PyTupleObject结构体实例, tuple -&gt; PyTuple_Type(PyTypeObject结构体实例)</code></li><li><code>列表 -&gt; PyListObject结构体实例, list -&gt; PyList_Type(PyTypeObject结构体实例)</code></li><li><code>字典 -&gt; PyDictObject结构体实例, dict -&gt; PyDict_Type(PyTypeObject结构体实例)</code></li><li><code>集合 -&gt; PySetObject结构体实例, set -&gt; PySet_Type(PyTypeObject结构体实例)</code></li><li><code>不可变集合 -&gt; PyFrozenSetObject结构体实例, frozenset -&gt; PyFrozenSet_Type(PyTypeObject结构体实例)</code></li><li><code>元类：PyType_Type(PyTypeObject结构体实例)</code></li></ul><p><strong>所以Python中的对象在底层的名字都遵循一定的标准，包括解释器提供的Python/C API也是如此。</strong></p><div><p><b>下面以浮点数为例，考察一下类型对象和实例对象之间的关系。</b></p></div><p><strong>浮点类型我们说底层对应的是PyTypeObject的实例PyFloat_Type，并且浮点类型是全局唯一的；而浮点数则是PyFloatObject实例，浮点数可以有任意个，比如：圆周率pi是一个、自然对数e又是一个。</strong></p><pre><code>&gt;&gt;&gt; float&lt;class 'float'&gt;&gt;&gt;&gt; pi = 3.14&gt;&gt;&gt; e = 2.71&gt;&gt;&gt;&gt;&gt;&gt; type(pi) is type(e) is floatTrue&gt;&gt;&gt;</code></pre><p><img src="https://img2020.cnblogs.com/blog/1229382/202007/1229382-20200729175526029-1401355195.png" alt=""></p><p><strong>两个变量均指向了浮点数(PyFloatObject结构体实例)，除了公共头部字段ob_refcnt和ob_type，专有字段ob_fval保存了对应的数值；浮点类型float则对应PyTypeObject结构体实例(PyFloat_Type)，保存了类型名、内存分配信息以及浮点数相关操作。而将这两者关联起来的就是ob_type这个类型指针，它位于PyObject中，是所有对象共有的，而Python便是根据这个ob_type来判断该对象的类型，进而获取该对象的元信息。</strong></p><blockquote><p><strong>我们说变量只是一个指针，那么int、float、dict这些是不是变量，显然是的，函数和类也是一个变量，所以它们在底层也是一个指针。只不过这些变量是内置的，直接指向了具体的PyTypeObject实例。只是为了方便，有时我们用int、float等等，来代指指向的对象。比如：float指向了底层的PyFloat_Type，所以它其实是PyFloat_Type的指针，但为了表述方便我们会直接用float来代指PyFloat_Type。</strong></p><p><strong>而且类型对象在解释器启动的时候就已经是创建好了的，不然的话我们怎么能够直接用呢？类型对象创建完毕之后，直接让float指向相应的类型对象。</strong></p></blockquote><p><strong>我们来看一下float对应的类型对象在底层是怎么定义的吧。</strong></p><pre><code>// Object/floatobject.cPyTypeObject PyFloat_Type = {PyVarObject_HEAD_INIT(&amp;PyType_Type, 0)"float",sizeof(PyFloatObject),0,(destructor)float_dealloc,                  /* tp_dealloc */// ...(reprfunc)float_repr,                       /* tp_repr */// ...};</code></pre><p><strong>我们看到PyFloat_Type在源码中就直接被创建了，这是必须的，否则我们就没有办法直接访问float这个变量了，然后先看结构体中的第4行，我们看到tp_name被初始化成了"float"；第5行表示实例对象所占的字节数，我们看到就是一个PyFloatObject实例所占的内存大小，并且显然这个值是不会变的，说明无论创建多少个实例对象，它们的大小都是不变的，这也符合我们之前的测试结果，都是24字节。</strong></p><p><strong>再往下就是一些各种操作对应的函数指针，最后我们来看一下第3行，显然它接收的是一个PyVarObject，PyVarObject_HEAD_INIT这个宏无需赘言，但重点是里面的&amp;PyType_Type，说明了float被设置成了type类型。</strong></p><pre><code>&gt;&gt;&gt; float.__class__&lt;class 'type'&gt;&gt;&gt;&gt; # 显然这是符合我们的预期的</code></pre><p><strong>而且所有的类型对象(还有元类)在底层都被定义成了静态的全局变量，因为它们的声明周期是伴随着整个解释器的，并且在任意地方都可以访问。</strong></p><h2>类型对象的类型--PyType_Type</h2><p><strong>我们考察了float类型对象，知道它在C的层面是PyFloat_Type这个静态全局变量，它的类型是type，包括我们自定义的类的类型也是type。而type在Python中是一个至关重要的对象，它是所有类型对象的类型，我们称之为元类型<code>(meta class)</code>，或者元类。借助元类型，我们可以实现很多神奇的高级操作。那么type在C的层面又长啥样呢？</strong></p><p><strong>在介绍PyFloat_Type的时候我们知道了type在底层对应PyType_Type，而它在"Object/typeobject.c"中定义，因为我们说所有的类型对象加上元类都是要预先定义好的，所以要源码中就必须要以静态全局变量的形式出现。</strong></p><pre><code>PyTypeObject PyType_Type = {PyVarObject_HEAD_INIT(&amp;PyType_Type, 0)"type",                                     /* tp_name */sizeof(PyHeapTypeObject),                   /* tp_basicsize */sizeof(PyMemberDef),                        /* tp_itemsize */(destructor)type_dealloc,                   /* tp_dealloc */// ...(reprfunc)type_repr,                        /* tp_repr */// ...};</code></pre><p><strong>我们所有的类型对象加上元类都是PyTypeObject这个结构体实例化得到的，所以它们内部的成员都是一样的，只不过传入的值不同，实例化之后的结果也不同，可以是PyLong_Type、可以是PyFloat_Type，也可以是这里的PyType_Type。</strong></p><p><strong>PyType_Type的内部成员和PyFloat_Type是一样的，但是我们还是要重点看一下里面的宏PyVarObject_HEAD_INIT，我们看到它传递的是一个&amp;PyType_Type，说明它把自身的类型也设置成了PyType_Type，换句话说，PyType_Type里面的ob_type成员指向的还是PyType_Type。</strong></p><pre><code>&gt;&gt;&gt; type.__class__&lt;class 'type'&gt;&gt;&gt;&gt; type.__class__.__class__.__class__.__class__.__class__ is typeTrue&gt;&gt;&gt; type(type(type(type(type(type))))) is typeTrue&gt;&gt;&gt;</code></pre><p><strong>显然不管我们套娃多少次，最终的结果都是True，显然这也是符合我们的预期的。</strong></p><h2>类型对象的基类--PyBaseObject_Type</h2><p><strong>我们说Python中有两个类型对象比较特殊，一个是站在类型金字塔顶端的type，一个是站在继承金字塔顶端的object。说完了type，我们来说说object，我们说类型对象内部的tp_base表示继承的基类，对于PyType_Type来讲，它内部的tp_base肯定是PyBaseObject_Type。</strong></p><p><strong>但令我们吃鲸的是，它的tp_base居然是个0，如果为0的话则表示没有这个属性。</strong></p><pre><code>0,                                          /* tp_base */</code></pre><p><strong>不是说type的基类是object吗？为啥tp_base是0，事实上如果你去看PyFloat_Type的话，它内部的tp_base也是0。为0的原因就在于我们目前看到的类型对象是一个半成品，因为Python的动态性，显然不可能在定义的时候就将所有成员属性都设置好、然后解释器一启动就会得到我们平时使用的类型对象。目前看到的类型对象是一个半成品，有一部分成员属性是在解释器启动之后再进行动态完善的。</strong></p><blockquote><p><strong>至于是怎么完善的，都有哪些成员需要解释器启动之后才能完善，我们后续系列会说。</strong></p></blockquote><p><strong>而PyBaseObject_Type位于Object/object.c中，我们来一睹其芳容。</strong></p><pre><code>PyTypeObject PyBaseObject_Type = {PyVarObject_HEAD_INIT(&amp;PyType_Type, 0)"object",                                   /* tp_name */sizeof(PyObject),                           /* tp_basicsize */0,                                          /* tp_itemsize */object_dealloc,                             /* tp_dealloc */// ...object_repr,                                /* tp_repr */// ...};</code></pre><p><strong>我们看到PyBaseObject_Type的类型也被设置成了PyType_Type，而PyType_Type类型在被完善之后，它的tp_base也会指向PyBaseObject_Type。所以之前我们说Python中的type和object是同时出现的，它们的定义是需要依赖彼此的。</strong></p><pre><code>&gt;&gt;&gt; object.__class__&lt;class 'type'&gt;&gt;&gt;&gt;</code></pre><p><strong>注意：解释器在完善PyBaseObject_Type的时候，是不会设置其tp_base的，因为继承链必须有一个终点，否对象沿着继承链进行属性查找的时候就会陷入死循环，而object已经是继承链的顶点了。</strong></p><pre><code>&gt;&gt;&gt; print(object.__base__)None&gt;&gt;&gt;</code></pre><ul><li><code>object -&gt; PyBaseObject_Type</code></li><li><code>object() -&gt; PyBaseObject</code></li></ul><h2>小结</h2><p><strong>至此，我们算是从解释器的角度完全理清了Python中对象体系，其实我们之前画的图已经将Python对象体系表达的很清晰了，如下：</strong></p><p><img src="https://img2020.cnblogs.com/blog/1229382/202007/1229382-20200728145054041-1031552242.png" alt=""></p><p><strong>我们之前花了很大一部分笔墨来从Python的角度介绍其对象体系，之所以这么做就是为了能够更好地理解本篇内容。如果能在Python层面上充分理解的话，那么在CPython层面上理解也就不难了。</strong></p><p><strong>而且我们还介绍了PyObject、PyVarObject，并分析了Python中的type和object在底层的实现，虽然还肯定远远不够，但对于当前来说已经迈出一大步了。我们在后续系列中会针对Python中类型对象进行单独剖析，到时候再来挖掘更加细致的内容。</strong></p></div><div></div></div><div>posted @ <span>2020-07-29 18:12</span>&nbsp; <a href="https://www.cnblogs.com/traditional/" target="_blank" rel="noopener">古明地盆</a>&nbsp; 阅读(<span>570</span>)&nbsp; 评论(<span>0</span>)&nbsp; <a href="https://i.cnblogs.com/EditPosts.aspx?postid=13398797" target="_blank" rel="noopener">编辑</a>&nbsp; <a href="https://www.cnblogs.com/traditional/p/13398797.html" target="_blank" rel="noopener">收藏</a></div>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/fetched/" rel="tag"># fetched</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-997/" rel="prev" title="《深度剖析CPython解释器》1. Python中一切皆对象，这里的对象究竟是什么？解密Python中的对象模型 - 古明地盆 - 博客园">
+      <i class="fa fa-chevron-left"></i> 《深度剖析CPython解释器》1. Python中一切皆对象，这里的对象究竟是什么？解密Python中的对象模型 - 古明地盆 - 博客园
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/16/qiwihui-pocket_readings-999/" rel="next" title="《深度剖析CPython解释器》3. Python的引用计数是什么？Python底层是如何管理对象的？ - 古明地盆 - 博客园">
+      《深度剖析CPython解释器》3. Python的引用计数是什么？Python底层是如何管理对象的？ - 古明地盆 - 博客园 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Comments"><span class="nav-number">1.</span> <span class="nav-text">Comments</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#《深度剖析CPython解释器》2-解密PyObject、PyVarObject、PyTypeObject在Python对象体系中所代表的含义，用CPython来总结Python中type和object之间的关系-古明地盆-博客园"><span class="nav-number"></span> <span class="nav-text">《深度剖析CPython解释器》2.  解密PyObject、PyVarObject、PyTypeObject在Python对象体系中所代表的含义，用CPython来总结Python中type和object之间的关系 - 古明地盆 - 博客园</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#"><span class="nav-number"></span> <span class="nav-text">《深度剖析CPython解释器》2. 解密PyObject、PyVarObject、PyTypeObject在Python对象体系中所代表的含义，用CPython来总结Python中type和object之间的关系</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#"><span class="nav-number"></span> <span class="nav-text">楔子</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#"><span class="nav-number"></span> <span class="nav-text">实现对象机制的基石--PyObject</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#"><span class="nav-number"></span> <span class="nav-text">实现变长对象的基石--PyVarObject</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#"><span class="nav-number"></span> <span class="nav-text">实现类型对象的基石--PyTypeObject</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#"><span class="nav-number"></span> <span class="nav-text">类型对象的类型--PyType_Type</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#"><span class="nav-number"></span> <span class="nav-text">类型对象的基类--PyBaseObject_Type</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#"><span class="nav-number"></span> <span class="nav-text">小结</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">qiwihui</p>
+  <div class="site-description" itemprop="description">个人阅读清单记录博客，并不代表个人观点。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">144</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiwihui</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
